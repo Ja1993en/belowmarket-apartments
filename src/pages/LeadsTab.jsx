@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Clock3, Mail, Phone, Search, Send, Users } from "lucide-react";
-import { getSupabaseLeads } from "../data/supabaseLeadStorage";
+import { getSupabaseLeads, saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { getSupabaseTourRequestsForLead } from "../data/supabaseTourStorage";
 import {
   isLocalFallbackEnabled,
@@ -11,6 +11,7 @@ import {
   getAllLeads,
   getLeadActivitiesForLead,
   getTourRequestsForLead,
+  saveLocalLead,
 } from "../data/leadStorage";
 
 export default function LeadsTab() {
@@ -23,6 +24,8 @@ export default function LeadsTab() {
   const [isLoadingLeads, setIsLoadingLeads] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [isUsingFallbackData, setIsUsingFallbackData] = useState(false);
+  const [isCreatingTestLead, setIsCreatingTestLead] = useState(false);
+  const [testLeadMessage, setTestLeadMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sourceFilter, setSourceFilter] = useState("All");
@@ -79,6 +82,51 @@ export default function LeadsTab() {
 
     return () => window.clearTimeout(loadTimer);
   }, []);
+
+  const createTestLead = async () => {
+    const createdAt = new Date().toISOString();
+    const leadPayload = {
+      id: `local-test-${Date.now()}`,
+      name: "Test Renter",
+      phone: "(214) 555-0100",
+      email: "test-renter@example.com",
+      preference: "1 Bed - Uptown Dallas - production test",
+      bedrooms: "1 Bed",
+      budget: "$1,600",
+      moveIn: "Next 30 days",
+      status: "New Lead",
+      priority: "Medium",
+      source: "Admin test data",
+      sourcePropertyId: null,
+      sourcePropertyName: null,
+      assignedTo: "Unassigned",
+      lastTouch: "Just now",
+      notes: "Created from the admin test-data helper.",
+      recommendedPropertyIds: [],
+      token: `test-renter-${Date.now()}`,
+      contactMethod: "Email",
+      createdAt,
+    };
+
+    try {
+      setIsCreatingTestLead(true);
+      setTestLeadMessage("");
+
+      if (isLocalFallbackEnabled) {
+        saveLocalLead(leadPayload);
+      } else {
+        await saveSupabaseLead(leadPayload);
+      }
+
+      await loadLeads({ prepareLoad: false });
+      setTestLeadMessage("Test lead created. Use it to verify recommendations and tour requests.");
+    } catch (error) {
+      console.error(error);
+      setTestLeadMessage("Could not create the test lead. Check the Supabase connection.");
+    } finally {
+      setIsCreatingTestLead(false);
+    }
+  };
   
   const leads = savedLeads;
   
@@ -255,6 +303,12 @@ export default function LeadsTab() {
               Local fallback mode is active.
             </p>
           )}
+
+          {testLeadMessage && (
+            <p className="mt-3 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+              {testLeadMessage}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -264,6 +318,15 @@ export default function LeadsTab() {
             className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
           >
             {isLoadingLeads ? "Refreshing..." : "Refresh"}
+          </button>
+
+          <button
+            type="button"
+            onClick={createTestLead}
+            disabled={isCreatingTestLead}
+            className="rounded-2xl bg-emerald-100 px-5 py-3 text-center text-sm font-bold text-emerald-700 hover:bg-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-50 disabled:text-emerald-300"
+          >
+            {isCreatingTestLead ? "Creating..." : "Create Test Lead"}
           </button>
 
           <Link
@@ -718,8 +781,28 @@ export default function LeadsTab() {
               <p className="mt-2 text-slate-500">
                 {hasActiveFilters
                   ? "Try clearing filters or changing your search."
-                  : "New renter leads will appear here after someone starts a search."}
+                  : "Production leads now come from Supabase. Create a renter from the start page or use the test lead helper to verify the live workflow."}
               </p>
+
+              {!hasActiveFilters && (
+                <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={createTestLead}
+                    disabled={isCreatingTestLead}
+                    className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    {isCreatingTestLead ? "Creating..." : "Create Test Lead"}
+                  </button>
+
+                  <Link
+                    to="/start"
+                    className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                  >
+                    Open Start Page
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>

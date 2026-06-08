@@ -243,6 +243,11 @@ export default function AdminDashboard() {
         preference: lead.preference,
         status: lead.status,
     }));
+    const hasNoSupabaseLeads =
+        !isLoadingDashboard &&
+        !dashboardError &&
+        !isUsingFallbackDashboardData &&
+        dashboardLeads.length === 0;
 
 
     return (
@@ -278,6 +283,17 @@ export default function AdminDashboard() {
                     <p className="mt-2 text-xs font-semibold text-amber-600">
                         Local fallback dashboard mode is active.
                     </p>
+                )}
+
+                {hasNoSupabaseLeads && (
+                    <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-4">
+                        <p className="text-sm font-black text-slate-900">
+                            No Supabase leads yet.
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                            Create a test lead from the Leads page or submit the public start form to verify the production data loop.
+                        </p>
+                    </div>
                 )}
 
             </div>
