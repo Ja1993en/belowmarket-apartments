@@ -152,3 +152,20 @@ export async function getSupabaseLeads() {
       createdAt: data.created_at,
     };
   }
+
+  export async function updateSupabaseLead(leadId, updates) {
+    const { error } = await supabase
+      .from("leads")
+      .update({
+        status: updates.status,
+        priority: updates.priority,
+        assigned_to: updates.assignedTo,
+        last_touch: updates.lastTouch,
+        notes: updates.notes,
+      })
+      .eq("id", leadId);
+  
+    if (error) {
+      throw error;
+    }
+  }

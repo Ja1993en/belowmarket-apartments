@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { dataHistory, leads } from "../data/mockData";
 import { getAllProperties } from "../data/propertyStorage";
 import { getAllLeads, getStoredTourRequests } from "../data/leadStorage";
@@ -342,9 +343,9 @@ export default function AdminDashboard() {
                     </p>
 
                     <div className="mt-6 space-y-4">
-                        {recentActivities.map((activity) => (
+                        {recentActivities.map((activity, index) => (
                             <ActivityItem
-                                key={activity.title}
+                                key={`${activity.title}-${activity.time}-${index}`}
                                 title={activity.title}
                                 description={activity.description}
                                 time={activity.time}

@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getAnyPropertyById } from "../data/propertyStorage";
-import { getSupabaseLeadById } from "../data/supabaseLeadStorage";
+import {
+    getSupabaseLeadById,
+    updateSupabaseLead,
+} from "../data/supabaseLeadStorage";
 import {
     deleteSupabaseTourRequest,
     getSupabaseTourRequestsForLead,
     updateSupabaseTourRequestStatus,
-  } from "../data/supabaseTourStorage";
+} from "../data/supabaseTourStorage";
 import {
     ArrowLeft,
     CalendarDays,
@@ -151,95 +154,130 @@ export default function LeadDetailsPage() {
             : activityEvents.filter((event) => event.category === activityFilter);
 
 
-    const updateStatus = (status) => {
-        if (!isLocalLead || !lead) return;
+    const updateStatus = async (status) => {
+        if (!lead) return;
 
         const updates = {
             status,
             lastTouch: "Just now",
         };
 
-        updateLocalLead(lead.id, updates);
+        try {
+            if (isLocalLead) {
+                updateLocalLead(lead.id, updates);
 
-        saveLeadActivity({
-            leadId: lead.id,
-            title: "Lead status updated",
-            description: `Status changed to ${status}.`,
-        });
+                saveLeadActivity({
+                    leadId: lead.id,
+                    title: "Lead status updated",
+                    description: `Status changed to ${status}.`,
+                });
+            } else {
+                await updateSupabaseLead(lead.id, updates);
+            }
 
-        setLead({
-            ...lead,
-            ...updates,
-        });
+            setLead({
+                ...lead,
+                ...updates,
+            });
+        } catch (error) {
+            console.error(error);
+            alert("Could not update lead status. Please try again.");
+        }
     };
 
-    const saveNotes = () => {
-        if (!isLocalLead || !lead) return;
+    const saveNotes = async () => {
+        if (!lead) return;
 
         const updates = {
             notes: notesDraft,
             lastTouch: "Just now",
         };
 
-        updateLocalLead(lead.id, updates);
+        try {
+            if (isLocalLead) {
+                updateLocalLead(lead.id, updates);
 
-        saveLeadActivity({
-            leadId: lead.id,
-            title: "Notes updated",
-            description: "Lead notes were updated.",
-        });
+                saveLeadActivity({
+                    leadId: lead.id,
+                    title: "Notes updated",
+                    description: "Lead notes were updated.",
+                });
+            } else {
+                await updateSupabaseLead(lead.id, updates);
+            }
 
-        setLead({
-            ...lead,
-            ...updates,
-        });
+            setLead({
+                ...lead,
+                ...updates,
+            });
+        } catch (error) {
+            console.error(error);
+            alert("Could not save notes. Please try again.");
+        }
     };
 
-    const saveAssignment = () => {
-        if (!isLocalLead || !lead) return;
+    const saveAssignment = async () => {
+        if (!lead) return;
 
         const updates = {
             assignedTo: assignedToDraft || "Unassigned",
             lastTouch: "Just now",
         };
 
+        try {
+            if (isLocalLead) {
+                updateLocalLead(lead.id, updates);
 
+                saveLeadActivity({
+                    leadId: lead.id,
+                    title: "Assignment changed",
+                    description: `Assigned to ${updates.assignedTo}.`,
+                });
+            } else {
+                await updateSupabaseLead(lead.id, updates);
+            }
 
-        updateLocalLead(lead.id, updates);
-
-        saveLeadActivity({
-            leadId: lead.id,
-            title: "Assignment changed",
-            description: `Assigned to ${updates.assignedTo}.`,
-        });
-
-        setLead({
-            ...lead,
-            ...updates,
-        });
+            setLead({
+                ...lead,
+                ...updates,
+            });
+        } catch (error) {
+            console.error(error);
+            alert("Could not save assignment. Please try again.");
+        }
     };
 
-    const updatePriority = (priority) => {
-        if (!isLocalLead || !lead) return;
+    const updatePriority = async (priority) => {
+        if (!lead) return;
 
         const updates = {
             priority,
             lastTouch: "Just now",
         };
 
-        updateLocalLead(lead.id, updates);
+        try {
+            if (isLocalLead) {
+                updateLocalLead(lead.id, updates);
 
-        saveLeadActivity({
-            leadId: lead.id,
-            title: "Priority updated",
-            description: `Priority changed to ${priority}.`,
-        });
+                saveLeadActivity({
+                    leadId: lead.id,
+                    title: "Priority updated",
+                    description: `Priority changed to ${priority}.`,
+                });
+            } else {
+                await updateSupabaseLead(lead.id, updates);
+            }
 
-        setLead({
-            ...lead,
-            ...updates,
-        });
+            setLead({
+                ...lead,
+                ...updates,
+            });
+        } catch (error) {
+            console.error(error);
+            alert("Could not update priority. Please try again.");
+        }
     };
+
 
     const deleteLead = () => {
         if (!isLocalLead || !lead) return;
@@ -293,42 +331,41 @@ export default function LeadDetailsPage() {
         }
     };
 
-    
+
     const cancelTourRequest = async (requestId) => {
         if (!lead) return;
-      
+
         const requestToCancel = sortedTourRequests.find(
-          (request) => request.id === requestId
+            (request) => request.id === requestId
         );
-      
+
         const confirmed = window.confirm("Cancel this tour request?");
-      
+
         if (!confirmed) return;
-      
+
         try {
-          if (isLocalLead) {
-            deleteTourRequest(requestId);
-            setTourRequests(getTourRequestsForLead(lead.id));
-          } else {
-            await deleteSupabaseTourRequest(requestId);
-            const updatedRequests = await getSupabaseTourRequestsForLead(lead.id);
-            setTourRequests(updatedRequests);
-          }
-      
-          saveLeadActivity({
-            leadId: lead.id,
-            title: "Tour request canceled",
-            description: `${
-              requestToCancel?.propertyName || "A property"
-            } tour request was canceled.`,
-            category: "Tours",
-          });
+            if (isLocalLead) {
+                deleteTourRequest(requestId);
+                setTourRequests(getTourRequestsForLead(lead.id));
+            } else {
+                await deleteSupabaseTourRequest(requestId);
+                const updatedRequests = await getSupabaseTourRequestsForLead(lead.id);
+                setTourRequests(updatedRequests);
+            }
+
+            saveLeadActivity({
+                leadId: lead.id,
+                title: "Tour request canceled",
+                description: `${requestToCancel?.propertyName || "A property"
+                    } tour request was canceled.`,
+                category: "Tours",
+            });
         } catch (error) {
-          console.error(error);
-          alert("Could not cancel this tour request. Please try again.");
+            console.error(error);
+            alert("Could not cancel this tour request. Please try again.");
         }
-      };
-      
+    };
+
     const clearActivityTimeline = () => {
         if (!lead) return;
 
@@ -713,34 +750,24 @@ export default function LeadDetailsPage() {
                                 </p>
                             </div>
 
-                            {!isLocalLead && (
-                                <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-bold text-slate-500">
-                                    Read-only
-                                </span>
-                            )}
+
                         </div>
 
-                        {isLocalLead ? (
-                            <>
-                                <textarea
-                                    value={notesDraft}
-                                    onChange={(event) => setNotesDraft(event.target.value)}
-                                    rows={6}
-                                    className="mt-5 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700 outline-none focus:border-slate-400"
-                                />
+                        <>
+                            <textarea
+                                value={notesDraft}
+                                onChange={(event) => setNotesDraft(event.target.value)}
+                                rows={6}
+                                className="mt-5 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700 outline-none focus:border-slate-400"
+                            />
 
-                                <button
-                                    onClick={saveNotes}
-                                    className="mt-4 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
-                                >
-                                    Save Notes
-                                </button>
-                            </>
-                        ) : (
-                            <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-slate-700">
-                                {lead.notes}
-                            </p>
-                        )}
+                            <button
+                                onClick={saveNotes}
+                                className="mt-4 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                            >
+                                Save Notes
+                            </button>
+                        </>
                     </div>
                 </section>
 
@@ -800,26 +827,20 @@ export default function LeadDetailsPage() {
                             Lead Status
                         </h2>
 
-                        {isLocalLead ? (
-                            <div className="mt-5 grid gap-3">
-                                {["New Lead", "Tour Needed", "Recommendation Sent"].map((status) => (
-                                    <button
-                                        key={status}
-                                        onClick={() => updateStatus(status)}
-                                        className={`rounded-2xl px-4 py-3 text-sm font-bold ${lead.status === status
-                                            ? "bg-slate-950 text-white"
-                                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                                            }`}
-                                    >
-                                        {status}
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
-                                Mock leads are read-only. Local leads submitted from the start page can be updated here.
-                            </p>
-                        )}
+                        <div className="mt-5 grid gap-3">
+                            {["New Lead", "Tour Needed", "Recommendation Sent"].map((status) => (
+                                <button
+                                    key={status}
+                                    onClick={() => updateStatus(status)}
+                                    className={`rounded-2xl px-4 py-3 text-sm font-bold ${lead.status === status
+                                        ? "bg-slate-950 text-white"
+                                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                        }`}
+                                >
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -828,58 +849,51 @@ export default function LeadDetailsPage() {
                         </h2>
 
                         <div className="mt-5 space-y-3">
-                            {isLocalLead ? (
-                                <div className="rounded-2xl bg-slate-50 p-4">
-                                    <label className="text-sm font-semibold text-slate-500">
-                                        Assigned To
-                                    </label>
+                            <div className="rounded-2xl bg-slate-50 p-4">
+                                <label className="text-sm font-semibold text-slate-500">
+                                    Assigned To
+                                </label>
 
-                                    <input
-                                        type="text"
-                                        value={assignedToDraft}
-                                        onChange={(event) => setAssignedToDraft(event.target.value)}
-                                        placeholder="Jalen McNeal"
-                                        className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-900 outline-none focus:border-slate-400"
-                                    />
+                                <input
+                                    type="text"
+                                    value={assignedToDraft}
+                                    onChange={(event) => setAssignedToDraft(event.target.value)}
+                                    placeholder="Jalen McNeal"
+                                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-900 outline-none focus:border-slate-400"
+                                />
 
-                                    <button
-                                        onClick={saveAssignment}
-                                        className="mt-3 w-full rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
-                                    >
-                                        Save Assignment
-                                    </button>
-                                </div>
-                            ) : (
-                                <SimpleRow label="Assigned To" value={lead.assignedTo} />
-                            )}
+                                <button
+                                    onClick={saveAssignment}
+                                    className="mt-3 w-full rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                                >
+                                    Save Assignment
+                                </button>
+                            </div>
 
                             <SimpleRow label="Source" value={lead.source} />
                             {lead.sourcePropertyName && (
                                 <SimpleRow label="Source Property" value={lead.sourcePropertyName} />
                             )}
                             <SimpleRow label="Last Touch" value={lead.lastTouch} />
-                            {isLocalLead ? (
-                                <div className="rounded-2xl bg-slate-50 p-4">
-                                    <p className="text-sm font-semibold text-slate-500">Priority</p>
+                            <div className="rounded-2xl bg-slate-50 p-4">
+                                <p className="text-sm font-semibold text-slate-500">Priority</p>
 
-                                    <div className="mt-3 grid grid-cols-3 gap-2">
-                                        {["Low", "Medium", "High"].map((priority) => (
-                                            <button
-                                                key={priority}
-                                                onClick={() => updatePriority(priority)}
-                                                className={`rounded-xl px-3 py-2 text-sm font-bold ${lead.priority === priority
-                                                    ? "bg-slate-950 text-white"
-                                                    : "bg-white text-slate-700 hover:bg-slate-100"
-                                                    }`}
-                                            >
-                                                {priority}
-                                            </button>
-                                        ))}
-                                    </div>
+                                <div className="mt-3 grid grid-cols-3 gap-2">
+                                    {["Low", "Medium", "High"].map((priority) => (
+                                        <button
+                                            key={priority}
+                                            onClick={() => updatePriority(priority)}
+                                            className={`rounded-xl px-3 py-2 text-sm font-bold ${lead.priority === priority
+                                                ? "bg-slate-950 text-white"
+                                                : "bg-white text-slate-700 hover:bg-slate-100"
+                                                }`}
+                                        >
+                                            {priority}
+                                        </button>
+                                    ))}
                                 </div>
-                            ) : (
-                                <SimpleRow label="Priority" value={`${lead.priority} Priority`} />
-                            )}  </div>
+                            </div>
+                        </div>
                     </div>
                 </aside>
             </div>
