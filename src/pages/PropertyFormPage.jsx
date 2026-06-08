@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Building2, ImagePlus, Save, Star, X } from "lucide-react";
+import { ArrowLeft, Building2, ImagePlus, Plus, Save, Star, X } from "lucide-react";
 import {
   createStoredProperty,
   getAnyPropertyById,
@@ -25,7 +25,7 @@ const emptyPropertyDraft = {
   special: "",
   image: "",
   photos: [],
-  floorPlans: "",
+  floorPlans: [createBlankFloorPlan()],
   bedrooms: "",
 };
 
@@ -112,6 +112,37 @@ export default function PropertyFormPage() {
     });
   };
 
+  const updateFloorPlan = (floorPlanId, field, value) => {
+    setPropertyDraft((currentDraft) => ({
+      ...currentDraft,
+      floorPlans: currentDraft.floorPlans.map((floorPlan) =>
+        floorPlan.id === floorPlanId
+          ? {
+              ...floorPlan,
+              [field]: value,
+            }
+          : floorPlan
+      ),
+    }));
+  };
+
+  const addFloorPlan = () => {
+    setPropertyDraft((currentDraft) => ({
+      ...currentDraft,
+      floorPlans: [...currentDraft.floorPlans, createBlankFloorPlan()],
+    }));
+  };
+
+  const removeFloorPlan = (floorPlanId) => {
+    setPropertyDraft((currentDraft) => ({
+      ...currentDraft,
+      floorPlans:
+        currentDraft.floorPlans.length > 1
+          ? currentDraft.floorPlans.filter((floorPlan) => floorPlan.id !== floorPlanId)
+          : currentDraft.floorPlans,
+    }));
+  };
+
   const saveProperty = (event) => {
     event.preventDefault();
     setSaveError("");
@@ -126,6 +157,17 @@ export default function PropertyFormPage() {
       return;
     }
 
+    const floorPlans = propertyDraft.floorPlans
+      .map(normalizeFloorPlanForStorage)
+      .filter((floorPlan) => floorPlan.name && floorPlan.rent);
+
+    if (floorPlans.length === 0) {
+      setSaveError("Add at least one floor plan with a name and starting rent.");
+      return;
+    }
+
+    const primaryFloorPlan = floorPlans[0];
+
     const propertyPayload = {
       ...propertyDraft,
       name: propertyDraft.name.trim(),
@@ -139,16 +181,22 @@ export default function PropertyFormPage() {
       city: propertyDraft.city.trim(),
       state: propertyDraft.state.trim(),
       zipcode: propertyDraft.zipcode.trim(),
-      rent: propertyDraft.rent.trim() || "Contact for pricing",
-      marketRent: propertyDraft.marketRent.trim(),
-      effectiveRent: propertyDraft.effectiveRent.trim() || propertyDraft.rent.trim(),
-      savings: propertyDraft.savings.trim(),
-      belowMarketPercent: propertyDraft.belowMarketPercent.trim(),
-      special: propertyDraft.special.trim(),
+      rent: propertyDraft.rent.trim() || primaryFloorPlan.rent || "Contact for pricing",
+      marketRent: propertyDraft.marketRent.trim() || primaryFloorPlan.marketRent,
+      effectiveRent:
+        propertyDraft.effectiveRent.trim() ||
+        primaryFloorPlan.effectiveRent ||
+        primaryFloorPlan.rent,
+      savings: propertyDraft.savings.trim() || primaryFloorPlan.savings,
+      belowMarketPercent:
+        propertyDraft.belowMarketPercent.trim() || primaryFloorPlan.belowMarketPercent,
+      special: propertyDraft.special.trim() || primaryFloorPlan.currentSpecial,
       image: propertyDraft.image.trim() || propertyDraft.photos[0]?.url || "",
       photos: propertyDraft.photos,
-      floorPlans: splitList(propertyDraft.floorPlans),
-      bedrooms: splitList(propertyDraft.bedrooms),
+      floorPlans,
+      bedrooms: [
+        ...new Set(floorPlans.map((floorPlan) => floorPlan.beds).filter(Boolean)),
+      ],
     };
 
     try {
@@ -306,16 +354,161 @@ export default function PropertyFormPage() {
               value={propertyDraft.image}
               onChange={(value) => updateDraft("image", value)}
             />
-            <FormField
-              label="Floor Plans"
-              value={propertyDraft.floorPlans}
-              onChange={(value) => updateDraft("floorPlans", value)}
-            />
-            <FormField
-              label="Bedrooms"
-              value={propertyDraft.bedrooms}
-              onChange={(value) => updateDraft("bedrooms", value)}
-            />
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">
+                Floor Plans
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {propertyDraft.floorPlans.length} floor plan
+                {propertyDraft.floorPlans.length === 1 ? "" : "s"}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={addFloorPlan}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+            >
+              <Plus className="h-4 w-4" />
+              Add Floor Plan
+            </button>
+          </div>
+
+          <div className="mt-5 space-y-5">
+            {propertyDraft.floorPlans.map((floorPlan, index) => (
+              <div
+                key={floorPlan.id}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+              >
+                <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                  <h3 className="text-lg font-black text-slate-900">
+                    Floor Plan {index + 1}
+                  </h3>
+
+                  <button
+                    type="button"
+                    onClick={() => removeFloorPlan(floorPlan.id)}
+                    disabled={propertyDraft.floorPlans.length === 1}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-100 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-200 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+                  >
+                    <X className="h-4 w-4" />
+                    Remove
+                  </button>
+                </div>
+
+                <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <FormField
+                    label="Floor Plan Name"
+                    value={floorPlan.name}
+                    onChange={(value) => updateFloorPlan(floorPlan.id, "name", value)}
+                  />
+                  <FormField
+                    label="Bedrooms"
+                    value={floorPlan.bedrooms}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "bedrooms", value)
+                    }
+                  />
+                  <FormField
+                    label="Bathrooms"
+                    value={floorPlan.bathrooms}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "bathrooms", value)
+                    }
+                  />
+                  <FormField
+                    label="Square Feet"
+                    value={floorPlan.squareFeet}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "squareFeet", value)
+                    }
+                  />
+                  <FormField
+                    label="Starting Rent"
+                    value={floorPlan.startingRent}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "startingRent", value)
+                    }
+                  />
+                  <FormField
+                    label="Effective Rent"
+                    value={floorPlan.effectiveRent}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "effectiveRent", value)
+                    }
+                  />
+                  <FormField
+                    label="Market Rent"
+                    value={floorPlan.marketRent}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "marketRent", value)
+                    }
+                  />
+                  <FormField
+                    label="Savings"
+                    value={floorPlan.savings}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "savings", value)
+                    }
+                  />
+                  <FormField
+                    label="Below Market Percent"
+                    value={floorPlan.belowMarketPercent}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "belowMarketPercent", value)
+                    }
+                  />
+                  <FormField
+                    label="Current Special"
+                    value={floorPlan.currentSpecial}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "currentSpecial", value)
+                    }
+                  />
+                  <FormField
+                    label="Availability"
+                    value={floorPlan.availability}
+                    onChange={(value) =>
+                      updateFloorPlan(floorPlan.id, "availability", value)
+                    }
+                  />
+                  <label className="rounded-2xl bg-white p-4">
+                    <span className="text-sm font-semibold text-slate-500">
+                      Status
+                    </span>
+                    <select
+                      value={floorPlan.status}
+                      onChange={(event) =>
+                        updateFloorPlan(floorPlan.id, "status", event.target.value)
+                      }
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                    >
+                      <option value="available">Available</option>
+                      <option value="limited">Limited</option>
+                      <option value="unavailable">Unavailable</option>
+                    </select>
+                  </label>
+                  <label className="rounded-2xl bg-white p-4 md:col-span-2 xl:col-span-3">
+                    <span className="text-sm font-semibold text-slate-500">
+                      Notes
+                    </span>
+                    <input
+                      type="text"
+                      value={floorPlan.notes}
+                      onChange={(event) =>
+                        updateFloorPlan(floorPlan.id, "notes", event.target.value)
+                      }
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                    />
+                  </label>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -456,8 +649,98 @@ function createDraftFromProperty(property) {
     special: property.special || "",
     image: property.image || "",
     photos: normalizePropertyPhotos(property),
-    floorPlans: (property.floorPlans || []).join(", "),
+    floorPlans: normalizeFloorPlansForDraft(property),
     bedrooms: (property.bedrooms || []).join(", "),
+  };
+}
+
+function createBlankFloorPlan() {
+  return {
+    id: `floor-plan-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    name: "",
+    bedrooms: "",
+    bathrooms: "",
+    squareFeet: "",
+    startingRent: "",
+    effectiveRent: "",
+    marketRent: "",
+    savings: "",
+    belowMarketPercent: "",
+    currentSpecial: "",
+    availability: "",
+    status: "available",
+    notes: "",
+  };
+}
+
+function normalizeFloorPlansForDraft(property) {
+  if (property.floorPlans?.length > 0) {
+    return property.floorPlans.map((floorPlan, index) => {
+      if (typeof floorPlan === "string") {
+        return {
+          ...createBlankFloorPlan(),
+          id: `${property.id}-floor-plan-${index}`,
+          name: floorPlan,
+          bedrooms: property.bedrooms?.[0] || "",
+          startingRent: property.rent || "",
+          effectiveRent: property.effectiveRent || "",
+          marketRent: property.marketRent || "",
+          savings: property.savings || "",
+          belowMarketPercent: property.belowMarketPercent || "",
+          currentSpecial: property.special || "",
+        };
+      }
+
+      return {
+        ...createBlankFloorPlan(),
+        id: floorPlan.id || `${property.id}-floor-plan-${index}`,
+        name: floorPlan.name || "",
+        bedrooms: floorPlan.bedrooms || floorPlan.beds || "",
+        bathrooms: floorPlan.bathrooms || floorPlan.baths || "",
+        squareFeet: floorPlan.squareFeet || floorPlan.sqft || "",
+        startingRent: floorPlan.startingRent || floorPlan.rent || "",
+        effectiveRent: floorPlan.effectiveRent || "",
+        marketRent: floorPlan.marketRent || "",
+        savings: floorPlan.savings || "",
+        belowMarketPercent: floorPlan.belowMarketPercent || "",
+        currentSpecial: floorPlan.currentSpecial || floorPlan.special?.label || "",
+        availability: floorPlan.availability || floorPlan.available || "",
+        status: floorPlan.status || "available",
+        notes: floorPlan.notes || "",
+      };
+    });
+  }
+
+  return [createBlankFloorPlan()];
+}
+
+function normalizeFloorPlanForStorage(floorPlan) {
+  const name = floorPlan.name.trim();
+  const startingRent = floorPlan.startingRent.trim();
+  const currentSpecial = floorPlan.currentSpecial.trim();
+
+  return {
+    id: floorPlan.id,
+    name,
+    bedrooms: floorPlan.bedrooms.trim(),
+    beds: floorPlan.bedrooms.trim(),
+    bathrooms: floorPlan.bathrooms.trim(),
+    baths: floorPlan.bathrooms.trim(),
+    squareFeet: floorPlan.squareFeet.trim(),
+    sqft: floorPlan.squareFeet.trim(),
+    startingRent,
+    rent: startingRent,
+    effectiveRent: floorPlan.effectiveRent.trim(),
+    marketRent: floorPlan.marketRent.trim(),
+    savings: floorPlan.savings.trim(),
+    belowMarketPercent: floorPlan.belowMarketPercent.trim(),
+    currentSpecial,
+    special: currentSpecial ? { label: currentSpecial } : null,
+    availability: floorPlan.availability.trim(),
+    available: floorPlan.availability.trim(),
+    status: floorPlan.status,
+    notes: floorPlan.notes.trim(),
+    availableUnits: [],
   };
 }
 
@@ -501,11 +784,4 @@ function readPhotoFile(file) {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-}
-
-function splitList(value) {
-  return value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
 }

@@ -181,6 +181,8 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
         );
     }
 
+    const propertyFloorPlans = normalizePropertyFloorPlans(property);
+
     return (
         <div>
             <Link
@@ -300,7 +302,7 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
             )}
 
             <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2 2xl:grid-cols-4">
-                <DetailCard title="Floor Plans" value={property.floorPlans.length} />
+                <DetailCard title="Floor Plans" value={propertyFloorPlans.length} />
                 <DetailCard title="Available Units" value="12" />
                 <DetailCard title="Active Specials" value={property.special ? 1 : 0} />
                 <DetailCard title="Leads Sent" value={propertyLeadCount} />
@@ -424,7 +426,7 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                         </div>
 
                         <div className="space-y-3">
-                            {floorPlans.map((plan) => (
+                            {propertyFloorPlans.map((plan) => (
                                 <FloorPlanRow
                                     key={plan.name}
                                     name={plan.name}
@@ -432,6 +434,11 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                                     baths={plan.baths}
                                     sqft={plan.sqft}
                                     rent={plan.rent}
+                                    effectiveRent={plan.effectiveRent}
+                                    marketRent={plan.marketRent}
+                                    savings={plan.savings}
+                                    belowMarketPercent={plan.belowMarketPercent}
+                                    currentSpecial={plan.currentSpecial}
                                     available={plan.available}
                                 />
                             ))}
@@ -611,7 +618,19 @@ function InfoBox({ label, value }) {
     );
 }
 
-function FloorPlanRow({ name, beds, baths, sqft, rent, available }) {
+function FloorPlanRow({
+    name,
+    beds,
+    baths,
+    sqft,
+    rent,
+    effectiveRent,
+    marketRent,
+    savings,
+    belowMarketPercent,
+    currentSpecial,
+    available,
+}) {
     return (
         <div className="flex flex-col justify-between gap-4 rounded-2xl bg-slate-50 p-4 md:flex-row md:items-center">
             <div>
@@ -619,12 +638,41 @@ function FloorPlanRow({ name, beds, baths, sqft, rent, available }) {
                 <p className="mt-1 text-sm text-slate-500">
                     {beds} • {baths} • {sqft}
                 </p>
+                {currentSpecial && (
+                    <p className="mt-2 text-sm font-bold text-emerald-700">
+                        {currentSpecial}
+                    </p>
+                )}
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
                 <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
-                    {rent}
+                    Starting {rent}
                 </span>
+
+                {effectiveRent && (
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                        Effective {effectiveRent}
+                    </span>
+                )}
+
+                {marketRent && (
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                        Market {marketRent}
+                    </span>
+                )}
+
+                {savings && (
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                        Save {savings}
+                    </span>
+                )}
+
+                {belowMarketPercent && (
+                    <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700">
+                        {belowMarketPercent} below
+                    </span>
+                )}
 
                 <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
                     {available}
@@ -643,6 +691,44 @@ function FloorPlanRow({ name, beds, baths, sqft, rent, available }) {
             </div>
         </div>
     );
+}
+
+function normalizePropertyFloorPlans(property) {
+    if (!property?.floorPlans?.length) {
+        return floorPlans;
+    }
+
+    return property.floorPlans.map((plan, index) => {
+        if (typeof plan === "string") {
+            return {
+                name: plan,
+                beds: property.bedrooms?.[0] || "Not set",
+                baths: "Not set",
+                sqft: "Not set",
+                rent: property.rent || "Contact for pricing",
+                effectiveRent: property.effectiveRent || "",
+                marketRent: property.marketRent || "",
+                savings: property.savings || "",
+                belowMarketPercent: property.belowMarketPercent || "",
+                currentSpecial: property.special || "",
+                available: "Not set",
+            };
+        }
+
+        return {
+            name: plan.name || `Floor Plan ${index + 1}`,
+            beds: plan.bedrooms || plan.beds || "Not set",
+            baths: plan.bathrooms || plan.baths || "Not set",
+            sqft: plan.squareFeet || plan.sqft || "Not set",
+            rent: plan.startingRent || plan.rent || "Contact for pricing",
+            effectiveRent: plan.effectiveRent || "",
+            marketRent: plan.marketRent || "",
+            savings: plan.savings || "",
+            belowMarketPercent: plan.belowMarketPercent || "",
+            currentSpecial: plan.currentSpecial || plan.special?.label || "",
+            available: plan.availability || plan.available || "Not set",
+        };
+    });
 }
 
 function SpecialCard({ title, type }) {

@@ -126,6 +126,49 @@ const galleryImages = [
     },
 ];
 
+function normalizeListingFloorPlans(property) {
+    if (!property?.floorPlans?.length) {
+        return floorPlans;
+    }
+
+    return property.floorPlans.map((plan, index) => {
+        if (typeof plan === "string") {
+            return {
+                name: plan,
+                beds: property.bedrooms?.[0] || "Not set",
+                baths: "Not set",
+                sqft: "Not set",
+                rent: property.rent || "Contact for pricing",
+                effectiveRent: property.effectiveRent || "",
+                marketRent: property.marketRent || "",
+                savings: property.savings || "",
+                belowMarketPercent: property.belowMarketPercent || "",
+                available: "Not set",
+                status: "available",
+                special: property.special ? { label: property.special } : null,
+                availableUnits: [],
+            };
+        }
+
+        return {
+            ...plan,
+            name: plan.name || `Floor Plan ${index + 1}`,
+            beds: plan.bedrooms || plan.beds || "Not set",
+            baths: plan.bathrooms || plan.baths || "Not set",
+            sqft: plan.squareFeet || plan.sqft || "Not set",
+            rent: plan.startingRent || plan.rent || "Contact for pricing",
+            effectiveRent: plan.effectiveRent || "",
+            marketRent: plan.marketRent || "",
+            savings: plan.savings || "",
+            belowMarketPercent: plan.belowMarketPercent || "",
+            available: plan.availability || plan.available || "Not set",
+            status: plan.status || "available",
+            special: plan.special || (plan.currentSpecial ? { label: plan.currentSpecial } : null),
+            availableUnits: plan.availableUnits || [],
+        };
+    });
+}
+
 export default function PublicPropertyListing() {
     {/* Usestate start*/ }
     const { propertyId } = useParams();
@@ -137,6 +180,11 @@ export default function PublicPropertyListing() {
                 url: photo.url,
             }))
             : galleryImages;
+    const listingFloorPlans = normalizeListingFloorPlans(property);
+    const floorPlanFilters = [
+        "All",
+        ...new Set(listingFloorPlans.map((plan) => plan.beds).filter(Boolean)),
+    ];
     const [showGallery, setShowGallery] = useState(false);
     const [activePhotoCategory, setActivePhotoCategory] = useState("All");
     const [selectedPhoto, setSelectedPhoto] = useState(propertyGalleryImages[0]);
@@ -160,15 +208,15 @@ export default function PublicPropertyListing() {
 
     const filteredFloorPlans =
         activeFloorPlanFilter === "All"
-            ? floorPlans
-            : floorPlans.filter((plan) => plan.beds === activeFloorPlanFilter);
+            ? listingFloorPlans
+            : listingFloorPlans.filter((plan) => plan.beds === activeFloorPlanFilter);
 
     const sortedFloorPlans = [...filteredFloorPlans].sort((a, b) => {
-        const rentA = Number(a.rent.replace(/[^0-9]/g, ""));
-        const rentB = Number(b.rent.replace(/[^0-9]/g, ""));
+        const rentA = Number(String(a.rent || "").replace(/[^0-9]/g, ""));
+        const rentB = Number(String(b.rent || "").replace(/[^0-9]/g, ""));
 
-        const sqftA = Number(a.sqft.replace(/[^0-9]/g, ""));
-        const sqftB = Number(b.sqft.replace(/[^0-9]/g, ""));
+        const sqftA = Number(String(a.sqft || "").replace(/[^0-9]/g, ""));
+        const sqftB = Number(String(b.sqft || "").replace(/[^0-9]/g, ""));
 
         if (floorPlanSort === "price-low") return rentA - rentB;
         if (floorPlanSort === "price-high") return rentB - rentA;
@@ -511,7 +559,7 @@ export default function PublicPropertyListing() {
 
                                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                                         <div className="flex flex-wrap gap-2">
-                                            {["All", "Studio", "1 Bed", "2 Bed"].map((filter) => (
+                                            {floorPlanFilters.map((filter) => (
                                                 <button
                                                     key={filter}
                                                     onClick={() => setActiveFloorPlanFilter(filter)}
@@ -583,6 +631,10 @@ export default function PublicPropertyListing() {
                                             baths={plan.baths}
                                             sqft={plan.sqft}
                                             rent={plan.rent}
+                                            effectiveRent={plan.effectiveRent}
+                                            marketRent={plan.marketRent}
+                                            savings={plan.savings}
+                                            belowMarketPercent={plan.belowMarketPercent}
                                             available={plan.available}
                                             image={plan.image}
                                             status={plan.status}
@@ -1441,7 +1493,22 @@ function NearbyItem({ label, value }) {
 }
 
 
-function FloorPlanCard({ name, beds, baths, sqft, rent, available, image, status, special, onViewDetails }) {
+function FloorPlanCard({
+    name,
+    beds,
+    baths,
+    sqft,
+    rent,
+    effectiveRent,
+    marketRent,
+    savings,
+    belowMarketPercent,
+    available,
+    image,
+    status,
+    special,
+    onViewDetails,
+}) {
     return (
         <div className="flex flex-col justify-between gap-4 rounded-2xl bg-slate-50 p-4 md:flex-row md:items-center">
 
@@ -1474,8 +1541,32 @@ function FloorPlanCard({ name, beds, baths, sqft, rent, available, image, status
 
             <div className="flex flex-wrap items-center gap-3">
                 <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
-                    {rent}
+                    Starting {rent}
                 </span>
+
+                {effectiveRent && (
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                        Effective {effectiveRent}
+                    </span>
+                )}
+
+                {marketRent && (
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                        Market {marketRent}
+                    </span>
+                )}
+
+                {savings && (
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                        Save {savings}
+                    </span>
+                )}
+
+                {belowMarketPercent && (
+                    <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700">
+                        {belowMarketPercent} below
+                    </span>
+                )}
 
                 <span
                     className={`rounded-full px-3 py-1 text-xs font-bold ${status === "available"
