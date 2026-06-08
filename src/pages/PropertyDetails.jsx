@@ -473,7 +473,10 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                             <InfoBox label="Property Website" value="https://themonroe.com" />
                             <InfoBox label="Leasing Phone" value="(214) 555-1234" />
                             <InfoBox label="Leasing Email" value="leasing@themonroe.com" />
-                            <InfoBox label="Management Company" value={property.manager} />
+                            <InfoBox
+                                label="Management Company"
+                                value={property.managementCompany || property.manager}
+                            />
                             <InfoBox label="Property Status" value={property.status} />
                             <InfoBox label="Pet Policy" value="Cats and Dogs Allowed" />
                         </div>

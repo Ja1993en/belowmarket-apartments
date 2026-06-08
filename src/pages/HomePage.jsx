@@ -16,7 +16,17 @@ export default function HomePage() {
     );
 
     const filteredProperties = publicProperties.filter((property) => {
-        const searchableText = `${property.name} ${property.area} ${property.special} ${property.manager}`.toLowerCase();
+        const searchableText = [
+            property.name,
+            property.area,
+            property.special,
+            property.manager,
+            property.managementCompany,
+            property.address,
+            property.city,
+            property.state,
+            property.zipcode,
+        ].filter(Boolean).join(" ").toLowerCase();
 
         const matchesSearch = searchableText.includes(searchTerm.toLowerCase());
         const matchesArea = areaFilter === "All" || property.area === areaFilter;
@@ -141,10 +151,12 @@ export default function HomePage() {
 }
 
 function PropertyCard({ property }) {
+    const primaryImage = property.photos?.[0]?.url || property.image;
+
     return (
         <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
             <img
-                src={property.image}
+                src={primaryImage}
                 alt={property.name}
                 className="h-52 w-full object-cover"
             />

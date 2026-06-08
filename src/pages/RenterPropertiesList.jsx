@@ -452,10 +452,12 @@ function RecommendedPropertyCard({
 }) {
   const isTourRequested = requestedPropertyIds.includes(property.id);
   const isTourSelected = selectedTourPropertyId === property.id;
+  const primaryImage = property.photos?.[0]?.url || property.image;
+
   return (
     <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <img
-        src={property.image}
+        src={primaryImage}
         alt={property.name}
         className="h-56 w-full object-cover"
       />

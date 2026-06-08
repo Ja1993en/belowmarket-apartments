@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Building2, Save } from "lucide-react";
+import { ArrowLeft, Building2, ImagePlus, Save, Star, X } from "lucide-react";
 import {
   createStoredProperty,
   getAnyPropertyById,
@@ -11,6 +11,7 @@ const emptyPropertyDraft = {
   name: "",
   area: "",
   manager: "",
+  managementCompany: "",
   address: "",
   city: "",
   state: "",
@@ -23,9 +24,13 @@ const emptyPropertyDraft = {
   status: "Draft",
   special: "",
   image: "",
+  photos: [],
   floorPlans: "",
   bedrooms: "",
 };
+
+const MAX_UPLOAD_COUNT = 8;
+const MAX_UPLOAD_SIZE = 1.5 * 1024 * 1024;
 
 export default function PropertyFormPage() {
   const { propertyId } = useParams();
@@ -42,6 +47,69 @@ export default function PropertyFormPage() {
       ...currentDraft,
       [field]: value,
     }));
+  };
+
+  const uploadPhotos = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+
+    if (files.length === 0) return;
+
+    const remainingSlots = MAX_UPLOAD_COUNT - propertyDraft.photos.length;
+    const acceptedFiles = files.slice(0, remainingSlots);
+    const oversizedFile = acceptedFiles.find((file) => file.size > MAX_UPLOAD_SIZE);
+
+    if (remainingSlots <= 0) {
+      setSaveError(`You can upload up to ${MAX_UPLOAD_COUNT} property photos.`);
+      return;
+    }
+
+    if (oversizedFile) {
+      setSaveError("Each uploaded photo must be 1.5 MB or smaller.");
+      return;
+    }
+
+    try {
+      const uploadedPhotos = await Promise.all(acceptedFiles.map(readPhotoFile));
+
+      setPropertyDraft((currentDraft) => ({
+        ...currentDraft,
+        image: currentDraft.image || uploadedPhotos[0]?.url || "",
+        photos: [...currentDraft.photos, ...uploadedPhotos],
+      }));
+      setSaveError("");
+    } catch (error) {
+      console.error(error);
+      setSaveError("Could not upload photos. Please try smaller image files.");
+    }
+  };
+
+  const removePhoto = (photoId) => {
+    setPropertyDraft((currentDraft) => {
+      const nextPhotos = currentDraft.photos.filter((photo) => photo.id !== photoId);
+      const removedPrimary = currentDraft.photos.find((photo) => photo.id === photoId)
+        ?.url === currentDraft.image;
+
+      return {
+        ...currentDraft,
+        image: removedPrimary ? nextPhotos[0]?.url || "" : currentDraft.image,
+        photos: nextPhotos,
+      };
+    });
+  };
+
+  const setPrimaryPhoto = (photoId) => {
+    setPropertyDraft((currentDraft) => {
+      const photo = currentDraft.photos.find((item) => item.id === photoId);
+
+      return {
+        ...currentDraft,
+        image: photo?.url || currentDraft.image,
+        photos: photo
+          ? [photo, ...currentDraft.photos.filter((item) => item.id !== photoId)]
+          : currentDraft.photos,
+      };
+    });
   };
 
   const saveProperty = (event) => {
@@ -63,6 +131,10 @@ export default function PropertyFormPage() {
       name: propertyDraft.name.trim(),
       area: propertyDraft.area.trim(),
       manager: propertyDraft.manager.trim() || "Not assigned",
+      managementCompany:
+        propertyDraft.managementCompany.trim() ||
+        propertyDraft.manager.trim() ||
+        "Not assigned",
       address: propertyDraft.address.trim(),
       city: propertyDraft.city.trim(),
       state: propertyDraft.state.trim(),
@@ -73,16 +145,22 @@ export default function PropertyFormPage() {
       savings: propertyDraft.savings.trim(),
       belowMarketPercent: propertyDraft.belowMarketPercent.trim(),
       special: propertyDraft.special.trim(),
-      image: propertyDraft.image.trim(),
+      image: propertyDraft.image.trim() || propertyDraft.photos[0]?.url || "",
+      photos: propertyDraft.photos,
       floorPlans: splitList(propertyDraft.floorPlans),
       bedrooms: splitList(propertyDraft.bedrooms),
     };
 
-    const savedProperty = isEditing
-      ? updateStoredProperty(propertyId, propertyPayload)
-      : createStoredProperty(propertyPayload);
+    try {
+      const savedProperty = isEditing
+        ? updateStoredProperty(propertyId, propertyPayload)
+        : createStoredProperty(propertyPayload);
 
-    navigate(`/admin/properties/${savedProperty.id}`);
+      navigate(`/admin/properties/${savedProperty.id}`);
+    } catch (error) {
+      console.error(error);
+      setSaveError("Could not save this property. Try fewer or smaller photos.");
+    }
   };
 
   if (isEditing && !existingProperty) {
@@ -141,6 +219,11 @@ export default function PropertyFormPage() {
               label="Property Manager"
               value={propertyDraft.manager}
               onChange={(value) => updateDraft("manager", value)}
+            />
+            <FormField
+              label="Management Company"
+              value={propertyDraft.managementCompany}
+              onChange={(value) => updateDraft("managementCompany", value)}
             />
             <FormField
               label="Market Area"
@@ -236,6 +319,80 @@ export default function PropertyFormPage() {
           </div>
         </section>
 
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">
+                Property Photos
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {propertyDraft.photos.length} of {MAX_UPLOAD_COUNT} uploaded
+              </p>
+            </div>
+
+            <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800">
+              <ImagePlus className="h-4 w-4" />
+              Upload Photos
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={uploadPhotos}
+                className="sr-only"
+              />
+            </label>
+          </div>
+
+          {propertyDraft.photos.length > 0 && (
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {propertyDraft.photos.map((photo) => {
+                const isPrimaryPhoto = photo.url === propertyDraft.image;
+
+                return (
+                  <div
+                    key={photo.id}
+                    className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                  >
+                    <img
+                      src={photo.url}
+                      alt={photo.name}
+                      className="h-36 w-full object-cover"
+                    />
+
+                    <div className="space-y-3 p-3">
+                      <p className="truncate text-sm font-bold text-slate-900">
+                        {photo.name}
+                      </p>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPrimaryPhoto(photo.id)}
+                          className={`inline-flex flex-1 items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-bold ${isPrimaryPhoto
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-white text-slate-700 hover:bg-slate-100"
+                            }`}
+                        >
+                          <Star className="h-3.5 w-3.5" />
+                          Primary
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(photo.id)}
+                          className="inline-flex items-center justify-center rounded-xl bg-red-100 px-3 py-2 text-red-700 hover:bg-red-200"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
         {saveError && (
           <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
             {saveError}
@@ -285,6 +442,7 @@ function createDraftFromProperty(property) {
     name: property.name || "",
     area: property.area || "",
     manager: property.manager || "",
+    managementCompany: property.managementCompany || property.manager || "",
     address: property.address || "",
     city: property.city || "",
     state: property.state || "",
@@ -297,9 +455,52 @@ function createDraftFromProperty(property) {
     status: property.status || "Draft",
     special: property.special || "",
     image: property.image || "",
+    photos: normalizePropertyPhotos(property),
     floorPlans: (property.floorPlans || []).join(", "),
     bedrooms: (property.bedrooms || []).join(", "),
   };
+}
+
+function normalizePropertyPhotos(property) {
+  if (property.photos?.length > 0) {
+    return property.photos.map((photo, index) => ({
+      id: photo.id || `${property.id}-photo-${index}`,
+      name: photo.name || `Photo ${index + 1}`,
+      url: photo.url,
+      category: photo.category || "Property",
+    }));
+  }
+
+  if (property.image) {
+    return [
+      {
+        id: `${property.id}-primary-photo`,
+        name: `${property.name} primary photo`,
+        url: property.image,
+        category: "Property",
+      },
+    ];
+  }
+
+  return [];
+}
+
+function readPhotoFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      resolve({
+        id: `${file.name}-${file.lastModified}-${Date.now()}`,
+        name: file.name,
+        url: reader.result,
+        category: "Property",
+      });
+    };
+
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 function splitList(value) {

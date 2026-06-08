@@ -58,6 +58,7 @@ export default function PropertiesTab() {
             property.name,
             property.area,
             property.manager,
+            property.managementCompany,
             property.status,
             property.special,
             property.address,
@@ -186,6 +187,7 @@ export default function PropertiesTab() {
                                             state={property.state}
                                             zipcode={property.zipcode || property.zip}
                                             manager={property.manager}
+                                            managementCompany={property.managementCompany}
                                             rent={property.rent}
                                             status={property.status}
                                             special={property.special}
@@ -283,6 +285,7 @@ function PropertyRow({
     state,
     zipcode,
     manager,
+    managementCompany,
     rent,
     status,
     special,
@@ -305,7 +308,7 @@ function PropertyRow({
                 <div>
                     <p className="font-bold text-slate-900">{name}</p>
                     <p className="mt-1 text-sm text-slate-500">
-                        {location} • Managed by {manager}
+                        {location} • Managed by {managementCompany || manager}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-slate-400">
                         Updated {updated}

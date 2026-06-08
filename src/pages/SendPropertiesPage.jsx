@@ -100,6 +100,8 @@ export default function SendPropertiesPage() {
         property.state,
         property.address,
         property.area,
+        property.managementCompany,
+        property.manager,
       ];
 
       return searchableFields
@@ -304,6 +306,8 @@ export default function SendPropertiesPage() {
               {filteredProperties.length > 0 ? (
                 filteredProperties.map((property) => {
                   const isSelected = selectedPropertyIds.includes(property.id);
+                  const primaryImage = property.photos?.[0]?.url || property.image;
+                  const managerName = property.managementCompany || property.manager;
                   const locationLabel = [
                     property.city,
                     property.state,
@@ -322,7 +326,7 @@ export default function SendPropertiesPage() {
                     >
                       <div className="flex flex-col gap-4 md:flex-row md:items-center">
                         <img
-                          src={property.image}
+                          src={primaryImage}
                           alt={property.name}
                           className="h-32 w-full rounded-2xl object-cover md:w-44"
                         />
@@ -342,7 +346,7 @@ export default function SendPropertiesPage() {
                           </div>
 
                           <p className="mt-1 text-sm font-semibold text-slate-500">
-                            {locationLabel || property.area} - Managed by {property.manager}
+                            {locationLabel || property.area} - Managed by {managerName}
                           </p>
 
                           <div className="mt-4 flex flex-wrap gap-2">

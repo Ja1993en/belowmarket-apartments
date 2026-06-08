@@ -130,9 +130,16 @@ export default function PublicPropertyListing() {
     {/* Usestate start*/ }
     const { propertyId } = useParams();
     const property = getAnyPropertyById(propertyId);
+    const propertyGalleryImages =
+        property?.photos?.length > 0
+            ? property.photos.map((photo, index) => ({
+                category: photo.category || `Photo ${index + 1}`,
+                url: photo.url,
+            }))
+            : galleryImages;
     const [showGallery, setShowGallery] = useState(false);
     const [activePhotoCategory, setActivePhotoCategory] = useState("All");
-    const [selectedPhoto, setSelectedPhoto] = useState(galleryImages[0]);
+    const [selectedPhoto, setSelectedPhoto] = useState(propertyGalleryImages[0]);
     const [floorPlanSort, setFloorPlanSort] = useState("recommended");
     const [activeFloorPlanFilter, setActiveFloorPlanFilter] = useState("All");
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
@@ -141,10 +148,14 @@ export default function PublicPropertyListing() {
 
     const filteredGalleryImages =
         activePhotoCategory === "All"
-            ? galleryImages
-            : galleryImages.filter(
+            ? propertyGalleryImages
+            : propertyGalleryImages.filter(
                 (image) => image.category === activePhotoCategory
             );
+    const photoCategories = [
+        "All",
+        ...new Set(propertyGalleryImages.map((image) => image.category)),
+    ];
 
 
     const filteredFloorPlans =
@@ -389,7 +400,7 @@ export default function PublicPropertyListing() {
                 <div className="rounded-3xl bg-white shadow-sm">                    <div className="grid gap-3 p-3 lg:grid-cols-[2fr_1fr]">
                     <div className="relative h-[280px] overflow-hidden rounded-2xl md:h-[340px]">
                         <img
-                            src={galleryImages[0].url}
+                            src={propertyGalleryImages[0].url}
                             alt={property.name}
                             className="h-full w-full object-cover"
                         />
@@ -398,12 +409,12 @@ export default function PublicPropertyListing() {
                             onClick={() => setShowGallery(true)}
                             className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-sm font-black text-slate-900 shadow-md"
                         >
-                            View {galleryImages.length} Photos
+                            View {propertyGalleryImages.length} Photos
                         </button>
                     </div>
 
                     <div className="hidden h-[340px] grid-rows-3 gap-3 lg:grid">
-                        {galleryImages.slice(1, 4).map((image, index) => (
+                        {propertyGalleryImages.slice(1, 4).map((image, index) => (
                             <div key={image.url} className="relative overflow-hidden rounded-2xl">
                                 <img
                                     src={image.url}
@@ -889,7 +900,7 @@ export default function PublicPropertyListing() {
                                 </h2>
 
                                 <p className="mt-1 text-sm text-slate-500">
-                                    Showing {filteredGalleryImages.length} of {galleryImages.length} photos
+                                    Showing {filteredGalleryImages.length} of {propertyGalleryImages.length} photos
                                 </p>
                             </div>
 
@@ -901,7 +912,7 @@ export default function PublicPropertyListing() {
                             </button>
                         </div>
 
-                        <div className="sticky top-0 z-10 mt-5 flex flex-wrap gap-2 py-4">                            {["All", "Exterior", "Pool", "Kitchen", "Bedroom"].map((category) => (
+                        <div className="sticky top-0 z-10 mt-5 flex flex-wrap gap-2 py-4">                            {photoCategories.map((category) => (
                             <button
                                 key={category}
                                 onClick={() => setActivePhotoCategory(category)}
