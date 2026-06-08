@@ -102,6 +102,7 @@ export default function SendPropertiesPage() {
         property.area,
         property.managementCompany,
         property.manager,
+        property.yearBuilt,
       ];
 
       return searchableFields
@@ -348,6 +349,11 @@ export default function SendPropertiesPage() {
                           <p className="mt-1 text-sm font-semibold text-slate-500">
                             {locationLabel || property.area} - Managed by {managerName}
                           </p>
+                          {property.yearBuilt && (
+                            <p className="mt-1 text-xs font-bold text-slate-400">
+                              Built {property.yearBuilt}
+                            </p>
+                          )}
 
                           <div className="mt-4 flex flex-wrap gap-2">
                             <PropertyBadge label={property.rent} />

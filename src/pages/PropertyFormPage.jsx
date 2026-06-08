@@ -16,6 +16,7 @@ const emptyPropertyDraft = {
   city: "",
   state: "",
   zipcode: "",
+  yearBuilt: "",
   rent: "",
   marketRent: "",
   effectiveRent: "",
@@ -241,6 +242,7 @@ export default function PropertyFormPage() {
       city: propertyDraft.city.trim(),
       state: propertyDraft.state.trim(),
       zipcode: propertyDraft.zipcode.trim(),
+      yearBuilt: propertyDraft.yearBuilt.trim(),
       rent: primaryFloorPlan.rent || "Contact for pricing",
       marketRent: primaryFloorPlan.marketRent,
       effectiveRent: primaryFloorPlan.effectiveRent || primaryFloorPlan.rent,
@@ -356,6 +358,12 @@ export default function PropertyFormPage() {
                 onChange={(value) => updateDraft("zipcode", value)}
               />
             </div>
+            <FormField
+              label="Year Built"
+              type="number"
+              value={propertyDraft.yearBuilt}
+              onChange={(value) => updateDraft("yearBuilt", value)}
+            />
           </div>
         </section>
 
@@ -804,6 +812,7 @@ function createDraftFromProperty(property) {
     city: property.city || "",
     state: property.state || "",
     zipcode: property.zipcode || property.zip || "",
+    yearBuilt: property.yearBuilt || "",
     rent: property.rent || "",
     marketRent: property.marketRent || "",
     effectiveRent: property.effectiveRent || "",

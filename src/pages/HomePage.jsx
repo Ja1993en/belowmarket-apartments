@@ -26,6 +26,7 @@ export default function HomePage() {
             property.city,
             property.state,
             property.zipcode,
+            property.yearBuilt,
         ].filter(Boolean).join(" ").toLowerCase();
 
         const matchesSearch = searchableText.includes(searchTerm.toLowerCase());
@@ -171,6 +172,7 @@ function PropertyCard({ property }) {
                         <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-500">
                             <MapPin className="h-4 w-4" />
                             {property.area}
+                            {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
                         </p>
                     </div>
 

@@ -66,6 +66,7 @@ export default function PropertiesTab() {
             property.state,
             property.zipcode,
             property.zip,
+            property.yearBuilt,
         ].filter(Boolean).join(" ").toLowerCase();
 
         const matchesSearch = text.includes(searchTerm.toLowerCase());
@@ -186,6 +187,7 @@ export default function PropertiesTab() {
                                             city={property.city}
                                             state={property.state}
                                             zipcode={property.zipcode || property.zip}
+                                            yearBuilt={property.yearBuilt}
                                             manager={property.manager}
                                             managementCompany={property.managementCompany}
                                             rent={property.rent}
@@ -284,6 +286,7 @@ function PropertyRow({
     city,
     state,
     zipcode,
+    yearBuilt,
     manager,
     managementCompany,
     rent,
@@ -310,6 +313,11 @@ function PropertyRow({
                     <p className="mt-1 text-sm text-slate-500">
                         {location} • Managed by {managementCompany || manager}
                     </p>
+                    {yearBuilt && (
+                        <p className="mt-1 text-xs font-semibold text-slate-400">
+                            Built {yearBuilt}
+                        </p>
+                    )}
                     <p className="mt-1 text-xs font-semibold text-slate-400">
                         Updated {updated}
                     </p>

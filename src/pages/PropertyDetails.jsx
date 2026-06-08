@@ -370,6 +370,7 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                         ) : (
                             <InfoBox label="Market Area" value={property.area} />
                         )}                        <InfoBox label="Property Manager" value={property.manager} />
+                        <InfoBox label="Year Built" value={property.yearBuilt || "Not set"} />
                         {isEditing ? (
                             <label className="rounded-2xl bg-slate-50 p-4">
                                 <span className="text-sm font-semibold text-slate-500">

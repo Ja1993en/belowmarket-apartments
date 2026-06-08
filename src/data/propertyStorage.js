@@ -92,6 +92,7 @@ export function createStoredProperty(propertyDraft) {
     city: propertyDraft.city,
     state: propertyDraft.state,
     zipcode: propertyDraft.zipcode,
+    yearBuilt: propertyDraft.yearBuilt,
     rent: propertyDraft.rent,
     marketRent: propertyDraft.marketRent,
     effectiveRent: propertyDraft.effectiveRent,

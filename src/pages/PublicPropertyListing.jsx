@@ -496,6 +496,7 @@ export default function PublicPropertyListing() {
 
                                 <p className="mt-2 text-slate-500">
                                     {property.area} • Starting at {property.rent}
+                                    {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
                                 </p>
 
 
