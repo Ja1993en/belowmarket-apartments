@@ -119,16 +119,20 @@ export default function LeadsTab() {
       setIsCreatingTestLead(true);
       setTestLeadMessage("");
 
-      if (isLocalFallbackEnabled) {
-        saveLocalLead(leadPayload);
-      } else {
-        await saveSupabaseLead(leadPayload);
-      }
+      await saveSupabaseLead(leadPayload);
 
       await loadLeads({ prepareLoad: false });
       setTestLeadMessage("Test lead created. Use it to verify recommendations and tour requests.");
     } catch (error) {
       console.error(error);
+
+      if (isLocalFallbackEnabled) {
+        saveLocalLead(leadPayload);
+        await loadLeads({ prepareLoad: false });
+        setTestLeadMessage("Test lead saved locally because Supabase could not be reached.");
+        return;
+      }
+
       setTestLeadMessage("Could not create the test lead. Check the Supabase connection.");
     } finally {
       setIsCreatingTestLead(false);
