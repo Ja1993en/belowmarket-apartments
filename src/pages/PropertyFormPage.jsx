@@ -129,6 +129,63 @@ export default function PropertyFormPage() {
     }));
   };
 
+  const updateFloorPlanAvailability = (floorPlanId, availabilityId, field, value) => {
+    setPropertyDraft((currentDraft) => ({
+      ...currentDraft,
+      floorPlans: currentDraft.floorPlans.map((floorPlan) =>
+        floorPlan.id === floorPlanId
+          ? {
+              ...floorPlan,
+              availableUnits: floorPlan.availableUnits.map((availableUnit) =>
+                availableUnit.id === availabilityId
+                  ? {
+                      ...availableUnit,
+                      [field]: value,
+                    }
+                  : availableUnit
+              ),
+            }
+          : floorPlan
+      ),
+    }));
+  };
+
+  const addFloorPlanAvailability = (floorPlanId) => {
+    setPropertyDraft((currentDraft) => ({
+      ...currentDraft,
+      floorPlans: currentDraft.floorPlans.map((floorPlan) =>
+        floorPlan.id === floorPlanId
+          ? {
+              ...floorPlan,
+              availableUnits: [
+                ...floorPlan.availableUnits,
+                createBlankAvailableUnit(),
+              ],
+            }
+          : floorPlan
+      ),
+    }));
+  };
+
+  const removeFloorPlanAvailability = (floorPlanId, availabilityId) => {
+    setPropertyDraft((currentDraft) => ({
+      ...currentDraft,
+      floorPlans: currentDraft.floorPlans.map((floorPlan) =>
+        floorPlan.id === floorPlanId
+          ? {
+              ...floorPlan,
+              availableUnits:
+                floorPlan.availableUnits.length > 1
+                  ? floorPlan.availableUnits.filter(
+                      (availableUnit) => availableUnit.id !== availabilityId
+                    )
+                  : floorPlan.availableUnits,
+            }
+          : floorPlan
+      ),
+    }));
+  };
+
   const addFloorPlan = () => {
     setPropertyDraft((currentDraft) => ({
       ...currentDraft,
@@ -357,6 +414,9 @@ export default function PropertyFormPage() {
                 canRemove={propertyDraft.floorPlans.length > 1}
                 onChange={updateFloorPlan}
                 onRemove={removeFloorPlan}
+                onAvailabilityChange={updateFloorPlanAvailability}
+                onAvailabilityAdd={addFloorPlanAvailability}
+                onAvailabilityRemove={removeFloorPlanAvailability}
               />
             ))}
           </div>
@@ -463,7 +523,16 @@ export default function PropertyFormPage() {
   );
 }
 
-function FloorPlanEditor({ floorPlan, index, canRemove, onChange, onRemove }) {
+function FloorPlanEditor({
+  floorPlan,
+  index,
+  canRemove,
+  onChange,
+  onRemove,
+  onAvailabilityChange,
+  onAvailabilityAdd,
+  onAvailabilityRemove,
+}) {
   const calculatedValues = calculateFloorPlanValues(floorPlan);
 
   return (
@@ -558,11 +627,6 @@ function FloorPlanEditor({ floorPlan, index, canRemove, onChange, onRemove }) {
           label="Below Market Percent"
           value={calculatedValues.belowMarketPercent}
         />
-        <FormField
-          label="Availability"
-          value={floorPlan.availability}
-          onChange={(value) => onChange(floorPlan.id, "availability", value)}
-        />
         <label className="rounded-2xl bg-white p-4">
           <span className="text-sm font-semibold text-slate-500">
             Status
@@ -589,18 +653,125 @@ function FloorPlanEditor({ floorPlan, index, canRemove, onChange, onRemove }) {
           />
         </label>
       </div>
+
+      <div className="mt-5 rounded-2xl bg-white p-4">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <h4 className="text-base font-black text-slate-900">
+              Available Dates
+            </h4>
+            <p className="mt-1 text-sm text-slate-500">
+              {floorPlan.availableUnits.length} availability row
+              {floorPlan.availableUnits.length === 1 ? "" : "s"}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onAvailabilityAdd(floorPlan.id)}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800"
+          >
+            <Plus className="h-4 w-4" />
+            Add Date
+          </button>
+        </div>
+
+        <div className="mt-4 space-y-3">
+          {floorPlan.availableUnits.map((availableUnit, availabilityIndex) => (
+            <div
+              key={availableUnit.id}
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+            >
+              <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                <p className="text-sm font-black text-slate-900">
+                  Availability {availabilityIndex + 1}
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    onAvailabilityRemove(floorPlan.id, availableUnit.id)
+                  }
+                  disabled={floorPlan.availableUnits.length === 1}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-100 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-200 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Remove
+                </button>
+              </div>
+
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                <FormField
+                  label="Unit"
+                  value={availableUnit.unit}
+                  onChange={(value) =>
+                    onAvailabilityChange(floorPlan.id, availableUnit.id, "unit", value)
+                  }
+                />
+                <FormField
+                  label="Available Date"
+                  type="date"
+                  value={availableUnit.availableDate}
+                  onChange={(value) =>
+                    onAvailabilityChange(
+                      floorPlan.id,
+                      availableUnit.id,
+                      "availableDate",
+                      value
+                    )
+                  }
+                />
+                <FormField
+                  label="Unit Rent"
+                  value={availableUnit.rent}
+                  onChange={(value) =>
+                    onAvailabilityChange(floorPlan.id, availableUnit.id, "rent", value)
+                  }
+                />
+                <label className="rounded-2xl bg-white p-4">
+                  <span className="text-sm font-semibold text-slate-500">
+                    Unit Status
+                  </span>
+                  <select
+                    value={availableUnit.status}
+                    onChange={(event) =>
+                      onAvailabilityChange(
+                        floorPlan.id,
+                        availableUnit.id,
+                        "status",
+                        event.target.value
+                      )
+                    }
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                  >
+                    <option value="available">Available</option>
+                    <option value="pending">Pending</option>
+                    <option value="leased">Leased</option>
+                  </select>
+                </label>
+                <FormField
+                  label="Note"
+                  value={availableUnit.notes}
+                  onChange={(value) =>
+                    onAvailabilityChange(floorPlan.id, availableUnit.id, "notes", value)
+                  }
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-function FormField({ label, value, onChange, required = false }) {
+function FormField({ label, value, onChange, required = false, type = "text" }) {
   return (
     <label className="rounded-2xl bg-slate-50 p-4">
       <span className="text-sm font-semibold text-slate-500">
         {label}
       </span>
       <input
-        type="text"
+        type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         required={required}
@@ -663,6 +834,18 @@ function createBlankFloorPlan() {
     freeWeeks: "0",
     leaseTermMonths: "12",
     availability: "",
+    availableUnits: [createBlankAvailableUnit()],
+    status: "available",
+    notes: "",
+  };
+}
+
+function createBlankAvailableUnit() {
+  return {
+    id: `availability-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    unit: "",
+    availableDate: "",
+    rent: "",
     status: "available",
     notes: "",
   };
@@ -682,6 +865,7 @@ function normalizeFloorPlansForDraft(property) {
           marketRent: property.marketRent || "",
           freeWeeks: "0",
           leaseTermMonths: "12",
+          availableUnits: normalizeAvailableUnitsForDraft([], property.rent || ""),
           };
       }
 
@@ -700,6 +884,10 @@ function normalizeFloorPlansForDraft(property) {
         freeWeeks: String(parsedFreeWeeks || 0),
         leaseTermMonths: String(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12),
         availability: floorPlan.availability || floorPlan.available || "",
+        availableUnits: normalizeAvailableUnitsForDraft(
+          floorPlan.availableUnits,
+          floorPlan.startingRent || floorPlan.rent || ""
+        ),
         status: floorPlan.status || "available",
         notes: floorPlan.notes || "",
       };
@@ -716,6 +904,17 @@ function normalizeFloorPlanForStorage(floorPlan) {
   const freeWeeks = Number(floorPlan.freeWeeks || 0);
   const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
   const currentSpecial = getSpecialLabel(freeWeeks);
+  const availableUnits = floorPlan.availableUnits
+    .map((availableUnit, index) =>
+      normalizeAvailableUnitForStorage(
+        availableUnit,
+        index,
+        floorPlan.startingRent
+      )
+    )
+    .filter((availableUnit) =>
+      [availableUnit.unit, availableUnit.availableDate, availableUnit.rent].some(Boolean)
+    );
 
   return {
     id: floorPlan.id,
@@ -743,12 +942,77 @@ function normalizeFloorPlanForStorage(floorPlan) {
           label: currentSpecial,
         }
       : null,
-    availability: floorPlan.availability.trim(),
-    available: floorPlan.availability.trim(),
+    availability: getFloorPlanAvailabilityLabel(availableUnits),
+    available: getFloorPlanAvailabilityLabel(availableUnits),
     status: floorPlan.status,
     notes: floorPlan.notes.trim(),
-    availableUnits: [],
+    availableUnits,
   };
+}
+
+function normalizeAvailableUnitsForDraft(availableUnits = [], defaultRent = "") {
+  if (availableUnits.length === 0) {
+    return [createBlankAvailableUnit()];
+  }
+
+  return availableUnits.map((availableUnit, index) => ({
+    ...createBlankAvailableUnit(),
+    id: availableUnit.id || `availability-${index}`,
+    unit: availableUnit.unit || "",
+    availableDate: availableUnit.availableDate || getDateFromAvailabilityLabel(availableUnit.available),
+    rent: availableUnit.rent || defaultRent,
+    status: availableUnit.status || "available",
+    notes: availableUnit.notes || "",
+  }));
+}
+
+function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
+  const unitLabel = availableUnit.unit.trim() || `Option ${index + 1}`;
+  const availableDate = availableUnit.availableDate;
+
+  return {
+    id: availableUnit.id,
+    unit: unitLabel,
+    availableDate,
+    available: formatAvailableDate(availableDate),
+    rent: availableUnit.rent.trim() || defaultRent.trim(),
+    status: availableUnit.status,
+    notes: availableUnit.notes.trim(),
+    requestCount: 0,
+  };
+}
+
+function getFloorPlanAvailabilityLabel(availableUnits) {
+  if (availableUnits.length === 0) return "";
+  return `${availableUnits.length} available`;
+}
+
+function formatAvailableDate(value) {
+  if (!value) return "Available Now";
+
+  const [year, month, day] = value.split("-");
+  if (!year || !month || !day) return value;
+
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  return `Available ${date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })}`;
+}
+
+function getDateFromAvailabilityLabel(label) {
+  const value = String(label || "");
+  if (!value || value === "Available Now") return "";
+
+  const parsedDate = new Date(value.replace(/^Available\s+/i, ""));
+  if (Number.isNaN(parsedDate.getTime())) return "";
+
+  return [
+    parsedDate.getFullYear(),
+    String(parsedDate.getMonth() + 1).padStart(2, "0"),
+    String(parsedDate.getDate()).padStart(2, "0"),
+  ].join("-");
 }
 
 function calculateFloorPlanValues(floorPlan) {

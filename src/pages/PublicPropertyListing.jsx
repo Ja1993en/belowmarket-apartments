@@ -1151,6 +1151,17 @@ export default function PublicPropertyListing() {
                                                                     Available Now
                                                                 </span>
                                                             )}
+
+                                                            {unit.status && (
+                                                                <span className={`rounded-full px-2 py-1 text-xs font-bold ${unit.status === "available"
+                                                                    ? "bg-emerald-100 text-emerald-700"
+                                                                    : unit.status === "pending"
+                                                                        ? "bg-amber-100 text-amber-700"
+                                                                        : "bg-slate-200 text-slate-700"
+                                                                    }`}>
+                                                                    {unit.status}
+                                                                </span>
+                                                            )}
                                                         </div>
 
                                                         {unit.available !== "Available Now" && (
