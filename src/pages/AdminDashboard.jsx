@@ -6,6 +6,10 @@ import { getAllLeads, getStoredTourRequests } from "../data/leadStorage";
 import { getSupabaseLeads } from "../data/supabaseLeadStorage";
 import { getSupabaseTourRequestsForLead } from "../data/supabaseTourStorage";
 import {
+    isLocalFallbackEnabled,
+    localFallbackMessage,
+} from "../data/supabaseClient";
+import {
     Building2,
     Users,
     Send,
@@ -79,9 +83,11 @@ const setupChecklist = [
 
 export default function AdminDashboard() {
     const properties = getAllProperties();
-    const [dashboardLeads, setDashboardLeads] = useState(leads);
+    const [dashboardLeads, setDashboardLeads] = useState(
+        isLocalFallbackEnabled ? leads : []
+    );
     const [dashboardTourRequests, setDashboardTourRequests] = useState(
-        getStoredTourRequests()
+        isLocalFallbackEnabled ? getStoredTourRequests() : []
     );
     const [dashboardLoadedAt, setDashboardLoadedAt] = useState(null);
     const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
@@ -107,10 +113,19 @@ export default function AdminDashboard() {
             setDashboardLoadedAt(new Date());
         } catch (error) {
             console.error(error);
-            setDashboardLeads(getAllLeads());
-            setDashboardTourRequests(getStoredTourRequests());
-            setIsUsingFallbackDashboardData(true);
-            setDashboardError("Supabase could not be reached. Showing local fallback dashboard data.");
+
+            if (isLocalFallbackEnabled) {
+                setDashboardLeads(getAllLeads());
+                setDashboardTourRequests(getStoredTourRequests());
+                setIsUsingFallbackDashboardData(true);
+                setDashboardError(localFallbackMessage);
+            } else {
+                setDashboardLeads([]);
+                setDashboardTourRequests([]);
+                setIsUsingFallbackDashboardData(false);
+                setDashboardError("Supabase could not be reached. Check the production connection.");
+            }
+
             setDashboardLoadedAt(new Date());
         } finally {
             setIsLoadingDashboard(false);

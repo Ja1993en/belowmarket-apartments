@@ -4,6 +4,10 @@ import { Clock3, Mail, Phone, Search, Send, Users } from "lucide-react";
 import { getSupabaseLeads } from "../data/supabaseLeadStorage";
 import { getSupabaseTourRequestsForLead } from "../data/supabaseTourStorage";
 import {
+  isLocalFallbackEnabled,
+  localFallbackMessage,
+} from "../data/supabaseClient";
+import {
   getAllLeads,
   getLeadActivitiesForLead,
   getTourRequestsForLead,
@@ -50,10 +54,18 @@ export default function LeadsTab() {
     } catch (error) {
       console.error(error);
 
-      setSavedLeads(getAllLeads());
-      setSupabaseTourRequestsByLeadId({});
-      setIsUsingFallbackData(true);
-      setLoadError("Supabase could not be reached. Showing local fallback data.");
+      if (isLocalFallbackEnabled) {
+        setSavedLeads(getAllLeads());
+        setSupabaseTourRequestsByLeadId({});
+        setIsUsingFallbackData(true);
+        setLoadError(localFallbackMessage);
+      } else {
+        setSavedLeads([]);
+        setSupabaseTourRequestsByLeadId({});
+        setIsUsingFallbackData(false);
+        setLoadError("Supabase could not be reached. Check the production connection.");
+      }
+
       setLastLoadedAt(new Date());
     } finally {
       setIsLoadingLeads(false);
@@ -71,7 +83,10 @@ export default function LeadsTab() {
   const leads = savedLeads;
   
   const getLeadTourRequests = (lead) => {
-    return supabaseTourRequestsByLeadId[lead.id] || getTourRequestsForLead(lead.id);
+    return (
+      supabaseTourRequestsByLeadId[lead.id] ||
+      (isLocalFallbackEnabled ? getTourRequestsForLead(lead.id) : [])
+    );
   };
 
 

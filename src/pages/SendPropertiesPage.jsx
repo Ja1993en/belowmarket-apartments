@@ -7,11 +7,12 @@ import {
   getSupabaseLeadById,
   updateSupabaseLeadRecommendations,
 } from "../data/supabaseLeadStorage";
+import { isLocalFallbackEnabled } from "../data/supabaseClient";
 
 
 export default function SendPropertiesPage() {
   const { leadId } = useParams();
-  const initialLead = getAnyLeadById(leadId);
+  const initialLead = isLocalFallbackEnabled ? getAnyLeadById(leadId) : null;
   const [lead, setLead] = useState(initialLead);
   const [isLoadingLead, setIsLoadingLead] = useState(!initialLead);
 

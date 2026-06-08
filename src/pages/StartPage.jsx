@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { saveLocalLead } from "../data/leadStorage";
 import { saveSupabaseLead } from "../data/supabaseLeadStorage";
+import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { getAnyPropertyById } from "../data/propertyStorage";
 const emptyForm = {
   name: "",
@@ -70,15 +71,18 @@ export default function StartPage() {
 
       const savedLead = await saveSupabaseLead(leadPayload);
 
-      saveLocalLead({
-        ...leadPayload,
-        id: savedLead.id,
-      });
-
-      setCreatedLeadId(leadPayload.id);
+      setCreatedLeadId(savedLead.id);
       setSubmitted(true);
     } catch (error) {
       console.error(error);
+
+      if (isLocalFallbackEnabled) {
+        saveLocalLead(leadPayload);
+        setCreatedLeadId(leadPayload.id);
+        setSubmitted(true);
+        return;
+      }
+
       setFormError("Something went wrong while saving your request. Please try again.");
     } finally {
       setIsSubmitting(false);

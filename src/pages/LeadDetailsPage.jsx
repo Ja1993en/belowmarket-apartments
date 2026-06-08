@@ -10,6 +10,7 @@ import {
     getSupabaseTourRequestsForLead,
     updateSupabaseTourRequestStatus,
 } from "../data/supabaseTourStorage";
+import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import {
     ArrowLeft,
     CalendarDays,
@@ -34,7 +35,10 @@ import {
 export default function LeadDetailsPage() {
     const { leadId } = useParams();
     const navigate = useNavigate();
-    const initialLead = useMemo(() => getAnyLeadById(leadId), [leadId]);
+    const initialLead = useMemo(
+        () => (isLocalFallbackEnabled ? getAnyLeadById(leadId) : null),
+        [leadId]
+    );
     const [lead, setLead] = useState(initialLead);
     const [isLoadingLead, setIsLoadingLead] = useState(!initialLead);
     const [notesDraft, setNotesDraft] = useState(initialLead?.notes || "");

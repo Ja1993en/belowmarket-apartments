@@ -4,6 +4,11 @@ import { Copy, ExternalLink, Mail, MessageSquare, Phone } from "lucide-react";
 import { getAnyPropertyById } from "../data/propertyStorage";
 import { getSupabaseLeadById } from "../data/supabaseLeadStorage";
 import {
+  getSupabaseTourRequestsForLead,
+  updateSupabaseTourRequestStatus,
+} from "../data/supabaseTourStorage";
+import { isLocalFallbackEnabled } from "../data/supabaseClient";
+import {
   getAnyLeadById,
   getTourRequestsForLead,
   saveLeadActivity,
@@ -12,7 +17,8 @@ import {
 
 export default function LeadMessagePage() {
   const { leadId } = useParams();
-  const initialLead = getAnyLeadById(leadId);
+  const initialLead = isLocalFallbackEnabled ? getAnyLeadById(leadId) : null;
+  const isLocalLead = Boolean(initialLead);
   const [lead, setLead] = useState(initialLead);
   const [, setIsLoadingLead] = useState(!initialLead);
   const recommendedProperties = useMemo(
@@ -25,7 +31,7 @@ export default function LeadMessagePage() {
     [lead]
   );
   const [tourRequests, setTourRequests] = useState(() =>
-      [...getTourRequestsForLead(leadId)].sort((a, b) =>
+      [...(initialLead ? getTourRequestsForLead(leadId) : [])].sort((a, b) =>
         String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
       )
     );
@@ -44,8 +50,10 @@ export default function LeadMessagePage() {
         setIsLoadingLead(true);
 
         const supabaseLead = await getSupabaseLeadById(leadId);
+        const supabaseTourRequests = await getSupabaseTourRequestsForLead(leadId);
 
         setLead(supabaseLead);
+        setTourRequests(supabaseTourRequests);
       } catch (error) {
         console.error(error);
       } finally {
@@ -118,29 +126,39 @@ export default function LeadMessagePage() {
     }, 2000);
   };
 
-  const markTourFollowedUp = () => {
+  const markTourFollowedUp = async () => {
     if (!latestTourRequest) return;
 
-    const updatedTourRequests = updateTourRequestStatus(
-      leadId,
-      latestTourRequest.id,
-      "Followed Up"
-    );
+    try {
+      if (isLocalLead) {
+        const updatedTourRequests = updateTourRequestStatus(
+          leadId,
+          latestTourRequest.id,
+          "Followed Up"
+        );
 
+        saveLeadActivity({
+          leadId,
+          title: "Tour followed up",
+          description: `${latestTourRequest.propertyName || "A property"} follow-up completed.`,
+        });
 
-    saveLeadActivity({
-      leadId,
-      title: "Tour followed up",
-      description: `${latestTourRequest.propertyName || "A property"} follow-up completed.`,
-    });
+        setTourRequests(
+          updatedTourRequests
+            .filter((request) => request.leadId === String(leadId))
+            .sort((a, b) =>
+              String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
+            )
+        );
+        return;
+      }
 
-    setTourRequests(
-      updatedTourRequests
-        .filter((request) => request.leadId === String(leadId))
-        .sort((a, b) =>
-          String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
-        )
-    );
+      await updateSupabaseTourRequestStatus(latestTourRequest.id, "Followed Up");
+      setTourRequests(await getSupabaseTourRequestsForLead(leadId));
+    } catch (error) {
+      console.error(error);
+      alert("Could not mark this tour request as followed up.");
+    }
   };
 
   if (!lead) {

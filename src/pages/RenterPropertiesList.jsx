@@ -6,6 +6,7 @@ import {
   getSupabaseTourRequestsForLead,
   saveSupabaseTourRequest,
 } from "../data/supabaseTourStorage";
+import { isLocalFallbackEnabled } from "../data/supabaseClient";
 
 import {
   getAnyLeadByToken,
@@ -17,7 +18,10 @@ import { getAnyPropertyById } from "../data/propertyStorage";
 
 export default function RenterPropertiesList() {
   const { token } = useParams();
-  const localFallbackLead = useMemo(() => getAnyLeadByToken(token), [token]);
+  const localFallbackLead = useMemo(
+    () => (isLocalFallbackEnabled ? getAnyLeadByToken(token) : null),
+    [token]
+  );
   const [lead, setLead] = useState(null);
   const [isLoadingLead, setIsLoadingLead] = useState(true);
   const [isLocalFallbackLead, setIsLocalFallbackLead] = useState(false);
