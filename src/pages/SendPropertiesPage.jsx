@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CheckCircle2, Copy, ExternalLink, Send } from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, Search, Send } from "lucide-react";
 import { getAnyLeadById, updateLocalLead } from "../data/leadStorage";
 import { getAllProperties } from "../data/propertyStorage";
 import {
@@ -19,6 +19,7 @@ export default function SendPropertiesPage() {
   const [isSavingSelections, setIsSavingSelections] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
+  const [propertySearch, setPropertySearch] = useState("");
   const properties = useMemo(() => getAllProperties(), []);
   const recommendedPropertyIds = lead?.recommendedPropertyIds || [];
 
@@ -84,6 +85,30 @@ export default function SendPropertiesPage() {
       selectedPropertyIds.includes(property.id)
     );
   }, [properties, selectedPropertyIds]);
+
+  const normalizedPropertySearch = propertySearch.trim().toLowerCase();
+
+  const filteredProperties = useMemo(() => {
+    if (!normalizedPropertySearch) return properties;
+
+    return properties.filter((property) => {
+      const searchableFields = [
+        property.name,
+        property.zipcode,
+        property.zip,
+        property.city,
+        property.state,
+        property.address,
+        property.area,
+      ];
+
+      return searchableFields
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedPropertySearch);
+    });
+  }, [properties, normalizedPropertySearch]);
 
   const toggleProperty = async (propertyId) => {
     if (!lead) return;
@@ -258,56 +283,86 @@ export default function SendPropertiesPage() {
               </div>
             </div>
 
+            <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center">
+              <label className="relative block flex-1">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="search"
+                  value={propertySearch}
+                  onChange={(event) => setPropertySearch(event.target.value)}
+                  placeholder="Search property name, ZIP, city, or state"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm font-bold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:bg-white"
+                />
+              </label>
+
+              <p className="text-sm font-bold text-slate-500 md:min-w-36 md:text-right">
+                Showing {filteredProperties.length} of {properties.length}
+              </p>
+            </div>
+
             <div className="mt-6 space-y-4">
-              {properties.map((property) => {
-                const isSelected = selectedPropertyIds.includes(property.id);
+              {filteredProperties.length > 0 ? (
+                filteredProperties.map((property) => {
+                  const isSelected = selectedPropertyIds.includes(property.id);
+                  const locationLabel = [
+                    property.city,
+                    property.state,
+                    property.zipcode || property.zip,
+                  ].filter(Boolean).join(", ");
 
-                return (
-                  <button
-                    type="button"
-                    key={property.id}
-                    onClick={() => toggleProperty(property.id)}
-                    className={`w-full rounded-2xl border p-4 text-left transition ${isSelected
-                      ? "border-slate-950 bg-slate-50"
-                      : "border-slate-200 bg-white hover:bg-slate-50"
-                      }`}
-                  >
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                      <img
-                        src={property.image}
-                        alt={property.name}
-                        className="h-32 w-full rounded-2xl object-cover md:w-44"
-                      />
+                  return (
+                    <button
+                      type="button"
+                      key={property.id}
+                      onClick={() => toggleProperty(property.id)}
+                      className={`w-full rounded-2xl border p-4 text-left transition ${isSelected
+                        ? "border-slate-950 bg-slate-50"
+                        : "border-slate-200 bg-white hover:bg-slate-50"
+                        }`}
+                    >
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                        <img
+                          src={property.image}
+                          alt={property.name}
+                          className="h-32 w-full rounded-2xl object-cover md:w-44"
+                        />
 
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="text-xl font-black text-slate-900">
-                            {property.name}
-                          </h3>
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <h3 className="text-xl font-black text-slate-900">
+                              {property.name}
+                            </h3>
 
-                          {isSelected && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                              <CheckCircle2 className="h-4 w-4" />
-                              Selected
-                            </span>
-                          )}
-                        </div>
+                            {isSelected && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                                <CheckCircle2 className="h-4 w-4" />
+                                Selected
+                              </span>
+                            )}
+                          </div>
 
-                        <p className="mt-1 text-sm font-semibold text-slate-500">
-                          {property.area} - Managed by {property.manager}
-                        </p>
+                          <p className="mt-1 text-sm font-semibold text-slate-500">
+                            {locationLabel || property.area} - Managed by {property.manager}
+                          </p>
 
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          <PropertyBadge label={property.rent} />
-                          <PropertyBadge label={property.special} />
-                          <PropertyBadge label={`${property.belowMarketPercent} below market`} />
-                          <PropertyBadge label={`Save ${property.savings}`} />
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <PropertyBadge label={property.rent} />
+                            <PropertyBadge label={property.special} />
+                            <PropertyBadge label={`${property.belowMarketPercent} below market`} />
+                            <PropertyBadge label={`Save ${property.savings}`} />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                  <p className="text-sm font-bold text-slate-700">
+                    No properties match "{propertySearch.trim()}".
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </section>
