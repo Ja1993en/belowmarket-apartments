@@ -31,6 +31,9 @@ const emptyPropertyDraft = {
 
 const MAX_UPLOAD_COUNT = 8;
 const MAX_UPLOAD_SIZE = 1.5 * 1024 * 1024;
+const WEEKS_PER_MONTH = 4.345;
+const WEEKS_FREE_OPTIONS = Array.from({ length: 25 }, (_, index) => index * 0.5);
+const LEASE_TERM_OPTIONS = ["6", "9", "12", "13", "14", "15", "18"];
 
 export default function PropertyFormPage() {
   const { propertyId } = useParams();
@@ -181,16 +184,12 @@ export default function PropertyFormPage() {
       city: propertyDraft.city.trim(),
       state: propertyDraft.state.trim(),
       zipcode: propertyDraft.zipcode.trim(),
-      rent: propertyDraft.rent.trim() || primaryFloorPlan.rent || "Contact for pricing",
-      marketRent: propertyDraft.marketRent.trim() || primaryFloorPlan.marketRent,
-      effectiveRent:
-        propertyDraft.effectiveRent.trim() ||
-        primaryFloorPlan.effectiveRent ||
-        primaryFloorPlan.rent,
-      savings: propertyDraft.savings.trim() || primaryFloorPlan.savings,
-      belowMarketPercent:
-        propertyDraft.belowMarketPercent.trim() || primaryFloorPlan.belowMarketPercent,
-      special: propertyDraft.special.trim() || primaryFloorPlan.currentSpecial,
+      rent: primaryFloorPlan.rent || "Contact for pricing",
+      marketRent: primaryFloorPlan.marketRent,
+      effectiveRent: primaryFloorPlan.effectiveRent || primaryFloorPlan.rent,
+      savings: primaryFloorPlan.savings,
+      belowMarketPercent: primaryFloorPlan.belowMarketPercent,
+      special: primaryFloorPlan.currentSpecial,
       image: propertyDraft.image.trim() || propertyDraft.photos[0]?.url || "",
       photos: propertyDraft.photos,
       floorPlans,
@@ -305,31 +304,6 @@ export default function PropertyFormPage() {
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-2">
-            <FormField
-              label="Starting Rent"
-              value={propertyDraft.rent}
-              onChange={(value) => updateDraft("rent", value)}
-            />
-            <FormField
-              label="Effective Rent"
-              value={propertyDraft.effectiveRent}
-              onChange={(value) => updateDraft("effectiveRent", value)}
-            />
-            <FormField
-              label="Market Rent"
-              value={propertyDraft.marketRent}
-              onChange={(value) => updateDraft("marketRent", value)}
-            />
-            <FormField
-              label="Savings"
-              value={propertyDraft.savings}
-              onChange={(value) => updateDraft("savings", value)}
-            />
-            <FormField
-              label="Below Market Percent"
-              value={propertyDraft.belowMarketPercent}
-              onChange={(value) => updateDraft("belowMarketPercent", value)}
-            />
             <label className="rounded-2xl bg-slate-50 p-4">
               <span className="text-sm font-semibold text-slate-500">
                 Listing Status
@@ -344,11 +318,6 @@ export default function PropertyFormPage() {
                 <option>Draft</option>
               </select>
             </label>
-            <FormField
-              label="Current Special"
-              value={propertyDraft.special}
-              onChange={(value) => updateDraft("special", value)}
-            />
             <FormField
               label="Image URL"
               value={propertyDraft.image}
@@ -381,133 +350,14 @@ export default function PropertyFormPage() {
 
           <div className="mt-5 space-y-5">
             {propertyDraft.floorPlans.map((floorPlan, index) => (
-              <div
+              <FloorPlanEditor
                 key={floorPlan.id}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-              >
-                <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-                  <h3 className="text-lg font-black text-slate-900">
-                    Floor Plan {index + 1}
-                  </h3>
-
-                  <button
-                    type="button"
-                    onClick={() => removeFloorPlan(floorPlan.id)}
-                    disabled={propertyDraft.floorPlans.length === 1}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-100 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-200 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
-                  >
-                    <X className="h-4 w-4" />
-                    Remove
-                  </button>
-                </div>
-
-                <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  <FormField
-                    label="Floor Plan Name"
-                    value={floorPlan.name}
-                    onChange={(value) => updateFloorPlan(floorPlan.id, "name", value)}
-                  />
-                  <FormField
-                    label="Bedrooms"
-                    value={floorPlan.bedrooms}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "bedrooms", value)
-                    }
-                  />
-                  <FormField
-                    label="Bathrooms"
-                    value={floorPlan.bathrooms}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "bathrooms", value)
-                    }
-                  />
-                  <FormField
-                    label="Square Feet"
-                    value={floorPlan.squareFeet}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "squareFeet", value)
-                    }
-                  />
-                  <FormField
-                    label="Starting Rent"
-                    value={floorPlan.startingRent}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "startingRent", value)
-                    }
-                  />
-                  <FormField
-                    label="Effective Rent"
-                    value={floorPlan.effectiveRent}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "effectiveRent", value)
-                    }
-                  />
-                  <FormField
-                    label="Market Rent"
-                    value={floorPlan.marketRent}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "marketRent", value)
-                    }
-                  />
-                  <FormField
-                    label="Savings"
-                    value={floorPlan.savings}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "savings", value)
-                    }
-                  />
-                  <FormField
-                    label="Below Market Percent"
-                    value={floorPlan.belowMarketPercent}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "belowMarketPercent", value)
-                    }
-                  />
-                  <FormField
-                    label="Current Special"
-                    value={floorPlan.currentSpecial}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "currentSpecial", value)
-                    }
-                  />
-                  <FormField
-                    label="Availability"
-                    value={floorPlan.availability}
-                    onChange={(value) =>
-                      updateFloorPlan(floorPlan.id, "availability", value)
-                    }
-                  />
-                  <label className="rounded-2xl bg-white p-4">
-                    <span className="text-sm font-semibold text-slate-500">
-                      Status
-                    </span>
-                    <select
-                      value={floorPlan.status}
-                      onChange={(event) =>
-                        updateFloorPlan(floorPlan.id, "status", event.target.value)
-                      }
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
-                    >
-                      <option value="available">Available</option>
-                      <option value="limited">Limited</option>
-                      <option value="unavailable">Unavailable</option>
-                    </select>
-                  </label>
-                  <label className="rounded-2xl bg-white p-4 md:col-span-2 xl:col-span-3">
-                    <span className="text-sm font-semibold text-slate-500">
-                      Notes
-                    </span>
-                    <input
-                      type="text"
-                      value={floorPlan.notes}
-                      onChange={(event) =>
-                        updateFloorPlan(floorPlan.id, "notes", event.target.value)
-                      }
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
-                    />
-                  </label>
-                </div>
-              </div>
+                floorPlan={floorPlan}
+                index={index}
+                canRemove={propertyDraft.floorPlans.length > 1}
+                onChange={updateFloorPlan}
+                onRemove={removeFloorPlan}
+              />
             ))}
           </div>
         </section>
@@ -613,6 +463,136 @@ export default function PropertyFormPage() {
   );
 }
 
+function FloorPlanEditor({ floorPlan, index, canRemove, onChange, onRemove }) {
+  const calculatedValues = calculateFloorPlanValues(floorPlan);
+
+  return (
+    <div
+      key={floorPlan.id}
+      className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+    >
+      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+        <h3 className="text-lg font-black text-slate-900">
+          Floor Plan {index + 1}
+        </h3>
+
+        <button
+          type="button"
+          onClick={() => onRemove(floorPlan.id)}
+          disabled={!canRemove}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-100 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-200 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+        >
+          <X className="h-4 w-4" />
+          Remove
+        </button>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <FormField
+          label="Floor Plan Name"
+          value={floorPlan.name}
+          onChange={(value) => onChange(floorPlan.id, "name", value)}
+        />
+        <FormField
+          label="Bedrooms"
+          value={floorPlan.bedrooms}
+          onChange={(value) => onChange(floorPlan.id, "bedrooms", value)}
+        />
+        <FormField
+          label="Bathrooms"
+          value={floorPlan.bathrooms}
+          onChange={(value) => onChange(floorPlan.id, "bathrooms", value)}
+        />
+        <FormField
+          label="Square Feet"
+          value={floorPlan.squareFeet}
+          onChange={(value) => onChange(floorPlan.id, "squareFeet", value)}
+        />
+        <FormField
+          label="Starting Rent"
+          value={floorPlan.startingRent}
+          onChange={(value) => onChange(floorPlan.id, "startingRent", value)}
+        />
+        <FormField
+          label="Market Rent"
+          value={floorPlan.marketRent}
+          onChange={(value) => onChange(floorPlan.id, "marketRent", value)}
+        />
+        <label className="rounded-2xl bg-white p-4">
+          <span className="text-sm font-semibold text-slate-500">
+            Current Special
+          </span>
+          <select
+            value={String(floorPlan.freeWeeks)}
+            onChange={(event) => onChange(floorPlan.id, "freeWeeks", event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+          >
+            {WEEKS_FREE_OPTIONS.map((weeks) => (
+              <option key={weeks} value={String(weeks)}>
+                {weeks === 0 ? "No free weeks" : `${weeks} weeks free`}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="rounded-2xl bg-white p-4">
+          <span className="text-sm font-semibold text-slate-500">
+            Lease Term
+          </span>
+          <select
+            value={String(floorPlan.leaseTermMonths)}
+            onChange={(event) =>
+              onChange(floorPlan.id, "leaseTermMonths", event.target.value)
+            }
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+          >
+            {LEASE_TERM_OPTIONS.map((months) => (
+              <option key={months} value={months}>
+                {months} months
+              </option>
+            ))}
+          </select>
+        </label>
+        <CalculatedField label="Effective Rent" value={calculatedValues.effectiveRent} />
+        <CalculatedField label="Savings" value={calculatedValues.savings} />
+        <CalculatedField
+          label="Below Market Percent"
+          value={calculatedValues.belowMarketPercent}
+        />
+        <FormField
+          label="Availability"
+          value={floorPlan.availability}
+          onChange={(value) => onChange(floorPlan.id, "availability", value)}
+        />
+        <label className="rounded-2xl bg-white p-4">
+          <span className="text-sm font-semibold text-slate-500">
+            Status
+          </span>
+          <select
+            value={floorPlan.status}
+            onChange={(event) => onChange(floorPlan.id, "status", event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+          >
+            <option value="available">Available</option>
+            <option value="limited">Limited</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </label>
+        <label className="rounded-2xl bg-white p-4 md:col-span-2 xl:col-span-3">
+          <span className="text-sm font-semibold text-slate-500">
+            Notes
+          </span>
+          <input
+            type="text"
+            value={floorPlan.notes}
+            onChange={(event) => onChange(floorPlan.id, "notes", event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+          />
+        </label>
+      </div>
+    </div>
+  );
+}
+
 function FormField({ label, value, onChange, required = false }) {
   return (
     <label className="rounded-2xl bg-slate-50 p-4">
@@ -627,6 +607,19 @@ function FormField({ label, value, onChange, required = false }) {
         className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
       />
     </label>
+  );
+}
+
+function CalculatedField({ label, value }) {
+  return (
+    <div className="rounded-2xl bg-white p-4">
+      <span className="text-sm font-semibold text-slate-500">
+        {label}
+      </span>
+      <p className="mt-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2 font-black text-slate-900">
+        {value || "Calculated"}
+      </p>
+    </div>
   );
 }
 
@@ -667,6 +660,8 @@ function createBlankFloorPlan() {
     savings: "",
     belowMarketPercent: "",
     currentSpecial: "",
+    freeWeeks: "0",
+    leaseTermMonths: "12",
     availability: "",
     status: "available",
     notes: "",
@@ -685,11 +680,13 @@ function normalizeFloorPlansForDraft(property) {
           startingRent: property.rent || "",
           effectiveRent: property.effectiveRent || "",
           marketRent: property.marketRent || "",
-          savings: property.savings || "",
-          belowMarketPercent: property.belowMarketPercent || "",
-          currentSpecial: property.special || "",
-        };
+          freeWeeks: "0",
+          leaseTermMonths: "12",
+          };
       }
+
+      const currentSpecialLabel = floorPlan.currentSpecial || floorPlan.special?.label || "";
+      const parsedFreeWeeks = floorPlan.freeWeeks ?? floorPlan.special?.freeWeeks ?? getWeeksFromSpecialLabel(currentSpecialLabel);
 
       return {
         ...createBlankFloorPlan(),
@@ -699,11 +696,9 @@ function normalizeFloorPlansForDraft(property) {
         bathrooms: floorPlan.bathrooms || floorPlan.baths || "",
         squareFeet: floorPlan.squareFeet || floorPlan.sqft || "",
         startingRent: floorPlan.startingRent || floorPlan.rent || "",
-        effectiveRent: floorPlan.effectiveRent || "",
         marketRent: floorPlan.marketRent || "",
-        savings: floorPlan.savings || "",
-        belowMarketPercent: floorPlan.belowMarketPercent || "",
-        currentSpecial: floorPlan.currentSpecial || floorPlan.special?.label || "",
+        freeWeeks: String(parsedFreeWeeks || 0),
+        leaseTermMonths: String(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12),
         availability: floorPlan.availability || floorPlan.available || "",
         status: floorPlan.status || "available",
         notes: floorPlan.notes || "",
@@ -717,7 +712,10 @@ function normalizeFloorPlansForDraft(property) {
 function normalizeFloorPlanForStorage(floorPlan) {
   const name = floorPlan.name.trim();
   const startingRent = floorPlan.startingRent.trim();
-  const currentSpecial = floorPlan.currentSpecial.trim();
+  const calculatedValues = calculateFloorPlanValues(floorPlan);
+  const freeWeeks = Number(floorPlan.freeWeeks || 0);
+  const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
+  const currentSpecial = getSpecialLabel(freeWeeks);
 
   return {
     id: floorPlan.id,
@@ -730,18 +728,76 @@ function normalizeFloorPlanForStorage(floorPlan) {
     sqft: floorPlan.squareFeet.trim(),
     startingRent,
     rent: startingRent,
-    effectiveRent: floorPlan.effectiveRent.trim(),
+    effectiveRent: calculatedValues.effectiveRent,
     marketRent: floorPlan.marketRent.trim(),
-    savings: floorPlan.savings.trim(),
-    belowMarketPercent: floorPlan.belowMarketPercent.trim(),
+    savings: calculatedValues.savings,
+    belowMarketPercent: calculatedValues.belowMarketPercent,
     currentSpecial,
-    special: currentSpecial ? { label: currentSpecial } : null,
+    freeWeeks,
+    leaseTermMonths,
+    special: freeWeeks > 0
+      ? {
+          type: "weeks_free",
+          freeWeeks,
+          leaseTermMonths,
+          label: currentSpecial,
+        }
+      : null,
     availability: floorPlan.availability.trim(),
     available: floorPlan.availability.trim(),
     status: floorPlan.status,
     notes: floorPlan.notes.trim(),
     availableUnits: [],
   };
+}
+
+function calculateFloorPlanValues(floorPlan) {
+  const startingRentNumber = parseCurrency(floorPlan.startingRent);
+  const marketRentNumber = parseCurrency(floorPlan.marketRent);
+  const freeWeeks = Number(floorPlan.freeWeeks || 0);
+  const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
+
+  if (!startingRentNumber || !leaseTermMonths) {
+    return {
+      effectiveRent: "",
+      savings: "",
+      belowMarketPercent: "",
+    };
+  }
+
+  const freeMonths = freeWeeks / WEEKS_PER_MONTH;
+  const monthlyConcession = (startingRentNumber * freeMonths) / leaseTermMonths;
+  const effectiveRentNumber = Math.max(startingRentNumber - monthlyConcession, 0);
+  const comparisonRent = marketRentNumber || startingRentNumber;
+  const savingsNumber = Math.max(comparisonRent - effectiveRentNumber, 0);
+  const belowMarketPercentNumber = comparisonRent
+    ? Math.round((savingsNumber / comparisonRent) * 100)
+    : 0;
+
+  return {
+    effectiveRent: formatCurrency(effectiveRentNumber),
+    savings: savingsNumber ? `${formatCurrency(savingsNumber)}/mo` : "$0/mo",
+    belowMarketPercent: `${belowMarketPercentNumber}%`,
+  };
+}
+
+function parseCurrency(value) {
+  const parsedValue = Number(String(value || "").replace(/[^0-9.]/g, ""));
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function formatCurrency(value) {
+  return `$${Math.round(value).toLocaleString()}`;
+}
+
+function getSpecialLabel(freeWeeks) {
+  if (!freeWeeks) return "";
+  return `${freeWeeks} ${freeWeeks === 1 ? "week" : "weeks"} free`;
+}
+
+function getWeeksFromSpecialLabel(label) {
+  const match = String(label || "").match(/(\d+(?:\.\d+)?)\s*weeks?/i);
+  return match ? Number(match[1]) : 0;
 }
 
 function normalizePropertyPhotos(property) {
