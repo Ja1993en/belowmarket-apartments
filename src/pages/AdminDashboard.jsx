@@ -25,7 +25,7 @@ const quickActions = [
         icon: Plus,
         title: "Add Property",
         description: "Create a new property listing.",
-        to: "/admin/properties",
+        to: "/admin/properties/new",
     },
     {
         icon: Users,
@@ -65,7 +65,7 @@ const systemStatus = [
 const setupChecklist = [
     {
         title: "Add your first property",
-        to: "/admin/properties",
+        to: "/admin/properties/new",
     },
     {
         title: "Create your first lead",
@@ -404,7 +404,7 @@ export default function AdminDashboard() {
 
                     <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                         <Link
-                            to="/admin/properties"
+                            to="/admin/properties/new"
                             className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
                         >
                             Add Property

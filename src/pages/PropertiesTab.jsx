@@ -7,6 +7,7 @@ import {
     CheckCircle2,
     Clock3,
     BadgeDollarSign,
+    Plus,
 } from "lucide-react";
 
 import { getAllProperties } from "../data/propertyStorage";
@@ -53,7 +54,18 @@ export default function PropertiesTab() {
     
 
     const filteredProperties = properties.filter((property) => {
-        const text = `${property.name} ${property.area} ${property.manager} ${property.status} ${property.special}`.toLowerCase();
+        const text = [
+            property.name,
+            property.area,
+            property.manager,
+            property.status,
+            property.special,
+            property.address,
+            property.city,
+            property.state,
+            property.zipcode,
+            property.zip,
+        ].filter(Boolean).join(" ").toLowerCase();
 
         const matchesSearch = text.includes(searchTerm.toLowerCase());
         const matchesStatus =
@@ -100,9 +112,13 @@ export default function PropertiesTab() {
                         </p>
                     </div>
 
-                    <button className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800">
-                        + Add Property
-                    </button>
+                    <Link
+                        to="/admin/properties/new"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Add Property
+                    </Link>
                 </div>
 
                 <div className="mt-6 grid gap-3 md:grid-cols-[1fr_200px_200px_auto]">
@@ -166,6 +182,9 @@ export default function PropertiesTab() {
                                             id={property.id}
                                             name={property.name}
                                             area={property.area}
+                                            city={property.city}
+                                            state={property.state}
+                                            zipcode={property.zipcode || property.zip}
                                             manager={property.manager}
                                             rent={property.rent}
                                             status={property.status}
@@ -256,12 +275,25 @@ function getSpecialClasses(special) {
     return "bg-slate-100 text-slate-700";
 }
 
-function PropertyRow({ id, name, area, manager, rent, status, special, updated }) {
+function PropertyRow({
+    id,
+    name,
+    area,
+    city,
+    state,
+    zipcode,
+    manager,
+    rent,
+    status,
+    special,
+    updated,
+}) {
     const initials = name
         .split(" ")
         .map((word) => word[0])
         .join("")
         .slice(0, 2);
+    const location = [city, state, zipcode].filter(Boolean).join(", ") || area;
 
     return (
         <div className="flex flex-col justify-between gap-4 rounded-2xl bg-slate-50 p-4 md:flex-row md:items-center">
@@ -273,7 +305,7 @@ function PropertyRow({ id, name, area, manager, rent, status, special, updated }
                 <div>
                     <p className="font-bold text-slate-900">{name}</p>
                     <p className="mt-1 text-sm text-slate-500">
-                        {area} • Managed by {manager}
+                        {location} • Managed by {manager}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-slate-400">
                         Updated {updated}
@@ -320,7 +352,7 @@ function PropertyRow({ id, name, area, manager, rent, status, special, updated }
                     </Link>
 
                     <Link
-                        to={`/admin/properties/${id}?edit=true`} className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                        to={`/admin/properties/${id}/edit`} className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200"
                     >
                         Edit
                     </Link>

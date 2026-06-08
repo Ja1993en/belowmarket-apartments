@@ -10,6 +10,7 @@ import SendPropertiesPage from "./pages/SendPropertiesPage";
 import RenterPropertiesList from "./pages/RenterPropertiesList";
 import DataHistory from "./pages/DataHistory";
 import PropertyDetails from "./pages/PropertyDetails";
+import PropertyFormPage from "./pages/PropertyFormPage";
 import PublicPropertyListing from "./pages/PublicPropertyListing";
 import HomePage from "./pages/HomePage";
 import StartPage from "./pages/StartPage";
@@ -27,6 +28,8 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="properties" element={<PropertiesTab />} />
+          <Route path="properties/new" element={<PropertyFormPage />} />
+          <Route path="properties/:propertyId/edit" element={<PropertyFormPage />} />
           <Route path="properties/:propertyId" element={<PropertyDetails />} />
           <Route path="leads" element={<LeadsTab />} />
           <Route path="leads/:leadId" element={<LeadDetailsPage />} />
