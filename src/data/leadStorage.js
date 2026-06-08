@@ -36,6 +36,22 @@ export function updateLocalLead(leadId, updates) {
   localStorage.setItem("belowMarketLeads", JSON.stringify(updatedLeads));
 }
 
+export function archiveLocalTestLeads() {
+  const savedLeads = getStoredLeads();
+
+  const updatedLeads = savedLeads.map((lead) =>
+    lead.source === "Test Data" && lead.status !== "Archived"
+      ? {
+        ...lead,
+        status: "Archived",
+        lastTouch: "Archived test data",
+      }
+      : lead
+  );
+
+  localStorage.setItem("belowMarketLeads", JSON.stringify(updatedLeads));
+}
+
 export function getAnyLeadByToken(token) {
   return getAllLeads().find((lead) => lead.token === token);
 }

@@ -136,3 +136,18 @@ export async function getSupabaseLeads() {
       throw error;
     }
   }
+
+export async function archiveSupabaseTestLeads() {
+  const { error } = await supabase
+    .from("leads")
+    .update({
+      status: "Archived",
+      last_touch: "Archived test data",
+    })
+    .eq("source", "Test Data")
+    .neq("status", "Archived");
+
+  if (error) {
+    throw error;
+  }
+}

@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Clock3, Mail, Phone, Search, Send, Users } from "lucide-react";
-import { getSupabaseLeads, saveSupabaseLead } from "../data/supabaseLeadStorage";
+import {
+  archiveSupabaseTestLeads,
+  getSupabaseLeads,
+  saveSupabaseLead,
+} from "../data/supabaseLeadStorage";
 import { getSupabaseTourRequestsForLead } from "../data/supabaseTourStorage";
 import {
   isLocalFallbackEnabled,
   localFallbackMessage,
 } from "../data/supabaseClient";
 import {
+  archiveLocalTestLeads,
   getAllLeads,
   getLeadActivitiesForLead,
   getTourRequestsForLead,
@@ -25,6 +30,7 @@ export default function LeadsTab() {
   const [loadError, setLoadError] = useState("");
   const [isUsingFallbackData, setIsUsingFallbackData] = useState(false);
   const [isCreatingTestLead, setIsCreatingTestLead] = useState(false);
+  const [isArchivingTestLeads, setIsArchivingTestLeads] = useState(false);
   const [testLeadMessage, setTestLeadMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -138,8 +144,46 @@ export default function LeadsTab() {
       setIsCreatingTestLead(false);
     }
   };
+
+  const archiveTestLeads = async () => {
+    const activeTestLeadCount = savedLeads.filter(
+      (lead) => lead.source === "Test Data" && lead.status !== "Archived"
+    ).length;
+    const confirmed = window.confirm(
+      `Archive ${activeTestLeadCount} active test lead${activeTestLeadCount === 1 ? "" : "s"}? Archived records stay in Supabase but are removed from active lead counts.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsArchivingTestLeads(true);
+      setTestLeadMessage("");
+
+      await archiveSupabaseTestLeads();
+
+      await loadLeads({ prepareLoad: false });
+      setTestLeadMessage("Active test leads archived.");
+    } catch (error) {
+      console.error(error);
+
+      if (isLocalFallbackEnabled) {
+        archiveLocalTestLeads();
+        await loadLeads({ prepareLoad: false });
+        setTestLeadMessage("Local test leads archived because Supabase could not be reached.");
+        return;
+      }
+
+      setTestLeadMessage("Could not archive test leads. Check the Supabase connection.");
+    } finally {
+      setIsArchivingTestLeads(false);
+    }
+  };
   
   const leads = savedLeads;
+  const activeLeads = leads.filter((lead) => lead.status !== "Archived");
+  const activeTestLeadCount = leads.filter(
+    (lead) => lead.source === "Test Data" && lead.status !== "Archived"
+  ).length;
   
   const getLeadTourRequests = (lead) => {
     return (
@@ -170,9 +214,10 @@ export default function LeadsTab() {
 
     const matchesSource = sourceFilter === "All" || lead.source === sourceFilter;
     const matchesDataType =
-      dataTypeFilter === "All Data" ||
-      (dataTypeFilter === "Test Data" && lead.source === "Test Data") ||
-      (dataTypeFilter === "Live Data" && lead.source !== "Test Data");
+      (dataTypeFilter === "All Data" && lead.status !== "Archived") ||
+      (dataTypeFilter === "Test Data" && lead.source === "Test Data" && lead.status !== "Archived") ||
+      (dataTypeFilter === "Live Data" && lead.source !== "Test Data" && lead.status !== "Archived") ||
+      (dataTypeFilter === "Archived" && lead.status === "Archived");
 
     const matchesPriority =
       priorityFilter === "All" || lead.priority === priorityFilter;
@@ -241,26 +286,26 @@ export default function LeadsTab() {
     status: "Status",
     name: "Name A-Z",
   };
-  const newLeadCount = leads.filter((lead) => lead.status === "New Lead").length;
-  const sentCount = leads.filter(
+  const newLeadCount = activeLeads.filter((lead) => lead.status === "New Lead").length;
+  const sentCount = activeLeads.filter(
     (lead) => lead.status === "Recommendation Sent"
   ).length;
-  const highPriorityCount = leads.filter(
+  const highPriorityCount = activeLeads.filter(
     (lead) => lead.priority === "High"
   ).length;
-  const needsRecommendationCount = leads.filter(
+  const needsRecommendationCount = activeLeads.filter(
     (lead) => (lead.recommendedPropertyIds?.length || 0) === 0
   ).length;
-  const tourRequestLeadCount = leads.filter((lead) =>
+  const tourRequestLeadCount = activeLeads.filter((lead) =>
     getLeadTourRequests(lead).some(
       (request) => (request.status || "New") !== "Followed Up")
   ).length;
 
-  const workedLeadCount = leads.filter(
+  const workedLeadCount = activeLeads.filter(
     (lead) => getLeadActivitiesForLead(lead.id).length > 0
   ).length;
 
-  const needsActionCount = leads.filter((lead) => {
+  const needsActionCount = activeLeads.filter((lead) => {
     const recommendationCount = lead.recommendedPropertyIds?.length || 0;
     const hasTourFollowUpNeeded = getLeadTourRequests(lead).some(
       (request) => (request.status || "New") !== "Followed Up"
@@ -346,6 +391,17 @@ export default function LeadsTab() {
             {isCreatingTestLead ? "Creating..." : "Create Test Lead"}
           </button>
 
+          {activeTestLeadCount > 0 && (
+            <button
+              type="button"
+              onClick={archiveTestLeads}
+              disabled={isArchivingTestLeads}
+              className="rounded-2xl bg-amber-100 px-5 py-3 text-center text-sm font-bold text-amber-700 hover:bg-amber-200 disabled:cursor-not-allowed disabled:bg-amber-50 disabled:text-amber-300"
+            >
+              {isArchivingTestLeads ? "Archiving..." : "Archive Test Leads"}
+            </button>
+          )}
+
           <Link
             to="/start"
             className="rounded-2xl bg-slate-950 px-5 py-3 text-center text-sm font-bold text-white hover:bg-slate-800"
@@ -358,7 +414,7 @@ export default function LeadsTab() {
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-7">        <LeadStatCard
         icon={Users}
         title="Total Leads"
-        value={leads.length}
+        value={activeLeads.length}
         subtitle="All renter requests"
         onClick={() => {
           setSearchTerm("");
@@ -557,7 +613,9 @@ export default function LeadsTab() {
               Lead Pipeline
             </h2>
             <p className="mt-1 text-slate-500">
-              Showing {filteredLeads.length} of {leads.length} leads.
+              {dataTypeFilter === "Archived"
+                ? `Showing ${filteredLeads.length} archived leads.`
+                : `Showing ${filteredLeads.length} of ${activeLeads.length} active leads.`}
             </p>
           </div>
 
@@ -642,6 +700,7 @@ export default function LeadsTab() {
               <option>New Lead</option>
               <option>Tour Needed</option>
               <option>Recommendation Sent</option>
+              <option>Archived</option>
             </select>
 
             <select
@@ -713,6 +772,7 @@ export default function LeadsTab() {
               <option>All Data</option>
               <option>Live Data</option>
               <option>Test Data</option>
+              <option>Archived</option>
             </select>
 
             {hasActiveFilters && (
