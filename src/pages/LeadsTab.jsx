@@ -27,9 +27,11 @@ export default function LeadsTab() {
   const [recommendationFilter, setRecommendationFilter] = useState("All");
   const [tourFilter, setTourFilter] = useState(initialTourFilter);
   const [activityFilter, setActivityFilter] = useState("All Activity");
-  const loadLeads = async () => {
-    setIsLoadingLeads(true);
-    setLoadError("");
+  const loadLeads = async ({ prepareLoad = true } = {}) => {
+    if (prepareLoad) {
+      setIsLoadingLeads(true);
+      setLoadError("");
+    }
 
     try {
       const supabaseLeads = await getSupabaseLeads();
@@ -59,7 +61,11 @@ export default function LeadsTab() {
   };
 
   useEffect(() => {
-    loadLeads();
+    const loadTimer = window.setTimeout(() => {
+      loadLeads({ prepareLoad: false });
+    }, 0);
+
+    return () => window.clearTimeout(loadTimer);
   }, []);
   
   const leads = savedLeads;
@@ -197,17 +203,6 @@ export default function LeadsTab() {
     recommendationFilter !== "All" ||
     tourFilter !== "All" ||
     activityFilter !== "All Activity"
-
-  const activeFilterCount = [
-    searchTerm !== "",
-    statusFilter !== "All",
-    sourceFilter !== "All",
-    priorityFilter !== "All",
-    sortBy !== "newest",
-    recommendationFilter !== "All",
-    tourFilter !== "All",
-    activityFilter !== "All Activity",
-  ].filter(Boolean).length;
 
   return (
     <div>

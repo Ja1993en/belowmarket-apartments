@@ -1,13 +1,33 @@
-import { NavLink, Outlet } from "react-router-dom";
+import {
+  Navigate,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import {
   Building2,
   LayoutDashboard,
   Users,
   History,
   Menu,
+  LogOut,
 } from "lucide-react";
+import { hasAdminAccess, logoutAdmin } from "../data/adminAuth";
 
 export default function AdminLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  if (!hasAdminAccess()) {
+    return <Navigate to="/admin-login" replace state={{ from: location }} />;
+  }
+
+  const handleLogout = () => {
+    logoutAdmin();
+    navigate("/admin-login", { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-950">
       <div className="flex">
@@ -42,6 +62,15 @@ export default function AdminLayout() {
                 <h2 className="text-xl font-black">Below Market Apartments</h2>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
           </header>
 
           <section className="mx-auto max-w-7xl p-4 md:p-6 xl:p-8">

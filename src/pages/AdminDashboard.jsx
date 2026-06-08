@@ -88,9 +88,11 @@ export default function AdminDashboard() {
     const [dashboardError, setDashboardError] = useState("");
     const [isUsingFallbackDashboardData, setIsUsingFallbackDashboardData] =
         useState(false);
-    const loadDashboardData = async () => {
-        setIsLoadingDashboard(true);
-        setDashboardError("");
+    const loadDashboardData = async ({ prepareLoad = true } = {}) => {
+        if (prepareLoad) {
+            setIsLoadingDashboard(true);
+            setDashboardError("");
+        }
 
         try {
             const supabaseLeads = await getSupabaseLeads();
@@ -115,7 +117,11 @@ export default function AdminDashboard() {
         }
     };
     useEffect(() => {
-        loadDashboardData();
+        const loadTimer = window.setTimeout(() => {
+            loadDashboardData({ prepareLoad: false });
+        }, 0);
+
+        return () => window.clearTimeout(loadTimer);
     }, []);
 
     const dashboardStats = [

@@ -14,12 +14,17 @@ export default function LeadMessagePage() {
   const { leadId } = useParams();
   const initialLead = getAnyLeadById(leadId);
   const [lead, setLead] = useState(initialLead);
-  const [isLoadingLead, setIsLoadingLead] = useState(!initialLead);
-  const recommendedProperties = lead
-    ? lead.recommendedPropertyIds
-      .map((propertyId) => getAnyPropertyById(propertyId))
-      .filter(Boolean)
-    : []; const [tourRequests, setTourRequests] = useState(() =>
+  const [, setIsLoadingLead] = useState(!initialLead);
+  const recommendedProperties = useMemo(
+    () =>
+      lead
+        ? lead.recommendedPropertyIds
+          .map((propertyId) => getAnyPropertyById(propertyId))
+          .filter(Boolean)
+        : [],
+    [lead]
+  );
+  const [tourRequests, setTourRequests] = useState(() =>
       [...getTourRequestsForLead(leadId)].sort((a, b) =>
         String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
       )
@@ -512,19 +517,4 @@ function InfoRow({ label, value }) {
       <p className="mt-1 font-black text-slate-900">{value}</p>
     </div>
   );
-}
-
-export function deleteTourRequest(requestId) {
-  const tourRequests = getStoredTourRequests();
-
-  const updatedTourRequests = tourRequests.filter(
-    (request) => request.id !== requestId
-  );
-
-  localStorage.setItem(
-    "belowMarketTourRequests",
-    JSON.stringify(updatedTourRequests)
-  );
-
-  return updatedTourRequests;
 }

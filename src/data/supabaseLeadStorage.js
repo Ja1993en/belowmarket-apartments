@@ -1,8 +1,7 @@
-import { getAnyLeadByToken } from "./leadStorage";
 import { supabase } from "./supabaseClient";
 
 export async function saveSupabaseLead(lead) {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("leads")
     .insert({
       name: lead.name,
@@ -123,10 +122,14 @@ export async function getSupabaseLeads() {
       .from("leads")
       .select("*")
       .eq("token", token)
-      .single();
+      .maybeSingle();
   
     if (error) {
       throw error;
+    }
+
+    if (!data) {
+      return null;
     }
   
     return {

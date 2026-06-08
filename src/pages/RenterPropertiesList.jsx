@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { BedDouble, Building2, CalendarDays, MapPin, PiggyBank } from "lucide-react";
 import { getSupabaseLeadByToken } from "../data/supabaseLeadStorage";
@@ -17,7 +17,7 @@ import { getAnyPropertyById } from "../data/propertyStorage";
 
 export default function RenterPropertiesList() {
   const { token } = useParams();
-  const localFallbackLead = getAnyLeadByToken(token);
+  const localFallbackLead = useMemo(() => getAnyLeadByToken(token), [token]);
   const [lead, setLead] = useState(null);
   const [isLoadingLead, setIsLoadingLead] = useState(true);
   const [isLocalFallbackLead, setIsLocalFallbackLead] = useState(false);
@@ -90,7 +90,7 @@ export default function RenterPropertiesList() {
     };
 
     loadLead();
-  }, [token]);
+  }, [localFallbackLead, token]);
 
   const recommendedPropertyIds =
     lead?.recommendedPropertyIds || lead?.recommended_property_ids || [];
@@ -103,7 +103,6 @@ export default function RenterPropertiesList() {
     (property) => property.status === "Live"
   );
 
-  const existingTourRequest = existingTourRequests[0];
   const openTourForm = (property) => {
     setSelectedTourProperty(property);
     setTourSuccessMessage("");

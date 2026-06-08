@@ -247,6 +247,12 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                         </span>
                     )}
                 </div>
+
+                {saveMessage && (
+                    <p className="mt-4 rounded-2xl bg-emerald-100 px-4 py-3 text-sm font-bold text-emerald-700">
+                        {saveMessage}
+                    </p>
+                )}
             </div>
 
             {isEditing && (
@@ -489,7 +495,6 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                                     key={special.title}
                                     title={special.title}
                                     type={special.type}
-                                    status={special.status}
                                 />
                             ))}
                         </div>
@@ -637,7 +642,7 @@ function FloorPlanRow({ name, beds, baths, sqft, rent, available }) {
     );
 }
 
-function SpecialCard({ title, type, status }) {
+function SpecialCard({ title, type }) {
     return (
         <div className="rounded-2xl bg-slate-50 p-5">
             <p className="text-lg font-black text-slate-900">{title}</p>

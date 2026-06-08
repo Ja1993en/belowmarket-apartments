@@ -127,13 +127,11 @@ function HistoryStat({ icon: Icon, title, value, subtitle }) {
 }
 
 function HistoryEvent({ event }) {
-  const Icon = getEventIcon(event.type);
-
   return (
     <div className="rounded-2xl bg-slate-50 p-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-start">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white">
-          <Icon className="h-5 w-5 text-slate-700" />
+          <EventIcon type={event.type} />
         </div>
 
         <div className="flex-1">
@@ -174,13 +172,26 @@ function HistoryEvent({ event }) {
   );
 }
 
-function getEventIcon(type) {
-  if (type.includes("Property") || type.includes("Special")) return Building2;
-  if (type.includes("Lead")) return Users;
-  if (type.includes("Recommendations")) return Send;
-  if (type.includes("updated")) return Clock3;
+function EventIcon({ type }) {
+  const className = "h-5 w-5 text-slate-700";
 
-  return Activity;
+  if (type.includes("Property") || type.includes("Special")) {
+    return <Building2 className={className} />;
+  }
+
+  if (type.includes("Lead")) {
+    return <Users className={className} />;
+  }
+
+  if (type.includes("Recommendations")) {
+    return <Send className={className} />;
+  }
+
+  if (type.includes("updated")) {
+    return <Clock3 className={className} />;
+  }
+
+  return <Activity className={className} />;
 }
 
 function getStatusClasses(status) {

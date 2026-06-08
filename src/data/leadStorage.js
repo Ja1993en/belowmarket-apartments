@@ -148,20 +148,3 @@ export function clearLeadActivities(leadId) {
 
   return updatedActivities;
 }
-
-
-
-export async function updateSupabaseLeadRecommendations(leadId, propertyIds) {
-  const { error } = await supabase
-    .from("leads")
-    .update({
-      recommended_property_ids: propertyIds,
-      status: propertyIds.length > 0 ? "Recommendation Sent" : "New Lead",
-      last_touch: "Just now",
-    })
-    .eq("id", leadId);
-
-  if (error) {
-    throw error;
-  }
-}

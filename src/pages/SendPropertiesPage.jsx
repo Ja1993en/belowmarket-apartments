@@ -18,7 +18,7 @@ export default function SendPropertiesPage() {
   const [isSavingSelections, setIsSavingSelections] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
-  const properties = getAllProperties();
+  const properties = useMemo(() => getAllProperties(), []);
   const recommendedPropertyIds = lead?.recommendedPropertyIds || [];
 
   const recommendedProperties = recommendedPropertyIds
@@ -82,7 +82,7 @@ export default function SendPropertiesPage() {
     return properties.filter((property) =>
       selectedPropertyIds.includes(property.id)
     );
-  }, [selectedPropertyIds]);
+  }, [properties, selectedPropertyIds]);
 
   const toggleProperty = async (propertyId) => {
     if (!lead) return;

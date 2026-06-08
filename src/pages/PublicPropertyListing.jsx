@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getAnyPropertyById } from "../data/propertyStorage";
 const floorPlans = [
@@ -934,7 +934,12 @@ export default function PublicPropertyListing() {
 
                         <div className="mt-6 grid max-h-[70vh] gap-4 overflow-y-auto md:grid-cols-2">
                             {filteredGalleryImages.map((image) => (
-                                <div key={image.url} className="overflow-hidden rounded-2xl bg-slate-50">
+                                <button
+                                    key={image.url}
+                                    type="button"
+                                    onClick={() => setSelectedPhoto(image)}
+                                    className="overflow-hidden rounded-2xl bg-slate-50 text-left"
+                                >
                                     <img
                                         src={image.url}
                                         alt={`${image.category} photo`}
@@ -946,7 +951,7 @@ export default function PublicPropertyListing() {
                                             {image.category}
                                         </p>
                                     </div>
-                                </div>
+                                </button>
                             ))}
 
                         </div>
@@ -1425,7 +1430,7 @@ function NearbyItem({ label, value }) {
 }
 
 
-function FloorPlanCard({ propertyId, name, beds, baths, sqft, rent, available, image, status, special, onViewDetails }) {
+function FloorPlanCard({ name, beds, baths, sqft, rent, available, image, status, special, onViewDetails }) {
     return (
         <div className="flex flex-col justify-between gap-4 rounded-2xl bg-slate-50 p-4 md:flex-row md:items-center">
 

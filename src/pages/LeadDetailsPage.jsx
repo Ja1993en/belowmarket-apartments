@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getAnyPropertyById } from "../data/propertyStorage";
 import {
@@ -34,8 +34,20 @@ import {
 export default function LeadDetailsPage() {
     const { leadId } = useParams();
     const navigate = useNavigate();
-    const initialLead = getAnyLeadById(leadId);
-    const refreshLead = async () => {
+    const initialLead = useMemo(() => getAnyLeadById(leadId), [leadId]);
+    const [lead, setLead] = useState(initialLead);
+    const [isLoadingLead, setIsLoadingLead] = useState(!initialLead);
+    const [notesDraft, setNotesDraft] = useState(initialLead?.notes || "");
+    const [assignedToDraft, setAssignedToDraft] = useState(
+        initialLead?.assignedTo || ""
+    );
+    const [activityFilter, setActivityFilter] = useState("All");
+    const [tourRequests, setTourRequests] = useState(
+        initialLead ? getTourRequestsForLead(initialLead.id) : []
+    );
+    const [isLocalLead, setIsLocalLead] = useState(Boolean(initialLead));
+
+    const refreshLead = useCallback(async () => {
         if (isLocalLead) {
             const freshLead = getAnyLeadById(leadId);
             const freshTourRequests = freshLead
@@ -60,9 +72,9 @@ export default function LeadDetailsPage() {
         } catch (error) {
             console.error(error);
         }
-    };
+    }, [isLocalLead, leadId]);
 
-    const loadSupabaseLead = async () => {
+    const loadSupabaseLead = useCallback(async () => {
         try {
             setIsLoadingLead(true);
 
@@ -79,23 +91,17 @@ export default function LeadDetailsPage() {
         } finally {
             setIsLoadingLead(false);
         }
-    };
-    const [lead, setLead] = useState(initialLead);
-    const [isLoadingLead, setIsLoadingLead] = useState(!initialLead);
-    const [notesDraft, setNotesDraft] = useState(initialLead?.notes || "");
-    const [assignedToDraft, setAssignedToDraft] = useState(
-        initialLead?.assignedTo || ""
-    );
-    const [activityFilter, setActivityFilter] = useState("All");
-    const [tourRequests, setTourRequests] = useState(
-        initialLead ? getTourRequestsForLead(initialLead.id) : []
-    );
-    const [isLocalLead, setIsLocalLead] = useState(Boolean(initialLead));
+    }, [leadId]);
+
     useEffect(() => {
         if (!initialLead) {
-            loadSupabaseLead();
+            const loadTimer = window.setTimeout(() => {
+                loadSupabaseLead();
+            }, 0);
+
+            return () => window.clearTimeout(loadTimer);
         }
-    }, [leadId]);
+    }, [initialLead, loadSupabaseLead]);
     const recommendedProperties = lead
         ? lead.recommendedPropertyIds
             .map((propertyId) => getAnyPropertyById(propertyId))

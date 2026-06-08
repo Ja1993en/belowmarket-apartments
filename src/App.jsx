@@ -14,6 +14,7 @@ import PublicPropertyListing from "./pages/PublicPropertyListing";
 import HomePage from "./pages/HomePage";
 import StartPage from "./pages/StartPage";
 import LeadDetailsPage from "./pages/LeadDetailsPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/start" element={<StartPage />} />
+        <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
