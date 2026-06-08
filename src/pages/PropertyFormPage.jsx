@@ -31,7 +31,7 @@ const emptyPropertyDraft = {
 
 const MAX_UPLOAD_COUNT = 8;
 const MAX_UPLOAD_SIZE = 1.5 * 1024 * 1024;
-const WEEKS_PER_MONTH = 4.345;
+const LEASING_WEEKS_PER_MONTH = 4;
 const WEEKS_FREE_OPTIONS = Array.from({ length: 25 }, (_, index) => index * 0.5);
 const LEASE_TERM_OPTIONS = ["6", "9", "12", "13", "14", "15", "18"];
 
@@ -765,7 +765,7 @@ function calculateFloorPlanValues(floorPlan) {
     };
   }
 
-  const freeMonths = freeWeeks / WEEKS_PER_MONTH;
+  const freeMonths = freeWeeks / LEASING_WEEKS_PER_MONTH;
   const monthlyConcession = (startingRentNumber * freeMonths) / leaseTermMonths;
   const effectiveRentNumber = Math.max(startingRentNumber - monthlyConcession, 0);
   const comparisonRent = marketRentNumber || startingRentNumber;

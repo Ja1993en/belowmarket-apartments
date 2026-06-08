@@ -411,12 +411,12 @@ export default function PublicPropertyListing() {
 
     const effectiveRent =
         rentNumber -
-        (rentNumber * (freeWeeks / 4.345)) / leaseMonths;
+        (rentNumber * (freeWeeks / 4)) / leaseMonths;
 
     const monthlySavings =
         rentNumber - effectiveRent;
 
-    const concessionValue = rentNumber * (freeWeeks / 4.345);
+    const concessionValue = rentNumber * (freeWeeks / 4);
 
     const getLowestUnitRent = (units = []) => {
         if (!units.length) return null;
