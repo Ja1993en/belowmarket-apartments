@@ -34,6 +34,7 @@ export default function LeadsTab() {
   const [recommendationFilter, setRecommendationFilter] = useState("All");
   const [tourFilter, setTourFilter] = useState(initialTourFilter);
   const [activityFilter, setActivityFilter] = useState("All Activity");
+  const [dataTypeFilter, setDataTypeFilter] = useState("All Data");
   const loadLeads = async ({ prepareLoad = true } = {}) => {
     if (prepareLoad) {
       setIsLoadingLeads(true);
@@ -84,6 +85,12 @@ export default function LeadsTab() {
   }, []);
 
   const createTestLead = async () => {
+    const confirmed = window.confirm(
+      "Create a test lead in this database? Use this only for workflow testing."
+    );
+
+    if (!confirmed) return;
+
     const createdAt = new Date().toISOString();
     const leadPayload = {
       id: `local-test-${Date.now()}`,
@@ -96,12 +103,12 @@ export default function LeadsTab() {
       moveIn: "Next 30 days",
       status: "New Lead",
       priority: "Medium",
-      source: "Admin test data",
+      source: "Test Data",
       sourcePropertyId: null,
       sourcePropertyName: null,
       assignedTo: "Unassigned",
       lastTouch: "Just now",
-      notes: "Created from the admin test-data helper.",
+      notes: "TEST DATA - Created from the admin test-data helper.",
       recommendedPropertyIds: [],
       token: `test-renter-${Date.now()}`,
       contactMethod: "Email",
@@ -158,6 +165,10 @@ export default function LeadsTab() {
       (statusFilter === "Needs Action" && matchesNeedsAction);
 
     const matchesSource = sourceFilter === "All" || lead.source === sourceFilter;
+    const matchesDataType =
+      dataTypeFilter === "All Data" ||
+      (dataTypeFilter === "Test Data" && lead.source === "Test Data") ||
+      (dataTypeFilter === "Live Data" && lead.source !== "Test Data");
 
     const matchesPriority =
       priorityFilter === "All" || lead.priority === priorityFilter;
@@ -186,6 +197,7 @@ export default function LeadsTab() {
       matchesSearch &&
       matchesStatus &&
       matchesSource &&
+      matchesDataType &&
       matchesPriority &&
       matchesRecommendations &&
       matchesTours &&
@@ -265,7 +277,8 @@ export default function LeadsTab() {
     sortBy !== "newest" ||
     recommendationFilter !== "All" ||
     tourFilter !== "All" ||
-    activityFilter !== "All Activity"
+    activityFilter !== "All Activity" ||
+    dataTypeFilter !== "All Data";
 
   return (
     <div>
@@ -352,6 +365,7 @@ export default function LeadsTab() {
           setRecommendationFilter("All");
           setTourFilter("All");
           setActivityFilter("All Activity");
+          setDataTypeFilter("All Data");
           setSearchParams({});
         }}
         isActive={
@@ -362,7 +376,8 @@ export default function LeadsTab() {
           sortBy === "newest" &&
           recommendationFilter === "All" &&
           tourFilter === "All" &&
-          activityFilter === "All Activity"
+          activityFilter === "All Activity" &&
+          dataTypeFilter === "All Data"
         }
       />
         <LeadStatCard
@@ -385,6 +400,7 @@ export default function LeadsTab() {
             setRecommendationFilter("All");
             setTourFilter("All");
             setActivityFilter("All Activity");
+            setDataTypeFilter("All Data");
             setSearchParams({}, { replace: true });
           }}
           isActive={statusFilter === "Needs Action"}
@@ -410,6 +426,7 @@ export default function LeadsTab() {
             setRecommendationFilter("All");
             setTourFilter("All");
             setActivityFilter("All Activity");
+            setDataTypeFilter("All Data");
             setSearchParams({}, { replace: true });
           }}
           isActive={statusFilter === "New Lead"}
@@ -437,6 +454,7 @@ export default function LeadsTab() {
             setRecommendationFilter(nextRecommendation);
             setTourFilter("All");
             setActivityFilter("All Activity");
+            setDataTypeFilter("All Data");
             setSearchParams({}, { replace: true });
           }}
           isActive={recommendationFilter === "Has Recommendations"}
@@ -463,6 +481,7 @@ export default function LeadsTab() {
             setSortBy("newest"); setRecommendationFilter(nextRecommendation);
             setTourFilter("All");
             setActivityFilter("All Activity");
+            setDataTypeFilter("All Data");
             setSearchParams({}, { replace: true });
           }}
           isActive={recommendationFilter === "No Recommendations"}
@@ -487,6 +506,7 @@ export default function LeadsTab() {
             setSortBy("newest"); setRecommendationFilter("All");
             setTourFilter(nextTour);
             setActivityFilter("All Activity");
+            setDataTypeFilter("All Data");
 
             if (nextTour === "All") {
               setSearchParams({}, { replace: true });
@@ -517,6 +537,7 @@ export default function LeadsTab() {
             setRecommendationFilter("All");
             setTourFilter("All");
             setActivityFilter(nextActivity);
+            setDataTypeFilter("All Data");
             setSearchParams({}, { replace: true });
           }}
           isActive={activityFilter === "Has Activity"}
@@ -549,6 +570,7 @@ export default function LeadsTab() {
               setRecommendationFilter("All");
               setTourFilter("All");
               setActivityFilter("All Activity");
+              setDataTypeFilter("All Data");
               setSearchParams({}, { replace: true });
             }}
             className={`rounded-full px-4 py-2 text-sm font-bold ${priorityFilter === "High"
@@ -606,7 +628,7 @@ export default function LeadsTab() {
             />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
@@ -679,6 +701,16 @@ export default function LeadsTab() {
               <option>No Tour Requests</option>
             </select>
 
+            <select
+              value={dataTypeFilter}
+              onChange={(event) => setDataTypeFilter(event.target.value)}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 outline-none focus:border-slate-400"
+            >
+              <option>All Data</option>
+              <option>Live Data</option>
+              <option>Test Data</option>
+            </select>
+
             {hasActiveFilters && (
               <button
                 onClick={() => {
@@ -690,6 +722,7 @@ export default function LeadsTab() {
                   setRecommendationFilter("All");
                   setTourFilter("All");
                   setActivityFilter("All Activity");
+                  setDataTypeFilter("All Data");
                   setSearchParams({}, { replace: true });
                 }}
                 className="rounded-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
@@ -751,6 +784,13 @@ export default function LeadsTab() {
               <FilterChip
                 label="Admin Activity"
                 onRemove={() => setActivityFilter("All Activity")}
+              />
+            )}
+
+            {dataTypeFilter !== "All Data" && (
+              <FilterChip
+                label={dataTypeFilter}
+                onRemove={() => setDataTypeFilter("All Data")}
               />
             )}
 
