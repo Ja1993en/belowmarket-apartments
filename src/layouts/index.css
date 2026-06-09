@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+:root {
+  --bma-ink: #102426;
+  --bma-evergreen: #173f3f;
+  --bma-market: #1f6f63;
+  --bma-savings: #1f9d5b;
+  --bma-gold: #f2b84b;
+  --bma-coral: #e4572e;
+  --bma-blue: #2d7dd2;
+  --bma-mist: #f5f8f1;
+  --bma-paper: #ffffff;
+}
+
+body {
+  background: var(--bma-mist);
+}
+
+@layer utilities {
+  .bma-focus-ring {
+    @apply focus:outline-none focus:ring-4 focus:ring-[#f2b84b]/35;
+  }
+
+  .bma-brand-panel {
+    background:
+      linear-gradient(135deg, rgba(31, 111, 99, 0.18), rgba(45, 125, 210, 0.12)),
+      var(--bma-evergreen);
+  }
+
+  .bma-value-stripe {
+    background: linear-gradient(90deg, var(--bma-gold), var(--bma-coral), var(--bma-blue));
+  }
+}

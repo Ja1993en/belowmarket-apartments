@@ -139,38 +139,39 @@ export default function HomePage() {
     ];
 
     return (
-        <main className="min-h-screen bg-slate-100 text-slate-950">
-            <section className="bg-slate-950 px-6 py-10 text-white">
+        <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
+            <section className="bma-brand-panel border-b-[6px] border-[#f2b84b] px-6 py-10 text-white">
                 <div className="mx-auto max-w-6xl">
-                    <p className="text-sm font-bold text-slate-300">
+                    <p className="w-fit rounded-full bg-[#f2b84b]/15 px-4 py-2 text-sm font-black text-[#f9d783]">
                         Below Market Apartments
                     </p>
 
-                    <h1 className="mt-3 max-w-3xl text-4xl font-black md:text-5xl">
+                    <h1 className="mt-4 max-w-3xl text-4xl font-black text-[#fff7df] md:text-5xl">
                         Find apartments with verified specials and below-market pricing.
                     </h1>
 
-                    <p className="mt-4 max-w-2xl text-slate-300">
+                    <p className="mt-4 max-w-2xl text-[#d7ece6]">
                         Browse apartment deals, compare effective rent, and request help from a locator.
                     </p>
                     <Link
                         to="/start"
-                        className="mt-6 inline-block rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-950 hover:bg-slate-100"
+                        className="mt-6 inline-block rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] shadow-sm hover:bg-[#f9d783]"
                     >
                         Start Apartment Search
                     </Link>
 
-                    <div className="mt-8 max-w-6xl rounded-3xl bg-white p-2 shadow-sm">
+                    <div className="mt-8 max-w-6xl rounded-3xl border border-white/20 bg-white p-2 shadow-xl shadow-[#102426]/20">
+                        <div className="bma-value-stripe mb-3 h-2 rounded-full" />
                         <div className="grid gap-3 md:grid-cols-[1fr_160px_150px_170px_auto]">
                             <div className="relative">
-                                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#2d7dd2]" />
 
                                 <input
                                     type="text"
                                     value={searchTerm}
                                     onChange={(event) => setSearchTerm(event.target.value)}
                                     placeholder="Search property, special, floor plan, or manager..."
-                                    className="w-full rounded-2xl border-0 py-4 pl-12 pr-4 text-slate-900 outline-none"
+                                    className="bma-focus-ring w-full rounded-2xl border border-[#d7e6df] py-4 pl-12 pr-4 text-[#102426]"
                                 />
                             </div>
 
@@ -178,7 +179,7 @@ export default function HomePage() {
                                 aria-label="Area"
                                 value={areaFilter}
                                 onChange={(event) => setAreaFilter(event.target.value)}
-                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 py-4 font-bold text-[#173f3f]"
                             >
                                 {areas.map((area) => (
                                     <option key={area}>{area}</option>
@@ -189,7 +190,7 @@ export default function HomePage() {
                                 aria-label="Bedrooms"
                                 value={bedroomFilter}
                                 onChange={(event) => setBedroomFilter(event.target.value)}
-                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 py-4 font-bold text-[#173f3f]"
                             >
                                 {bedrooms.map((bedroom) => (
                                     <option key={bedroom}>{bedroom}</option>
@@ -200,7 +201,7 @@ export default function HomePage() {
                                 aria-label="Year built"
                                 value={yearBuiltFilter}
                                 onChange={(event) => setYearBuiltFilter(event.target.value)}
-                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 py-4 font-bold text-[#173f3f]"
                             >
                                 {yearBuiltOptions.map((yearOption) => (
                                     <option key={yearOption}>{yearOption}</option>
@@ -219,7 +220,7 @@ export default function HomePage() {
                                     setSpecialFilter("Any special");
                                     setSortOption("Lowest effective rent");
                                 }}
-                                className="rounded-2xl bg-slate-950 px-5 py-4 text-sm font-bold text-white hover:bg-slate-800"
+                                className="rounded-2xl bg-[#e4572e] px-5 py-4 text-sm font-black text-white hover:bg-[#c94724]"
                             >
                                 Clear
                             </button>
@@ -230,7 +231,7 @@ export default function HomePage() {
                                 aria-label="Maximum starting rent"
                                 value={maxStartingRentFilter}
                                 onChange={(event) => setMaxStartingRentFilter(event.target.value)}
-                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#fff8e6] px-4 py-4 font-bold text-[#4f3810]"
                             >
                                 {rentOptions.map((rentOption) => (
                                     <option key={rentOption}>{rentOption}</option>
@@ -241,7 +242,7 @@ export default function HomePage() {
                                 aria-label="Maximum effective rent"
                                 value={maxEffectiveRentFilter}
                                 onChange={(event) => setMaxEffectiveRentFilter(event.target.value)}
-                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eaf7ef] px-4 py-4 font-bold text-[#17623b]"
                             >
                                 {effectiveRentOptions.map((rentOption) => (
                                     <option key={rentOption}>{rentOption}</option>
@@ -253,14 +254,14 @@ export default function HomePage() {
                                 type="date"
                                 value={moveInDateFilter}
                                 onChange={(event) => setMoveInDateFilter(event.target.value)}
-                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eaf2fb] px-4 py-4 font-bold text-[#174a7c]"
                             />
 
                             <select
                                 aria-label="Current special"
                                 value={specialFilter}
                                 onChange={(event) => setSpecialFilter(event.target.value)}
-                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#fff0ea] px-4 py-4 font-bold text-[#9c321b]"
                             >
                                 {specialOptions.map((specialOption) => (
                                     <option key={specialOption}>{specialOption}</option>
@@ -274,11 +275,11 @@ export default function HomePage() {
             <section className="mx-auto max-w-6xl px-6 py-8">
                 <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
                     <div>
-                        <h2 className="text-3xl font-black text-slate-900">
+                        <h2 className="text-3xl font-black text-[#102426]">
                             Available Deals
                         </h2>
 
-                        <p className="mt-2 text-slate-500">
+                        <p className="mt-2 text-[#526260]">
                             Showing {filteredProperties.length} of {publicProperties.length} properties.
                         </p>
                     </div>
@@ -288,7 +289,7 @@ export default function HomePage() {
                             aria-label="Sort properties"
                             value={sortOption}
                             onChange={(event) => setSortOption(event.target.value)}
-                            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none"
+                            className="bma-focus-ring rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 text-sm font-bold text-[#173f3f]"
                         >
                             {sortOptions.map((option) => (
                                 <option key={option}>{option}</option>
@@ -297,7 +298,7 @@ export default function HomePage() {
 
                         <Link
                             to="/admin/dashboard"
-                            className="rounded-2xl bg-slate-950 px-5 py-3 text-center text-sm font-bold text-white hover:bg-slate-800"
+                            className="rounded-2xl bg-[#173f3f] px-5 py-3 text-center text-sm font-bold text-white hover:bg-[#102426]"
                         >
                             Admin Portal
                         </Link>
@@ -315,12 +316,12 @@ export default function HomePage() {
                 </div>
 
                 {filteredProperties.length === 0 && (
-                    <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
-                        <h3 className="text-2xl font-black text-slate-900">
+                    <div className="mt-6 rounded-3xl border border-dashed border-[#b8d9d0] bg-white p-10 text-center shadow-sm">
+                        <h3 className="text-2xl font-black text-[#102426]">
                             No properties found
                         </h3>
 
-                        <p className="mt-2 text-slate-500">
+                        <p className="mt-2 text-[#526260]">
                             Try searching by area, rent, availability, special, floor plan, or management company.
                         </p>
                     </div>
@@ -602,7 +603,7 @@ function PropertyCard({ property, matchedFloorPlan }) {
     const hasMatchedDeal = Boolean(cardDeal.currentSpecial || cardDeal.savings || property.special);
 
     return (
-        <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+        <article className="overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm transition hover:-translate-y-1 hover:border-[#f2b84b] hover:shadow-md">
             <img
                 src={primaryImage}
                 alt={property.name}
@@ -616,42 +617,42 @@ function PropertyCard({ property, matchedFloorPlan }) {
                             {property.name}
                         </h3>
 
-                        <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-500">
-                            <MapPin className="h-4 w-4" />
+                        <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#526260]">
+                            <MapPin className="h-4 w-4 text-[#2d7dd2]" />
                             {property.area}
                             {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
                         </p>
                     </div>
 
                     {hasMatchedDeal && (
-                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                        <span className="rounded-full bg-[#eaf7ef] px-3 py-1 text-xs font-black text-[#17623b] ring-1 ring-[#bfe7cf]">
                             Matched Deal
                         </span>
                     )}
                 </div>
 
-                <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-                    <p className="text-sm font-bold text-slate-500">Matched Floor Plan</p>
-                    <p className="mt-1 font-black text-slate-900">
+                <div className="mt-5 rounded-2xl border-l-4 border-[#f2b84b] bg-[#fff8e6] p-4">
+                    <p className="text-sm font-black text-[#8a5b0a]">Matched Floor Plan</p>
+                    <p className="mt-1 font-black text-[#102426]">
                         {cardDeal.name}
                         {cardDeal.bedrooms ? ` • ${cardDeal.bedrooms}` : ""}
                     </p>
 
-                    <p className="mt-2 text-sm font-semibold text-slate-500">
+                    <p className="mt-2 text-sm font-bold text-[#7a432e]">
                         {specialLabel}
                     </p>
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <DealStat label="Starting Rent" value={startingRent} />
-                    <DealStat label="Effective Rent" value={effectiveRent} />
-                    <DealStat label="Savings" value={savings} />
+                    <DealStat label="Starting Rent" value={startingRent} tone="gold" />
+                    <DealStat label="Effective Rent" value={effectiveRent} tone="blue" />
+                    <DealStat label="Savings" value={savings} tone="green" />
                 </div>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     <Link
                         to={`/properties/${property.id}`}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
                     >
                         <Building2 className="h-4 w-4" />
                         View
@@ -659,7 +660,7 @@ function PropertyCard({ property, matchedFloorPlan }) {
 
                     <Link
                         to={`/start?property=${property.id}`}
-                        className="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                        className="inline-flex items-center justify-center rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
                     >
                         Start Search
                     </Link>
@@ -669,11 +670,18 @@ function PropertyCard({ property, matchedFloorPlan }) {
     );
 }
 
-function DealStat({ label, value }) {
+function DealStat({ label, value, tone }) {
+    const toneClasses = {
+        gold: "border-[#f2d08a] bg-[#fff8e6] text-[#8a5b0a]",
+        blue: "border-[#b9d8f3] bg-[#eaf2fb] text-[#174a7c]",
+        green: "border-[#bfe7cf] bg-[#eaf7ef] text-[#17623b]",
+    };
+    const selectedTone = toneClasses[tone] || toneClasses.gold;
+
     return (
-        <div className="rounded-2xl bg-slate-50 p-4">
-            <p className="text-xs font-bold uppercase text-slate-400">{label}</p>
-            <p className="mt-2 font-black text-slate-900">{value}</p>
+        <div className={`rounded-2xl border p-4 ${selectedTone}`}>
+            <p className="text-xs font-black uppercase">{label}</p>
+            <p className="mt-2 font-black text-[#102426]">{value}</p>
         </div>
     );
 }
