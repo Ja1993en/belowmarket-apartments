@@ -15,6 +15,7 @@ export default function HomePage() {
     const [maxEffectiveRentFilter, setMaxEffectiveRentFilter] = useState("Any effective rent");
     const [moveInDateFilter, setMoveInDateFilter] = useState("");
     const [specialFilter, setSpecialFilter] = useState("Any special");
+    const [sortOption, setSortOption] = useState("Lowest effective rent");
 
     const properties = getAllProperties();
 
@@ -79,6 +80,7 @@ export default function HomePage() {
             matchedFloorPlan: getBestFloorPlanDeal(matchingFloorPlans),
         };
     }).filter(Boolean);
+    const sortedProperties = sortPropertiesByDeal(filteredProperties, sortOption);
 
     const areas = ["All", ...new Set(publicProperties.map((property) => property.area))];
     const bedroomSortOrder = ["Studio", "1 Bed", "2 Bed", "3 Bed"];
@@ -128,6 +130,12 @@ export default function HomePage() {
         "4+ weeks free",
         "6+ weeks free",
         "8+ weeks free",
+    ];
+    const sortOptions = [
+        "Lowest effective rent",
+        "Highest savings",
+        "Newest property",
+        "Most weeks free",
     ];
 
     return (
@@ -209,6 +217,7 @@ export default function HomePage() {
                                     setMaxEffectiveRentFilter("Any effective rent");
                                     setMoveInDateFilter("");
                                     setSpecialFilter("Any special");
+                                    setSortOption("Lowest effective rent");
                                 }}
                                 className="rounded-2xl bg-slate-950 px-5 py-4 text-sm font-bold text-white hover:bg-slate-800"
                             >
@@ -274,16 +283,29 @@ export default function HomePage() {
                         </p>
                     </div>
 
-                    <Link
-                        to="/admin/dashboard"
-                        className="rounded-2xl bg-slate-950 px-5 py-3 text-center text-sm font-bold text-white hover:bg-slate-800"
-                    >
-                        Admin Portal
-                    </Link>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <select
+                            aria-label="Sort properties"
+                            value={sortOption}
+                            onChange={(event) => setSortOption(event.target.value)}
+                            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none"
+                        >
+                            {sortOptions.map((option) => (
+                                <option key={option}>{option}</option>
+                            ))}
+                        </select>
+
+                        <Link
+                            to="/admin/dashboard"
+                            className="rounded-2xl bg-slate-950 px-5 py-3 text-center text-sm font-bold text-white hover:bg-slate-800"
+                        >
+                            Admin Portal
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="mt-6 grid gap-6 lg:grid-cols-3">
-                    {filteredProperties.map((property) => (
+                    {sortedProperties.map((property) => (
                         <PropertyCard
                             key={property.id}
                             property={property}
@@ -486,6 +508,30 @@ function getBestFloorPlanDeal(floorPlans) {
     })[0];
 }
 
+function sortPropertiesByDeal(properties, sortOption) {
+    return [...properties].sort((firstProperty, secondProperty) => {
+        const firstDeal = firstProperty.matchedFloorPlan || {};
+        const secondDeal = secondProperty.matchedFloorPlan || {};
+
+        if (sortOption === "Highest savings") {
+            return parseCurrency(secondDeal.savings) - parseCurrency(firstDeal.savings);
+        }
+
+        if (sortOption === "Newest property") {
+            return normalizeYearBuilt(secondProperty.yearBuilt) - normalizeYearBuilt(firstProperty.yearBuilt);
+        }
+
+        if (sortOption === "Most weeks free") {
+            return Number(secondDeal.freeWeeks || 0) - Number(firstDeal.freeWeeks || 0);
+        }
+
+        const firstRent = parseCurrency(firstDeal.effectiveRent || firstDeal.startingRent);
+        const secondRent = parseCurrency(secondDeal.effectiveRent || secondDeal.startingRent);
+
+        return normalizeRentSortValue(firstRent) - normalizeRentSortValue(secondRent);
+    });
+}
+
 function getFloorPlanSearchText(floorPlan) {
     return [
         floorPlan.name,
@@ -527,6 +573,11 @@ function normalizeSortIndex(index) {
 
 function normalizeRentSortValue(value) {
     return value > 0 ? value : Number.MAX_SAFE_INTEGER;
+}
+
+function normalizeYearBuilt(value) {
+    const year = Number(value);
+    return Number.isFinite(year) ? year : 0;
 }
 
 function getWeeksFromSpecialLabel(label) {
