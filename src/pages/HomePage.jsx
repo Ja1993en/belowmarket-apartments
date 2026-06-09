@@ -207,6 +207,8 @@ function getSearchFloorPlans(property) {
         const freeWeeks = getWeeksFromSpecialLabel(property.special);
         const pricing = calculateFloorPlanPricing({
             startingRent: property.rent || "",
+            requiredMonthlyFees: property.requiredMonthlyFees || "",
+            totalMonthlyRent: property.totalMonthlyRent || property.rent || "",
             effectiveRent: property.effectiveRent || "",
             marketRent: property.marketRent || "",
             savings: property.savings || "",
@@ -220,6 +222,8 @@ function getSearchFloorPlans(property) {
                 name: property.name,
                 bedrooms: property.bedrooms?.[0] || "",
                 startingRent: property.rent || "",
+                requiredMonthlyFees: property.requiredMonthlyFees || "",
+                totalMonthlyRent: property.totalMonthlyRent || property.rent || "",
                 marketRent: property.marketRent || "",
                 ...pricing,
                 currentSpecial: property.special || "",
@@ -235,6 +239,8 @@ function getSearchFloorPlans(property) {
             const freeWeeks = getWeeksFromSpecialLabel(property.special);
             const pricing = calculateFloorPlanPricing({
                 startingRent: property.rent || "",
+                requiredMonthlyFees: property.requiredMonthlyFees || "",
+                totalMonthlyRent: property.totalMonthlyRent || property.rent || "",
                 effectiveRent: property.effectiveRent || "",
                 marketRent: property.marketRent || "",
                 savings: property.savings || "",
@@ -247,6 +253,8 @@ function getSearchFloorPlans(property) {
                 name: floorPlan,
                 bedrooms: property.bedrooms?.[index] || property.bedrooms?.[0] || "",
                 startingRent: property.rent || "",
+                requiredMonthlyFees: property.requiredMonthlyFees || "",
+                totalMonthlyRent: property.totalMonthlyRent || property.rent || "",
                 marketRent: property.marketRent || "",
                 ...pricing,
                 currentSpecial: property.special || "",
@@ -263,9 +271,18 @@ function getSearchFloorPlans(property) {
         );
         const leaseTermMonths = Number(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12);
         const startingRent = floorPlan.startingRent || floorPlan.rent || property.rent || "";
+        const requiredMonthlyFees = floorPlan.requiredMonthlyFees || property.requiredMonthlyFees || "";
+        const totalMonthlyRent =
+            floorPlan.totalMonthlyRent ||
+            floorPlan.rent ||
+            property.totalMonthlyRent ||
+            property.rent ||
+            "";
         const marketRent = floorPlan.marketRent || property.marketRent || "";
         const pricing = calculateFloorPlanPricing({
             startingRent,
+            requiredMonthlyFees,
+            totalMonthlyRent,
             effectiveRent: floorPlan.effectiveRent || property.effectiveRent || "",
             marketRent,
             savings: floorPlan.savings || property.savings || "",
@@ -278,6 +295,8 @@ function getSearchFloorPlans(property) {
             name: floorPlan.name || `Floor Plan ${index + 1}`,
             bedrooms: floorPlan.bedrooms || floorPlan.beds || "",
             startingRent,
+            requiredMonthlyFees,
+            totalMonthlyRent: pricing.totalMonthlyRent || totalMonthlyRent,
             marketRent,
             ...pricing,
             currentSpecial: specialLabel,
@@ -290,13 +309,18 @@ function getSearchFloorPlans(property) {
 
 function calculateFloorPlanPricing(floorPlan) {
     const startingRentNumber = parseCurrency(floorPlan.startingRent);
+    const requiredMonthlyFeesNumber = parseCurrency(floorPlan.requiredMonthlyFees);
+    const enteredTotalMonthlyRentNumber = parseCurrency(floorPlan.totalMonthlyRent);
+    const totalMonthlyRentNumber =
+        enteredTotalMonthlyRentNumber || startingRentNumber + requiredMonthlyFeesNumber;
     const marketRentNumber = parseCurrency(floorPlan.marketRent);
     const freeWeeks = Number(floorPlan.freeWeeks || 0);
     const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
 
     if (!startingRentNumber || !freeWeeks || !leaseTermMonths) {
         return {
-            effectiveRent: floorPlan.effectiveRent || floorPlan.startingRent || "",
+            totalMonthlyRent: totalMonthlyRentNumber ? formatCurrency(totalMonthlyRentNumber) : "",
+            effectiveRent: floorPlan.effectiveRent || (totalMonthlyRentNumber ? formatCurrency(totalMonthlyRentNumber) : floorPlan.startingRent || ""),
             savings: floorPlan.savings || "",
             belowMarketPercent: floorPlan.belowMarketPercent || "",
         };
@@ -304,15 +328,16 @@ function calculateFloorPlanPricing(floorPlan) {
 
     const freeMonths = freeWeeks / LEASING_WEEKS_PER_MONTH;
     const monthlyConcession = (startingRentNumber * freeMonths) / leaseTermMonths;
-    const effectiveRentNumber = Math.max(startingRentNumber - monthlyConcession, 0);
-    const savingsNumber = Math.max(startingRentNumber - effectiveRentNumber, 0);
-    const comparisonRent = marketRentNumber || startingRentNumber;
+    const effectiveRentNumber = Math.max(totalMonthlyRentNumber - monthlyConcession, 0);
+    const savingsNumber = Math.max(totalMonthlyRentNumber - effectiveRentNumber, 0);
+    const comparisonRent = marketRentNumber || totalMonthlyRentNumber;
     const belowMarketSavingsNumber = Math.max(comparisonRent - effectiveRentNumber, 0);
     const belowMarketPercentNumber = comparisonRent
         ? Math.round((belowMarketSavingsNumber / comparisonRent) * 100)
         : 0;
 
     return {
+        totalMonthlyRent: formatCurrency(totalMonthlyRentNumber),
         effectiveRent: formatCurrency(effectiveRentNumber),
         savings: savingsNumber ? `${formatCurrency(savingsNumber)}/mo` : "$0/mo",
         belowMarketPercent: `${belowMarketPercentNumber}%`,
@@ -377,7 +402,7 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
             specialLabel: "No listed special on available units",
             normalRentLabel: getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans)),
             effectiveRentLabel: getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans)),
-            priceCaption: "Normal rent",
+            priceCaption: "Normal monthly rent",
             badgeLabel: "",
             specialCountLabel: "0 available options with specials",
         };
@@ -393,7 +418,7 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
             specialLabel: allSpecialLabels[0] || "Special available",
             normalRentLabel: "Contact for pricing",
             effectiveRentLabel: "Contact for pricing",
-            priceCaption: "Normal rent before special",
+            priceCaption: "Normal monthly rent with fees",
             badgeLabel: "Special",
             specialCountLabel: getSpecialCountLabel(specialDealUnits.length, dealOptionCount),
         };
@@ -401,6 +426,12 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
 
     const normalRentValues = specialDealUnits
         .map((dealUnit) => dealUnit.startingRentNumber)
+        .filter((value) => value > 0);
+    const baseRentValues = specialDealUnits
+        .map((dealUnit) => dealUnit.baseRentNumber)
+        .filter((value) => value > 0);
+    const requiredMonthlyFeeValues = specialDealUnits
+        .map((dealUnit) => dealUnit.requiredMonthlyFeesNumber)
         .filter((value) => value > 0);
     const minEffectiveRent = Math.min(...effectiveRentValues);
     const maxEffectiveRent = Math.max(...effectiveRentValues);
@@ -418,7 +449,9 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
         specialLabel,
         normalRentLabel,
         effectiveRentLabel: formatRentRange(minEffectiveRent, maxEffectiveRent),
-        priceCaption: "Normal rent before special",
+        priceCaption: "Normal monthly rent with fees",
+        rentBreakdownLabel: getRentBreakdownLabel(baseRentValues, requiredMonthlyFeeValues),
+        specialCalculationLabel: "Special applies to base rent only",
         badgeLabel: maxFreeWeeks > 0 ? `${maxFreeWeeks} weeks free` : "Special",
         specialCountLabel: getSpecialCountLabel(specialCount, dealOptionCount),
     };
@@ -488,6 +521,7 @@ function getSpecialDealUnits(floorPlans) {
 function createSpecialDealUnit({ floorPlan, unitRent, specialLabel, freeWeeks }) {
     const pricing = calculateFloorPlanPricing({
         startingRent: unitRent,
+        requiredMonthlyFees: floorPlan.requiredMonthlyFees,
         effectiveRent: floorPlan.effectiveRent,
         marketRent: floorPlan.marketRent,
         savings: floorPlan.savings,
@@ -501,9 +535,28 @@ function createSpecialDealUnit({ floorPlan, unitRent, specialLabel, freeWeeks })
     return {
         specialLabel,
         freeWeeks,
-        startingRentNumber: parseCurrency(unitRent),
+        startingRentNumber: parseCurrency(pricing.totalMonthlyRent) || parseCurrency(unitRent),
+        baseRentNumber: parseCurrency(unitRent),
+        requiredMonthlyFeesNumber: parseCurrency(floorPlan.requiredMonthlyFees),
         effectiveRentNumber,
     };
+}
+
+function getRentBreakdownLabel(baseRentValues, requiredMonthlyFeeValues) {
+    if (baseRentValues.length === 0 || requiredMonthlyFeeValues.length === 0) {
+        return "";
+    }
+
+    const baseRentLabel = formatRentRange(
+        Math.min(...baseRentValues),
+        Math.max(...baseRentValues)
+    );
+    const feeLabel = formatRentRange(
+        Math.min(...requiredMonthlyFeeValues),
+        Math.max(...requiredMonthlyFeeValues)
+    );
+
+    return `${baseRentLabel} base rent + ${feeLabel} required fees`;
 }
 
 function getFloorPlanSpecial(floorPlan) {
@@ -546,7 +599,7 @@ function getFallbackDealSummary(property) {
         specialLabel: property.special || "Special not listed",
         normalRentLabel: property.rent,
         effectiveRentLabel: property.rent,
-        priceCaption: "Normal rent",
+        priceCaption: "Normal monthly rent",
         badgeLabel: "",
         specialCountLabel: "Special not listed in source data",
     };
@@ -761,6 +814,11 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                 <p className="mt-0.5 text-xs font-bold text-[#526260]">
                     {dealSummary.priceCaption || "Total Monthly Price"}
                 </p>
+                {dealSummary.rentBreakdownLabel && (
+                    <p className="mt-1 text-xs font-bold text-[#526260]">
+                        {dealSummary.rentBreakdownLabel}
+                    </p>
+                )}
 
                 <div className="mt-3 rounded-2xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
                     <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
@@ -776,6 +834,11 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                         <p className="mt-1 text-sm font-black leading-5 text-[#102426]">
                             {effectiveRentLabel}
                         </p>
+                        {dealSummary.specialCalculationLabel && (
+                            <p className="mt-1 text-xs font-bold text-[#7a432e]">
+                                {dealSummary.specialCalculationLabel}
+                            </p>
+                        )}
                     </div>
                     {dealSummary.specialCountLabel && (
                         <p className="mt-1 text-xs font-bold text-[#7a432e]">

@@ -720,6 +720,9 @@ function FloorPlanEditor({
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800 md:col-span-2 xl:col-span-3">
+          Enter base rent separately from required monthly fees. Specials are calculated from base rent only, while renters see the normal monthly rent with fees included.
+        </p>
         <FormField
           label="Floor Plan Name"
           value={floorPlan.name}
@@ -741,9 +744,14 @@ function FloorPlanEditor({
           onChange={(value) => onChange(floorPlan.id, "squareFeet", value)}
         />
         <FormField
-          label="Starting Rent"
+          label="Base Rent"
           value={floorPlan.startingRent}
           onChange={(value) => onChange(floorPlan.id, "startingRent", value)}
+        />
+        <FormField
+          label="Required Monthly Fees / Amenities"
+          value={floorPlan.requiredMonthlyFees}
+          onChange={(value) => onChange(floorPlan.id, "requiredMonthlyFees", value)}
         />
         <FormField
           label="Market Rent"
@@ -784,6 +792,10 @@ function FloorPlanEditor({
             ))}
           </select>
         </label>
+        <CalculatedField
+          label="Normal Monthly Rent"
+          value={calculatedValues.totalMonthlyRent}
+        />
         <CalculatedField label="Effective Rent" value={calculatedValues.effectiveRent} />
         <CalculatedField label="Savings" value={calculatedValues.savings} />
         <CalculatedField
@@ -958,7 +970,7 @@ function FloorPlanEditor({
                   }
                 />
                 <FormField
-                  label="Unit Rent"
+                  label="Unit Base Rent"
                   value={availableUnit.rent}
                   onChange={(value) =>
                     onAvailabilityChange(floorPlan.id, availableUnit.id, "rent", value)
@@ -1152,6 +1164,8 @@ function createBlankFloorPlan() {
     bathrooms: "",
     squareFeet: "",
     startingRent: "",
+    requiredMonthlyFees: "",
+    totalMonthlyRent: "",
     effectiveRent: "",
     marketRent: "",
     savings: "",
@@ -1189,6 +1203,8 @@ function normalizeFloorPlansForDraft(property) {
           name: floorPlan,
           bedrooms: property.bedrooms?.[0] || "",
           startingRent: property.rent || "",
+          requiredMonthlyFees: "",
+          totalMonthlyRent: property.rent || "",
           effectiveRent: property.effectiveRent || "",
           marketRent: property.marketRent || "",
           freeWeeks: "0",
@@ -1210,6 +1226,8 @@ function normalizeFloorPlansForDraft(property) {
         bathrooms: floorPlan.bathrooms || floorPlan.baths || "",
         squareFeet: floorPlan.squareFeet || floorPlan.sqft || "",
         startingRent: floorPlan.startingRent || floorPlan.rent || "",
+        requiredMonthlyFees: floorPlan.requiredMonthlyFees || "",
+        totalMonthlyRent: floorPlan.totalMonthlyRent || floorPlan.rent || "",
         marketRent: floorPlan.marketRent || "",
         freeWeeks: String(parsedFreeWeeks || 0),
         leaseTermMonths: String(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12),
@@ -1260,7 +1278,10 @@ function normalizeFloorPlanForStorage(floorPlan) {
     image: floorPlan.image || floorPlan.photos?.[0]?.url || "",
     photos: floorPlan.photos || [],
     startingRent,
-    rent: startingRent,
+    baseRent: startingRent,
+    requiredMonthlyFees: floorPlan.requiredMonthlyFees.trim(),
+    totalMonthlyRent: calculatedValues.totalMonthlyRent,
+    rent: calculatedValues.totalMonthlyRent || startingRent,
     effectiveRent: calculatedValues.effectiveRent,
     marketRent: floorPlan.marketRent.trim(),
     savings: calculatedValues.savings,
@@ -1380,12 +1401,15 @@ function getDateFromAvailabilityLabel(label) {
 
 function calculateFloorPlanValues(floorPlan) {
   const startingRentNumber = parseCurrency(floorPlan.startingRent);
+  const requiredMonthlyFeesNumber = parseCurrency(floorPlan.requiredMonthlyFees);
+  const totalMonthlyRentNumber = startingRentNumber + requiredMonthlyFeesNumber;
   const marketRentNumber = parseCurrency(floorPlan.marketRent);
   const freeWeeks = Number(floorPlan.freeWeeks || 0);
   const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
 
   if (!startingRentNumber || !leaseTermMonths) {
     return {
+      totalMonthlyRent: "",
       effectiveRent: "",
       savings: "",
       belowMarketPercent: "",
@@ -1394,15 +1418,16 @@ function calculateFloorPlanValues(floorPlan) {
 
   const freeMonths = freeWeeks / LEASING_WEEKS_PER_MONTH;
   const monthlyConcession = (startingRentNumber * freeMonths) / leaseTermMonths;
-  const effectiveRentNumber = Math.max(startingRentNumber - monthlyConcession, 0);
-  const savingsNumber = Math.max(startingRentNumber - effectiveRentNumber, 0);
-  const comparisonRent = marketRentNumber || startingRentNumber;
+  const effectiveRentNumber = Math.max(totalMonthlyRentNumber - monthlyConcession, 0);
+  const savingsNumber = Math.max(totalMonthlyRentNumber - effectiveRentNumber, 0);
+  const comparisonRent = marketRentNumber || totalMonthlyRentNumber;
   const belowMarketSavingsNumber = Math.max(comparisonRent - effectiveRentNumber, 0);
   const belowMarketPercentNumber = comparisonRent
     ? Math.round((belowMarketSavingsNumber / comparisonRent) * 100)
     : 0;
 
   return {
+    totalMonthlyRent: formatCurrency(totalMonthlyRentNumber),
     effectiveRent: formatCurrency(effectiveRentNumber),
     savings: savingsNumber ? `${formatCurrency(savingsNumber)}/mo` : "$0/mo",
     belowMarketPercent: `${belowMarketPercentNumber}%`,
