@@ -8,14 +8,6 @@ const LEASING_WEEKS_PER_MONTH = 4;
 
 export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState("");
-    const [areaFilter, setAreaFilter] = useState("All");
-    const [bedroomFilter, setBedroomFilter] = useState("All");
-    const [yearBuiltFilter, setYearBuiltFilter] = useState("Any year");
-    const [maxStartingRentFilter, setMaxStartingRentFilter] = useState("Any starting rent");
-    const [maxEffectiveRentFilter, setMaxEffectiveRentFilter] = useState("Any effective rent");
-    const [moveInDateFilter, setMoveInDateFilter] = useState("");
-    const [specialFilter, setSpecialFilter] = useState("Any special");
-    const [sortOption, setSortOption] = useState("Lowest effective rent");
 
     const properties = getAllProperties();
 
@@ -24,11 +16,11 @@ export default function HomePage() {
     );
 
     const floorPlanFilters = {
-        bedroomFilter,
-        maxStartingRentFilter,
-        maxEffectiveRentFilter,
-        moveInDateFilter,
-        specialFilter,
+        bedroomFilter: "All",
+        maxStartingRentFilter: "Any starting rent",
+        maxEffectiveRentFilter: "Any effective rent",
+        moveInDateFilter: "",
+        specialFilter: "Any special",
     };
 
     const filteredProperties = publicProperties.map((property) => {
@@ -56,14 +48,6 @@ export default function HomePage() {
         ].filter(Boolean).join(" ").toLowerCase();
 
         const matchesSearch = searchableText.includes(searchTerm.toLowerCase());
-        const matchesArea = areaFilter === "All" || property.area === areaFilter;
-        const builtYear = Number(property.yearBuilt);
-        const matchesYearBuilt =
-            yearBuiltFilter === "Any year" ||
-            (yearBuiltFilter === "2020 or newer" && builtYear >= 2020) ||
-            (yearBuiltFilter === "2015 or newer" && builtYear >= 2015) ||
-            (yearBuiltFilter === "2010 or newer" && builtYear >= 2010) ||
-            (yearBuiltFilter === "Before 2010" && builtYear > 0 && builtYear < 2010);
         const matchingFloorPlans = getMatchingFloorPlans(
             propertyFloorPlans,
             floorPlanFilters,
@@ -71,7 +55,7 @@ export default function HomePage() {
         );
         const matchesFloorPlanFilters = matchingFloorPlans.length > 0;
 
-        if (!matchesSearch || !matchesArea || !matchesYearBuilt || !matchesFloorPlanFilters) {
+        if (!matchesSearch || !matchesFloorPlanFilters) {
             return null;
         }
 
@@ -80,63 +64,7 @@ export default function HomePage() {
             matchedFloorPlan: getBestFloorPlanDeal(matchingFloorPlans),
         };
     }).filter(Boolean);
-    const sortedProperties = sortPropertiesByDeal(filteredProperties, sortOption);
-
-    const areas = ["All", ...new Set(publicProperties.map((property) => property.area))];
-    const bedroomSortOrder = ["Studio", "1 Bed", "2 Bed", "3 Bed"];
-    const bedrooms = [
-        "All",
-        ...new Set(
-            publicProperties.flatMap((property) =>
-                getSearchFloorPlans(property).map((floorPlan) => floorPlan.bedrooms)
-            ).filter(Boolean)
-        ),
-    ].sort((firstBedroom, secondBedroom) => {
-        if (firstBedroom === "All") return -1;
-        if (secondBedroom === "All") return 1;
-
-        const firstIndex = bedroomSortOrder.indexOf(firstBedroom);
-        const secondIndex = bedroomSortOrder.indexOf(secondBedroom);
-
-        return normalizeSortIndex(firstIndex) - normalizeSortIndex(secondIndex);
-    });
-    const yearBuiltOptions = [
-        "Any year",
-        "2020 or newer",
-        "2015 or newer",
-        "2010 or newer",
-        "Before 2010",
-    ];
-    const rentOptions = [
-        "Any starting rent",
-        "$1,400 or less",
-        "$1,600 or less",
-        "$1,800 or less",
-        "$2,000 or less",
-        "$2,500 or less",
-    ];
-    const effectiveRentOptions = [
-        "Any effective rent",
-        "$1,400 or less",
-        "$1,600 or less",
-        "$1,800 or less",
-        "$2,000 or less",
-        "$2,500 or less",
-    ];
-    const specialOptions = [
-        "Any special",
-        "Has special",
-        "2+ weeks free",
-        "4+ weeks free",
-        "6+ weeks free",
-        "8+ weeks free",
-    ];
-    const sortOptions = [
-        "Lowest effective rent",
-        "Highest savings",
-        "Newest property",
-        "Most weeks free",
-    ];
+    const sortedProperties = sortPropertiesByDeal(filteredProperties, "Lowest effective rent");
 
     return (
         <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
@@ -183,125 +111,52 @@ export default function HomePage() {
                 </div>
             </header>
 
-            <section className="sticky top-[92px] z-30 border-b border-[#d7e6df] bg-[#f5f8f1]/95 px-4 py-3 shadow-sm backdrop-blur lg:top-[73px]">
-                <div className="mx-auto max-w-[1500px]">
-                    <div className="bma-value-stripe mb-3 h-1.5 rounded-full" />
-                    <div className="grid gap-3 xl:grid-cols-[minmax(280px,1.4fr)_repeat(4,minmax(130px,.65fr))_auto]">
-                        <div className="relative">
-                            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#2d7dd2]" />
+            <section className="bma-brand-panel border-b-[6px] border-[#f2b84b] px-4 py-12 text-white">
+                <div className="mx-auto max-w-5xl text-center">
+                    <p className="mx-auto w-fit rounded-full bg-[#f2b84b]/15 px-4 py-2 text-sm font-black text-[#f9d783]">
+                        Below Market Apartments
+                    </p>
 
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(event) => setSearchTerm(event.target.value)}
-                                placeholder="City, ZIP, property, manager, special..."
-                                className="bma-focus-ring h-12 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-12 pr-4 font-bold text-[#102426] shadow-sm"
-                            />
+                    <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-black text-[#fff7df] md:text-6xl">
+                        Find below-market apartment deals.
+                    </h1>
+
+                    <p className="mx-auto mt-4 max-w-2xl text-[#d7ece6]">
+                        Search by city, ZIP, property name, manager, or special.
+                    </p>
+
+                    <div className="mx-auto mt-8 max-w-3xl rounded-3xl border border-white/20 bg-white p-2 shadow-2xl shadow-[#102426]/25">
+                        <div className="bma-value-stripe mb-2 h-2 rounded-full" />
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                            <div className="relative min-w-0 flex-1">
+                                <Search className="pointer-events-none absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-[#2d7dd2]" />
+
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                    placeholder="Enter city, ZIP, property, or special"
+                                    className="bma-focus-ring h-16 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-[#102426]"
+                                />
+                            </div>
+
+                            <button
+                                type="button"
+                                className="h-16 rounded-2xl bg-[#f2b84b] px-8 text-base font-black text-[#102426] hover:bg-[#f9d783]"
+                            >
+                                Search
+                            </button>
                         </div>
 
-                        <select
-                            aria-label="Area"
-                            value={areaFilter}
-                            onChange={(event) => setAreaFilter(event.target.value)}
-                            className="bma-focus-ring h-12 rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 font-bold text-[#173f3f]"
-                        >
-                            {areas.map((area) => (
-                                <option key={area}>{area}</option>
-                            ))}
-                        </select>
-
-                        <select
-                            aria-label="Bedrooms"
-                            value={bedroomFilter}
-                            onChange={(event) => setBedroomFilter(event.target.value)}
-                            className="bma-focus-ring h-12 rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 font-bold text-[#173f3f]"
-                        >
-                            {bedrooms.map((bedroom) => (
-                                <option key={bedroom}>{bedroom}</option>
-                            ))}
-                        </select>
-
-                        <select
-                            aria-label="Maximum effective rent"
-                            value={maxEffectiveRentFilter}
-                            onChange={(event) => setMaxEffectiveRentFilter(event.target.value)}
-                            className="bma-focus-ring h-12 rounded-2xl border border-[#d7e6df] bg-[#eaf7ef] px-4 font-bold text-[#17623b]"
-                        >
-                            {effectiveRentOptions.map((rentOption) => (
-                                <option key={rentOption}>{rentOption}</option>
-                            ))}
-                        </select>
-
-                        <select
-                            aria-label="Current special"
-                            value={specialFilter}
-                            onChange={(event) => setSpecialFilter(event.target.value)}
-                            className="bma-focus-ring h-12 rounded-2xl border border-[#d7e6df] bg-[#fff0ea] px-4 font-bold text-[#9c321b]"
-                        >
-                            {specialOptions.map((specialOption) => (
-                                <option key={specialOption}>{specialOption}</option>
-                            ))}
-                        </select>
-
-                        <button
-                            onClick={() => {
-                                setSearchTerm("");
-                                setAreaFilter("All");
-                                setBedroomFilter("All");
-                                setYearBuiltFilter("Any year");
-                                setMaxStartingRentFilter("Any starting rent");
-                                setMaxEffectiveRentFilter("Any effective rent");
-                                setMoveInDateFilter("");
-                                setSpecialFilter("Any special");
-                                setSortOption("Lowest effective rent");
-                            }}
-                            className="h-12 rounded-2xl bg-[#e4572e] px-5 text-sm font-black text-white hover:bg-[#c94724]"
-                        >
-                            Clear
-                        </button>
-                    </div>
-
-                    <div className="mt-3 grid gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
-                        <select
-                            aria-label="Maximum starting rent"
-                            value={maxStartingRentFilter}
-                            onChange={(event) => setMaxStartingRentFilter(event.target.value)}
-                            className="bma-focus-ring h-11 rounded-2xl border border-[#d7e6df] bg-[#fff8e6] px-4 text-sm font-bold text-[#4f3810]"
-                        >
-                            {rentOptions.map((rentOption) => (
-                                <option key={rentOption}>{rentOption}</option>
-                            ))}
-                        </select>
-
-                        <input
-                            aria-label="Move-in date"
-                            type="date"
-                            value={moveInDateFilter}
-                            onChange={(event) => setMoveInDateFilter(event.target.value)}
-                            className="bma-focus-ring h-11 rounded-2xl border border-[#d7e6df] bg-[#eaf2fb] px-4 text-sm font-bold text-[#174a7c]"
-                        />
-
-                        <select
-                            aria-label="Year built"
-                            value={yearBuiltFilter}
-                            onChange={(event) => setYearBuiltFilter(event.target.value)}
-                            className="bma-focus-ring h-11 rounded-2xl border border-[#d7e6df] bg-white px-4 text-sm font-bold text-[#173f3f]"
-                        >
-                            {yearBuiltOptions.map((yearOption) => (
-                                <option key={yearOption}>{yearOption}</option>
-                            ))}
-                        </select>
-
-                        <select
-                            aria-label="Sort properties"
-                            value={sortOption}
-                            onChange={(event) => setSortOption(event.target.value)}
-                            className="bma-focus-ring h-11 rounded-2xl border border-[#b8d9d0] bg-white px-4 text-sm font-bold text-[#173f3f]"
-                        >
-                            {sortOptions.map((option) => (
-                                <option key={option}>{option}</option>
-                            ))}
-                        </select>
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchTerm("")}
+                                className="mt-2 rounded-2xl px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                            >
+                                Clear search
+                            </button>
+                        )}
                     </div>
                 </div>
             </section>
@@ -319,7 +174,7 @@ export default function HomePage() {
                                     {filteredProperties.length === 1 ? "" : "s"}
                                 </h1>
                                 <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                    Showing {filteredProperties.length} of {publicProperties.length} properties. Sorted by {sortOption.toLowerCase()}.
+                                    Showing {filteredProperties.length} of {publicProperties.length} properties.
                                 </p>
                             </div>
 
@@ -348,7 +203,7 @@ export default function HomePage() {
                                 </h3>
 
                                 <p className="mt-2 text-[#526260]">
-                                    Try searching by area, rent, availability, special, floor plan, or management company.
+                                    Try searching by city, ZIP, property name, special, or management company.
                                 </p>
                             </div>
                         )}
@@ -596,10 +451,6 @@ function parseCurrency(value) {
 
 function formatCurrency(value) {
     return `$${Math.round(value).toLocaleString()}`;
-}
-
-function normalizeSortIndex(index) {
-    return index === -1 ? 999 : index;
 }
 
 function normalizeRentSortValue(value) {
