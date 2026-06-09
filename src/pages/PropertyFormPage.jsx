@@ -6,12 +6,20 @@ import {
   getAnyPropertyById,
   updateStoredProperty,
 } from "../data/propertyStorage";
+import {
+  createStoredManagementCompany,
+  getAllManagementCompanies,
+  getManagementCompanyById,
+  getManagementCompanyIdByName,
+} from "../data/managementCompanyStorage";
 
 const emptyPropertyDraft = {
   name: "",
   area: "",
   manager: "",
+  managementCompanyId: "",
   managementCompany: "",
+  newManagementCompanyName: "",
   address: "",
   city: "",
   state: "",
@@ -31,10 +39,12 @@ const emptyPropertyDraft = {
 };
 
 const MAX_UPLOAD_COUNT = 8;
+const MAX_FLOOR_PLAN_UPLOAD_COUNT = 4;
 const MAX_UPLOAD_SIZE = 1.5 * 1024 * 1024;
 const LEASING_WEEKS_PER_MONTH = 4;
 const WEEKS_FREE_OPTIONS = Array.from({ length: 25 }, (_, index) => index * 0.5);
 const LEASE_TERM_OPTIONS = ["6", "9", "12", "13", "14", "15", "18"];
+const NEW_MANAGEMENT_COMPANY_VALUE = "__new_management_company__";
 
 export default function PropertyFormPage() {
   const { propertyId } = useParams();
@@ -42,6 +52,9 @@ export default function PropertyFormPage() {
   const existingProperty = propertyId ? getAnyPropertyById(propertyId) : null;
   const isEditing = Boolean(propertyId);
   const [saveError, setSaveError] = useState("");
+  const [managementCompanies, setManagementCompanies] = useState(() =>
+    getAllManagementCompanies()
+  );
   const [propertyDraft, setPropertyDraft] = useState(() =>
     existingProperty ? createDraftFromProperty(existingProperty) : emptyPropertyDraft
   );
@@ -100,6 +113,92 @@ export default function PropertyFormPage() {
         photos: nextPhotos,
       };
     });
+  };
+
+  const uploadFloorPlanPhotos = async (floorPlanId, event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+
+    if (files.length === 0) return;
+
+    const floorPlan = propertyDraft.floorPlans.find((item) => item.id === floorPlanId);
+    const currentPhotos = floorPlan?.photos || [];
+    const remainingSlots = MAX_FLOOR_PLAN_UPLOAD_COUNT - currentPhotos.length;
+    const acceptedFiles = files.slice(0, remainingSlots);
+    const oversizedFile = acceptedFiles.find((file) => file.size > MAX_UPLOAD_SIZE);
+
+    if (remainingSlots <= 0) {
+      setSaveError(`You can upload up to ${MAX_FLOOR_PLAN_UPLOAD_COUNT} photos for each floor plan.`);
+      return;
+    }
+
+    if (oversizedFile) {
+      setSaveError("Each uploaded floor plan photo must be 1.5 MB or smaller.");
+      return;
+    }
+
+    try {
+      const uploadedPhotos = await Promise.all(
+        acceptedFiles.map((file) => readPhotoFile(file, "Floor Plan"))
+      );
+
+      setPropertyDraft((currentDraft) => ({
+        ...currentDraft,
+        floorPlans: currentDraft.floorPlans.map((item) => {
+          if (item.id !== floorPlanId) return item;
+
+          const nextPhotos = [...(item.photos || []), ...uploadedPhotos];
+
+          return {
+            ...item,
+            image: item.image || nextPhotos[0]?.url || "",
+            photos: nextPhotos,
+          };
+        }),
+      }));
+      setSaveError("");
+    } catch (error) {
+      console.error(error);
+      setSaveError("Could not upload floor plan photos. Please try smaller image files.");
+    }
+  };
+
+  const removeFloorPlanPhoto = (floorPlanId, photoId) => {
+    setPropertyDraft((currentDraft) => ({
+      ...currentDraft,
+      floorPlans: currentDraft.floorPlans.map((floorPlan) => {
+        if (floorPlan.id !== floorPlanId) return floorPlan;
+
+        const nextPhotos = (floorPlan.photos || []).filter((photo) => photo.id !== photoId);
+        const removedPrimary = (floorPlan.photos || []).find((photo) => photo.id === photoId)
+          ?.url === floorPlan.image;
+
+        return {
+          ...floorPlan,
+          image: removedPrimary ? nextPhotos[0]?.url || "" : floorPlan.image,
+          photos: nextPhotos,
+        };
+      }),
+    }));
+  };
+
+  const setPrimaryFloorPlanPhoto = (floorPlanId, photoId) => {
+    setPropertyDraft((currentDraft) => ({
+      ...currentDraft,
+      floorPlans: currentDraft.floorPlans.map((floorPlan) => {
+        if (floorPlan.id !== floorPlanId) return floorPlan;
+
+        const photo = (floorPlan.photos || []).find((item) => item.id === photoId);
+
+        return {
+          ...floorPlan,
+          image: photo?.url || floorPlan.image,
+          photos: photo
+            ? [photo, ...(floorPlan.photos || []).filter((item) => item.id !== photoId)]
+            : floorPlan.photos || [],
+        };
+      }),
+    }));
   };
 
   const setPrimaryPhoto = (photoId) => {
@@ -218,6 +317,17 @@ export default function PropertyFormPage() {
       return;
     }
 
+    const selectedManagementCompany = resolveManagementCompany({
+      managementCompanies,
+      propertyDraft,
+      setManagementCompanies,
+      setSaveError,
+    });
+
+    if (!selectedManagementCompany) {
+      return;
+    }
+
     const floorPlans = propertyDraft.floorPlans
       .map(normalizeFloorPlanForStorage)
       .filter((floorPlan) => floorPlan.name && floorPlan.rent);
@@ -234,10 +344,8 @@ export default function PropertyFormPage() {
       name: propertyDraft.name.trim(),
       area: propertyDraft.area.trim(),
       manager: propertyDraft.manager.trim() || "Not assigned",
-      managementCompany:
-        propertyDraft.managementCompany.trim() ||
-        propertyDraft.manager.trim() ||
-        "Not assigned",
+      managementCompanyId: selectedManagementCompany.id,
+      managementCompany: selectedManagementCompany.name,
       address: propertyDraft.address.trim(),
       city: propertyDraft.city.trim(),
       state: propertyDraft.state.trim(),
@@ -249,7 +357,7 @@ export default function PropertyFormPage() {
       savings: primaryFloorPlan.savings,
       belowMarketPercent: primaryFloorPlan.belowMarketPercent,
       special: primaryFloorPlan.currentSpecial,
-      image: propertyDraft.image.trim() || propertyDraft.photos[0]?.url || "",
+      image: propertyDraft.photos[0]?.url || propertyDraft.image.trim() || "",
       photos: propertyDraft.photos,
       floorPlans,
       bedrooms: [
@@ -326,11 +434,41 @@ export default function PropertyFormPage() {
               value={propertyDraft.manager}
               onChange={(value) => updateDraft("manager", value)}
             />
-            <FormField
-              label="Management Company"
-              value={propertyDraft.managementCompany}
-              onChange={(value) => updateDraft("managementCompany", value)}
-            />
+            <label className="rounded-2xl bg-slate-50 p-4">
+              <span className="text-sm font-semibold text-slate-500">
+                Management Company
+              </span>
+              <select
+                value={propertyDraft.managementCompanyId}
+                onChange={(event) =>
+                  setPropertyDraft((currentDraft) => ({
+                    ...currentDraft,
+                    managementCompanyId: event.target.value,
+                    managementCompany:
+                      getManagementCompanyById(event.target.value)?.name || "",
+                  }))
+                }
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+              >
+                <option value="">Select management company</option>
+                {managementCompanies.map((company) => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+                <option value={NEW_MANAGEMENT_COMPANY_VALUE}>
+                  Create new management company
+                </option>
+              </select>
+            </label>
+            {propertyDraft.managementCompanyId === NEW_MANAGEMENT_COMPANY_VALUE && (
+              <FormField
+                label="New Management Company Name"
+                value={propertyDraft.newManagementCompanyName}
+                onChange={(value) => updateDraft("newManagementCompanyName", value)}
+                required
+              />
+            )}
             <FormField
               label="Market Area"
               value={propertyDraft.area}
@@ -383,11 +521,6 @@ export default function PropertyFormPage() {
                 <option>Draft</option>
               </select>
             </label>
-            <FormField
-              label="Image URL"
-              value={propertyDraft.image}
-              onChange={(value) => updateDraft("image", value)}
-            />
           </div>
         </section>
 
@@ -425,6 +558,9 @@ export default function PropertyFormPage() {
                 onAvailabilityChange={updateFloorPlanAvailability}
                 onAvailabilityAdd={addFloorPlanAvailability}
                 onAvailabilityRemove={removeFloorPlanAvailability}
+                onPhotosUpload={uploadFloorPlanPhotos}
+                onPhotoRemove={removeFloorPlanPhoto}
+                onPrimaryPhotoSet={setPrimaryFloorPlanPhoto}
               />
             ))}
           </div>
@@ -540,6 +676,9 @@ function FloorPlanEditor({
   onAvailabilityChange,
   onAvailabilityAdd,
   onAvailabilityRemove,
+  onPhotosUpload,
+  onPhotoRemove,
+  onPrimaryPhotoSet,
 }) {
   const calculatedValues = calculateFloorPlanValues(floorPlan);
   const updateUnitSpecial = (availableUnitId, value) => {
@@ -676,6 +815,80 @@ function FloorPlanEditor({
             className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
           />
         </label>
+      </div>
+
+      <div className="mt-5 rounded-2xl bg-white p-4">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <h4 className="text-base font-black text-slate-900">
+              Floor Plan Photos
+            </h4>
+            <p className="mt-1 text-sm text-slate-500">
+              {(floorPlan.photos || []).length} of {MAX_FLOOR_PLAN_UPLOAD_COUNT} uploaded
+            </p>
+          </div>
+
+          <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800">
+            <ImagePlus className="h-4 w-4" />
+            Upload Floor Plan Photos
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(event) => onPhotosUpload(floorPlan.id, event)}
+              className="sr-only"
+            />
+          </label>
+        </div>
+
+        {(floorPlan.photos || []).length > 0 && (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {floorPlan.photos.map((photo) => {
+              const isPrimaryPhoto = photo.url === floorPlan.image;
+
+              return (
+                <div
+                  key={photo.id}
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                >
+                  <img
+                    src={photo.url}
+                    alt={photo.name}
+                    className="h-28 w-full object-cover"
+                  />
+
+                  <div className="space-y-2 p-3">
+                    <p className="truncate text-sm font-bold text-slate-900">
+                      {photo.name}
+                    </p>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onPrimaryPhotoSet(floorPlan.id, photo.id)}
+                        className={`inline-flex flex-1 items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-bold ${isPrimaryPhoto
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-white text-slate-700 hover:bg-slate-100"
+                          }`}
+                      >
+                        <Star className="h-3.5 w-3.5" />
+                        Primary
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onPhotoRemove(floorPlan.id, photo.id)}
+                        className="inline-flex items-center justify-center rounded-xl bg-red-100 px-3 py-2 text-red-700 hover:bg-red-200"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="mt-5 rounded-2xl bg-white p-4">
@@ -838,12 +1051,78 @@ function CalculatedField({ label, value }) {
   );
 }
 
+function resolveManagementCompany({
+  managementCompanies,
+  propertyDraft,
+  setManagementCompanies,
+  setSaveError,
+}) {
+  if (propertyDraft.managementCompanyId === NEW_MANAGEMENT_COMPANY_VALUE) {
+    const newCompanyName = propertyDraft.newManagementCompanyName.trim();
+
+    if (!newCompanyName) {
+      setSaveError("Add a management company name.");
+      return null;
+    }
+
+    const existingCompany = managementCompanies.find(
+      (company) => company.name.toLowerCase() === newCompanyName.toLowerCase()
+    );
+
+    if (existingCompany) {
+      return existingCompany;
+    }
+
+    const createdCompany = createStoredManagementCompany({
+      name: newCompanyName,
+    });
+
+    setManagementCompanies(getAllManagementCompanies());
+    return createdCompany;
+  }
+
+  const selectedCompany = getManagementCompanyById(propertyDraft.managementCompanyId);
+
+  if (selectedCompany) {
+    return selectedCompany;
+  }
+
+  const fallbackCompanyName =
+    propertyDraft.managementCompany.trim() ||
+    propertyDraft.manager.trim();
+
+  if (!fallbackCompanyName) {
+    setSaveError("Select or create a management company.");
+    return null;
+  }
+
+  const existingCompanyId = getManagementCompanyIdByName(fallbackCompanyName);
+  const existingCompany = getManagementCompanyById(existingCompanyId);
+
+  if (existingCompany) {
+    return existingCompany;
+  }
+
+  const createdCompany = createStoredManagementCompany({
+    name: fallbackCompanyName,
+  });
+
+  setManagementCompanies(getAllManagementCompanies());
+  return createdCompany;
+}
+
 function createDraftFromProperty(property) {
+  const managementCompanyId =
+    property.managementCompanyId ||
+    getManagementCompanyIdByName(property.managementCompany || property.manager);
+
   return {
     name: property.name || "",
     area: property.area || "",
     manager: property.manager || "",
+    managementCompanyId,
     managementCompany: property.managementCompany || property.manager || "",
+    newManagementCompanyName: "",
     address: property.address || "",
     city: property.city || "",
     state: property.state || "",
@@ -867,6 +1146,8 @@ function createBlankFloorPlan() {
   return {
     id: `floor-plan-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     name: "",
+    image: "",
+    photos: [],
     bedrooms: "",
     bathrooms: "",
     squareFeet: "",
@@ -912,8 +1193,10 @@ function normalizeFloorPlansForDraft(property) {
           marketRent: property.marketRent || "",
           freeWeeks: "0",
           leaseTermMonths: "12",
+          image: "",
+          photos: [],
           availableUnits: normalizeAvailableUnitsForDraft([], property.rent || ""),
-          };
+        };
       }
 
       const currentSpecialLabel = floorPlan.currentSpecial || floorPlan.special?.label || "";
@@ -930,6 +1213,8 @@ function normalizeFloorPlansForDraft(property) {
         marketRent: floorPlan.marketRent || "",
         freeWeeks: String(parsedFreeWeeks || 0),
         leaseTermMonths: String(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12),
+        image: floorPlan.image || floorPlan.photos?.[0]?.url || "",
+        photos: normalizeFloorPlanPhotos(floorPlan, index),
         availability: floorPlan.availability || floorPlan.available || "",
         availableUnits: normalizeAvailableUnitsForDraft(
           floorPlan.availableUnits,
@@ -972,6 +1257,8 @@ function normalizeFloorPlanForStorage(floorPlan) {
     baths: floorPlan.bathrooms.trim(),
     squareFeet: floorPlan.squareFeet.trim(),
     sqft: floorPlan.squareFeet.trim(),
+    image: floorPlan.image || floorPlan.photos?.[0]?.url || "",
+    photos: floorPlan.photos || [],
     startingRent,
     rent: startingRent,
     effectiveRent: calculatedValues.effectiveRent,
@@ -1165,7 +1452,31 @@ function normalizePropertyPhotos(property) {
   return [];
 }
 
-function readPhotoFile(file) {
+function normalizeFloorPlanPhotos(floorPlan, index) {
+  if (floorPlan.photos?.length > 0) {
+    return floorPlan.photos.map((photo, photoIndex) => ({
+      id: photo.id || `${floorPlan.id || `floor-plan-${index}`}-photo-${photoIndex}`,
+      name: photo.name || `Floor plan photo ${photoIndex + 1}`,
+      url: photo.url,
+      category: photo.category || "Floor Plan",
+    }));
+  }
+
+  if (floorPlan.image) {
+    return [
+      {
+        id: `${floorPlan.id || `floor-plan-${index}`}-primary-photo`,
+        name: `${floorPlan.name || `Floor Plan ${index + 1}`} primary photo`,
+        url: floorPlan.image,
+        category: "Floor Plan",
+      },
+    ];
+  }
+
+  return [];
+}
+
+function readPhotoFile(file, category = "Property") {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -1174,7 +1485,7 @@ function readPhotoFile(file) {
         id: `${file.name}-${file.lastModified}-${Date.now()}`,
         name: file.name,
         url: reader.result,
-        category: "Property",
+        category,
       });
     };
 

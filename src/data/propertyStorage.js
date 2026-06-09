@@ -1,4 +1,8 @@
 import { properties as mockProperties } from "./mockData";
+import {
+  getManagementCompanyById,
+  getManagementCompanyIdByName,
+} from "./managementCompanyStorage";
 
 
 const STORAGE_KEY = "belowMarketProperties";
@@ -19,12 +23,12 @@ export function getAllProperties() {
   const updates = getStoredPropertyUpdates();
   const customProperties = getStoredCustomProperties();
 
-  const savedMockProperties = mockProperties.map((property) => ({
+  const savedMockProperties = mockProperties.map((property) => normalizePropertyCompany({
       ...property,
       ...(updates[property.id] || {}),
     }));
 
-  const savedCustomProperties = customProperties.map((property) => ({
+  const savedCustomProperties = customProperties.map((property) => normalizePropertyCompany({
       ...property,
       ...(updates[property.id] || {}),
     }));
@@ -87,6 +91,7 @@ export function createStoredProperty(propertyDraft) {
     name: propertyDraft.name,
     area: propertyDraft.area,
     manager: propertyDraft.manager,
+    managementCompanyId: propertyDraft.managementCompanyId,
     managementCompany: propertyDraft.managementCompany,
     address: propertyDraft.address,
     city: propertyDraft.city,
@@ -113,6 +118,19 @@ export function createStoredProperty(propertyDraft) {
   );
 
   return property;
+}
+
+function normalizePropertyCompany(property) {
+  const fallbackCompanyName = property.managementCompany || property.manager || "";
+  const managementCompanyId =
+    property.managementCompanyId || getManagementCompanyIdByName(fallbackCompanyName);
+  const managementCompany = getManagementCompanyById(managementCompanyId);
+
+  return {
+    ...property,
+    managementCompanyId,
+    managementCompany: managementCompany?.name || fallbackCompanyName,
+  };
 }
 
 function createUniquePropertyId(name) {
