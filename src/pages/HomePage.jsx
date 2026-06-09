@@ -20,7 +20,15 @@ export default function HomePage() {
         (property) => property.status === "Live"
     );
 
-    const filteredProperties = publicProperties.filter((property) => {
+    const floorPlanFilters = {
+        bedroomFilter,
+        maxStartingRentFilter,
+        maxEffectiveRentFilter,
+        moveInDateFilter,
+        specialFilter,
+    };
+
+    const filteredProperties = publicProperties.map((property) => {
         const propertyFloorPlans = getSearchFloorPlans(property);
         const searchableText = [
             property.name,
@@ -38,6 +46,7 @@ export default function HomePage() {
                 floorPlan.bedrooms,
                 floorPlan.startingRent,
                 floorPlan.effectiveRent,
+                floorPlan.savings,
                 floorPlan.currentSpecial,
                 floorPlan.availableUnits.map((unit) => unit.availableDate).join(" "),
             ]),
@@ -52,18 +61,22 @@ export default function HomePage() {
             (yearBuiltFilter === "2015 or newer" && builtYear >= 2015) ||
             (yearBuiltFilter === "2010 or newer" && builtYear >= 2010) ||
             (yearBuiltFilter === "Before 2010" && builtYear > 0 && builtYear < 2010);
-        const matchesFloorPlanFilters = propertyFloorPlans.some((floorPlan) =>
-            floorPlanMatchesFilters(floorPlan, {
-                bedroomFilter,
-                maxStartingRentFilter,
-                maxEffectiveRentFilter,
-                moveInDateFilter,
-                specialFilter,
-            })
+        const matchingFloorPlans = getMatchingFloorPlans(
+            propertyFloorPlans,
+            floorPlanFilters,
+            searchTerm
         );
+        const matchesFloorPlanFilters = matchingFloorPlans.length > 0;
 
-        return matchesSearch && matchesArea && matchesYearBuilt && matchesFloorPlanFilters;
-    });
+        if (!matchesSearch || !matchesArea || !matchesYearBuilt || !matchesFloorPlanFilters) {
+            return null;
+        }
+
+        return {
+            ...property,
+            matchedFloorPlan: getBestFloorPlanDeal(matchingFloorPlans),
+        };
+    }).filter(Boolean);
 
     const areas = ["All", ...new Set(publicProperties.map((property) => property.area))];
     const bedroomSortOrder = ["Studio", "1 Bed", "2 Bed", "3 Bed"];
@@ -269,7 +282,11 @@ export default function HomePage() {
 
                 <div className="mt-6 grid gap-6 lg:grid-cols-3">
                     {filteredProperties.map((property) => (
-                        <PropertyCard key={property.id} property={property} />
+                        <PropertyCard
+                            key={property.id}
+                            property={property}
+                            matchedFloorPlan={property.matchedFloorPlan}
+                        />
                     ))}
                 </div>
 
@@ -297,6 +314,9 @@ function getSearchFloorPlans(property) {
                 bedrooms: property.bedrooms?.[0] || "",
                 startingRent: property.rent || "",
                 effectiveRent: property.effectiveRent || property.rent || "",
+                marketRent: property.marketRent || "",
+                savings: property.savings || "",
+                belowMarketPercent: property.belowMarketPercent || "",
                 currentSpecial: property.special || "",
                 freeWeeks: getWeeksFromSpecialLabel(property.special),
                 availableUnits: [],
@@ -311,6 +331,9 @@ function getSearchFloorPlans(property) {
                 bedrooms: property.bedrooms?.[index] || property.bedrooms?.[0] || "",
                 startingRent: property.rent || "",
                 effectiveRent: property.effectiveRent || property.rent || "",
+                marketRent: property.marketRent || "",
+                savings: property.savings || "",
+                belowMarketPercent: property.belowMarketPercent || "",
                 currentSpecial: property.special || "",
                 freeWeeks: getWeeksFromSpecialLabel(property.special),
                 availableUnits: [],
@@ -326,11 +349,31 @@ function getSearchFloorPlans(property) {
             startingRent: floorPlan.startingRent || floorPlan.rent || property.rent || "",
             effectiveRent:
                 floorPlan.effectiveRent || floorPlan.startingRent || floorPlan.rent || property.effectiveRent || "",
+            marketRent: floorPlan.marketRent || property.marketRent || "",
+            savings: floorPlan.savings || property.savings || "",
+            belowMarketPercent: floorPlan.belowMarketPercent || property.belowMarketPercent || "",
             currentSpecial: specialLabel,
             freeWeeks: Number(floorPlan.freeWeeks ?? floorPlan.special?.freeWeeks ?? getWeeksFromSpecialLabel(specialLabel)),
             availableUnits: floorPlan.availableUnits || [],
         };
     });
+}
+
+function getMatchingFloorPlans(floorPlans, filters, searchTerm) {
+    const matchingFloorPlans = floorPlans.filter((floorPlan) =>
+        floorPlanMatchesFilters(floorPlan, filters)
+    );
+    const trimmedSearchTerm = searchTerm.trim().toLowerCase();
+
+    if (!trimmedSearchTerm) return matchingFloorPlans;
+
+    const searchMatchedFloorPlans = matchingFloorPlans.filter((floorPlan) =>
+        getFloorPlanSearchText(floorPlan).includes(trimmedSearchTerm)
+    );
+
+    return searchMatchedFloorPlans.length > 0
+        ? searchMatchedFloorPlans
+        : matchingFloorPlans;
 }
 
 function floorPlanMatchesFilters(floorPlan, filters) {
@@ -368,6 +411,29 @@ function floorPlanMatchesFilters(floorPlan, filters) {
     );
 }
 
+function getBestFloorPlanDeal(floorPlans) {
+    return [...floorPlans].sort((firstFloorPlan, secondFloorPlan) => {
+        const firstRent = parseCurrency(firstFloorPlan.effectiveRent || firstFloorPlan.startingRent);
+        const secondRent = parseCurrency(secondFloorPlan.effectiveRent || secondFloorPlan.startingRent);
+
+        return normalizeRentSortValue(firstRent) - normalizeRentSortValue(secondRent);
+    })[0];
+}
+
+function getFloorPlanSearchText(floorPlan) {
+    return [
+        floorPlan.name,
+        floorPlan.bedrooms,
+        floorPlan.startingRent,
+        floorPlan.effectiveRent,
+        floorPlan.marketRent,
+        floorPlan.savings,
+        floorPlan.belowMarketPercent,
+        floorPlan.currentSpecial,
+        floorPlan.availableUnits.map((unit) => unit.availableDate).join(" "),
+    ].filter(Boolean).join(" ").toLowerCase();
+}
+
 function matchesRequestedMoveInDate(availableUnits, moveInDateFilter) {
     if (!moveInDateFilter) return true;
     if (!availableUnits?.length) return false;
@@ -389,13 +455,30 @@ function normalizeSortIndex(index) {
     return index === -1 ? 999 : index;
 }
 
+function normalizeRentSortValue(value) {
+    return value > 0 ? value : Number.MAX_SAFE_INTEGER;
+}
+
 function getWeeksFromSpecialLabel(label) {
     const match = String(label || "").match(/(\d+(?:\.\d+)?)\s*\+?\s*weeks?/i);
     return match ? Number(match[1]) : 0;
 }
 
-function PropertyCard({ property }) {
+function PropertyCard({ property, matchedFloorPlan }) {
     const primaryImage = property.photos?.[0]?.url || property.image;
+    const cardDeal = matchedFloorPlan || {
+        name: property.name,
+        bedrooms: property.bedrooms?.[0],
+        startingRent: property.rent,
+        effectiveRent: property.effectiveRent,
+        savings: property.savings,
+        currentSpecial: property.special,
+    };
+    const specialLabel = cardDeal.currentSpecial || property.special || "Contact for current specials";
+    const startingRent = cardDeal.startingRent || property.rent || "Contact for pricing";
+    const effectiveRent = cardDeal.effectiveRent || property.effectiveRent || property.rent || "Contact for pricing";
+    const savings = cardDeal.savings || property.savings || "$0/mo";
+    const hasMatchedDeal = Boolean(cardDeal.currentSpecial || cardDeal.savings || property.special);
 
     return (
         <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
@@ -419,21 +502,29 @@ function PropertyCard({ property }) {
                         </p>
                     </div>
 
-                    {property.special && property.savings && (
+                    {hasMatchedDeal && (
                         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                            Featured Deal
+                            Matched Deal
                         </span>
                     )}
                 </div>
 
                 <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-                    <p className="text-sm font-bold text-slate-500">Current Special</p>
-                    <p className="mt-1 font-black text-slate-900">{property.special}</p>
+                    <p className="text-sm font-bold text-slate-500">Matched Floor Plan</p>
+                    <p className="mt-1 font-black text-slate-900">
+                        {cardDeal.name}
+                        {cardDeal.bedrooms ? ` • ${cardDeal.bedrooms}` : ""}
+                    </p>
+
+                    <p className="mt-2 text-sm font-semibold text-slate-500">
+                        {specialLabel}
+                    </p>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                    <DealStat label="Effective Rent" value={property.effectiveRent} />
-                    <DealStat label="Savings" value={property.savings} />
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <DealStat label="Starting Rent" value={startingRent} />
+                    <DealStat label="Effective Rent" value={effectiveRent} />
+                    <DealStat label="Savings" value={savings} />
                 </div>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
