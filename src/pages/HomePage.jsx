@@ -65,6 +65,7 @@ export default function HomePage() {
         };
     }).filter(Boolean);
     const sortedProperties = sortPropertiesByDeal(filteredProperties, "Lowest effective rent");
+    const suggestedDallasDeals = getSuggestedDallasDeals(publicProperties);
 
     return (
         <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
@@ -158,6 +159,39 @@ export default function HomePage() {
                             </button>
                         )}
                     </div>
+                </div>
+            </section>
+
+            <section className="mx-auto max-w-[1500px] px-4 py-6">
+                <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+                    <div>
+                        <p className="text-sm font-black text-[#1f6f63]">
+                            Suggested rentals
+                        </p>
+                        <h2 className="mt-1 text-3xl font-black text-[#102426]">
+                            Best Deals in Dallas
+                        </h2>
+                        <p className="mt-1 text-sm font-semibold text-[#526260]">
+                            Ranked by monthly savings from current specials.
+                        </p>
+                    </div>
+
+                    <Link
+                        to="/start"
+                        className="w-fit rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                    >
+                        Get matched
+                    </Link>
+                </div>
+
+                <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+                    {suggestedDallasDeals.map((property) => (
+                        <SuggestedRentalCard
+                            key={property.id}
+                            property={property}
+                            matchedFloorPlan={property.matchedFloorPlan}
+                        />
+                    ))}
                 </div>
             </section>
 
@@ -394,6 +428,33 @@ function getBestFloorPlanDeal(floorPlans) {
     })[0];
 }
 
+function getSuggestedDallasDeals(properties) {
+    const dallasDeals = properties.map((property) => {
+        const propertyFloorPlans = getSearchFloorPlans(property);
+        const matchedFloorPlan = getBestFloorPlanDeal(propertyFloorPlans);
+
+        return {
+            ...property,
+            matchedFloorPlan,
+        };
+    }).filter(isDallasProperty);
+
+    return sortPropertiesByDeal(dallasDeals, "Highest savings").slice(0, 4);
+}
+
+function isDallasProperty(property) {
+    const searchableLocation = [
+        property.name,
+        property.area,
+        property.address,
+        property.city,
+        property.state,
+        property.zipcode,
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    return searchableLocation.includes("dallas") || searchableLocation.includes("752");
+}
+
 function sortPropertiesByDeal(properties, sortOption) {
     return [...properties].sort((firstProperty, secondProperty) => {
         const firstDeal = firstProperty.matchedFloorPlan || {};
@@ -543,6 +604,140 @@ function MapMarker({ property, index }) {
             className={`absolute ${positions[index] || positions[0]} -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#173f3f] px-4 py-2 text-sm font-black text-white shadow-xl ring-4 ring-[#f2b84b]/35 hover:bg-[#102426]`}
         >
             {property.matchedFloorPlan?.effectiveRent || property.effectiveRent || property.rent}
+        </Link>
+    );
+}
+
+function getRentalPriceLabel(property, matchedFloorPlan) {
+    const rentValues = [
+        matchedFloorPlan?.effectiveRent,
+        matchedFloorPlan?.startingRent,
+        property.effectiveRent,
+        property.rent,
+    ].filter(Boolean);
+
+    const numericRentValues = rentValues.map(parseCurrency).filter(Boolean);
+
+    if (numericRentValues.length === 0) {
+        return "Contact for pricing";
+    }
+
+    const lowestRent = Math.min(...numericRentValues);
+    const highestRent = Math.max(...numericRentValues);
+
+    if (lowestRent === highestRent) {
+        return `${formatCurrency(lowestRent)}+`;
+    }
+
+    return `${formatCurrency(lowestRent)} - ${formatCurrency(highestRent)}`;
+}
+
+function getBedsLabel(property, matchedFloorPlan) {
+    const beds = [
+        matchedFloorPlan?.bedrooms,
+        ...(property.bedrooms || []),
+    ].filter(Boolean);
+
+    const uniqueBeds = [...new Set(beds)].sort(
+        (firstBed, secondBed) => getBedroomCount(firstBed) - getBedroomCount(secondBed)
+    );
+
+    if (uniqueBeds.length === 0) {
+        return "Bedrooms not listed";
+    }
+
+    if (uniqueBeds.length === 1) {
+        return uniqueBeds[0];
+    }
+
+    const firstBed = uniqueBeds[0];
+    const lastBed = uniqueBeds[uniqueBeds.length - 1];
+    const firstCount = getBedroomCount(firstBed);
+    const lastCount = getBedroomCount(lastBed);
+
+    if (firstCount === 0 && lastCount === 1) {
+        return "Studio - 1 Bed";
+    }
+
+    if (firstCount === 0 && lastCount > 1) {
+        return `Studio - ${lastCount} Beds`;
+    }
+
+    if (firstCount > 0 && lastCount > firstCount) {
+        return `${firstCount}-${lastCount} Beds`;
+    }
+
+    return `${firstBed} - ${lastBed}`;
+}
+
+function getBedroomCount(value) {
+    if (String(value).toLowerCase().includes("studio")) {
+        return 0;
+    }
+
+    const match = String(value).match(/\d+/);
+    return match ? Number(match[0]) : 99;
+}
+
+function getAddressLabel(property) {
+    const cityLine = [
+        property.city,
+        property.state,
+        property.zipcode,
+    ].filter(Boolean).join(", ");
+    const addressParts = [
+        property.address,
+        cityLine,
+    ].filter(Boolean);
+
+    if (addressParts.length > 0) {
+        return addressParts.join(" ");
+    }
+
+    return property.area || "Dallas, TX";
+}
+
+function SuggestedRentalCard({ property, matchedFloorPlan }) {
+    const primaryImage = property.photos?.[0]?.url || property.image;
+    const priceLabel = getRentalPriceLabel(property, matchedFloorPlan);
+    const bedsLabel = getBedsLabel(property, matchedFloorPlan);
+    const addressLabel = getAddressLabel(property);
+
+    return (
+        <Link
+            to={`/properties/${property.id}`}
+            className="group overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm transition hover:-translate-y-1 hover:border-[#f2b84b] hover:shadow-md"
+        >
+            <div className="relative">
+                <img
+                    src={primaryImage}
+                    alt={property.name}
+                    className="h-44 w-full object-cover"
+                />
+                <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-black text-[#17623b] shadow-sm">
+                    {matchedFloorPlan?.savings || property.savings || "$0/mo"} savings
+                </span>
+            </div>
+
+            <div className="p-4">
+                <p className="line-clamp-1 text-lg font-black text-[#102426] group-hover:text-[#1f6f63]">
+                    {property.name}
+                </p>
+                <p className="mt-2 min-h-[40px] text-sm font-semibold leading-5 text-[#526260]">
+                    {addressLabel}
+                </p>
+
+                <p className="mt-4 text-xl font-black text-[#102426]">
+                    {priceLabel}
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#526260]">
+                    Total Monthly Price
+                </p>
+
+                <p className="mt-3 rounded-2xl bg-[#eaf2fb] px-3 py-2 text-sm font-black text-[#174a7c]">
+                    {bedsLabel}
+                </p>
+            </div>
         </Link>
     );
 }
