@@ -1,78 +1,39 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 
 import { getAllProperties } from "../data/propertyStorage";
+import {
+    FALLBACK_DALLAS_DEALS,
+    getPropertySearchSuggestions,
+    getPublicSearchProperties,
+} from "../data/propertySearchData";
 
 const LEASING_WEEKS_PER_MONTH = 4;
 const FEATURED_DALLAS_DEAL_LIMIT = 4;
-const FALLBACK_DALLAS_DEALS = [
-    {
-        id: "mirasol-park-lane",
-        name: "Mirasol Park Lane",
-        address: "Park Lane",
-        city: "Dallas",
-        state: "TX",
-        zipcode: "",
-        rent: "$1,953",
-        startingRent: "$1,795",
-        requiredMonthlyFees: "$158",
-        effectiveRent: "$1,729",
-        bedrooms: ["1 Bed"],
-        savings: "$224/mo",
-        special: "6 weeks free",
-        image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80",
-    },
-    {
-        id: "the-village-dallas",
-        name: "The Village Dallas",
-        address: "5605 Village Glen Dr",
-        city: "Dallas",
-        state: "TX",
-        zipcode: "75206",
-        rent: "$1,299 - $6,515",
-        bedrooms: ["1 Bed", "2 Bed", "3 Bed"],
-        savings: "$0/mo",
-        special: "Special not listed",
-        image: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=900&q=80",
-    },
-    {
-        id: "the-monte",
-        name: "The Monte",
-        address: "4909 Haverwood Ln",
-        city: "Dallas",
-        state: "TX",
-        zipcode: "75287",
-        rent: "$966 - $1,933",
-        bedrooms: ["1 Bed", "2 Bed"],
-        savings: "$0/mo",
-        special: "Special not listed",
-        image: "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?auto=format&fit=crop&w=900&q=80",
-    },
-    {
-        id: "ava-apartment-homes",
-        name: "Ava Apartment Homes",
-        address: "8401 Skillman St",
-        city: "Dallas",
-        state: "TX",
-        zipcode: "75231",
-        rent: "$743 - $7,857",
-        bedrooms: ["Studio", "1 Bed", "2 Bed", "3 Bed"],
-        savings: "$0/mo",
-        special: "Special not listed",
-        image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
-    },
-];
 
 export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState("");
+    const navigate = useNavigate();
 
     const properties = getAllProperties();
+    const searchableProperties = getPublicSearchProperties();
 
     const publicProperties = properties.filter(
         (property) => property.status === "Live"
     );
     const featuredDallasDeals = getFeaturedDallasDeals(publicProperties);
+    const searchSuggestions = useMemo(
+        () => getPropertySearchSuggestions(searchableProperties, searchTerm),
+        [searchableProperties, searchTerm]
+    );
+
+    const submitSearch = (event) => {
+        event.preventDefault();
+
+        const query = searchTerm.trim();
+        navigate(query ? `/properties?search=${encodeURIComponent(query)}` : "/properties");
+    };
 
     return (
         <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
@@ -133,7 +94,10 @@ export default function HomePage() {
                         Search by city, ZIP, property name, manager, or special.
                     </p>
 
-                    <div className="mx-auto mt-8 max-w-3xl rounded-3xl border border-white/20 bg-white p-2 shadow-2xl shadow-[#102426]/25">
+                    <form
+                        onSubmit={submitSearch}
+                        className="relative mx-auto mt-8 max-w-3xl rounded-3xl border border-white/20 bg-white p-2 shadow-2xl shadow-[#102426]/25"
+                    >
                         <div className="bma-value-stripe mb-2 h-2 rounded-full" />
                         <div className="flex flex-col gap-2 sm:flex-row">
                             <div className="relative min-w-0 flex-1">
@@ -144,12 +108,13 @@ export default function HomePage() {
                                     value={searchTerm}
                                     onChange={(event) => setSearchTerm(event.target.value)}
                                     placeholder="Enter city, ZIP, property, or special"
+                                    autoComplete="off"
                                     className="bma-focus-ring h-16 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-[#102426]"
                                 />
                             </div>
 
                             <button
-                                type="button"
+                                type="submit"
                                 className="h-16 rounded-2xl bg-[#f2b84b] px-8 text-base font-black text-[#102426] hover:bg-[#f9d783]"
                             >
                                 Search
@@ -165,7 +130,34 @@ export default function HomePage() {
                                 Clear search
                             </button>
                         )}
-                    </div>
+
+                        {searchSuggestions.length > 0 && (
+                            <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-30 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white text-left shadow-2xl">
+                                {searchSuggestions.map((suggestion) => (
+                                    <button
+                                        key={`${suggestion.type}-${suggestion.value}`}
+                                        type="button"
+                                        onClick={() => setSearchTerm(suggestion.value)}
+                                        className="flex w-full items-center justify-between gap-3 border-b border-[#edf4ef] px-4 py-3 text-left last:border-b-0 hover:bg-[#f5f8f1]"
+                                    >
+                                        <span className="min-w-0">
+                                            <span className="block truncate text-sm font-black text-[#102426]">
+                                                {suggestion.label}
+                                            </span>
+                                            {suggestion.detail && (
+                                                <span className="block truncate text-xs font-bold text-[#526260]">
+                                                    {suggestion.detail}
+                                                </span>
+                                            )}
+                                        </span>
+                                        <span className="shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black uppercase text-[#1f6f63]">
+                                            {suggestion.type}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </form>
                 </div>
             </section>
 

@@ -16,6 +16,7 @@ import HomePage from "./pages/HomePage";
 import StartPage from "./pages/StartPage";
 import LeadDetailsPage from "./pages/LeadDetailsPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
+import PropertySearchPage from "./pages/PropertySearchPage";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         </Route>
 
         <Route path="/r/:token" element={<RenterPropertiesList />} />
+        <Route path="/properties" element={<PropertySearchPage />} />
 
         <Route
           path="/properties/:propertyId"
