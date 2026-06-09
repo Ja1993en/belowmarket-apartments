@@ -1041,10 +1041,11 @@ function calculateFloorPlanValues(floorPlan) {
   const freeMonths = freeWeeks / LEASING_WEEKS_PER_MONTH;
   const monthlyConcession = (startingRentNumber * freeMonths) / leaseTermMonths;
   const effectiveRentNumber = Math.max(startingRentNumber - monthlyConcession, 0);
+  const savingsNumber = Math.max(startingRentNumber - effectiveRentNumber, 0);
   const comparisonRent = marketRentNumber || startingRentNumber;
-  const savingsNumber = Math.max(comparisonRent - effectiveRentNumber, 0);
+  const belowMarketSavingsNumber = Math.max(comparisonRent - effectiveRentNumber, 0);
   const belowMarketPercentNumber = comparisonRent
-    ? Math.round((savingsNumber / comparisonRent) * 100)
+    ? Math.round((belowMarketSavingsNumber / comparisonRent) * 100)
     : 0;
 
   return {
