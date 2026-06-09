@@ -402,15 +402,17 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
     ];
 
     if (specialDealUnits.length === 0) {
+        const normalRentRangeLabel = getNormalRentRangeLabel(property, floorPlans);
+
         return {
             hasSpecial: false,
-            specialLabel: "No listed special on available units",
-            normalRentLabel: getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans)),
-            effectiveRentLabel: getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans)),
+            specialLabel: "",
+            normalRentLabel: normalRentRangeLabel,
+            effectiveRentLabel: normalRentRangeLabel,
             priceCaption: "Normal monthly rent",
             concessionValueLabel: "",
             badgeLabel: "",
-            specialCountLabel: "0 available options with specials",
+            specialCountLabel: "",
         };
     }
 
@@ -575,6 +577,31 @@ function getRentBreakdownLabel(baseRentValues, requiredMonthlyFeeValues) {
     return `${baseRentLabel} base rent + ${feeLabel} required fees`;
 }
 
+function getNormalRentRangeLabel(property, floorPlans) {
+    if (property.isFallback && property.rent) {
+        return property.rent;
+    }
+
+    const rentValues = floorPlans
+        .flatMap((floorPlan) => {
+            const floorPlanRent = parseCurrency(
+                floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
+            );
+            const unitRents = floorPlan.availableUnits
+                ?.filter((unit) => unit.status !== "leased")
+                .map((unit) => parseCurrency(unit.rent || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent))
+                .filter(Boolean) || [];
+
+            return [floorPlanRent, ...unitRents].filter(Boolean);
+        });
+
+    if (rentValues.length > 0) {
+        return formatRentRange(Math.min(...rentValues), Math.max(...rentValues));
+    }
+
+    return getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans));
+}
+
 function getFloorPlanSpecial(floorPlan) {
     const freeWeeks = Number(floorPlan.freeWeeks || floorPlan.special?.freeWeeks || 0);
     const label = floorPlan.currentSpecial || floorPlan.special?.label || "";
@@ -654,9 +681,7 @@ function getFallbackDealSummary(property) {
             ? "Special usually applies as an account credit. Payment timing may vary by property."
             : "",
         badgeLabel: hasSpecial ? property.special : "",
-        specialCountLabel: hasSpecial
-            ? "Special applies to base rent only"
-            : "Special not listed in source data",
+        specialCountLabel: hasSpecial ? "Special applies to base rent only" : "",
     };
 }
 
@@ -870,7 +895,9 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
     const dealSummary = property.dealSummary || getPropertyDealSummary(property);
     const normalRentLabel = dealSummary.normalRentLabel || getRentalPriceLabel(property, matchedFloorPlan);
     const effectiveRentLabel = dealSummary.effectiveRentLabel || normalRentLabel;
-    const showNormalRent = normalRentLabel && normalRentLabel !== effectiveRentLabel;
+    const primaryRentLabel = dealSummary.hasSpecial ? effectiveRentLabel : normalRentLabel;
+    const primaryRentCaption = dealSummary.hasSpecial ? "Net Effective" : "Normal Rent";
+    const showNormalRent = dealSummary.hasSpecial && normalRentLabel && normalRentLabel !== effectiveRentLabel;
     const bedsLabel = getBedsLabel(property, matchedFloorPlan);
     const addressLabel = getAddressLabel(property);
     const savingsValue = matchedFloorPlan?.savings || property.savings || "";
@@ -910,10 +937,10 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                 <div className="mt-3 flex items-end justify-between gap-3">
                     <div className="min-w-0">
                         <p className="text-[11px] font-black uppercase text-[#1f6f63]">
-                            Net Effective
+                            {primaryRentCaption}
                         </p>
                         <p className="mt-0.5 truncate text-xl font-black text-[#102426]">
-                            {effectiveRentLabel}
+                            {primaryRentLabel}
                         </p>
                     </div>
                     {showNormalRent && (
@@ -928,19 +955,19 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     )}
                 </div>
 
-                <div className="mt-3 rounded-xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
-                    <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
-                        Special
-                    </p>
-                    <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
-                        {dealSummary.specialLabel}
-                    </p>
-                    {dealSummary.hasSpecial && (
+                {dealSummary.hasSpecial && (
+                    <div className="mt-3 rounded-xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+                        <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
+                            Special
+                        </p>
+                        <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+                            {dealSummary.specialLabel}
+                        </p>
                         <p className="mt-1 text-xs font-bold text-[#7a432e]">
                             Account-credit estimate
                         </p>
-                    )}
-                </div>
+                    </div>
+                )}
 
             </div>
         </Link>
