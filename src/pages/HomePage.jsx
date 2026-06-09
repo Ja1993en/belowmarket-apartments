@@ -8,16 +8,19 @@ const LEASING_WEEKS_PER_MONTH = 4;
 const FEATURED_DALLAS_DEAL_LIMIT = 4;
 const FALLBACK_DALLAS_DEALS = [
     {
-        id: "junction-at-7760",
-        name: "Junction at 7760",
-        address: "7760 McCallum Blvd",
+        id: "mirasol-park-lane",
+        name: "Mirasol Park Lane",
+        address: "Park Lane",
         city: "Dallas",
         state: "TX",
-        zipcode: "75252",
-        rent: "$883 - $1,116",
-        bedrooms: ["Studio", "1 Bed"],
-        savings: "$0/mo",
-        special: "Special not listed",
+        zipcode: "",
+        rent: "$1,953",
+        startingRent: "$1,795",
+        requiredMonthlyFees: "$158",
+        effectiveRent: "$1,729",
+        bedrooms: ["1 Bed"],
+        savings: "$224/mo",
+        special: "6 weeks free",
         image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80",
     },
     {
@@ -176,7 +179,7 @@ export default function HomePage() {
                             Best Deals in Dallas
                         </h2>
                         <p className="mt-1 text-sm font-semibold text-[#526260]">
-                            Ranked by monthly savings from current specials.
+                            Ranked by estimated monthly value from current specials.
                         </p>
                     </div>
 
@@ -321,6 +324,7 @@ function calculateFloorPlanPricing(floorPlan) {
         return {
             totalMonthlyRent: totalMonthlyRentNumber ? formatCurrency(totalMonthlyRentNumber) : "",
             effectiveRent: floorPlan.effectiveRent || (totalMonthlyRentNumber ? formatCurrency(totalMonthlyRentNumber) : floorPlan.startingRent || ""),
+            monthlyConcession: "",
             savings: floorPlan.savings || "",
             belowMarketPercent: floorPlan.belowMarketPercent || "",
         };
@@ -339,6 +343,7 @@ function calculateFloorPlanPricing(floorPlan) {
     return {
         totalMonthlyRent: formatCurrency(totalMonthlyRentNumber),
         effectiveRent: formatCurrency(effectiveRentNumber),
+        monthlyConcession: monthlyConcession ? `${formatCurrency(monthlyConcession)}/mo` : "$0/mo",
         savings: savingsNumber ? `${formatCurrency(savingsNumber)}/mo` : "$0/mo",
         belowMarketPercent: `${belowMarketPercentNumber}%`,
     };
@@ -403,6 +408,7 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
             normalRentLabel: getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans)),
             effectiveRentLabel: getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans)),
             priceCaption: "Normal monthly rent",
+            concessionValueLabel: "",
             badgeLabel: "",
             specialCountLabel: "0 available options with specials",
         };
@@ -419,6 +425,7 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
             normalRentLabel: "Contact for pricing",
             effectiveRentLabel: "Contact for pricing",
             priceCaption: "Normal monthly rent with fees",
+            concessionValueLabel: "",
             badgeLabel: "Special",
             specialCountLabel: getSpecialCountLabel(specialDealUnits.length, dealOptionCount),
         };
@@ -435,6 +442,9 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
         .filter((value) => value > 0);
     const minEffectiveRent = Math.min(...effectiveRentValues);
     const maxEffectiveRent = Math.max(...effectiveRentValues);
+    const concessionValueValues = specialDealUnits
+        .map((dealUnit) => dealUnit.monthlyConcessionNumber)
+        .filter((value) => value > 0);
     const normalRentLabel = normalRentValues.length > 0
         ? formatRentRange(Math.min(...normalRentValues), Math.max(...normalRentValues))
         : getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans));
@@ -450,8 +460,11 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
         normalRentLabel,
         effectiveRentLabel: formatRentRange(minEffectiveRent, maxEffectiveRent),
         priceCaption: "Normal monthly rent with fees",
+        concessionValueLabel: concessionValueValues.length > 0
+            ? `${formatRentRange(Math.min(...concessionValueValues), Math.max(...concessionValueValues))}/mo`
+            : "",
         rentBreakdownLabel: getRentBreakdownLabel(baseRentValues, requiredMonthlyFeeValues),
-        specialCalculationLabel: "Special applies to base rent only",
+        specialCalculationLabel: "Special usually applies as an account credit. Payment timing may vary by property.",
         badgeLabel: maxFreeWeeks > 0 ? `${maxFreeWeeks} weeks free` : "Special",
         specialCountLabel: getSpecialCountLabel(specialCount, dealOptionCount),
     };
@@ -531,6 +544,8 @@ function createSpecialDealUnit({ floorPlan, unitRent, specialLabel, freeWeeks })
     });
     const effectiveRentNumber =
         parseCurrency(pricing.effectiveRent) || parseCurrency(unitRent);
+    const monthlyConcessionNumber =
+        parseCurrency(pricing.monthlyConcession) || parseCurrency(pricing.savings);
 
     return {
         specialLabel,
@@ -539,6 +554,7 @@ function createSpecialDealUnit({ floorPlan, unitRent, specialLabel, freeWeeks })
         baseRentNumber: parseCurrency(unitRent),
         requiredMonthlyFeesNumber: parseCurrency(floorPlan.requiredMonthlyFees),
         effectiveRentNumber,
+        monthlyConcessionNumber,
     };
 }
 
@@ -594,14 +610,26 @@ function getUnitSpecial(unit, floorPlanSpecial) {
 }
 
 function getFallbackDealSummary(property) {
+    const savingsValue = parseCurrency(property.savings);
+    const hasSpecial = Boolean(property.special && property.special !== "Special not listed");
+
     return {
-        hasSpecial: false,
+        hasSpecial,
         specialLabel: property.special || "Special not listed",
         normalRentLabel: property.rent,
-        effectiveRentLabel: property.rent,
-        priceCaption: "Normal monthly rent",
-        badgeLabel: "",
-        specialCountLabel: "Special not listed in source data",
+        effectiveRentLabel: property.effectiveRent || property.rent,
+        priceCaption: "Normal monthly rent with fees",
+        concessionValueLabel: savingsValue ? property.savings : "",
+        rentBreakdownLabel: property.startingRent && property.requiredMonthlyFees
+            ? `${property.startingRent} base rent + ${property.requiredMonthlyFees} required fees`
+            : "",
+        specialCalculationLabel: hasSpecial
+            ? "Special usually applies as an account credit. Payment timing may vary by property."
+            : "",
+        badgeLabel: hasSpecial ? property.special : "",
+        specialCountLabel: hasSpecial
+            ? "Special applies to base rent only"
+            : "Special not listed in source data",
     };
 }
 
@@ -828,8 +856,18 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                         {dealSummary.specialLabel}
                     </p>
                     <div className="mt-2 border-t border-[#f2d08a] pt-2">
-                        <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
-                            Calculated Effective Rent
+                        {dealSummary.concessionValueLabel && (
+                            <>
+                                <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
+                                    Estimated Monthly Value
+                                </p>
+                                <p className="mt-1 text-sm font-black leading-5 text-[#102426]">
+                                    {dealSummary.concessionValueLabel}
+                                </p>
+                            </>
+                        )}
+                        <p className={`${dealSummary.concessionValueLabel ? "mt-2 " : ""}text-[11px] font-black uppercase text-[#8a5b0a]`}>
+                            Net Effective Rent
                         </p>
                         <p className="mt-1 text-sm font-black leading-5 text-[#102426]">
                             {effectiveRentLabel}

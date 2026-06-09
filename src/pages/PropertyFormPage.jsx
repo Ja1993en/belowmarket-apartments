@@ -358,6 +358,7 @@ export default function PropertyFormPage() {
       rent: primaryFloorPlan.rent || "Contact for pricing",
       marketRent: primaryFloorPlan.marketRent,
       effectiveRent: primaryFloorPlan.effectiveRent || primaryFloorPlan.rent,
+      monthlyConcession: primaryFloorPlan.monthlyConcession,
       savings: primaryFloorPlan.savings,
       belowMarketPercent: primaryFloorPlan.belowMarketPercent,
       special: primaryFloorPlan.currentSpecial,
@@ -725,7 +726,7 @@ function FloorPlanEditor({
 
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800 md:col-span-2 xl:col-span-3">
-          Enter base rent separately from required monthly fees. Specials are calculated from base rent only, while renters see the normal monthly rent with fees included.
+          Enter base rent separately from required monthly fees. Free-week specials are calculated from base rent only and shown as an estimated monthly value. Most properties apply specials as account credits, so renter payment timing may vary by property.
         </p>
         <FormField
           label="Floor Plan Name"
@@ -838,8 +839,8 @@ function FloorPlanEditor({
           label="Normal Monthly Rent"
           value={calculatedValues.totalMonthlyRent}
         />
-        <CalculatedField label="Effective Rent" value={calculatedValues.effectiveRent} />
-        <CalculatedField label="Savings" value={calculatedValues.savings} />
+        <CalculatedField label="Estimated Monthly Value" value={calculatedValues.monthlyConcession} />
+        <CalculatedField label="Net Effective Rent" value={calculatedValues.effectiveRent} />
         <CalculatedField
           label="Below Market Percent"
           value={calculatedValues.belowMarketPercent}
@@ -1341,6 +1342,7 @@ function normalizeFloorPlanForStorage(floorPlan) {
     totalMonthlyRent: calculatedValues.totalMonthlyRent,
     rent: calculatedValues.totalMonthlyRent || startingRent,
     effectiveRent: calculatedValues.effectiveRent,
+    monthlyConcession: calculatedValues.monthlyConcession,
     marketRent: floorPlan.marketRent.trim(),
     savings: calculatedValues.savings,
     belowMarketPercent: calculatedValues.belowMarketPercent,
@@ -1473,6 +1475,7 @@ function calculateFloorPlanValues(floorPlan) {
     return {
       totalMonthlyRent: "",
       effectiveRent: "",
+      monthlyConcession: "",
       savings: "",
       belowMarketPercent: "",
     };
@@ -1491,6 +1494,7 @@ function calculateFloorPlanValues(floorPlan) {
   return {
     totalMonthlyRent: formatCurrency(totalMonthlyRentNumber),
     effectiveRent: formatCurrency(effectiveRentNumber),
+    monthlyConcession: monthlyConcession ? `${formatCurrency(monthlyConcession)}/mo` : "$0/mo",
     savings: savingsNumber ? `${formatCurrency(savingsNumber)}/mo` : "$0/mo",
     belowMarketPercent: `${belowMarketPercentNumber}%`,
   };

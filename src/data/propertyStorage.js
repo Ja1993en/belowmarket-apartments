@@ -101,6 +101,7 @@ export function createStoredProperty(propertyDraft) {
     rent: propertyDraft.rent,
     marketRent: propertyDraft.marketRent,
     effectiveRent: propertyDraft.effectiveRent,
+    monthlyConcession: propertyDraft.monthlyConcession,
     savings: propertyDraft.savings,
     belowMarketPercent: propertyDraft.belowMarketPercent,
     status: propertyDraft.status || "Draft",
