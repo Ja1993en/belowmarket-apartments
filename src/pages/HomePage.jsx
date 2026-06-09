@@ -9,6 +9,10 @@ export default function HomePage() {
     const [areaFilter, setAreaFilter] = useState("All");
     const [bedroomFilter, setBedroomFilter] = useState("All");
     const [yearBuiltFilter, setYearBuiltFilter] = useState("Any year");
+    const [maxStartingRentFilter, setMaxStartingRentFilter] = useState("Any starting rent");
+    const [maxEffectiveRentFilter, setMaxEffectiveRentFilter] = useState("Any effective rent");
+    const [moveInDateFilter, setMoveInDateFilter] = useState("");
+    const [specialFilter, setSpecialFilter] = useState("Any special");
 
     const properties = getAllProperties();
 
@@ -17,6 +21,7 @@ export default function HomePage() {
     );
 
     const filteredProperties = publicProperties.filter((property) => {
+        const propertyFloorPlans = getSearchFloorPlans(property);
         const searchableText = [
             property.name,
             property.area,
@@ -28,31 +33,86 @@ export default function HomePage() {
             property.state,
             property.zipcode,
             property.yearBuilt,
+            ...propertyFloorPlans.flatMap((floorPlan) => [
+                floorPlan.name,
+                floorPlan.bedrooms,
+                floorPlan.startingRent,
+                floorPlan.effectiveRent,
+                floorPlan.currentSpecial,
+                floorPlan.availableUnits.map((unit) => unit.availableDate).join(" "),
+            ]),
         ].filter(Boolean).join(" ").toLowerCase();
 
         const matchesSearch = searchableText.includes(searchTerm.toLowerCase());
         const matchesArea = areaFilter === "All" || property.area === areaFilter;
-        const matchesBedroom =
-            bedroomFilter === "All" || property.bedrooms?.includes(bedroomFilter);
         const builtYear = Number(property.yearBuilt);
         const matchesYearBuilt =
             yearBuiltFilter === "Any year" ||
             (yearBuiltFilter === "2020 or newer" && builtYear >= 2020) ||
             (yearBuiltFilter === "2015 or newer" && builtYear >= 2015) ||
             (yearBuiltFilter === "2010 or newer" && builtYear >= 2010) ||
-            (yearBuiltFilter === "Before 2010" && builtYear < 2010);
+            (yearBuiltFilter === "Before 2010" && builtYear > 0 && builtYear < 2010);
+        const matchesFloorPlanFilters = propertyFloorPlans.some((floorPlan) =>
+            floorPlanMatchesFilters(floorPlan, {
+                bedroomFilter,
+                maxStartingRentFilter,
+                maxEffectiveRentFilter,
+                moveInDateFilter,
+                specialFilter,
+            })
+        );
 
-        return matchesSearch && matchesArea && matchesBedroom && matchesYearBuilt;
+        return matchesSearch && matchesArea && matchesYearBuilt && matchesFloorPlanFilters;
     });
 
     const areas = ["All", ...new Set(publicProperties.map((property) => property.area))];
-    const bedrooms = ["All", "Studio", "1 Bed", "2 Bed", "3 Bed"];
+    const bedroomSortOrder = ["Studio", "1 Bed", "2 Bed", "3 Bed"];
+    const bedrooms = [
+        "All",
+        ...new Set(
+            publicProperties.flatMap((property) =>
+                getSearchFloorPlans(property).map((floorPlan) => floorPlan.bedrooms)
+            ).filter(Boolean)
+        ),
+    ].sort((firstBedroom, secondBedroom) => {
+        if (firstBedroom === "All") return -1;
+        if (secondBedroom === "All") return 1;
+
+        const firstIndex = bedroomSortOrder.indexOf(firstBedroom);
+        const secondIndex = bedroomSortOrder.indexOf(secondBedroom);
+
+        return normalizeSortIndex(firstIndex) - normalizeSortIndex(secondIndex);
+    });
     const yearBuiltOptions = [
         "Any year",
         "2020 or newer",
         "2015 or newer",
         "2010 or newer",
         "Before 2010",
+    ];
+    const rentOptions = [
+        "Any starting rent",
+        "$1,400 or less",
+        "$1,600 or less",
+        "$1,800 or less",
+        "$2,000 or less",
+        "$2,500 or less",
+    ];
+    const effectiveRentOptions = [
+        "Any effective rent",
+        "$1,400 or less",
+        "$1,600 or less",
+        "$1,800 or less",
+        "$2,000 or less",
+        "$2,500 or less",
+    ];
+    const specialOptions = [
+        "Any special",
+        "Has special",
+        "2+ weeks free",
+        "4+ weeks free",
+        "6+ weeks free",
+        "8+ weeks free",
     ];
 
     return (
@@ -77,60 +137,112 @@ export default function HomePage() {
                         Start Apartment Search
                     </Link>
 
-                    <div className="mt-8 grid max-w-6xl gap-3 rounded-3xl bg-white p-2 shadow-sm md:grid-cols-[1fr_160px_150px_170px_auto]">
-                        <div className="relative">
-                            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <div className="mt-8 max-w-6xl rounded-3xl bg-white p-2 shadow-sm">
+                        <div className="grid gap-3 md:grid-cols-[1fr_160px_150px_170px_auto]">
+                            <div className="relative">
+                                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(event) => setSearchTerm(event.target.value)}
-                                placeholder="Search property, special, or manager..."
-                                className="w-full rounded-2xl border-0 py-4 pl-12 pr-4 text-slate-900 outline-none"
-                            />
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                    placeholder="Search property, special, floor plan, or manager..."
+                                    className="w-full rounded-2xl border-0 py-4 pl-12 pr-4 text-slate-900 outline-none"
+                                />
+                            </div>
+
+                            <select
+                                aria-label="Area"
+                                value={areaFilter}
+                                onChange={(event) => setAreaFilter(event.target.value)}
+                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                            >
+                                {areas.map((area) => (
+                                    <option key={area}>{area}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                aria-label="Bedrooms"
+                                value={bedroomFilter}
+                                onChange={(event) => setBedroomFilter(event.target.value)}
+                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                            >
+                                {bedrooms.map((bedroom) => (
+                                    <option key={bedroom}>{bedroom}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                aria-label="Year built"
+                                value={yearBuiltFilter}
+                                onChange={(event) => setYearBuiltFilter(event.target.value)}
+                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                            >
+                                {yearBuiltOptions.map((yearOption) => (
+                                    <option key={yearOption}>{yearOption}</option>
+                                ))}
+                            </select>
+
+                            <button
+                                onClick={() => {
+                                    setSearchTerm("");
+                                    setAreaFilter("All");
+                                    setBedroomFilter("All");
+                                    setYearBuiltFilter("Any year");
+                                    setMaxStartingRentFilter("Any starting rent");
+                                    setMaxEffectiveRentFilter("Any effective rent");
+                                    setMoveInDateFilter("");
+                                    setSpecialFilter("Any special");
+                                }}
+                                className="rounded-2xl bg-slate-950 px-5 py-4 text-sm font-bold text-white hover:bg-slate-800"
+                            >
+                                Clear
+                            </button>
                         </div>
 
-                        <select
-                            value={areaFilter}
-                            onChange={(event) => setAreaFilter(event.target.value)}
-                            className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
-                        >
-                            {areas.map((area) => (
-                                <option key={area}>{area}</option>
-                            ))}
-                        </select>
+                        <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_1fr_1fr]">
+                            <select
+                                aria-label="Maximum starting rent"
+                                value={maxStartingRentFilter}
+                                onChange={(event) => setMaxStartingRentFilter(event.target.value)}
+                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                            >
+                                {rentOptions.map((rentOption) => (
+                                    <option key={rentOption}>{rentOption}</option>
+                                ))}
+                            </select>
 
-                        <select
-                            value={bedroomFilter}
-                            onChange={(event) => setBedroomFilter(event.target.value)}
-                            className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
-                        >
-                            {bedrooms.map((bedroom) => (
-                                <option key={bedroom}>{bedroom}</option>
-                            ))}
-                        </select>
+                            <select
+                                aria-label="Maximum effective rent"
+                                value={maxEffectiveRentFilter}
+                                onChange={(event) => setMaxEffectiveRentFilter(event.target.value)}
+                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                            >
+                                {effectiveRentOptions.map((rentOption) => (
+                                    <option key={rentOption}>{rentOption}</option>
+                                ))}
+                            </select>
 
-                        <select
-                            value={yearBuiltFilter}
-                            onChange={(event) => setYearBuiltFilter(event.target.value)}
-                            className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
-                        >
-                            {yearBuiltOptions.map((yearOption) => (
-                                <option key={yearOption}>{yearOption}</option>
-                            ))}
-                        </select>
+                            <input
+                                aria-label="Move-in date"
+                                type="date"
+                                value={moveInDateFilter}
+                                onChange={(event) => setMoveInDateFilter(event.target.value)}
+                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                            />
 
-                        <button
-                            onClick={() => {
-                                setSearchTerm("");
-                                setAreaFilter("All");
-                                setBedroomFilter("All");
-                                setYearBuiltFilter("Any year");
-                            }}
-                            className="rounded-2xl bg-slate-950 px-5 py-4 text-sm font-bold text-white hover:bg-slate-800"
-                        >
-                            Clear
-                        </button>
+                            <select
+                                aria-label="Current special"
+                                value={specialFilter}
+                                onChange={(event) => setSpecialFilter(event.target.value)}
+                                className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                            >
+                                {specialOptions.map((specialOption) => (
+                                    <option key={specialOption}>{specialOption}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -168,13 +280,118 @@ export default function HomePage() {
                         </h3>
 
                         <p className="mt-2 text-slate-500">
-                            Try searching by area, special, property name, year built, or management company.
+                            Try searching by area, rent, availability, special, floor plan, or management company.
                         </p>
                     </div>
                 )}
             </section>
         </main>
     );
+}
+
+function getSearchFloorPlans(property) {
+    if (!property.floorPlans?.length) {
+        return [
+            {
+                name: property.name,
+                bedrooms: property.bedrooms?.[0] || "",
+                startingRent: property.rent || "",
+                effectiveRent: property.effectiveRent || property.rent || "",
+                currentSpecial: property.special || "",
+                freeWeeks: getWeeksFromSpecialLabel(property.special),
+                availableUnits: [],
+            },
+        ];
+    }
+
+    return property.floorPlans.map((floorPlan, index) => {
+        if (typeof floorPlan === "string") {
+            return {
+                name: floorPlan,
+                bedrooms: property.bedrooms?.[index] || property.bedrooms?.[0] || "",
+                startingRent: property.rent || "",
+                effectiveRent: property.effectiveRent || property.rent || "",
+                currentSpecial: property.special || "",
+                freeWeeks: getWeeksFromSpecialLabel(property.special),
+                availableUnits: [],
+            };
+        }
+
+        const specialLabel =
+            floorPlan.currentSpecial || floorPlan.special?.label || property.special || "";
+
+        return {
+            name: floorPlan.name || `Floor Plan ${index + 1}`,
+            bedrooms: floorPlan.bedrooms || floorPlan.beds || "",
+            startingRent: floorPlan.startingRent || floorPlan.rent || property.rent || "",
+            effectiveRent:
+                floorPlan.effectiveRent || floorPlan.startingRent || floorPlan.rent || property.effectiveRent || "",
+            currentSpecial: specialLabel,
+            freeWeeks: Number(floorPlan.freeWeeks ?? floorPlan.special?.freeWeeks ?? getWeeksFromSpecialLabel(specialLabel)),
+            availableUnits: floorPlan.availableUnits || [],
+        };
+    });
+}
+
+function floorPlanMatchesFilters(floorPlan, filters) {
+    const startingRent = parseCurrency(floorPlan.startingRent);
+    const effectiveRent = parseCurrency(floorPlan.effectiveRent);
+    const maxStartingRent = parseCurrency(filters.maxStartingRentFilter);
+    const maxEffectiveRent = parseCurrency(filters.maxEffectiveRentFilter);
+    const freeWeeks = Number(floorPlan.freeWeeks || 0);
+    const hasSpecial = freeWeeks > 0 || Boolean(floorPlan.currentSpecial);
+    const specialWeeksThreshold = getWeeksFromSpecialLabel(filters.specialFilter);
+
+    const matchesBedroom =
+        filters.bedroomFilter === "All" || floorPlan.bedrooms === filters.bedroomFilter;
+    const matchesStartingRent =
+        filters.maxStartingRentFilter === "Any starting rent" ||
+        (startingRent > 0 && startingRent <= maxStartingRent);
+    const matchesEffectiveRent =
+        filters.maxEffectiveRentFilter === "Any effective rent" ||
+        (effectiveRent > 0 && effectiveRent <= maxEffectiveRent);
+    const matchesMoveInDate = matchesRequestedMoveInDate(
+        floorPlan.availableUnits,
+        filters.moveInDateFilter
+    );
+    const matchesSpecial =
+        filters.specialFilter === "Any special" ||
+        (filters.specialFilter === "Has special" && hasSpecial) ||
+        (specialWeeksThreshold > 0 && freeWeeks >= specialWeeksThreshold);
+
+    return (
+        matchesBedroom &&
+        matchesStartingRent &&
+        matchesEffectiveRent &&
+        matchesMoveInDate &&
+        matchesSpecial
+    );
+}
+
+function matchesRequestedMoveInDate(availableUnits, moveInDateFilter) {
+    if (!moveInDateFilter) return true;
+    if (!availableUnits?.length) return false;
+
+    return availableUnits.some((unit) => {
+        if (unit.status === "leased") return false;
+        if (!unit.availableDate) return true;
+
+        return unit.availableDate <= moveInDateFilter;
+    });
+}
+
+function parseCurrency(value) {
+    const parsedValue = Number(String(value || "").replace(/[^0-9.]/g, ""));
+    return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function normalizeSortIndex(index) {
+    return index === -1 ? 999 : index;
+}
+
+function getWeeksFromSpecialLabel(label) {
+    const match = String(label || "").match(/(\d+(?:\.\d+)?)\s*\+?\s*weeks?/i);
+    return match ? Number(match[1]) : 0;
 }
 
 function PropertyCard({ property }) {
