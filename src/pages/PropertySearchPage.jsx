@@ -11,34 +11,82 @@ import {
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = [-96.797, 32.7767];
+const MIN_DRAW_RADIUS_MILES = 0.25;
 
 export default function PropertySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchFromUrl = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(searchFromUrl);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [mappableSearchProperties, setMappableSearchProperties] = useState([]);
   const properties = getPublicSearchProperties();
-  const filteredProperties = useMemo(
+  const searchMatchedProperties = useMemo(
     () =>
       properties.filter((property) =>
         matchesPropertySearch(property, searchFromUrl)
       ),
     [properties, searchFromUrl]
   );
+  const filteredProperties = useMemo(() => {
+    if (!selectedArea) return searchMatchedProperties;
+
+    const mappablePropertiesById = new Map(
+      mappableSearchProperties.map((property) => [property.id, property])
+    );
+
+    return searchMatchedProperties.filter((property) => {
+      const mappableProperty = mappablePropertiesById.get(property.id);
+      if (!mappableProperty) return false;
+
+      const distanceFromCenter = getDistanceMiles(
+        selectedArea.center,
+        {
+          latitude: mappableProperty.latitude,
+          longitude: mappableProperty.longitude,
+        }
+      );
+
+      return distanceFromCenter <= selectedArea.radiusMiles;
+    });
+  }, [mappableSearchProperties, searchMatchedProperties, selectedArea]);
   const suggestions = useMemo(
     () => getPropertySearchSuggestions(properties, searchTerm),
     [properties, searchTerm]
   );
 
+  useEffect(() => {
+    let isMounted = true;
+
+    resolveMappableProperties(searchMatchedProperties)
+      .then((resolvedProperties) => {
+        if (isMounted) {
+          setMappableSearchProperties(resolvedProperties);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) {
+          setMappableSearchProperties([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [searchMatchedProperties]);
+
   const submitSearch = (event) => {
     event.preventDefault();
 
     const query = searchTerm.trim();
+    setSelectedArea(null);
     setSearchParams(query ? { search: query } : {});
   };
 
   const selectSuggestion = (suggestion) => {
     setSearchTerm(suggestion.value);
     setSearchParams({ search: suggestion.value });
+    setSelectedArea(null);
   };
 
   return (
@@ -153,6 +201,7 @@ export default function PropertySearchPage() {
                   onClick={() => {
                     setSearchTerm("");
                     setSearchParams({});
+                    setSelectedArea(null);
                   }}
                   className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
                 >
@@ -160,13 +209,22 @@ export default function PropertySearchPage() {
                 </button>
               </>
             )}
+            {selectedArea && (
+              <span className="rounded-full bg-[#eef5ff] px-4 py-2 text-sm font-bold text-[#174a7c] ring-1 ring-[#b8d9f0]">
+                Area: {selectedArea.radiusMiles.toFixed(1)} mi
+              </span>
+            )}
           </div>
         </div>
       </section>
 
       <section className="border-b border-[#d7e6df] bg-white">
         <div className="relative h-[320px] overflow-hidden md:h-[380px] lg:h-[430px]">
-          <SearchMap properties={filteredProperties} />
+          <SearchMap
+            properties={filteredProperties}
+            selectedArea={selectedArea}
+            onAreaChange={setSelectedArea}
+          />
         </div>
       </section>
 
@@ -212,20 +270,30 @@ export default function PropertySearchPage() {
   );
 }
 
-function SearchMap({ properties }) {
+function SearchMap({ properties, selectedArea, onAreaChange }) {
   if (!MAPBOX_TOKEN) {
     return <FallbackSearchMap properties={properties} />;
   }
 
-  return <MapboxSearchMap properties={properties} />;
+  return (
+    <MapboxSearchMap
+      properties={properties}
+      selectedArea={selectedArea}
+      onAreaChange={onAreaChange}
+    />
+  );
 }
 
-function MapboxSearchMap({ properties }) {
+function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
+  const drawStartRef = useRef(null);
+  const isDrawingAreaRef = useRef(false);
   const [mapboxGl, setMapboxGl] = useState(null);
   const [mapError, setMapError] = useState("");
+  const [isDrawingArea, setIsDrawingArea] = useState(false);
+  const [draftArea, setDraftArea] = useState(null);
   const [mappableProperties, setMappableProperties] = useState([]);
 
   useEffect(() => {
@@ -287,6 +355,40 @@ function MapboxSearchMap({ properties }) {
       "bottom-right"
     );
 
+    mapRef.current.on("load", () => {
+      if (!mapRef.current.getSource("search-area")) {
+        mapRef.current.addSource("search-area", {
+          type: "geojson",
+          data: createAreaGeoJson(null),
+        });
+      }
+
+      if (!mapRef.current.getLayer("search-area-fill")) {
+        mapRef.current.addLayer({
+          id: "search-area-fill",
+          type: "fill",
+          source: "search-area",
+          paint: {
+            "fill-color": "#2d7dd2",
+            "fill-opacity": 0.18,
+          },
+        });
+      }
+
+      if (!mapRef.current.getLayer("search-area-line")) {
+        mapRef.current.addLayer({
+          id: "search-area-line",
+          type: "line",
+          source: "search-area",
+          paint: {
+            "line-color": "#174a7c",
+            "line-width": 3,
+            "line-dasharray": [2, 1],
+          },
+        });
+      }
+    });
+
     return () => {
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
@@ -294,6 +396,101 @@ function MapboxSearchMap({ properties }) {
       mapRef.current = null;
     };
   }, [mapboxGl]);
+
+  useEffect(() => {
+    isDrawingAreaRef.current = isDrawingArea;
+
+    if (!mapRef.current) return;
+
+    const areaSource = mapRef.current.getSource("search-area");
+    if (!areaSource) return;
+
+    areaSource.setData(createAreaGeoJson(draftArea || selectedArea));
+  }, [draftArea, isDrawingArea, selectedArea]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    if (isDrawingArea) {
+      mapRef.current.dragPan.disable();
+      mapRef.current.getCanvas().style.cursor = "crosshair";
+      setMapMarkerPointerEvents(mapRef.current, "none");
+      return;
+    }
+
+    mapRef.current.dragPan.enable();
+    mapRef.current.getCanvas().style.cursor = "";
+    setMapMarkerPointerEvents(mapRef.current, "auto");
+    drawStartRef.current = null;
+  }, [isDrawingArea]);
+
+  useEffect(() => {
+    if (!mapRef.current) return undefined;
+
+    const map = mapRef.current;
+
+    const startDrawing = (event) => {
+      if (!isDrawingArea) return;
+
+      event.preventDefault();
+      drawStartRef.current = {
+        latitude: event.lngLat.lat,
+        longitude: event.lngLat.lng,
+      };
+      setDraftArea({
+        center: drawStartRef.current,
+        radiusMiles: MIN_DRAW_RADIUS_MILES,
+      });
+    };
+
+    const updateDrawing = (event) => {
+      if (!isDrawingArea || !drawStartRef.current) return;
+
+      const radiusMiles = Math.max(
+        getDistanceMiles(drawStartRef.current, {
+          latitude: event.lngLat.lat,
+          longitude: event.lngLat.lng,
+        }),
+        MIN_DRAW_RADIUS_MILES
+      );
+
+      setDraftArea({
+        center: drawStartRef.current,
+        radiusMiles,
+      });
+    };
+
+    const finishDrawing = (event) => {
+      if (!isDrawingArea || !drawStartRef.current) return;
+
+      const radiusMiles = Math.max(
+        getDistanceMiles(drawStartRef.current, {
+          latitude: event.lngLat.lat,
+          longitude: event.lngLat.lng,
+        }),
+        MIN_DRAW_RADIUS_MILES
+      );
+      const nextArea = {
+        center: drawStartRef.current,
+        radiusMiles,
+      };
+
+      onAreaChange(nextArea);
+      setDraftArea(null);
+      drawStartRef.current = null;
+      setIsDrawingArea(false);
+    };
+
+    map.on("mousedown", startDrawing);
+    map.on("mousemove", updateDrawing);
+    map.on("mouseup", finishDrawing);
+
+    return () => {
+      map.off("mousedown", startDrawing);
+      map.off("mousemove", updateDrawing);
+      map.off("mouseup", finishDrawing);
+    };
+  }, [isDrawingArea, onAreaChange]);
 
   useEffect(() => {
     if (!mapboxGl || !mapRef.current) return;
@@ -309,6 +506,28 @@ function MapboxSearchMap({ properties }) {
       markerElement.className =
         "rounded-full bg-[#173f3f] px-3 py-2 text-xs font-black text-white shadow-xl ring-2 ring-white transition hover:scale-105 hover:bg-[#102426]";
       markerElement.textContent = getPrimaryRentLabel(property);
+      markerElement.addEventListener("mousedown", (event) => {
+        if (!isDrawingAreaRef.current) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      markerElement.addEventListener("click", (event) => {
+        if (!isDrawingAreaRef.current) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        onAreaChange({
+          center: {
+            latitude: property.latitude,
+            longitude: property.longitude,
+          },
+          radiusMiles: 1.5,
+        });
+        setDraftArea(null);
+        drawStartRef.current = null;
+        setIsDrawingArea(false);
+      });
 
       const marker = new mapboxGl.Marker({ element: markerElement })
         .setLngLat([property.longitude, property.latitude])
@@ -331,7 +550,7 @@ function MapboxSearchMap({ properties }) {
         duration: 500,
       });
     }
-  }, [mapboxGl, mappableProperties]);
+  }, [mapboxGl, mappableProperties, onAreaChange]);
 
   if (mapError) {
     return <FallbackSearchMap properties={properties} />;
@@ -340,10 +559,49 @@ function MapboxSearchMap({ properties }) {
   return (
     <div className="relative h-full bg-[#dcebe4]">
       <div ref={mapContainerRef} className="h-full w-full" />
-      <div className="pointer-events-none absolute right-4 top-4 z-10 flex items-center gap-2 rounded-2xl bg-white/95 px-3 py-2 text-sm font-black text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df]">
+      <div className="absolute left-4 top-4 z-10 flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            if (!isDrawingArea && mapRef.current) {
+              setMapMarkerPointerEvents(mapRef.current, "none");
+            }
+            setIsDrawingArea((currentValue) => !currentValue);
+            setDraftArea(null);
+            drawStartRef.current = null;
+          }}
+          className={`rounded-2xl px-4 py-3 text-sm font-black shadow-sm ring-1 ${
+            isDrawingArea
+              ? "bg-[#2d7dd2] text-white ring-[#2d7dd2]"
+              : "bg-white/95 text-[#173f3f] ring-[#d7e6df] hover:bg-[#f5f8f1]"
+          }`}
+        >
+          {isDrawingArea ? "Drawing..." : "Draw area"}
+        </button>
+        {selectedArea && (
+          <button
+            type="button"
+            onClick={() => {
+              onAreaChange(null);
+              setDraftArea(null);
+              setIsDrawingArea(false);
+            }}
+            className="rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#e4572e] shadow-sm ring-1 ring-[#f4c8b8] hover:bg-[#fff0ea]"
+          >
+            Clear area
+          </button>
+        )}
+      </div>
+
+      <div className="pointer-events-none absolute right-4 top-4 z-10 hidden items-center gap-2 rounded-2xl bg-white/95 px-3 py-2 text-sm font-black text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df] sm:flex">
         <Navigation className="h-4 w-4 text-[#2d7dd2]" />
         Live map
       </div>
+      {isDrawingArea && (
+        <p className="pointer-events-none absolute bottom-4 left-4 z-10 rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#174a7c] shadow-lg ring-1 ring-[#b8d9f0]">
+          Click and drag on the map to circle an area
+        </p>
+      )}
       {mappableProperties.length === 0 && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4">
           <div className="rounded-3xl bg-white/95 p-6 text-center shadow-xl ring-1 ring-[#d7e6df]">
@@ -552,6 +810,8 @@ function getPropertyCoordinates(property) {
 }
 
 async function geocodePropertyAddress(property) {
+  if (!MAPBOX_TOKEN) return null;
+
   const addressLabel = getPropertyAddressLabel(property);
   if (!addressLabel || addressLabel === "Dallas, TX") return null;
 
@@ -600,6 +860,97 @@ function getCachedCoordinates(cacheKey) {
   } catch {
     return null;
   }
+}
+
+function setMapMarkerPointerEvents(map, pointerEventsValue) {
+  map
+    ?.getContainer()
+    ?.querySelectorAll(".mapboxgl-marker")
+    .forEach((markerElement) => {
+      markerElement.style.pointerEvents = pointerEventsValue;
+    });
+}
+
+function createAreaGeoJson(area) {
+  if (!area) {
+    return {
+      type: "FeatureCollection",
+      features: [],
+    };
+  }
+
+  const coordinates = [];
+  const pointCount = 80;
+
+  for (let index = 0; index <= pointCount; index += 1) {
+    const bearing = (index / pointCount) * 360;
+    const point = getDestinationPoint(area.center, area.radiusMiles, bearing);
+    coordinates.push([point.longitude, point.latitude]);
+  }
+
+  return {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "Polygon",
+          coordinates: [coordinates],
+        },
+      },
+    ],
+  };
+}
+
+function getDestinationPoint(center, distanceMiles, bearingDegrees) {
+  const earthRadiusMiles = 3958.8;
+  const angularDistance = distanceMiles / earthRadiusMiles;
+  const bearing = toRadians(bearingDegrees);
+  const startLatitude = toRadians(center.latitude);
+  const startLongitude = toRadians(center.longitude);
+  const destinationLatitude = Math.asin(
+    Math.sin(startLatitude) * Math.cos(angularDistance) +
+    Math.cos(startLatitude) * Math.sin(angularDistance) * Math.cos(bearing)
+  );
+  const destinationLongitude =
+    startLongitude +
+    Math.atan2(
+      Math.sin(bearing) * Math.sin(angularDistance) * Math.cos(startLatitude),
+      Math.cos(angularDistance) - Math.sin(startLatitude) * Math.sin(destinationLatitude)
+    );
+
+  return {
+    latitude: toDegrees(destinationLatitude),
+    longitude: toDegrees(destinationLongitude),
+  };
+}
+
+function getDistanceMiles(firstPoint, secondPoint) {
+  const earthRadiusMiles = 3958.8;
+  const latitudeDistance = toRadians(secondPoint.latitude - firstPoint.latitude);
+  const longitudeDistance = toRadians(secondPoint.longitude - firstPoint.longitude);
+  const firstLatitude = toRadians(firstPoint.latitude);
+  const secondLatitude = toRadians(secondPoint.latitude);
+  const haversineValue =
+    Math.sin(latitudeDistance / 2) ** 2 +
+    Math.cos(firstLatitude) *
+    Math.cos(secondLatitude) *
+    Math.sin(longitudeDistance / 2) ** 2;
+  const centralAngle = 2 * Math.atan2(
+    Math.sqrt(haversineValue),
+    Math.sqrt(1 - haversineValue)
+  );
+
+  return earthRadiusMiles * centralAngle;
+}
+
+function toRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function toDegrees(value) {
+  return (value * 180) / Math.PI;
 }
 
 function getPrimaryRentLabel(property) {
