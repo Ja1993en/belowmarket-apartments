@@ -60,91 +60,112 @@ export default function PropertySearchPage() {
         </div>
       </header>
 
+      <section className="border-b border-[#d7e6df] bg-white px-4 py-4">
+        <div className="mx-auto max-w-6xl">
+          <form
+            onSubmit={submitSearch}
+            className="relative rounded-2xl border border-[#d7e6df] bg-white p-2 shadow-sm"
+          >
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+              <div className="relative min-w-0 flex-1">
+                <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#2d7dd2]" />
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="City, state, address, or special"
+                  autoComplete="off"
+                  className="h-14 w-full rounded-xl border border-[#b8d9d0] bg-white pl-12 pr-4 text-base font-bold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="h-11 rounded-xl border border-[#d7e6df] bg-white px-4 text-sm font-black text-[#102426] hover:bg-[#f5f8f1]"
+                >
+                  Price
+                </button>
+                <button
+                  type="button"
+                  className="h-11 rounded-xl border border-[#d7e6df] bg-white px-4 text-sm font-black text-[#102426] hover:bg-[#f5f8f1]"
+                >
+                  Beds
+                </button>
+                <button
+                  type="button"
+                  className="h-11 rounded-xl border border-[#d7e6df] bg-white px-4 text-sm font-black text-[#102426] hover:bg-[#f5f8f1]"
+                >
+                  Specials
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                className="h-14 rounded-xl bg-[#173f3f] px-7 text-sm font-black text-white hover:bg-[#102426]"
+              >
+                Search
+              </button>
+            </div>
+
+            {suggestions.length > 0 && searchTerm.trim() !== searchFromUrl.trim() && (
+              <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-50 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl lg:right-auto lg:w-[min(560px,calc(100%-1rem))]">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={`${suggestion.type}-${suggestion.value}`}
+                    type="button"
+                    onClick={() => selectSuggestion(suggestion)}
+                    className="flex w-full items-center justify-between gap-3 border-b border-[#edf4ef] px-4 py-3 text-left last:border-b-0 hover:bg-[#f5f8f1]"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-black text-[#102426]">
+                        {suggestion.label}
+                      </span>
+                      {suggestion.detail && (
+                        <span className="block truncate text-xs font-bold text-[#526260]">
+                          {suggestion.detail}
+                        </span>
+                      )}
+                    </span>
+                    <span className="shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black uppercase text-[#1f6f63]">
+                      {suggestion.type}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </form>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-[#e7f3ee] px-4 py-2 text-sm font-black text-[#1f6f63]">
+              {filteredProperties.length} result{filteredProperties.length === 1 ? "" : "s"}
+            </span>
+            {searchFromUrl && (
+              <>
+                <span className="rounded-full bg-[#f5f8f1] px-4 py-2 text-sm font-bold text-[#526260] ring-1 ring-[#d7e6df]">
+                  Search: {searchFromUrl}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSearchParams({});
+                  }}
+                  className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                >
+                  Clear
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
       <section className="border-b border-[#d7e6df] bg-white">
-        <div className="relative h-[380px] overflow-hidden lg:h-[430px]">
+        <div className="relative h-[320px] overflow-hidden md:h-[380px] lg:h-[430px]">
           <SearchMap properties={filteredProperties} />
 
-          <div className="absolute inset-x-0 top-0 z-20 px-4 py-5">
-            <div className="mx-auto max-w-6xl">
-              <form
-                onSubmit={submitSearch}
-                className="relative rounded-3xl border border-[#d7e6df] bg-white p-2 shadow-xl shadow-[#102426]/15"
-              >
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <div className="relative min-w-0 flex-1">
-                    <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#2d7dd2]" />
-                    <input
-                      type="search"
-                      value={searchTerm}
-                      onChange={(event) => setSearchTerm(event.target.value)}
-                      placeholder="City, state, address, or special"
-                      autoComplete="off"
-                      className="h-14 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-12 pr-4 text-base font-bold text-[#102426] outline-none focus:border-[#2d7dd2]"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="h-14 rounded-2xl bg-[#173f3f] px-7 text-sm font-black text-white hover:bg-[#102426]"
-                  >
-                    Search
-                  </button>
-                </div>
-
-                {suggestions.length > 0 && searchTerm.trim() !== searchFromUrl.trim() && (
-                  <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-40 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl">
-                    {suggestions.map((suggestion) => (
-                      <button
-                        key={`${suggestion.type}-${suggestion.value}`}
-                        type="button"
-                        onClick={() => selectSuggestion(suggestion)}
-                        className="flex w-full items-center justify-between gap-3 border-b border-[#edf4ef] px-4 py-3 text-left last:border-b-0 hover:bg-[#f5f8f1]"
-                      >
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-black text-[#102426]">
-                            {suggestion.label}
-                          </span>
-                          {suggestion.detail && (
-                            <span className="block truncate text-xs font-bold text-[#526260]">
-                              {suggestion.detail}
-                            </span>
-                          )}
-                        </span>
-                        <span className="shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black uppercase text-[#1f6f63]">
-                          {suggestion.type}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </form>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#1f6f63] shadow-sm ring-1 ring-[#d7e6df]">
-                  {filteredProperties.length} result{filteredProperties.length === 1 ? "" : "s"}
-                </span>
-                {searchFromUrl && (
-                  <>
-                    <span className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#526260] shadow-sm ring-1 ring-[#d7e6df]">
-                      Search: {searchFromUrl}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearchTerm("");
-                        setSearchParams({});
-                      }}
-                      className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#e4572e] shadow-sm ring-1 ring-[#f4c8b8] hover:bg-[#fff0ea]"
-                    >
-                      Clear
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute bottom-4 left-4 z-10 hidden rounded-2xl bg-white/95 px-4 py-3 shadow-lg ring-1 ring-[#d7e6df] md:block">
+          <div className="absolute bottom-4 left-4 z-10 rounded-2xl bg-white/95 px-4 py-3 shadow-lg ring-1 ring-[#d7e6df]">
             <p className="text-xs font-black uppercase text-[#1f6f63]">
               Map view
             </p>
