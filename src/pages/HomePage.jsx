@@ -870,6 +870,7 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
     const dealSummary = property.dealSummary || getPropertyDealSummary(property);
     const normalRentLabel = dealSummary.normalRentLabel || getRentalPriceLabel(property, matchedFloorPlan);
     const effectiveRentLabel = dealSummary.effectiveRentLabel || normalRentLabel;
+    const showNormalRent = normalRentLabel && normalRentLabel !== effectiveRentLabel;
     const bedsLabel = getBedsLabel(property, matchedFloorPlan);
     const addressLabel = getAddressLabel(property);
     const savingsValue = matchedFloorPlan?.savings || property.savings || "";
@@ -899,62 +900,47 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                 <p className="truncate text-base font-black text-[#102426] group-hover:text-[#1f6f63]">
                     {property.name}
                 </p>
-                <p className="mt-1 line-clamp-2 min-h-[40px] text-sm font-semibold leading-5 text-[#526260]">
+                <p className="mt-1 truncate text-sm font-semibold text-[#526260]">
                     {addressLabel}
                 </p>
-
-                <p className="mt-3 text-lg font-black text-[#102426]">
-                    {normalRentLabel}
+                <p className="mt-1 text-xs font-black text-[#174a7c]">
+                    {bedsLabel}
                 </p>
-                <p className="mt-0.5 text-xs font-bold text-[#526260]">
-                    {dealSummary.priceCaption || "Total Monthly Price"}
-                </p>
-                {dealSummary.rentBreakdownLabel && (
-                    <p className="mt-1 text-xs font-bold text-[#526260]">
-                        {dealSummary.rentBreakdownLabel}
-                    </p>
-                )}
 
-                <div className="mt-3 rounded-2xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
-                    <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
-                        Special
-                    </p>
-                    <p className="mt-1 line-clamp-2 text-sm font-black leading-5 text-[#102426]">
-                        {dealSummary.specialLabel}
-                    </p>
-                    <div className="mt-2 border-t border-[#f2d08a] pt-2">
-                        {dealSummary.concessionValueLabel && (
-                            <>
-                                <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
-                                    Estimated Monthly Value
-                                </p>
-                                <p className="mt-1 text-sm font-black leading-5 text-[#102426]">
-                                    {dealSummary.concessionValueLabel}
-                                </p>
-                            </>
-                        )}
-                        <p className={`${dealSummary.concessionValueLabel ? "mt-2 " : ""}text-[11px] font-black uppercase text-[#8a5b0a]`}>
-                            Net Effective Rent
+                <div className="mt-3 flex items-end justify-between gap-3">
+                    <div className="min-w-0">
+                        <p className="text-[11px] font-black uppercase text-[#1f6f63]">
+                            Net Effective
                         </p>
-                        <p className="mt-1 text-sm font-black leading-5 text-[#102426]">
+                        <p className="mt-0.5 truncate text-xl font-black text-[#102426]">
                             {effectiveRentLabel}
                         </p>
-                        {dealSummary.specialCalculationLabel && (
-                            <p className="mt-1 text-xs font-bold text-[#7a432e]">
-                                {dealSummary.specialCalculationLabel}
-                            </p>
-                        )}
                     </div>
-                    {dealSummary.specialCountLabel && (
-                        <p className="mt-1 text-xs font-bold text-[#7a432e]">
-                            {dealSummary.specialCountLabel}
-                        </p>
+                    {showNormalRent && (
+                        <div className="shrink-0 text-right">
+                            <p className="text-[11px] font-black uppercase text-[#526260]">
+                                Normal
+                            </p>
+                            <p className="mt-0.5 text-sm font-black text-[#526260]">
+                                {normalRentLabel}
+                            </p>
+                        </div>
                     )}
                 </div>
 
-                <p className="mt-3 text-sm font-black text-[#174a7c]">
-                    {bedsLabel}
-                </p>
+                <div className="mt-3 rounded-xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+                    <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
+                        Special
+                    </p>
+                    <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+                        {dealSummary.specialLabel}
+                    </p>
+                    {dealSummary.hasSpecial && (
+                        <p className="mt-1 text-xs font-bold text-[#7a432e]">
+                            Account-credit estimate
+                        </p>
+                    )}
+                </div>
 
             </div>
         </Link>
