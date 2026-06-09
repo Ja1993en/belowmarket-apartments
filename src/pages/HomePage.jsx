@@ -8,6 +8,7 @@ export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [areaFilter, setAreaFilter] = useState("All");
     const [bedroomFilter, setBedroomFilter] = useState("All");
+    const [yearBuiltFilter, setYearBuiltFilter] = useState("Any year");
 
     const properties = getAllProperties();
 
@@ -33,12 +34,26 @@ export default function HomePage() {
         const matchesArea = areaFilter === "All" || property.area === areaFilter;
         const matchesBedroom =
             bedroomFilter === "All" || property.bedrooms?.includes(bedroomFilter);
+        const builtYear = Number(property.yearBuilt);
+        const matchesYearBuilt =
+            yearBuiltFilter === "Any year" ||
+            (yearBuiltFilter === "2020 or newer" && builtYear >= 2020) ||
+            (yearBuiltFilter === "2015 or newer" && builtYear >= 2015) ||
+            (yearBuiltFilter === "2010 or newer" && builtYear >= 2010) ||
+            (yearBuiltFilter === "Before 2010" && builtYear < 2010);
 
-        return matchesSearch && matchesArea && matchesBedroom;
+        return matchesSearch && matchesArea && matchesBedroom && matchesYearBuilt;
     });
 
     const areas = ["All", ...new Set(publicProperties.map((property) => property.area))];
     const bedrooms = ["All", "Studio", "1 Bed", "2 Bed", "3 Bed"];
+    const yearBuiltOptions = [
+        "Any year",
+        "2020 or newer",
+        "2015 or newer",
+        "2010 or newer",
+        "Before 2010",
+    ];
 
     return (
         <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -62,17 +77,18 @@ export default function HomePage() {
                         Start Apartment Search
                     </Link>
 
-                    <div className="mt-8 grid max-w-5xl gap-3 rounded-3xl bg-white p-2 shadow-sm md:grid-cols-[1fr_170px_170px_auto]">                        <div className="relative">
-                        <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <div className="mt-8 grid max-w-6xl gap-3 rounded-3xl bg-white p-2 shadow-sm md:grid-cols-[1fr_160px_150px_170px_auto]">
+                        <div className="relative">
+                            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(event) => setSearchTerm(event.target.value)}
-                            placeholder="Search property, special, or manager..."
-                            className="w-full rounded-2xl border-0 py-4 pl-12 pr-4 text-slate-900 outline-none"
-                        />
-                    </div>
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(event) => setSearchTerm(event.target.value)}
+                                placeholder="Search property, special, or manager..."
+                                className="w-full rounded-2xl border-0 py-4 pl-12 pr-4 text-slate-900 outline-none"
+                            />
+                        </div>
 
                         <select
                             value={areaFilter}
@@ -94,12 +110,22 @@ export default function HomePage() {
                             ))}
                         </select>
 
+                        <select
+                            value={yearBuiltFilter}
+                            onChange={(event) => setYearBuiltFilter(event.target.value)}
+                            className="rounded-2xl border-0 bg-slate-100 px-4 py-4 font-bold text-slate-700 outline-none"
+                        >
+                            {yearBuiltOptions.map((yearOption) => (
+                                <option key={yearOption}>{yearOption}</option>
+                            ))}
+                        </select>
 
                         <button
                             onClick={() => {
                                 setSearchTerm("");
                                 setAreaFilter("All");
                                 setBedroomFilter("All");
+                                setYearBuiltFilter("Any year");
                             }}
                             className="rounded-2xl bg-slate-950 px-5 py-4 text-sm font-bold text-white hover:bg-slate-800"
                         >
@@ -142,7 +168,7 @@ export default function HomePage() {
                         </h3>
 
                         <p className="mt-2 text-slate-500">
-                            Try searching by area, special, property name, or management company.
+                            Try searching by area, special, property name, year built, or management company.
                         </p>
                     </div>
                 )}
