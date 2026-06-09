@@ -427,92 +427,76 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
     drawCurrentRef.current = null;
   }, [isDrawingArea]);
 
-  useEffect(() => {
-    if (!mapRef.current) return undefined;
+  const startAreaDrawing = (event) => {
+    if (!isDrawingArea || !mapRef.current) return;
 
-    const map = mapRef.current;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
 
-    const startDrawing = (event) => {
-      if (!isDrawingArea) return;
+    const drawingPoint = getPointerMapPoint(mapRef.current, event);
+    if (!drawingPoint) return;
 
-      event.preventDefault?.();
-      event.originalEvent?.preventDefault();
-      const drawingPoint = getMapEventPoint(event);
-      if (!drawingPoint) return;
+    drawStartRef.current = drawingPoint;
+    drawCurrentRef.current = drawingPoint;
+    setDraftArea({
+      center: drawingPoint,
+      radiusMiles: CLICK_DRAW_RADIUS_MILES,
+    });
+  };
 
-      drawCurrentRef.current = drawingPoint;
-      drawStartRef.current = {
-        latitude: drawingPoint.latitude,
-        longitude: drawingPoint.longitude,
-      };
-      setDraftArea({
-        center: drawStartRef.current,
-        radiusMiles: CLICK_DRAW_RADIUS_MILES,
-      });
-    };
+  const updateAreaDrawing = (event) => {
+    if (!isDrawingArea || !mapRef.current || !drawStartRef.current) return;
 
-    const updateDrawing = (event) => {
-      if (!isDrawingArea || !drawStartRef.current) return;
+    event.preventDefault();
 
-      event.originalEvent?.preventDefault();
-      const drawingPoint = getMapEventPoint(event);
-      if (!drawingPoint) return;
+    const drawingPoint = getPointerMapPoint(mapRef.current, event);
+    if (!drawingPoint) return;
 
-      drawCurrentRef.current = drawingPoint;
-      const radiusMiles = Math.max(
+    drawCurrentRef.current = drawingPoint;
+    setDraftArea({
+      center: drawStartRef.current,
+      radiusMiles: Math.max(
         getDistanceMiles(drawStartRef.current, drawingPoint),
         MIN_DRAW_RADIUS_MILES
-      );
+      ),
+    });
+  };
 
-      setDraftArea({
-        center: drawStartRef.current,
-        radiusMiles,
-      });
-    };
+  const finishAreaDrawing = (event) => {
+    if (!isDrawingArea || !drawStartRef.current) return;
 
-    const finishDrawing = (event) => {
-      if (!isDrawingArea || !drawStartRef.current) return;
+    event.preventDefault();
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
 
-      event.preventDefault?.();
-      event.originalEvent?.preventDefault();
-      const drawingPoint = getMapEventPoint(event) || drawCurrentRef.current;
-      const drawnRadiusMiles = drawingPoint
-        ? getDistanceMiles(drawStartRef.current, drawingPoint)
-        : 0;
-      const radiusMiles =
-        drawnRadiusMiles < MIN_DRAW_RADIUS_MILES
-          ? CLICK_DRAW_RADIUS_MILES
-          : drawnRadiusMiles;
-      const nextArea = {
-        center: drawStartRef.current,
-        radiusMiles,
-      };
+    const drawingPoint =
+      (mapRef.current && getPointerMapPoint(mapRef.current, event)) ||
+      drawCurrentRef.current;
+    const drawnRadiusMiles = drawingPoint
+      ? getDistanceMiles(drawStartRef.current, drawingPoint)
+      : 0;
+    const radiusMiles =
+      drawnRadiusMiles < MIN_DRAW_RADIUS_MILES
+        ? CLICK_DRAW_RADIUS_MILES
+        : drawnRadiusMiles;
 
-      onAreaChange(nextArea);
-      setDraftArea(null);
-      drawStartRef.current = null;
-      drawCurrentRef.current = null;
-      setIsDrawingArea(false);
-    };
+    onAreaChange({
+      center: drawStartRef.current,
+      radiusMiles,
+    });
+    setDraftArea(null);
+    drawStartRef.current = null;
+    drawCurrentRef.current = null;
+    setIsDrawingArea(false);
+  };
 
-    map.on("mousedown", startDrawing);
-    map.on("mousemove", updateDrawing);
-    map.on("mouseup", finishDrawing);
-    map.on("touchstart", startDrawing);
-    map.on("touchmove", updateDrawing);
-    map.on("touchend", finishDrawing);
-    map.on("touchcancel", finishDrawing);
-
-    return () => {
-      map.off("mousedown", startDrawing);
-      map.off("mousemove", updateDrawing);
-      map.off("mouseup", finishDrawing);
-      map.off("touchstart", startDrawing);
-      map.off("touchmove", updateDrawing);
-      map.off("touchend", finishDrawing);
-      map.off("touchcancel", finishDrawing);
-    };
-  }, [isDrawingArea, onAreaChange]);
+  const cancelAreaDrawing = (event) => {
+    event.preventDefault();
+    setDraftArea(null);
+    drawStartRef.current = null;
+    drawCurrentRef.current = null;
+  };
 
   useEffect(() => {
     if (!mapboxGl || !mapRef.current) return;
@@ -581,6 +565,17 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
   return (
     <div className="relative h-full bg-[#dcebe4]">
       <div ref={mapContainerRef} className="h-full w-full" />
+      {isDrawingArea && (
+        <div
+          aria-label="Draw search area"
+          className="absolute inset-0 z-[5] cursor-crosshair touch-none"
+          role="presentation"
+          onPointerDown={startAreaDrawing}
+          onPointerMove={updateAreaDrawing}
+          onPointerUp={finishAreaDrawing}
+          onPointerCancel={cancelAreaDrawing}
+        />
+      )}
       <div className="absolute left-4 top-4 z-10 flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2">
         <button
           type="button"
@@ -887,11 +882,15 @@ function getCachedCoordinates(cacheKey) {
   }
 }
 
-function getMapEventPoint(event) {
-  if (!event?.lngLat) return null;
+function getPointerMapPoint(map, event) {
+  const canvasBounds = map.getCanvas().getBoundingClientRect();
+  const mapPoint = map.unproject([
+    event.clientX - canvasBounds.left,
+    event.clientY - canvasBounds.top,
+  ]);
 
-  const latitude = Number(event.lngLat.lat);
-  const longitude = Number(event.lngLat.lng);
+  const latitude = Number(mapPoint.lat);
+  const longitude = Number(mapPoint.lng);
 
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
     return null;
