@@ -418,19 +418,19 @@ export default function PublicPropertyListing() {
 
     if (!property || property.status !== "Live") {
         return (
-            <main className="min-h-screen bg-slate-100 p-6 text-slate-950">
-                <div className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                    <h1 className="text-3xl font-black text-slate-900">
+            <main className="min-h-screen bg-[#f5f8f1] p-6 text-[#102426]">
+                <div className="mx-auto max-w-4xl rounded-3xl border border-[#d7e6df] bg-white p-8 shadow-sm">
+                    <h1 className="text-3xl font-black text-[#102426]">
                         Property not found
                     </h1>
 
-                    <p className="mt-2 text-slate-500">
+                    <p className="mt-2 text-[#526260]">
                         This property listing is not currently available to renters.
                     </p>
 
                     <Link
                         to="/properties"
-                        className="mt-6 inline-block rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                        className="mt-6 inline-block rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
                     >
                         Back to Search
                     </Link>
@@ -479,15 +479,15 @@ export default function PublicPropertyListing() {
 
     return (
 
-        <main className="min-h-screen bg-slate-100 p-6 pb-32 text-slate-950 md:pb-32">
+        <main className="min-h-screen bg-[#f5f8f1] p-6 pb-32 text-[#102426] md:pb-32">
             <div className="mx-auto max-w-7xl space-y-8">
                 <Link
                     to="/properties"
-                    className="inline-block rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+                    className="inline-block rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
                 >
                     Back to Search
                 </Link>
-                <div className="rounded-3xl bg-white shadow-sm">                    <div className="grid gap-3 p-3 lg:grid-cols-[2fr_1fr]">
+                <div className="rounded-3xl bg-white shadow-sm ring-1 ring-[#d7e6df]">                    <div className="grid gap-3 p-3 lg:grid-cols-[2fr_1fr]">
                     <div className="relative h-[280px] overflow-hidden rounded-2xl md:h-[340px]">
                         <img
                             src={propertyGalleryImages[0].url}
@@ -497,7 +497,7 @@ export default function PublicPropertyListing() {
 
                         <button
                             onClick={() => setShowGallery(true)}
-                            className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-sm font-black text-slate-900 shadow-md"
+                            className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-sm font-black text-[#102426] shadow-md"
                         >
                             View {propertyGalleryImages.length} Photos
                         </button>
@@ -528,31 +528,31 @@ export default function PublicPropertyListing() {
                     <div className="p-6">
                         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_340px]">
                             <div className="min-w-0">
-                                <p className="text-sm font-bold text-slate-500">
+                                <p className="text-sm font-bold text-[#526260]">
                                     {managementLabel}
                                 </p>
 
-                                <h1 className="mt-2 text-4xl font-black text-slate-900">
+                                <h1 className="mt-2 text-4xl font-black text-[#102426]">
                                     {property.name}
                                 </h1>
 
-                                <p className="mt-2 text-slate-500">
+                                <p className="mt-2 text-[#526260]">
                                     {addressLabel} • Starting at {startingRentLabel}
                                     {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
                                 </p>
 
 
                                 {hasPropertySpecial && (
-                                    <div className="mt-5 rounded-2xl bg-emerald-50 p-4">
-                                        <p className="text-sm font-bold text-emerald-700">
+                                    <div className="mt-5 rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">
+                                        <p className="text-sm font-bold text-[#8a5b0a]">
                                             Current Special
                                         </p>
 
-                                        <p className="mt-1 font-black text-slate-900">
+                                        <p className="mt-1 font-black text-[#102426]">
                                             {propertySpecialLabel}
                                         </p>
 
-                                        <p className="mt-2 text-sm font-semibold text-emerald-700">
+                                        <p className="mt-2 text-sm font-semibold text-[#7a432e]">
                                             Specials are shown separately so renters can compare the normal rent and the estimated effective rent.
                                         </p>
                                     </div>
@@ -582,8 +582,8 @@ export default function PublicPropertyListing() {
 
 
 
-                                <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                                    <h2 className="text-xl font-black text-slate-900">
+                                <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                                    <h2 className="text-xl font-black text-[#102426]">
                                         Why Renters Choose This Property
                                     </h2>
 
@@ -617,12 +617,12 @@ export default function PublicPropertyListing() {
                                 {/*Floor Plans*/}
                                 <div
                                     id="floor-plans"
-                                    className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-                                >                                <h2 className="text-2xl font-black text-slate-900">
+                                    className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm"
+                                >                                <h2 className="text-2xl font-black text-[#102426]">
                                         Floor Plans
                                     </h2>
 
-                                    <p className="mt-2 text-slate-500">
+                                    <p className="mt-2 text-[#526260]">
                                         View available layouts, pricing, and unit availability.
                                     </p>
 
@@ -633,8 +633,8 @@ export default function PublicPropertyListing() {
                                                     key={filter}
                                                     onClick={() => setActiveFloorPlanFilter(filter)}
                                                     className={`rounded-full px-4 py-2 text-sm font-bold ${activeFloorPlanFilter === filter
-                                                        ? "bg-slate-950 text-white"
-                                                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                                        ? "bg-[#173f3f] text-white"
+                                                        : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
                                                         }`}
                                                 >
                                                     {filter}
@@ -645,7 +645,7 @@ export default function PublicPropertyListing() {
                                         <select
                                             value={floorPlanSort}
                                             onChange={(event) => setFloorPlanSort(event.target.value)}
-                                            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700"
+                                            className="rounded-full border border-[#d7e6df] bg-white px-4 py-2 text-sm font-bold text-[#173f3f]"
                                         >
                                             <option value="recommended">
                                                 Sort: Recommended
@@ -673,20 +673,20 @@ export default function PublicPropertyListing() {
 
 
                                     {filteredFloorPlans.length === 0 && (
-                                        <div className="mt-6 rounded-2xl bg-slate-50 p-5 text-center">
-                                            <p className="font-bold text-slate-900">
+                                        <div className="mt-6 rounded-2xl bg-[#f5f8f1] p-5 text-center">
+                                            <p className="font-bold text-[#102426]">
                                                 No floor plans found
                                             </p>
 
 
-                                            <p className="mt-2 text-sm text-slate-500">
+                                            <p className="mt-2 text-sm text-[#526260]">
                                                 Try selecting a different bedroom type.
                                             </p>
                                         </div>
                                     )}
 
 
-                                    <p className="mt-3 text-sm font-semibold text-slate-500">
+                                    <p className="mt-3 text-sm font-semibold text-[#526260]">
                                         Showing {filteredFloorPlans.length} floor plan
                                         {filteredFloorPlans.length === 1 ? "" : "s"}
                                     </p>
@@ -731,12 +731,12 @@ export default function PublicPropertyListing() {
 
 
                                 {/*Amenities*/}
-                                <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                                    <h2 className="text-2xl font-black text-slate-900">
+                                <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                                    <h2 className="text-2xl font-black text-[#102426]">
                                         Amenities
                                     </h2>
 
-                                    <p className="mt-2 text-slate-500">
+                                    <p className="mt-2 text-[#526260]">
                                         Features and conveniences available at this property.
                                     </p>
 
@@ -748,12 +748,12 @@ export default function PublicPropertyListing() {
                                 </div>
 
                                 {/*Neighborhood*/}
-                                <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                                    <h2 className="text-2xl font-black text-slate-900">
+                                <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                                    <h2 className="text-2xl font-black text-[#102426]">
                                         Neighborhood Highlights
                                     </h2>
 
-                                    <p className="mt-2 text-slate-500">
+                                    <p className="mt-2 text-[#526260]">
                                         What renters may like about living near this property.
                                     </p>
 
@@ -777,30 +777,30 @@ export default function PublicPropertyListing() {
 
                                 {/*Location*/}
                                 <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_.8fr]">
-                                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                                        <h2 className="text-2xl font-black text-slate-900">
+                                    <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                                        <h2 className="text-2xl font-black text-[#102426]">
                                             Location
                                         </h2>
 
-                                        <p className="mt-2 text-slate-500">
+                                        <p className="mt-2 text-[#526260]">
                                             {addressLabel}
                                         </p>
 
-                                        <div className="mt-5 flex h-80 items-center justify-center rounded-3xl bg-slate-200">
+                                        <div className="mt-5 flex h-80 items-center justify-center rounded-3xl bg-[#d7e6df]">
                                             <div className="text-center">
-                                                <p className="text-lg font-black text-slate-700">
+                                                <p className="text-lg font-black text-[#173f3f]">
                                                     Map Preview
                                                 </p>
 
-                                                <p className="mt-2 text-sm text-slate-500">
+                                                <p className="mt-2 text-sm text-[#526260]">
                                                     Google Maps or Mapbox will connect here later.
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                                        <h2 className="text-2xl font-black text-slate-900">
+                                    <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                                        <h2 className="text-2xl font-black text-[#102426]">
                                             Nearby
                                         </h2>
 
@@ -820,22 +820,22 @@ export default function PublicPropertyListing() {
                                 id="request-info"
                                 className="mt-8 lg:mt-0"
                             >
-                                <div className="sticky top-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-xl">
-                                    <p className="text-sm font-bold text-slate-500">
+                                <div className="sticky top-6 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-xl">
+                                    <p className="text-sm font-bold text-[#526260]">
                                         Interested in this property?
                                     </p>
 
-                                    <h2 className="mt-2 text-xl font-black text-slate-900">
+                                    <h2 className="mt-2 text-xl font-black text-[#102426]">
                                         Request tour or pricing
                                     </h2>
 
-                                    <p className="mt-2 text-sm text-slate-500">
+                                    <p className="mt-2 text-sm text-[#526260]">
                                         Call or text: 945-269-3768
                                     </p>
                                     <p className={`mt-3 rounded-2xl px-4 py-3 text-sm font-bold ${
                                         hasPropertySpecial
-                                            ? "bg-emerald-50 text-emerald-700"
-                                            : "bg-slate-50 text-slate-600"
+                                            ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+                                            : "bg-[#f5f8f1] text-[#526260]"
                                     }`}>
                                         {hasPropertySpecial
                                             ? `Ask about ${propertySpecialLabel}.`
@@ -853,7 +853,7 @@ export default function PublicPropertyListing() {
                                                     name: e.target.value,
                                                 })
                                             }
-                                            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         />
 
                                         <input
@@ -866,7 +866,7 @@ export default function PublicPropertyListing() {
                                                     phone: e.target.value,
                                                 })
                                             }
-                                            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         />
 
                                         <input
@@ -879,7 +879,7 @@ export default function PublicPropertyListing() {
                                                     email: e.target.value,
                                                 })
                                             }
-                                            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         />
 
                                         <select
@@ -890,7 +890,7 @@ export default function PublicPropertyListing() {
                                                     moveInDate: e.target.value,
                                                 })
                                             }
-                                            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         >
                                             <option value="">Desired move-in date</option>
                                             <option value="Immediately">Immediately</option>
@@ -908,7 +908,7 @@ export default function PublicPropertyListing() {
                                                     bedroomsNeeded: e.target.value,
                                                 })
                                             }
-                                            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         >
                                             <option value="">Bedrooms Needed</option>
                                             <option value="Studio">Studio</option>
@@ -925,7 +925,7 @@ export default function PublicPropertyListing() {
                                                     tourPreference: e.target.value,
                                                 })
                                             }
-                                            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         >
                                             <option value="">Tour Preference</option>
                                             <option value="In-person tour">In-person tour</option>
@@ -941,7 +941,7 @@ export default function PublicPropertyListing() {
                                                     contactMethod: e.target.value,
                                                 })
                                             }
-                                            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         >
                                             <option value="">Preferred Contact Method</option>
                                             <option value="Text">Text me</option>
@@ -950,50 +950,50 @@ export default function PublicPropertyListing() {
                                         </select>
                                     </div>
 
-                                    <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-                                        <p className="text-sm font-bold text-slate-900">
+                                    <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4">
+                                        <p className="text-sm font-bold text-[#102426]">
                                             Helping Dallas renters find better deals
                                         </p>
 
                                         <div className="mt-3 grid grid-cols-3 gap-3 text-center">
                                             <div>
-                                                <p className="text-lg font-black text-slate-900">500+</p>
-                                                <p className="text-xs text-slate-500">Renters Helped</p>
+                                                <p className="text-lg font-black text-[#102426]">500+</p>
+                                                <p className="text-xs text-[#526260]">Renters Helped</p>
                                             </div>
 
                                             <div>
-                                                <p className="text-lg font-black text-slate-900">$250k+</p>
-                                                <p className="text-xs text-slate-500">Savings Found</p>
+                                                <p className="text-lg font-black text-[#102426]">$250k+</p>
+                                                <p className="text-xs text-[#526260]">Savings Found</p>
                                             </div>
 
                                             <div>
-                                                <p className="text-lg font-black text-slate-900">4.9★</p>
-                                                <p className="text-xs text-slate-500">Client Rating</p>
+                                                <p className="text-lg font-black text-[#102426]">4.9★</p>
+                                                <p className="text-xs text-[#526260]">Client Rating</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     {showSidebarError && (
-                                        <p className="mt-3 text-sm font-semibold text-red-600">
+                                        <p className="mt-3 text-sm font-semibold text-[#e4572e]">
                                             * Required fields: Name, Phone, Email
                                         </p>
                                     )}
                                     <button
                                         onClick={handleFloorPlanLeadSubmit}
                                         disabled={leadSubmitted}
-                                        className={`mt-5 w-full rounded-2xl px-5 py-3 text-sm font-bold text-white ${leadSubmitted
-                                            ? "cursor-not-allowed bg-slate-400"
-                                            : "bg-slate-950 hover:bg-slate-800"
+                                        className={`mt-5 w-full rounded-2xl px-5 py-3 text-sm font-black ${leadSubmitted
+                                            ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
+                                            : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
                                             }`}
                                     >
                                         {leadSubmitted ? "Request Submitted" : "Check Availability"}
                                     </button>
-                                    <div className="mt-4 space-y-2 text-sm font-semibold text-slate-600">
+                                    <div className="mt-4 space-y-2 text-sm font-semibold text-[#526260]">
                                         <p>✓ No cost to renters</p>
                                         <p>✓ Access to active leasing specials</p>
                                         <p>✓ Help comparing below-market options</p>
                                     </div>
-                                    <p className="mt-4 text-xs leading-5 text-slate-400">
+                                    <p className="mt-4 text-xs leading-5 text-[#7b8b88]">
                                         By submitting, renters agree to be contacted about availability, pricing, and leasing specials.
                                     </p>
                                 </div>
@@ -1013,18 +1013,18 @@ export default function PublicPropertyListing() {
                     <div className="mx-auto my-6 max-w-6xl rounded-3xl bg-white p-4 md:p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h2 className="text-2xl font-black text-slate-900">
+                                <h2 className="text-2xl font-black text-[#102426]">
                                     Property Photos
                                 </h2>
 
-                                <p className="mt-1 text-sm text-slate-500">
+                                <p className="mt-1 text-sm text-[#526260]">
                                     Showing {filteredGalleryImages.length} of {propertyGalleryImages.length} photos
                                 </p>
                             </div>
 
                             <button
                                 onClick={() => setShowGallery(false)}
-                                className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                                className="rounded-2xl bg-[#f5f8f1] px-4 py-2 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
                             >
                                 Close
                             </button>
@@ -1035,8 +1035,8 @@ export default function PublicPropertyListing() {
                                 key={category}
                                 onClick={() => setActivePhotoCategory(category)}
                                 className={`rounded-full px-4 py-2 text-sm font-bold shadow-md ${activePhotoCategory === category
-                                    ? "bg-slate-950 text-white"
-                                    : "bg-white text-slate-700"
+                                    ? "bg-[#173f3f] text-white"
+                                    : "bg-white text-[#173f3f]"
                                     }`}
                             >
                                 {category}
@@ -1044,7 +1044,7 @@ export default function PublicPropertyListing() {
                         ))}
                         </div>
 
-                        <div className="mt-6 overflow-hidden rounded-3xl bg-slate-100">
+                        <div className="mt-6 overflow-hidden rounded-3xl bg-[#f5f8f1]">
                             <img
                                 src={selectedPhoto.url}
                                 alt={`${selectedPhoto.category} selected`}
@@ -1052,7 +1052,7 @@ export default function PublicPropertyListing() {
                             />
 
                             <div className="p-4">
-                                <p className="font-bold text-slate-900">
+                                <p className="font-bold text-[#102426]">
                                     {selectedPhoto.category}
                                 </p>
                             </div>
@@ -1067,7 +1067,7 @@ export default function PublicPropertyListing() {
                                     key={image.url}
                                     type="button"
                                     onClick={() => setSelectedPhoto(image)}
-                                    className="overflow-hidden rounded-2xl bg-slate-50 text-left"
+                                    className="overflow-hidden rounded-2xl bg-[#f5f8f1] text-left"
                                 >
                                     <img
                                         src={image.url}
@@ -1076,7 +1076,7 @@ export default function PublicPropertyListing() {
                                     />
 
                                     <div className="p-3">
-                                        <p className="font-bold text-slate-900">
+                                        <p className="font-bold text-[#102426]">
                                             {image.category}
                                         </p>
                                     </div>
@@ -1092,15 +1092,15 @@ export default function PublicPropertyListing() {
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 p-4">
                     <div className="mx-auto my-8 w-full max-w-5xl rounded-3xl bg-white p-6 shadow-xl">                    <div className="flex items-start justify-between gap-4">
                         <div>
-                            <p className="text-sm font-bold text-slate-500">
+                            <p className="text-sm font-bold text-[#526260]">
                                 Floor Plan Details
                             </p>
 
-                            <h2 className="mt-1 text-3xl font-black text-slate-900">
+                            <h2 className="mt-1 text-3xl font-black text-[#102426]">
                                 {selectedFloorPlan.name}
                             </h2>
 
-                            <p className="mt-2 text-slate-500">
+                            <p className="mt-2 text-[#526260]">
                                 {selectedFloorPlan.beds} • {selectedFloorPlan.baths} • {selectedFloorPlan.sqft}
                             </p>
 
@@ -1110,7 +1110,7 @@ export default function PublicPropertyListing() {
 
                         <button
                             onClick={() => setSelectedFloorPlan(null)}
-                            className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                            className="rounded-2xl bg-[#f5f8f1] px-4 py-2 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
                         >
                             Close
                         </button>
@@ -1129,25 +1129,25 @@ export default function PublicPropertyListing() {
 
                                 <div className="mt-6 grid gap-4 md:grid-cols-3">
 
-                                    <div className="rounded-2xl bg-slate-50 p-4">
-                                        <p className="text-sm font-bold text-slate-500">
+                                    <div className="rounded-2xl bg-[#f5f8f1] p-4">
+                                        <p className="text-sm font-bold text-[#526260]">
                                             Starting Rent
                                         </p>
 
-                                        <p className="mt-1 text-2xl font-black text-slate-900">
+                                        <p className="mt-1 text-2xl font-black text-[#102426]">
                                             {selectedFloorPlan.rent}
                                         </p>
                                     </div>
                                     {hasCalculableSelectedSpecial && (
-                                        <div className="rounded-2xl bg-emerald-50 p-4">
-                                            <p className="text-sm font-bold text-emerald-700">
+                                        <div className="rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">
+                                            <p className="text-sm font-bold text-[#8a5b0a]">
                                                 Estimated Rent After Special                                            </p>
 
-                                            <p className="mt-1 text-2xl font-black text-slate-900">
+                                            <p className="mt-1 text-2xl font-black text-[#102426]">
                                                 ${Math.round(effectiveRent).toLocaleString()}
                                             </p>
 
-                                            <p className="mt-1 text-sm font-semibold text-emerald-700">
+                                            <p className="mt-1 text-sm font-semibold text-[#7a432e]">
                                                 Save about ${Math.round(monthlySavings)}/mo
                                             </p>
                                         </div>
@@ -1155,31 +1155,31 @@ export default function PublicPropertyListing() {
                                     )}
 
                                     {hasCalculableSelectedSpecial && (
-                                        <p className="mt-3 text-sm font-semibold text-slate-500">
+                                        <p className="mt-3 text-sm font-semibold text-[#526260]">
                                             Rent after special is estimated using a {leaseMonths}-month lease term.
                                         </p>
                                     )}
 
 
                                 </div>
-                                <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-5">
+                                <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-5">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-black text-slate-900">
+                                        <h3 className="text-lg font-black text-[#102426]">
                                             Available Units
                                         </h3>
 
                                         <div className="flex flex-wrap gap-2">
                                             {selectedFloorPlan.availableUnits?.length > 2 ? (
-                                                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                                                <span className="rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
                                                     Multiple Units Available
                                                 </span>
                                             ) : (
-                                                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
+                                                <span className="rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-bold text-[#8a5b0a]">
                                                     Low Availability
                                                 </span>
                                             )}
 
-                                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                                            <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-xs font-bold text-[#173f3f]">
                                                 {selectedFloorPlan.availableUnits?.length || 0} Units
                                             </span>
                                         </div>
@@ -1190,40 +1190,40 @@ export default function PublicPropertyListing() {
                                                 <div
                                                     key={unit.unit}
                                                     className={`flex items-center justify-between rounded-2xl p-4 ${leadForm.selectedUnit === unit.unit
-                                                        ? "border border-emerald-200 bg-emerald-50"
-                                                        : "bg-slate-50"
+                                                        ? "border border-[#a9cfc2] bg-[#e7f3ee]"
+                                                        : "bg-[#f5f8f1]"
                                                         }`}                                                >
                                                     <div>
-                                                        <p className="font-bold text-slate-900">
+                                                        <p className="font-bold text-[#102426]">
                                                             Unit {unit.unit}
                                                         </p>
 
                                                         <div className="mt-3 flex flex-wrap gap-2">
                                                             {unit.requestCount > 0 &&
                                                                 unit.requestCount === highestRequestCount && (
-                                                                    <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700">
+                                                                    <span className="rounded-full bg-[#eef5ff] px-2 py-1 text-xs font-bold text-[#174a7c]">
                                                                         Most Requested
                                                                     </span>
                                                                 )}
 
                                                             {Number(unit.rent.replace(/[^0-9]/g, "")) === lowestUnitRent && (
-                                                                <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">
+                                                                <span className="rounded-full bg-[#e7f3ee] px-2 py-1 text-xs font-bold text-[#1f6f63]">
                                                                     Best Value
                                                                 </span>
                                                             )}
 
                                                             {unit.available === "Available Now" && (
-                                                                <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">
+                                                                <span className="rounded-full bg-[#d8efe6] px-2 py-1 text-xs font-bold text-[#1f6f63]">
                                                                     Available Now
                                                                 </span>
                                                             )}
 
                                                             {unit.status && (
                                                                 <span className={`rounded-full px-2 py-1 text-xs font-bold ${unit.status === "available"
-                                                                    ? "bg-emerald-100 text-emerald-700"
+                                                                    ? "bg-[#d8efe6] text-[#1f6f63]"
                                                                     : unit.status === "pending"
-                                                                        ? "bg-amber-100 text-amber-700"
-                                                                        : "bg-slate-200 text-slate-700"
+                                                                        ? "bg-[#fff8e6] text-[#8a5b0a]"
+                                                                        : "bg-[#d7e6df] text-[#173f3f]"
                                                                     }`}>
                                                                     {unit.status}
                                                                 </span>
@@ -1231,7 +1231,7 @@ export default function PublicPropertyListing() {
                                                         </div>
 
                                                         {unit.available !== "Available Now" && (
-                                                            <p className="mt-2 text-sm text-slate-500">
+                                                            <p className="mt-2 text-sm text-[#526260]">
                                                                 {unit.available}
                                                             </p>
                                                         )}
@@ -1239,7 +1239,7 @@ export default function PublicPropertyListing() {
                                                     <div className="text-right">
 
 
-                                                        <p className="text-2xl font-black text-slate-900">
+                                                        <p className="text-2xl font-black text-[#102426]">
                                                             {unit.rent}
                                                         </p>
 
@@ -1264,8 +1264,8 @@ export default function PublicPropertyListing() {
                                                                     });
                                                             }}
                                                             className={`mt-2 rounded-xl px-3 py-2 text-xs font-bold text-white ${leadForm.selectedUnit === unit.unit
-                                                                ? "bg-emerald-600"
-                                                                : "bg-slate-950 hover:bg-slate-800"
+                                                                ? "bg-[#1f6f63]"
+                                                                : "bg-[#173f3f] hover:bg-[#102426]"
                                                                 }`}
                                                         >
                                                             {leadForm.selectedUnit === unit.unit
@@ -1275,7 +1275,7 @@ export default function PublicPropertyListing() {
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-500">
+                                            <div className="rounded-2xl bg-[#f5f8f1] p-4 text-sm font-semibold text-[#526260]">
                                                 Contact us for the latest available units.
                                             </div>
                                         )}
@@ -1283,24 +1283,24 @@ export default function PublicPropertyListing() {
                                 </div>
 
                                 {hasSelectedFloorPlanSpecial && (
-                                    <div className="mt-5 rounded-2xl bg-emerald-50 p-4">
-                                        <p className="text-sm font-bold text-emerald-700">
+                                    <div className="mt-5 rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">
+                                        <p className="text-sm font-bold text-[#8a5b0a]">
                                             Special Offer
                                         </p>
-                                        <p className="mt-1 font-black text-slate-900">
+                                        <p className="mt-1 font-black text-[#102426]">
                                             {selectedFloorPlan.special.label}
                                         </p>
                                         {hasCalculableSelectedSpecial ? (
                                             <>
-                                                <p className="mt-2 text-sm font-semibold text-emerald-700">
+                                                <p className="mt-2 text-sm font-semibold text-[#7a432e]">
                                                     Estimated concession value: ${Math.round(concessionValue).toLocaleString()}
                                                 </p>
-                                                <p className="mt-1 text-xs leading-5 text-emerald-700">
+                                                <p className="mt-1 text-xs leading-5 text-[#7a432e]">
                                                     Based on {selectedFloorPlan.special.freeWeeks} free weeks applied across a {leaseMonths}-month lease.
                                                 </p>
                                             </>
                                         ) : (
-                                            <p className="mt-2 text-sm font-semibold text-emerald-700">
+                                            <p className="mt-2 text-sm font-semibold text-[#7a432e]">
                                                 Contact us to confirm exactly how this special is applied.
                                             </p>
                                         )}
@@ -1311,14 +1311,14 @@ export default function PublicPropertyListing() {
 
                             </div>
 
-                            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                                <h3 className="text-xl font-black text-slate-900">
+                            <div className="rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-5">
+                                <h3 className="text-xl font-black text-[#102426]">
                                     {leadForm.selectedUnit
                                         ? `Request Unit ${leadForm.selectedUnit}`
                                         : "Request this floor plan"}
                                 </h3>
 
-                                <p className="mt-2 text-sm text-slate-500">
+                                <p className="mt-2 text-sm text-[#526260]">
                                     {leadForm.selectedUnit
                                         ? `Get current pricing, availability, and special details for Unit ${leadForm.selectedUnit}.`
                                         : `Get current pricing, availability, and special details for ${selectedFloorPlan.name}.`}
@@ -1326,28 +1326,28 @@ export default function PublicPropertyListing() {
 
 
                                 <div className="mt-4 rounded-2xl bg-white p-4">
-                                    <p className="text-sm font-bold text-slate-900">
+                                    <p className="text-sm font-bold text-[#102426]">
                                         Local Apartment Locator
                                     </p>
 
                                     <div className="mt-3 flex items-center gap-3">
-                                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-950 text-sm font-black text-white">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#173f3f] text-sm font-black text-white">
                                             JM
                                         </div>
 
                                         <div>
-                                            <p className="font-bold text-slate-900">
+                                            <p className="font-bold text-[#102426]">
                                                 Jalen McNeal
                                             </p>
 
 
-                                            <p className="text-sm text-slate-500">
+                                            <p className="text-sm text-[#526260]">
                                                 Dallas apartment specialist
                                             </p>
                                             <a
                                                 href="tel:9452693768"
                                                 onClick={() => handleCallTextClick("floor_plan_modal")}
-                                                className="mt-3 block text-center text-sm font-bold text-slate-600 hover:text-slate-900"
+                                                className="mt-3 block text-center text-sm font-bold text-[#526260] hover:text-[#102426]"
                                             >
                                                 📞 Call or Text Jalen (945) 269-3768
                                             </a>
@@ -1355,38 +1355,38 @@ export default function PublicPropertyListing() {
                                     </div>
 
 
-                                    <p className="mt-3 text-sm leading-6 text-slate-500">
+                                    <p className="mt-3 text-sm leading-6 text-[#526260]">
                                         I’ll help confirm current pricing, specials, and similar options that may fit your move-in timeline.
                                     </p>
                                 </div>
 
                                 {leadForm.selectedUnit && (
-                                    <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
+                                    <div className="mt-4 rounded-2xl border border-[#a9cfc2] bg-[#e7f3ee] p-3">
 
-                                        <p className="text-sm font-bold text-emerald-700">
+                                        <p className="text-sm font-bold text-[#1f6f63]">
                                             ✓ Selected Unit
                                         </p>
 
-                                        <p className="mt-1 font-black text-slate-900">
+                                        <p className="mt-1 font-black text-[#102426]">
                                             Unit {leadForm.selectedUnit}
                                         </p>
                                         {selectedUnitDetails && (
                                             <div className="mt-2 flex flex-wrap gap-2">
                                                 {selectedUnitDetails.requestCount > 0 &&
                                                     selectedUnitDetails.requestCount === highestRequestCount && (
-                                                        <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700">
+                                                        <span className="rounded-full bg-[#eef5ff] px-2 py-1 text-xs font-bold text-[#174a7c]">
                                                             Most Requested
                                                         </span>
                                                     )}
 
                                                 {Number(selectedUnitDetails.rent.replace(/[^0-9]/g, "")) === lowestUnitRent && (
-                                                    <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">
+                                                    <span className="rounded-full bg-[#d8efe6] px-2 py-1 text-xs font-bold text-[#1f6f63]">
                                                         Best Value
                                                     </span>
                                                 )}
 
                                                 {selectedUnitDetails.available === "Available Now" && (
-                                                    <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">
+                                                    <span className="rounded-full bg-[#d8efe6] px-2 py-1 text-xs font-bold text-[#1f6f63]">
                                                         Available Now
                                                     </span>
                                                 )}
@@ -1394,7 +1394,7 @@ export default function PublicPropertyListing() {
                                         )}
 
                                         {selectedUnitDetails && (
-                                            <p className="mt-1 text-sm font-semibold text-slate-600">
+                                            <p className="mt-1 text-sm font-semibold text-[#526260]">
                                                 {selectedUnitDetails.rent}
                                                 {selectedUnitDetails.available !== "Available Now" &&
                                                     ` • ${selectedUnitDetails.available}`}                                            </p>
@@ -1410,14 +1410,14 @@ export default function PublicPropertyListing() {
                                                     selectedUnit: "",
                                                 });
                                             }}
-                                            className="mt-3 text-xs font-bold text-slate-600 underline hover:text-slate-900"
+                                            className="mt-3 text-xs font-bold text-[#526260] underline hover:text-[#102426]"
                                         >
                                             Request entire floor plan instead
                                         </button>
                                     </div>
                                 )}
 
-                                <p className="mt-4 text-xs font-semibold text-slate-500">
+                                <p className="mt-4 text-xs font-semibold text-[#526260]">
                                     * Required fields
                                 </p>
                                 <div id="floor-plan-lead-form" className="mt-6 grid gap-3 md:grid-cols-2">                                    <input
@@ -1431,7 +1431,7 @@ export default function PublicPropertyListing() {
                                             name: e.target.value,
                                         })
                                     }
-                                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                                    className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                 />
 
                                     <input
@@ -1445,7 +1445,7 @@ export default function PublicPropertyListing() {
                                                 phone: e.target.value,
                                             })
                                         }
-                                        className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                                        className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                     />
                                     <input
                                         name="email"
@@ -1458,7 +1458,7 @@ export default function PublicPropertyListing() {
                                                 email: e.target.value,
                                             })
                                         }
-                                        className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400 md:col-span-2"
+                                        className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2] md:col-span-2"
                                     />
 
                                     <select
@@ -1470,7 +1470,7 @@ export default function PublicPropertyListing() {
                                                 moveInDate: e.target.value,
                                             })
                                         }
-                                        className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400 md:col-span-2"
+                                        className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2] md:col-span-2"
                                     >
                                         <option value="">Move-in timeline (optional)</option>                                        <option value="Immediately">Immediately</option>
                                         <option value="Within 30 Days">Within 30 Days</option>
@@ -1487,7 +1487,7 @@ export default function PublicPropertyListing() {
                                                 contactMethod: e.target.value,
                                             })
                                         }
-                                        className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400 md:col-span-2"
+                                        className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2] md:col-span-2"
                                     >
                                         <option value="">Preferred contact (optional)</option>
                                         <option value="Text">Text me</option>
@@ -1495,22 +1495,22 @@ export default function PublicPropertyListing() {
                                         <option value="Email">Email me</option>
                                     </select>
                                 </div>
-                                <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-                                    <p className="text-sm font-semibold text-slate-700">
+                                <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4">
+                                    <p className="text-sm font-semibold text-[#173f3f]">
                                         ✓ No cost to renters
                                     </p>
 
-                                    <p className="mt-2 text-sm font-semibold text-slate-700">
+                                    <p className="mt-2 text-sm font-semibold text-[#173f3f]">
                                         ✓ Access to active leasing specials
                                     </p>
 
-                                    <p className="mt-2 text-sm font-semibold text-slate-700">
+                                    <p className="mt-2 text-sm font-semibold text-[#173f3f]">
                                         ✓ Fast response from a local apartment locator
                                     </p>
                                 </div>
 
                                 {leadSubmitted && (
-                                    <div className="mt-4 rounded-2xl p-4 text-sm font-bold text-emerald-700">
+                                    <div className="mt-4 rounded-2xl p-4 text-sm font-bold text-[#1f6f63]">
                                         {leadForm.selectedUnit
                                             ? `✅ Request received for Unit ${leadForm.selectedUnit}. We'll follow up with current pricing and availability.`
                                             : `✅ Request received for ${selectedFloorPlan.name}. We'll follow up with current pricing and availability.`}
@@ -1520,9 +1520,9 @@ export default function PublicPropertyListing() {
                                 <button
                                     onClick={handleFloorPlanLeadSubmit}
                                     disabled={leadSubmitted}
-                                    className={`mt-6 w-full rounded-2xl px-5 py-3 text-sm font-bold text-white ${leadSubmitted
-                                        ? "cursor-not-allowed bg-slate-400"
-                                        : "bg-slate-950 hover:bg-slate-800"
+                                    className={`mt-6 w-full rounded-2xl px-5 py-3 text-sm font-black ${leadSubmitted
+                                        ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
+                                        : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
                                         }`}
                                 >
                                     {leadSubmitted
@@ -1539,7 +1539,7 @@ export default function PublicPropertyListing() {
                 </div>
             )}
 
-            <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white p-3 shadow-lg xl:hidden">
+            <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#d7e6df] bg-white p-3 shadow-lg xl:hidden">
                 <div className="flex gap-3">
                     <button
                         onClick={() =>
@@ -1550,7 +1550,7 @@ export default function PublicPropertyListing() {
                                     block: "start",
                                 })
                         }
-                        className="flex-1 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white"
+                        className="flex-1 rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426]"
                     >
                         Request Information
                     </button>
@@ -1558,7 +1558,7 @@ export default function PublicPropertyListing() {
                     <a
                         href="tel:9452693768"
                         onClick={() => handleCallTextClick("sticky_bottom_bar")}
-                        className="flex-1 rounded-2xl bg-slate-100 px-4 py-3 text-center text-sm font-bold text-slate-700"
+                        className="flex-1 rounded-2xl bg-[#f5f8f1] px-4 py-3 text-center text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df]"
                     >
                         Call / Text
                     </a>
@@ -1570,9 +1570,9 @@ export default function PublicPropertyListing() {
 
 function NearbyItem({ label, value }) {
     return (
-        <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
-            <p className="font-bold text-slate-900">{label}</p>
-            <p className="text-sm font-semibold text-slate-500">{value}</p>
+        <div className="flex items-center justify-between rounded-2xl bg-[#f5f8f1] p-4">
+            <p className="font-bold text-[#102426]">{label}</p>
+            <p className="text-sm font-semibold text-[#526260]">{value}</p>
         </div>
     );
 }
@@ -1595,7 +1595,7 @@ function FloorPlanCard({
     onViewDetails,
 }) {
     return (
-        <div className="flex flex-col justify-between gap-4 rounded-2xl bg-slate-50 p-4 md:flex-row md:items-center">
+        <div className="flex flex-col justify-between gap-4 rounded-2xl bg-[#f5f8f1] p-4 md:flex-row md:items-center">
 
             <div className="flex items-center gap-4">
 
@@ -1610,14 +1610,14 @@ function FloorPlanCard({
                 <div>
 
                     {special && (
-                        <span className="mb-3 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                        <span className="mb-3 inline-flex rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-bold text-[#1f6f63]">
                             {special.label}
                         </span>
                     )}
 
-                    <p className="text-lg font-black text-slate-900">{name}</p>
+                    <p className="text-lg font-black text-[#102426]">{name}</p>
 
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-[#526260]">
                         {beds} • {baths} • {sqft}
                     </p>
                 </div>
@@ -1625,52 +1625,52 @@ function FloorPlanCard({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#173f3f]">
                     Starting {rent}
                 </span>
 
                 {effectiveRent && (
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#173f3f]">
                         Effective {effectiveRent}
                     </span>
                 )}
 
                 {marketRent && (
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#173f3f]">
                         Market {marketRent}
                     </span>
                 )}
 
                 {savings && (
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                    <span className="rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
                         Save {savings}
                     </span>
                 )}
 
                 {belowMarketPercent && (
-                    <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700">
+                    <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
                         {belowMarketPercent} below
                     </span>
                 )}
 
                 <span
                     className={`rounded-full px-3 py-1 text-xs font-bold ${status === "available"
-                        ? "bg-emerald-100 text-emerald-700"
+                        ? "bg-[#d8efe6] text-[#1f6f63]"
                         : status === "limited"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-red-100 text-red-700"
+                            ? "bg-[#fff8e6] text-[#8a5b0a]"
+                            : "bg-[#fff0ea] text-[#e4572e]"
                         }`}
                 >
                     {available}
                 </span>
                 <button
                     onClick={onViewDetails}
-                    className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+                    className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
                 >
                     View Details
                 </button>
 
-                <button className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800">
+                <button className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]">
                     Request Info
                 </button>
             </div>
@@ -1680,7 +1680,7 @@ function FloorPlanCard({
 
 function AmenityItem({ label }) {
     return (
-        <div className="rounded-2xl bg-slate-50 p-4 font-bold text-slate-900">
+        <div className="rounded-2xl bg-[#f5f8f1] p-4 font-bold text-[#102426]">
             {label}
         </div>
     );
@@ -1688,16 +1688,16 @@ function AmenityItem({ label }) {
 
 function PriceCompareCard({ label, price, note }) {
     return (
-        <div className="rounded-2xl bg-slate-50 p-4">
-            <p className="text-sm font-semibold text-slate-500">
+        <div className="rounded-2xl bg-[#f5f8f1] p-4">
+            <p className="text-sm font-semibold text-[#526260]">
                 {label}
             </p>
 
-            <p className="mt-2 text-2xl font-black text-slate-900">
+            <p className="mt-2 text-2xl font-black text-[#102426]">
                 {price}
             </p>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[#526260]">
                 {note}
             </p>
         </div>
@@ -1705,9 +1705,9 @@ function PriceCompareCard({ label, price, note }) {
 }
 function HighlightCard({ title, text }) {
     return (
-        <div className="rounded-2xl bg-slate-50 p-5">
-            <p className="font-black text-slate-900">{title}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-500">{text}</p>
+        <div className="rounded-2xl bg-[#f5f8f1] p-5">
+            <p className="font-black text-[#102426]">{title}</p>
+            <p className="mt-2 text-sm leading-6 text-[#526260]">{text}</p>
         </div>
     );
 }
@@ -1715,10 +1715,10 @@ function HighlightCard({ title, text }) {
 
 function ReasonCard({ icon, title, text }) {
     return (
-        <div className="rounded-2xl bg-slate-50 p-4">
+        <div className="rounded-2xl bg-[#f5f8f1] p-4">
             <div className="text-2xl">{icon}</div>
-            <p className="mt-3 font-bold text-slate-900">{title}</p>
-            <p className="mt-2 text-sm text-slate-500">{text}</p>
+            <p className="mt-3 font-bold text-[#102426]">{title}</p>
+            <p className="mt-2 text-sm text-[#526260]">{text}</p>
         </div>
     );
 }
