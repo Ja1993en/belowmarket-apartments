@@ -103,7 +103,7 @@ export default function HomePage() {
                             to="/start"
                             className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
                         >
-                            Start Apartment Search
+                            Find Apartment Locator
                         </Link>
 
                         <Link
