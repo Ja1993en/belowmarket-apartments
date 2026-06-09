@@ -11,6 +11,7 @@ import {
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = [-96.797, 32.7767];
+const CLICK_DRAW_RADIUS_MILES = 1.5;
 const MIN_DRAW_RADIUS_MILES = 0.25;
 
 export default function PropertySearchPage() {
@@ -289,6 +290,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const drawStartRef = useRef(null);
+  const drawCurrentRef = useRef(null);
   const isDrawingAreaRef = useRef(false);
   const [mapboxGl, setMapboxGl] = useState(null);
   const [mapError, setMapError] = useState("");
@@ -422,6 +424,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
     mapRef.current.getCanvas().style.cursor = "";
     setMapMarkerPointerEvents(mapRef.current, "auto");
     drawStartRef.current = null;
+    drawCurrentRef.current = null;
   }, [isDrawingArea]);
 
   useEffect(() => {
@@ -432,25 +435,32 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
     const startDrawing = (event) => {
       if (!isDrawingArea) return;
 
-      event.preventDefault();
+      event.preventDefault?.();
+      event.originalEvent?.preventDefault();
+      const drawingPoint = getMapEventPoint(event);
+      if (!drawingPoint) return;
+
+      drawCurrentRef.current = drawingPoint;
       drawStartRef.current = {
-        latitude: event.lngLat.lat,
-        longitude: event.lngLat.lng,
+        latitude: drawingPoint.latitude,
+        longitude: drawingPoint.longitude,
       };
       setDraftArea({
         center: drawStartRef.current,
-        radiusMiles: MIN_DRAW_RADIUS_MILES,
+        radiusMiles: CLICK_DRAW_RADIUS_MILES,
       });
     };
 
     const updateDrawing = (event) => {
       if (!isDrawingArea || !drawStartRef.current) return;
 
+      event.originalEvent?.preventDefault();
+      const drawingPoint = getMapEventPoint(event);
+      if (!drawingPoint) return;
+
+      drawCurrentRef.current = drawingPoint;
       const radiusMiles = Math.max(
-        getDistanceMiles(drawStartRef.current, {
-          latitude: event.lngLat.lat,
-          longitude: event.lngLat.lng,
-        }),
+        getDistanceMiles(drawStartRef.current, drawingPoint),
         MIN_DRAW_RADIUS_MILES
       );
 
@@ -463,13 +473,16 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
     const finishDrawing = (event) => {
       if (!isDrawingArea || !drawStartRef.current) return;
 
-      const radiusMiles = Math.max(
-        getDistanceMiles(drawStartRef.current, {
-          latitude: event.lngLat.lat,
-          longitude: event.lngLat.lng,
-        }),
-        MIN_DRAW_RADIUS_MILES
-      );
+      event.preventDefault?.();
+      event.originalEvent?.preventDefault();
+      const drawingPoint = getMapEventPoint(event) || drawCurrentRef.current;
+      const drawnRadiusMiles = drawingPoint
+        ? getDistanceMiles(drawStartRef.current, drawingPoint)
+        : 0;
+      const radiusMiles =
+        drawnRadiusMiles < MIN_DRAW_RADIUS_MILES
+          ? CLICK_DRAW_RADIUS_MILES
+          : drawnRadiusMiles;
       const nextArea = {
         center: drawStartRef.current,
         radiusMiles,
@@ -478,17 +491,26 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
       onAreaChange(nextArea);
       setDraftArea(null);
       drawStartRef.current = null;
+      drawCurrentRef.current = null;
       setIsDrawingArea(false);
     };
 
     map.on("mousedown", startDrawing);
     map.on("mousemove", updateDrawing);
     map.on("mouseup", finishDrawing);
+    map.on("touchstart", startDrawing);
+    map.on("touchmove", updateDrawing);
+    map.on("touchend", finishDrawing);
+    map.on("touchcancel", finishDrawing);
 
     return () => {
       map.off("mousedown", startDrawing);
       map.off("mousemove", updateDrawing);
       map.off("mouseup", finishDrawing);
+      map.off("touchstart", startDrawing);
+      map.off("touchmove", updateDrawing);
+      map.off("touchend", finishDrawing);
+      map.off("touchcancel", finishDrawing);
     };
   }, [isDrawingArea, onAreaChange]);
 
@@ -569,6 +591,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
             setIsDrawingArea((currentValue) => !currentValue);
             setDraftArea(null);
             drawStartRef.current = null;
+            drawCurrentRef.current = null;
           }}
           className={`rounded-2xl px-4 py-3 text-sm font-black shadow-sm ring-1 ${
             isDrawingArea
@@ -585,6 +608,8 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
               onAreaChange(null);
               setDraftArea(null);
               setIsDrawingArea(false);
+              drawStartRef.current = null;
+              drawCurrentRef.current = null;
             }}
             className="rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#e4572e] shadow-sm ring-1 ring-[#f4c8b8] hover:bg-[#fff0ea]"
           >
@@ -860,6 +885,19 @@ function getCachedCoordinates(cacheKey) {
   } catch {
     return null;
   }
+}
+
+function getMapEventPoint(event) {
+  if (!event?.lngLat) return null;
+
+  const latitude = Number(event.lngLat.lat);
+  const longitude = Number(event.lngLat.lng);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  return { latitude, longitude };
 }
 
 function setMapMarkerPointerEvents(map, pointerEventsValue) {
