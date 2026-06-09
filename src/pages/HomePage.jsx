@@ -352,14 +352,16 @@ function getFeaturedDallasDeals(properties) {
             savings: property.savings,
         },
     }));
-    if (liveDallasDeals.length >= FEATURED_DALLAS_DEAL_LIMIT) {
-        return sortPropertiesByDeal(liveDallasDeals, "Highest savings").slice(
-            0,
-            FEATURED_DALLAS_DEAL_LIMIT
-        );
-    }
+    const sortedLiveDallasDeals = sortPropertiesByDeal(liveDallasDeals, "Highest savings");
+    const liveDealIds = new Set(sortedLiveDallasDeals.map((property) => property.id));
+    const availableFallbackDeals = fallbackDeals.filter(
+        (property) => !liveDealIds.has(property.id)
+    );
 
-    return fallbackDeals.slice(0, FEATURED_DALLAS_DEAL_LIMIT);
+    return [...sortedLiveDallasDeals, ...availableFallbackDeals].slice(
+        0,
+        FEATURED_DALLAS_DEAL_LIMIT
+    );
 }
 
 function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(property)) {
