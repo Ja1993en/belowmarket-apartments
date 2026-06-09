@@ -4,6 +4,8 @@ import { Building2, MapPin, Search } from "lucide-react";
 
 import { getAllProperties } from "../data/propertyStorage";
 
+const LEASING_WEEKS_PER_MONTH = 4;
+
 export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [areaFilter, setAreaFilter] = useState("All");
@@ -308,17 +310,27 @@ export default function HomePage() {
 
 function getSearchFloorPlans(property) {
     if (!property.floorPlans?.length) {
+        const freeWeeks = getWeeksFromSpecialLabel(property.special);
+        const pricing = calculateFloorPlanPricing({
+            startingRent: property.rent || "",
+            effectiveRent: property.effectiveRent || "",
+            marketRent: property.marketRent || "",
+            savings: property.savings || "",
+            belowMarketPercent: property.belowMarketPercent || "",
+            freeWeeks,
+            leaseTermMonths: 12,
+        });
+
         return [
             {
                 name: property.name,
                 bedrooms: property.bedrooms?.[0] || "",
                 startingRent: property.rent || "",
-                effectiveRent: property.effectiveRent || property.rent || "",
                 marketRent: property.marketRent || "",
-                savings: property.savings || "",
-                belowMarketPercent: property.belowMarketPercent || "",
+                ...pricing,
                 currentSpecial: property.special || "",
-                freeWeeks: getWeeksFromSpecialLabel(property.special),
+                freeWeeks,
+                leaseTermMonths: 12,
                 availableUnits: [],
             },
         ];
@@ -326,37 +338,90 @@ function getSearchFloorPlans(property) {
 
     return property.floorPlans.map((floorPlan, index) => {
         if (typeof floorPlan === "string") {
+            const freeWeeks = getWeeksFromSpecialLabel(property.special);
+            const pricing = calculateFloorPlanPricing({
+                startingRent: property.rent || "",
+                effectiveRent: property.effectiveRent || "",
+                marketRent: property.marketRent || "",
+                savings: property.savings || "",
+                belowMarketPercent: property.belowMarketPercent || "",
+                freeWeeks,
+                leaseTermMonths: 12,
+            });
+
             return {
                 name: floorPlan,
                 bedrooms: property.bedrooms?.[index] || property.bedrooms?.[0] || "",
                 startingRent: property.rent || "",
-                effectiveRent: property.effectiveRent || property.rent || "",
                 marketRent: property.marketRent || "",
-                savings: property.savings || "",
-                belowMarketPercent: property.belowMarketPercent || "",
+                ...pricing,
                 currentSpecial: property.special || "",
-                freeWeeks: getWeeksFromSpecialLabel(property.special),
+                freeWeeks,
+                leaseTermMonths: 12,
                 availableUnits: [],
             };
         }
 
         const specialLabel =
             floorPlan.currentSpecial || floorPlan.special?.label || property.special || "";
+        const freeWeeks = Number(
+            floorPlan.freeWeeks ?? floorPlan.special?.freeWeeks ?? getWeeksFromSpecialLabel(specialLabel)
+        );
+        const leaseTermMonths = Number(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12);
+        const startingRent = floorPlan.startingRent || floorPlan.rent || property.rent || "";
+        const marketRent = floorPlan.marketRent || property.marketRent || "";
+        const pricing = calculateFloorPlanPricing({
+            startingRent,
+            effectiveRent: floorPlan.effectiveRent || property.effectiveRent || "",
+            marketRent,
+            savings: floorPlan.savings || property.savings || "",
+            belowMarketPercent: floorPlan.belowMarketPercent || property.belowMarketPercent || "",
+            freeWeeks,
+            leaseTermMonths,
+        });
 
         return {
             name: floorPlan.name || `Floor Plan ${index + 1}`,
             bedrooms: floorPlan.bedrooms || floorPlan.beds || "",
-            startingRent: floorPlan.startingRent || floorPlan.rent || property.rent || "",
-            effectiveRent:
-                floorPlan.effectiveRent || floorPlan.startingRent || floorPlan.rent || property.effectiveRent || "",
-            marketRent: floorPlan.marketRent || property.marketRent || "",
-            savings: floorPlan.savings || property.savings || "",
-            belowMarketPercent: floorPlan.belowMarketPercent || property.belowMarketPercent || "",
+            startingRent,
+            marketRent,
+            ...pricing,
             currentSpecial: specialLabel,
-            freeWeeks: Number(floorPlan.freeWeeks ?? floorPlan.special?.freeWeeks ?? getWeeksFromSpecialLabel(specialLabel)),
+            freeWeeks,
+            leaseTermMonths,
             availableUnits: floorPlan.availableUnits || [],
         };
     });
+}
+
+function calculateFloorPlanPricing(floorPlan) {
+    const startingRentNumber = parseCurrency(floorPlan.startingRent);
+    const marketRentNumber = parseCurrency(floorPlan.marketRent);
+    const freeWeeks = Number(floorPlan.freeWeeks || 0);
+    const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
+
+    if (!startingRentNumber || !freeWeeks || !leaseTermMonths) {
+        return {
+            effectiveRent: floorPlan.effectiveRent || floorPlan.startingRent || "",
+            savings: floorPlan.savings || "",
+            belowMarketPercent: floorPlan.belowMarketPercent || "",
+        };
+    }
+
+    const freeMonths = freeWeeks / LEASING_WEEKS_PER_MONTH;
+    const monthlyConcession = (startingRentNumber * freeMonths) / leaseTermMonths;
+    const effectiveRentNumber = Math.max(startingRentNumber - monthlyConcession, 0);
+    const comparisonRent = marketRentNumber || startingRentNumber;
+    const savingsNumber = Math.max(comparisonRent - effectiveRentNumber, 0);
+    const belowMarketPercentNumber = comparisonRent
+        ? Math.round((savingsNumber / comparisonRent) * 100)
+        : 0;
+
+    return {
+        effectiveRent: formatCurrency(effectiveRentNumber),
+        savings: savingsNumber ? `${formatCurrency(savingsNumber)}/mo` : "$0/mo",
+        belowMarketPercent: `${belowMarketPercentNumber}%`,
+    };
 }
 
 function getMatchingFloorPlans(floorPlans, filters, searchTerm) {
@@ -449,6 +514,10 @@ function matchesRequestedMoveInDate(availableUnits, moveInDateFilter) {
 function parseCurrency(value) {
     const parsedValue = Number(String(value || "").replace(/[^0-9.]/g, ""));
     return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function formatCurrency(value) {
+    return `$${Math.round(value).toLocaleString()}`;
 }
 
 function normalizeSortIndex(index) {
