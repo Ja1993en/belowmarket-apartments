@@ -140,192 +140,222 @@ export default function HomePage() {
 
     return (
         <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
-            <section className="bma-brand-panel border-b-[6px] border-[#f2b84b] px-6 py-10 text-white">
-                <div className="mx-auto max-w-6xl">
-                    <p className="w-fit rounded-full bg-[#f2b84b]/15 px-4 py-2 text-sm font-black text-[#f9d783]">
-                        Below Market Apartments
-                    </p>
+            <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+                <div className="mx-auto flex max-w-[1500px] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex items-center justify-between gap-4">
+                        <Link to="/" className="flex items-center gap-3">
+                            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#173f3f] text-sm font-black text-[#f2b84b]">
+                                BMA
+                            </span>
+                            <span>
+                                <span className="block text-lg font-black leading-5 text-[#102426]">
+                                    Below Market Apartments
+                                </span>
+                                <span className="text-xs font-bold text-[#526260]">
+                                    Verified specials, ranked by deal value
+                                </span>
+                            </span>
+                        </Link>
 
-                    <h1 className="mt-4 max-w-3xl text-4xl font-black text-[#fff7df] md:text-5xl">
-                        Find apartments with verified specials and below-market pricing.
-                    </h1>
+                        <Link
+                            to="/start"
+                            className="rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] lg:hidden"
+                        >
+                            Start
+                        </Link>
+                    </div>
 
-                    <p className="mt-4 max-w-2xl text-[#d7ece6]">
-                        Browse apartment deals, compare effective rent, and request help from a locator.
-                    </p>
-                    <Link
-                        to="/start"
-                        className="mt-6 inline-block rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] shadow-sm hover:bg-[#f9d783]"
-                    >
-                        Start Apartment Search
-                    </Link>
+                    <nav className="hidden items-center gap-3 lg:flex">
+                        <Link
+                            to="/start"
+                            className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                        >
+                            Start Apartment Search
+                        </Link>
 
-                    <div className="mt-8 max-w-6xl rounded-3xl border border-white/20 bg-white p-2 shadow-xl shadow-[#102426]/20">
-                        <div className="bma-value-stripe mb-3 h-2 rounded-full" />
-                        <div className="grid gap-3 md:grid-cols-[1fr_160px_150px_170px_auto]">
-                            <div className="relative">
-                                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#2d7dd2]" />
+                        <Link
+                            to="/admin/dashboard"
+                            className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                        >
+                            Admin Portal
+                        </Link>
+                    </nav>
+                </div>
+            </header>
 
-                                <input
-                                    type="text"
-                                    value={searchTerm}
-                                    onChange={(event) => setSearchTerm(event.target.value)}
-                                    placeholder="Search property, special, floor plan, or manager..."
-                                    className="bma-focus-ring w-full rounded-2xl border border-[#d7e6df] py-4 pl-12 pr-4 text-[#102426]"
-                                />
-                            </div>
-
-                            <select
-                                aria-label="Area"
-                                value={areaFilter}
-                                onChange={(event) => setAreaFilter(event.target.value)}
-                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 py-4 font-bold text-[#173f3f]"
-                            >
-                                {areas.map((area) => (
-                                    <option key={area}>{area}</option>
-                                ))}
-                            </select>
-
-                            <select
-                                aria-label="Bedrooms"
-                                value={bedroomFilter}
-                                onChange={(event) => setBedroomFilter(event.target.value)}
-                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 py-4 font-bold text-[#173f3f]"
-                            >
-                                {bedrooms.map((bedroom) => (
-                                    <option key={bedroom}>{bedroom}</option>
-                                ))}
-                            </select>
-
-                            <select
-                                aria-label="Year built"
-                                value={yearBuiltFilter}
-                                onChange={(event) => setYearBuiltFilter(event.target.value)}
-                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 py-4 font-bold text-[#173f3f]"
-                            >
-                                {yearBuiltOptions.map((yearOption) => (
-                                    <option key={yearOption}>{yearOption}</option>
-                                ))}
-                            </select>
-
-                            <button
-                                onClick={() => {
-                                    setSearchTerm("");
-                                    setAreaFilter("All");
-                                    setBedroomFilter("All");
-                                    setYearBuiltFilter("Any year");
-                                    setMaxStartingRentFilter("Any starting rent");
-                                    setMaxEffectiveRentFilter("Any effective rent");
-                                    setMoveInDateFilter("");
-                                    setSpecialFilter("Any special");
-                                    setSortOption("Lowest effective rent");
-                                }}
-                                className="rounded-2xl bg-[#e4572e] px-5 py-4 text-sm font-black text-white hover:bg-[#c94724]"
-                            >
-                                Clear
-                            </button>
-                        </div>
-
-                        <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_1fr_1fr]">
-                            <select
-                                aria-label="Maximum starting rent"
-                                value={maxStartingRentFilter}
-                                onChange={(event) => setMaxStartingRentFilter(event.target.value)}
-                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#fff8e6] px-4 py-4 font-bold text-[#4f3810]"
-                            >
-                                {rentOptions.map((rentOption) => (
-                                    <option key={rentOption}>{rentOption}</option>
-                                ))}
-                            </select>
-
-                            <select
-                                aria-label="Maximum effective rent"
-                                value={maxEffectiveRentFilter}
-                                onChange={(event) => setMaxEffectiveRentFilter(event.target.value)}
-                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eaf7ef] px-4 py-4 font-bold text-[#17623b]"
-                            >
-                                {effectiveRentOptions.map((rentOption) => (
-                                    <option key={rentOption}>{rentOption}</option>
-                                ))}
-                            </select>
+            <section className="sticky top-[92px] z-30 border-b border-[#d7e6df] bg-[#f5f8f1]/95 px-4 py-3 shadow-sm backdrop-blur lg:top-[73px]">
+                <div className="mx-auto max-w-[1500px]">
+                    <div className="bma-value-stripe mb-3 h-1.5 rounded-full" />
+                    <div className="grid gap-3 xl:grid-cols-[minmax(280px,1.4fr)_repeat(4,minmax(130px,.65fr))_auto]">
+                        <div className="relative">
+                            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#2d7dd2]" />
 
                             <input
-                                aria-label="Move-in date"
-                                type="date"
-                                value={moveInDateFilter}
-                                onChange={(event) => setMoveInDateFilter(event.target.value)}
-                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#eaf2fb] px-4 py-4 font-bold text-[#174a7c]"
+                                type="text"
+                                value={searchTerm}
+                                onChange={(event) => setSearchTerm(event.target.value)}
+                                placeholder="City, ZIP, property, manager, special..."
+                                className="bma-focus-ring h-12 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-12 pr-4 font-bold text-[#102426] shadow-sm"
                             />
-
-                            <select
-                                aria-label="Current special"
-                                value={specialFilter}
-                                onChange={(event) => setSpecialFilter(event.target.value)}
-                                className="bma-focus-ring rounded-2xl border border-[#d7e6df] bg-[#fff0ea] px-4 py-4 font-bold text-[#9c321b]"
-                            >
-                                {specialOptions.map((specialOption) => (
-                                    <option key={specialOption}>{specialOption}</option>
-                                ))}
-                            </select>
                         </div>
+
+                        <select
+                            aria-label="Area"
+                            value={areaFilter}
+                            onChange={(event) => setAreaFilter(event.target.value)}
+                            className="bma-focus-ring h-12 rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 font-bold text-[#173f3f]"
+                        >
+                            {areas.map((area) => (
+                                <option key={area}>{area}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            aria-label="Bedrooms"
+                            value={bedroomFilter}
+                            onChange={(event) => setBedroomFilter(event.target.value)}
+                            className="bma-focus-ring h-12 rounded-2xl border border-[#d7e6df] bg-[#eef6f3] px-4 font-bold text-[#173f3f]"
+                        >
+                            {bedrooms.map((bedroom) => (
+                                <option key={bedroom}>{bedroom}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            aria-label="Maximum effective rent"
+                            value={maxEffectiveRentFilter}
+                            onChange={(event) => setMaxEffectiveRentFilter(event.target.value)}
+                            className="bma-focus-ring h-12 rounded-2xl border border-[#d7e6df] bg-[#eaf7ef] px-4 font-bold text-[#17623b]"
+                        >
+                            {effectiveRentOptions.map((rentOption) => (
+                                <option key={rentOption}>{rentOption}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            aria-label="Current special"
+                            value={specialFilter}
+                            onChange={(event) => setSpecialFilter(event.target.value)}
+                            className="bma-focus-ring h-12 rounded-2xl border border-[#d7e6df] bg-[#fff0ea] px-4 font-bold text-[#9c321b]"
+                        >
+                            {specialOptions.map((specialOption) => (
+                                <option key={specialOption}>{specialOption}</option>
+                            ))}
+                        </select>
+
+                        <button
+                            onClick={() => {
+                                setSearchTerm("");
+                                setAreaFilter("All");
+                                setBedroomFilter("All");
+                                setYearBuiltFilter("Any year");
+                                setMaxStartingRentFilter("Any starting rent");
+                                setMaxEffectiveRentFilter("Any effective rent");
+                                setMoveInDateFilter("");
+                                setSpecialFilter("Any special");
+                                setSortOption("Lowest effective rent");
+                            }}
+                            className="h-12 rounded-2xl bg-[#e4572e] px-5 text-sm font-black text-white hover:bg-[#c94724]"
+                        >
+                            Clear
+                        </button>
                     </div>
-                </div>
-            </section>
 
-            <section className="mx-auto max-w-6xl px-6 py-8">
-                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-                    <div>
-                        <h2 className="text-3xl font-black text-[#102426]">
-                            Available Deals
-                        </h2>
+                    <div className="mt-3 grid gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
+                        <select
+                            aria-label="Maximum starting rent"
+                            value={maxStartingRentFilter}
+                            onChange={(event) => setMaxStartingRentFilter(event.target.value)}
+                            className="bma-focus-ring h-11 rounded-2xl border border-[#d7e6df] bg-[#fff8e6] px-4 text-sm font-bold text-[#4f3810]"
+                        >
+                            {rentOptions.map((rentOption) => (
+                                <option key={rentOption}>{rentOption}</option>
+                            ))}
+                        </select>
 
-                        <p className="mt-2 text-[#526260]">
-                            Showing {filteredProperties.length} of {publicProperties.length} properties.
-                        </p>
-                    </div>
+                        <input
+                            aria-label="Move-in date"
+                            type="date"
+                            value={moveInDateFilter}
+                            onChange={(event) => setMoveInDateFilter(event.target.value)}
+                            className="bma-focus-ring h-11 rounded-2xl border border-[#d7e6df] bg-[#eaf2fb] px-4 text-sm font-bold text-[#174a7c]"
+                        />
 
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <select
+                            aria-label="Year built"
+                            value={yearBuiltFilter}
+                            onChange={(event) => setYearBuiltFilter(event.target.value)}
+                            className="bma-focus-ring h-11 rounded-2xl border border-[#d7e6df] bg-white px-4 text-sm font-bold text-[#173f3f]"
+                        >
+                            {yearBuiltOptions.map((yearOption) => (
+                                <option key={yearOption}>{yearOption}</option>
+                            ))}
+                        </select>
+
                         <select
                             aria-label="Sort properties"
                             value={sortOption}
                             onChange={(event) => setSortOption(event.target.value)}
-                            className="bma-focus-ring rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 text-sm font-bold text-[#173f3f]"
+                            className="bma-focus-ring h-11 rounded-2xl border border-[#b8d9d0] bg-white px-4 text-sm font-bold text-[#173f3f]"
                         >
                             {sortOptions.map((option) => (
                                 <option key={option}>{option}</option>
                             ))}
                         </select>
-
-                        <Link
-                            to="/admin/dashboard"
-                            className="rounded-2xl bg-[#173f3f] px-5 py-3 text-center text-sm font-bold text-white hover:bg-[#102426]"
-                        >
-                            Admin Portal
-                        </Link>
                     </div>
                 </div>
+            </section>
 
-                <div className="mt-6 grid gap-6 lg:grid-cols-3">
-                    {sortedProperties.map((property) => (
-                        <PropertyCard
-                            key={property.id}
-                            property={property}
-                            matchedFloorPlan={property.matchedFloorPlan}
-                        />
-                    ))}
+            <section className="mx-auto max-w-[1500px] px-4 py-5">
+                <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_440px]">
+                    <section className="min-w-0">
+                        <div className="flex flex-col justify-between gap-3 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm md:flex-row md:items-end">
+                            <div>
+                                <p className="text-sm font-black text-[#1f6f63]">
+                                    Below-market search
+                                </p>
+                                <h1 className="mt-1 text-3xl font-black text-[#102426]">
+                                    {filteredProperties.length} verified deal
+                                    {filteredProperties.length === 1 ? "" : "s"}
+                                </h1>
+                                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                    Showing {filteredProperties.length} of {publicProperties.length} properties. Sorted by {sortOption.toLowerCase()}.
+                                </p>
+                            </div>
+
+                            <Link
+                                to="/start"
+                                className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-center text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                            >
+                                Start Apartment Search
+                            </Link>
+                        </div>
+
+                        <div className="mt-5 grid gap-5 lg:grid-cols-2">
+                            {sortedProperties.map((property) => (
+                                <PropertyCard
+                                    key={property.id}
+                                    property={property}
+                                    matchedFloorPlan={property.matchedFloorPlan}
+                                />
+                            ))}
+                        </div>
+
+                        {filteredProperties.length === 0 && (
+                            <div className="mt-5 rounded-3xl border border-dashed border-[#b8d9d0] bg-white p-10 text-center shadow-sm">
+                                <h3 className="text-2xl font-black text-[#102426]">
+                                    No properties found
+                                </h3>
+
+                                <p className="mt-2 text-[#526260]">
+                                    Try searching by area, rent, availability, special, floor plan, or management company.
+                                </p>
+                            </div>
+                        )}
+                    </section>
+
+                    <DealMapPanel properties={sortedProperties} />
                 </div>
-
-                {filteredProperties.length === 0 && (
-                    <div className="mt-6 rounded-3xl border border-dashed border-[#b8d9d0] bg-white p-10 text-center shadow-sm">
-                        <h3 className="text-2xl font-black text-[#102426]">
-                            No properties found
-                        </h3>
-
-                        <p className="mt-2 text-[#526260]">
-                            Try searching by area, rent, availability, special, floor plan, or management company.
-                        </p>
-                    </div>
-                )}
             </section>
         </main>
     );
@@ -584,6 +614,86 @@ function normalizeYearBuilt(value) {
 function getWeeksFromSpecialLabel(label) {
     const match = String(label || "").match(/(\d+(?:\.\d+)?)\s*\+?\s*weeks?/i);
     return match ? Number(match[1]) : 0;
+}
+
+function DealMapPanel({ properties }) {
+    const featuredProperties = properties.slice(0, 4);
+    const topProperty = featuredProperties[0];
+
+    return (
+        <aside className="hidden xl:block">
+            <div className="sticky top-[172px] overflow-hidden rounded-3xl border border-[#b8d9d0] bg-white shadow-sm">
+                <div className="relative h-[640px] bg-[#dceee8]">
+                    <div className="absolute inset-0 opacity-70">
+                        <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[#b8d9d0]" />
+                        <div className="absolute left-0 top-1/3 h-px w-full bg-[#b8d9d0]" />
+                        <div className="absolute left-0 top-2/3 h-px w-full bg-[#b8d9d0]" />
+                        <div className="absolute left-1/4 top-0 h-full w-px -translate-x-1/2 bg-white/70" />
+                        <div className="absolute left-3/4 top-0 h-full w-px -translate-x-1/2 bg-white/70" />
+                    </div>
+
+                    <div className="absolute left-6 top-6 rounded-3xl bg-white/95 p-5 shadow-lg">
+                        <p className="text-xs font-black uppercase text-[#1f6f63]">
+                            Deal Map
+                        </p>
+                        <p className="mt-1 text-3xl font-black text-[#102426]">
+                            {properties.length}
+                        </p>
+                        <p className="text-sm font-semibold text-[#526260]">
+                            matching properties
+                        </p>
+                    </div>
+
+                    {featuredProperties.map((property, index) => (
+                        <MapMarker
+                            key={property.id}
+                            property={property}
+                            index={index}
+                        />
+                    ))}
+
+                    {topProperty && (
+                        <div className="absolute bottom-5 left-5 right-5 rounded-3xl border border-[#d7e6df] bg-white p-4 shadow-xl">
+                            <p className="text-xs font-black uppercase text-[#2d7dd2]">
+                                Top match
+                            </p>
+                            <div className="mt-2 flex items-start justify-between gap-3">
+                                <div>
+                                    <p className="text-lg font-black text-[#102426]">
+                                        {topProperty.name}
+                                    </p>
+                                    <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                        {topProperty.area}
+                                    </p>
+                                </div>
+                                <span className="rounded-full bg-[#eaf7ef] px-3 py-1 text-sm font-black text-[#17623b]">
+                                    {topProperty.matchedFloorPlan?.savings || "$0/mo"}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </aside>
+    );
+}
+
+function MapMarker({ property, index }) {
+    const positions = [
+        "left-[54%] top-[28%]",
+        "left-[35%] top-[46%]",
+        "left-[68%] top-[54%]",
+        "left-[45%] top-[68%]",
+    ];
+
+    return (
+        <Link
+            to={`/properties/${property.id}`}
+            className={`absolute ${positions[index] || positions[0]} -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#173f3f] px-4 py-2 text-sm font-black text-white shadow-xl ring-4 ring-[#f2b84b]/35 hover:bg-[#102426]`}
+        >
+            {property.matchedFloorPlan?.effectiveRent || property.effectiveRent || property.rent}
+        </Link>
+    );
 }
 
 function PropertyCard({ property, matchedFloorPlan }) {
