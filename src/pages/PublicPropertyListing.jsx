@@ -1595,85 +1595,105 @@ function FloorPlanCard({
     onViewDetails,
 }) {
     return (
-        <div className="flex flex-col justify-between gap-4 rounded-2xl bg-[#f5f8f1] p-4 md:flex-row md:items-center">
-
-            <div className="flex items-center gap-4">
-
+        <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+            <div className="flex gap-4">
                 {image && (
                     <img
                         src={image}
                         alt={`${name} floor plan`}
-                        className="h-20 w-20 rounded-xl object-cover"
+                        className="h-20 w-20 shrink-0 rounded-xl object-cover sm:h-24 sm:w-24"
                     />
                 )}
 
-                <div>
+                <div className="min-w-0 flex-1">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                            {special && (
+                                <span className="mb-2 inline-flex max-w-full rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                    <span className="truncate">{special.label}</span>
+                                </span>
+                            )}
 
-                    {special && (
-                        <span className="mb-3 inline-flex rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-bold text-[#1f6f63]">
-                            {special.label}
+                            <p className="truncate text-lg font-black text-[#102426]">
+                                {name}
+                            </p>
+
+                            <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                {beds} • {baths} • {sqft}
+                            </p>
+                        </div>
+
+                        <span
+                            className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${status === "available"
+                                ? "bg-[#d8efe6] text-[#1f6f63]"
+                                : status === "limited"
+                                    ? "bg-[#fff8e6] text-[#8a5b0a]"
+                                    : "bg-[#fff0ea] text-[#e4572e]"
+                                }`}
+                        >
+                            {available}
                         </span>
-                    )}
-
-                    <p className="text-lg font-black text-[#102426]">{name}</p>
-
-                    <p className="mt-1 text-sm text-[#526260]">
-                        {beds} • {baths} • {sqft}
-                    </p>
+                    </div>
                 </div>
-
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#173f3f]">
-                    Starting {rent}
-                </span>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                <FloorPlanMetric label="Starting" value={rent} />
 
                 {effectiveRent && (
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#173f3f]">
-                        Effective {effectiveRent}
-                    </span>
+                    <FloorPlanMetric label="Effective" value={effectiveRent} highlight />
                 )}
 
                 {marketRent && (
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#173f3f]">
-                        Market {marketRent}
-                    </span>
+                    <FloorPlanMetric label="Market" value={marketRent} />
                 )}
 
                 {savings && (
-                    <span className="rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
-                        Save {savings}
-                    </span>
+                    <FloorPlanMetric label="Savings" value={savings} highlight />
                 )}
-
-                {belowMarketPercent && (
-                    <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
-                        {belowMarketPercent} below
-                    </span>
-                )}
-
-                <span
-                    className={`rounded-full px-3 py-1 text-xs font-bold ${status === "available"
-                        ? "bg-[#d8efe6] text-[#1f6f63]"
-                        : status === "limited"
-                            ? "bg-[#fff8e6] text-[#8a5b0a]"
-                            : "bg-[#fff0ea] text-[#e4572e]"
-                        }`}
-                >
-                    {available}
-                </span>
-                <button
-                    onClick={onViewDetails}
-                    className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
-                >
-                    View Details
-                </button>
-
-                <button className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]">
-                    Request Info
-                </button>
             </div>
+
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-h-7">
+                    {belowMarketPercent && (
+                        <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
+                            {belowMarketPercent} below
+                        </span>
+                    )}
+                </div>
+
+                <div className="grid gap-2 sm:flex sm:justify-end">
+                    <button
+                        onClick={onViewDetails}
+                        className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                    >
+                        View Details
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onViewDetails}
+                        className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
+                    >
+                        Request Info
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function FloorPlanMetric({ label, value, highlight = false }) {
+    return (
+        <div
+            className={`rounded-xl px-3 py-2 ${
+                highlight
+                    ? "bg-[#e7f3ee] text-[#1f6f63]"
+                    : "bg-white text-[#173f3f]"
+            }`}
+        >
+            <p className="text-[11px] font-black uppercase">{label}</p>
+            <p className="mt-0.5 truncate text-sm font-black">{value}</p>
         </div>
     );
 }
