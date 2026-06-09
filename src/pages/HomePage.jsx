@@ -17,6 +17,7 @@ const FALLBACK_DALLAS_DEALS = [
         rent: "$883 - $1,116",
         bedrooms: ["Studio", "1 Bed"],
         savings: "$0/mo",
+        special: "Special not listed",
         image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80",
     },
     {
@@ -29,6 +30,7 @@ const FALLBACK_DALLAS_DEALS = [
         rent: "$1,299 - $6,515",
         bedrooms: ["1 Bed", "2 Bed", "3 Bed"],
         savings: "$0/mo",
+        special: "Special not listed",
         image: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=900&q=80",
     },
     {
@@ -41,6 +43,7 @@ const FALLBACK_DALLAS_DEALS = [
         rent: "$966 - $1,933",
         bedrooms: ["1 Bed", "2 Bed"],
         savings: "$0/mo",
+        special: "Special not listed",
         image: "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?auto=format&fit=crop&w=900&q=80",
     },
     {
@@ -53,6 +56,7 @@ const FALLBACK_DALLAS_DEALS = [
         rent: "$743 - $7,857",
         bedrooms: ["Studio", "1 Bed", "2 Bed", "3 Bed"],
         savings: "$0/mo",
+        special: "Special not listed",
         image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
     },
 ];
@@ -328,15 +332,18 @@ function getFeaturedDallasDeals(properties) {
     const liveDallasDeals = properties.map((property) => {
         const propertyFloorPlans = getSearchFloorPlans(property);
         const matchedFloorPlan = getBestFloorPlanDeal(propertyFloorPlans);
+        const dealSummary = getPropertyDealSummary(property, propertyFloorPlans);
 
         return {
             ...property,
             matchedFloorPlan,
+            dealSummary,
         };
     }).filter(isDallasProperty);
     const fallbackDeals = FALLBACK_DALLAS_DEALS.map((property) => ({
         ...property,
         isFallback: true,
+        dealSummary: getFallbackDealSummary(property),
         matchedFloorPlan: {
             name: property.name,
             bedrooms: property.bedrooms?.[0] || "",
@@ -353,6 +360,183 @@ function getFeaturedDallasDeals(properties) {
     }
 
     return fallbackDeals.slice(0, FEATURED_DALLAS_DEAL_LIMIT);
+}
+
+function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(property)) {
+    const specialDealUnits = getSpecialDealUnits(floorPlans);
+    const dealOptionCount = getDealOptionCount(floorPlans);
+    const allSpecialLabels = [
+        ...new Set(specialDealUnits.map((dealUnit) => dealUnit.specialLabel).filter(Boolean)),
+    ];
+
+    if (specialDealUnits.length === 0) {
+        return {
+            hasSpecial: false,
+            specialLabel: "No listed special on available units",
+            effectiveRentLabel: getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans)),
+            priceCaption: "Starting rent",
+            badgeLabel: "",
+            specialCountLabel: "0 available options with specials",
+        };
+    }
+
+    const effectiveRentValues = specialDealUnits
+        .map((dealUnit) => dealUnit.effectiveRentNumber)
+        .filter((value) => value > 0);
+
+    if (effectiveRentValues.length === 0) {
+        return {
+            hasSpecial: true,
+            specialLabel: allSpecialLabels[0] || "Special available",
+            effectiveRentLabel: "Contact for pricing",
+            priceCaption: "Effective rent on units with special",
+            badgeLabel: "Special",
+            specialCountLabel: getSpecialCountLabel(specialDealUnits.length, dealOptionCount),
+        };
+    }
+
+    const minEffectiveRent = Math.min(...effectiveRentValues);
+    const maxEffectiveRent = Math.max(...effectiveRentValues);
+    const maxFreeWeeks = Math.max(
+        ...specialDealUnits.map((dealUnit) => Number(dealUnit.freeWeeks || 0))
+    );
+    const specialCount = specialDealUnits.length;
+    const specialLabel = formatSpecialSummary(allSpecialLabels);
+
+    return {
+        hasSpecial: true,
+        specialLabel,
+        effectiveRentLabel: formatRentRange(minEffectiveRent, maxEffectiveRent),
+        priceCaption: "Effective rent on units with special",
+        badgeLabel: maxFreeWeeks > 0 ? `${maxFreeWeeks} weeks free` : "Special",
+        specialCountLabel: getSpecialCountLabel(specialCount, dealOptionCount),
+    };
+}
+
+function getDealOptionCount(floorPlans) {
+    return floorPlans.reduce((total, floorPlan) => {
+        const availableUnitCount =
+            floorPlan.availableUnits?.filter((unit) => unit.status !== "leased").length || 0;
+
+        return total + (availableUnitCount || 1);
+    }, 0);
+}
+
+function getSpecialCountLabel(specialCount, totalCount) {
+    if (!totalCount) {
+        return `${specialCount} available ${specialCount === 1 ? "option" : "options"} with specials`;
+    }
+
+    if (specialCount === totalCount) {
+        return `All ${totalCount} available ${totalCount === 1 ? "option has" : "options have"} specials`;
+    }
+
+    return `${specialCount} of ${totalCount} available options have specials`;
+}
+
+function formatSpecialSummary(specialLabels) {
+    if (specialLabels.length === 0) return "Special listed";
+    if (specialLabels.length <= 2) return specialLabels.join(", ");
+
+    return `${specialLabels.slice(0, 2).join(", ")} +${specialLabels.length - 2} more`;
+}
+
+function getSpecialDealUnits(floorPlans) {
+    return floorPlans.flatMap((floorPlan) => {
+        const floorPlanSpecial = getFloorPlanSpecial(floorPlan);
+        const availableUnits = floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+
+        if (availableUnits.length === 0) {
+            if (!floorPlanSpecial.hasSpecial) return [];
+
+            return [
+                createSpecialDealUnit({
+                    floorPlan,
+                    unitRent: floorPlan.startingRent,
+                    specialLabel: floorPlanSpecial.label,
+                    freeWeeks: floorPlanSpecial.freeWeeks,
+                }),
+            ];
+        }
+
+        return availableUnits.flatMap((unit) => {
+            const unitSpecial = getUnitSpecial(unit, floorPlanSpecial);
+
+            if (!unitSpecial.hasSpecial) return [];
+
+            return createSpecialDealUnit({
+                floorPlan,
+                unitRent: unit.rent || floorPlan.startingRent,
+                specialLabel: unitSpecial.label,
+                freeWeeks: unitSpecial.freeWeeks,
+            });
+        });
+    });
+}
+
+function createSpecialDealUnit({ floorPlan, unitRent, specialLabel, freeWeeks }) {
+    const pricing = calculateFloorPlanPricing({
+        startingRent: unitRent,
+        effectiveRent: floorPlan.effectiveRent,
+        marketRent: floorPlan.marketRent,
+        savings: floorPlan.savings,
+        belowMarketPercent: floorPlan.belowMarketPercent,
+        freeWeeks,
+        leaseTermMonths: floorPlan.leaseTermMonths,
+    });
+    const effectiveRentNumber =
+        parseCurrency(pricing.effectiveRent) || parseCurrency(unitRent);
+
+    return {
+        specialLabel,
+        freeWeeks,
+        effectiveRentNumber,
+    };
+}
+
+function getFloorPlanSpecial(floorPlan) {
+    const freeWeeks = Number(floorPlan.freeWeeks || floorPlan.special?.freeWeeks || 0);
+    const label = floorPlan.currentSpecial || floorPlan.special?.label || "";
+
+    return {
+        hasSpecial: freeWeeks > 0 || Boolean(label),
+        freeWeeks,
+        label: label || (freeWeeks > 0 ? `${freeWeeks} weeks free` : ""),
+    };
+}
+
+function getUnitSpecial(unit, floorPlanSpecial) {
+    if (unit.specialMode === "none") {
+        return {
+            hasSpecial: false,
+            freeWeeks: 0,
+            label: "",
+        };
+    }
+
+    const unitFreeWeeks = Number(unit.freeWeeks || unit.special?.freeWeeks || 0);
+    const unitLabel = unit.currentSpecial || unit.special?.label || "";
+
+    if (unit.specialMode === "custom" || unitFreeWeeks > 0 || unitLabel) {
+        return {
+            hasSpecial: unitFreeWeeks > 0 || Boolean(unitLabel),
+            freeWeeks: unitFreeWeeks,
+            label: unitLabel || (unitFreeWeeks > 0 ? `${unitFreeWeeks} weeks free` : ""),
+        };
+    }
+
+    return floorPlanSpecial;
+}
+
+function getFallbackDealSummary(property) {
+    return {
+        hasSpecial: false,
+        specialLabel: property.special || "Special not listed",
+        effectiveRentLabel: property.rent,
+        priceCaption: "Listed rent range",
+        badgeLabel: "",
+        specialCountLabel: "Special not listed in source data",
+    };
 }
 
 function isDallasProperty(property) {
@@ -399,6 +583,18 @@ function parseCurrency(value) {
 
 function formatCurrency(value) {
     return `$${Math.round(value).toLocaleString()}`;
+}
+
+function formatRentRange(minRent, maxRent) {
+    if (!minRent && !maxRent) {
+        return "Contact for pricing";
+    }
+
+    if (minRent === maxRent) {
+        return `${formatCurrency(minRent)}+`;
+    }
+
+    return `${formatCurrency(minRent)} - ${formatCurrency(maxRent)}`;
 }
 
 function normalizeRentSortValue(value) {
@@ -510,11 +706,13 @@ function getAddressLabel(property) {
 
 function SuggestedRentalCard({ property, matchedFloorPlan }) {
     const primaryImage = property.photos?.[0]?.url || property.image;
-    const priceLabel = getRentalPriceLabel(property, matchedFloorPlan);
+    const dealSummary = property.dealSummary || getPropertyDealSummary(property);
+    const priceLabel = dealSummary.effectiveRentLabel || getRentalPriceLabel(property, matchedFloorPlan);
     const bedsLabel = getBedsLabel(property, matchedFloorPlan);
     const addressLabel = getAddressLabel(property);
     const savingsValue = matchedFloorPlan?.savings || property.savings || "";
     const hasSavings = parseCurrency(savingsValue) > 0;
+    const badgeLabel = dealSummary.badgeLabel || (hasSavings ? `${savingsValue} savings` : "");
     const cardHref = property.isFallback ? "/start" : `/properties/${property.id}`;
 
     return (
@@ -528,9 +726,9 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     alt={property.name}
                     className="aspect-[4/3] w-full object-cover"
                 />
-                {hasSavings && (
+                {badgeLabel && (
                     <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-black text-[#17623b] shadow-sm">
-                        {savingsValue} savings
+                        {badgeLabel}
                     </span>
                 )}
             </div>
@@ -547,12 +745,27 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     {priceLabel}
                 </p>
                 <p className="mt-0.5 text-xs font-bold text-[#526260]">
-                    Total Monthly Price
+                    {dealSummary.priceCaption || "Total Monthly Price"}
                 </p>
+
+                <div className="mt-3 rounded-2xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+                    <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
+                        Special
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-sm font-black leading-5 text-[#102426]">
+                        {dealSummary.specialLabel}
+                    </p>
+                    {dealSummary.specialCountLabel && (
+                        <p className="mt-1 text-xs font-bold text-[#7a432e]">
+                            {dealSummary.specialCountLabel}
+                        </p>
+                    )}
+                </div>
 
                 <p className="mt-3 text-sm font-black text-[#174a7c]">
                     {bedsLabel}
                 </p>
+
             </div>
         </Link>
     );

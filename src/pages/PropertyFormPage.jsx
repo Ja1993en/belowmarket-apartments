@@ -542,6 +542,22 @@ function FloorPlanEditor({
   onAvailabilityRemove,
 }) {
   const calculatedValues = calculateFloorPlanValues(floorPlan);
+  const updateUnitSpecial = (availableUnitId, value) => {
+    if (value === "floorPlan") {
+      onAvailabilityChange(floorPlan.id, availableUnitId, "specialMode", "floorPlan");
+      onAvailabilityChange(floorPlan.id, availableUnitId, "freeWeeks", "");
+      return;
+    }
+
+    if (value === "none") {
+      onAvailabilityChange(floorPlan.id, availableUnitId, "specialMode", "none");
+      onAvailabilityChange(floorPlan.id, availableUnitId, "freeWeeks", "");
+      return;
+    }
+
+    onAvailabilityChange(floorPlan.id, availableUnitId, "specialMode", "custom");
+    onAvailabilityChange(floorPlan.id, availableUnitId, "freeWeeks", value);
+  };
 
   return (
     <div
@@ -707,7 +723,7 @@ function FloorPlanEditor({
                 </button>
               </div>
 
-              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
                 <FormField
                   label="Unit"
                   value={availableUnit.unit}
@@ -754,6 +770,26 @@ function FloorPlanEditor({
                     <option value="available">Available</option>
                     <option value="pending">Pending</option>
                     <option value="leased">Leased</option>
+                  </select>
+                </label>
+                <label className="rounded-2xl bg-white p-4">
+                  <span className="text-sm font-semibold text-slate-500">
+                    Unit Special
+                  </span>
+                  <select
+                    value={getUnitSpecialSelectValue(availableUnit)}
+                    onChange={(event) =>
+                      updateUnitSpecial(availableUnit.id, event.target.value)
+                    }
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                  >
+                    <option value="floorPlan">Use floor plan special</option>
+                    <option value="none">No special</option>
+                    {WEEKS_FREE_OPTIONS.filter((weeks) => weeks > 0).map((weeks) => (
+                      <option key={weeks} value={String(weeks)}>
+                        {weeks} weeks free
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <FormField
@@ -856,6 +892,8 @@ function createBlankAvailableUnit() {
     availableDate: "",
     rent: "",
     status: "available",
+    specialMode: "floorPlan",
+    freeWeeks: "",
     notes: "",
   };
 }
@@ -964,20 +1002,32 @@ function normalizeAvailableUnitsForDraft(availableUnits = [], defaultRent = "") 
     return [createBlankAvailableUnit()];
   }
 
-  return availableUnits.map((availableUnit, index) => ({
-    ...createBlankAvailableUnit(),
-    id: availableUnit.id || `availability-${index}`,
-    unit: availableUnit.unit || "",
-    availableDate: availableUnit.availableDate || getDateFromAvailabilityLabel(availableUnit.available),
-    rent: availableUnit.rent || defaultRent,
-    status: availableUnit.status || "available",
-    notes: availableUnit.notes || "",
-  }));
+  return availableUnits.map((availableUnit, index) => {
+    const specialLabel = availableUnit.currentSpecial || availableUnit.special?.label || "";
+    const parsedFreeWeeks =
+      availableUnit.freeWeeks ?? availableUnit.special?.freeWeeks ?? getWeeksFromSpecialLabel(specialLabel);
+
+    return {
+      ...createBlankAvailableUnit(),
+      id: availableUnit.id || `availability-${index}`,
+      unit: availableUnit.unit || "",
+      availableDate: availableUnit.availableDate || getDateFromAvailabilityLabel(availableUnit.available),
+      rent: availableUnit.rent || defaultRent,
+      status: availableUnit.status || "available",
+      specialMode:
+        availableUnit.specialMode || (Number(parsedFreeWeeks || 0) > 0 ? "custom" : "floorPlan"),
+      freeWeeks: Number(parsedFreeWeeks || 0) > 0 ? String(parsedFreeWeeks) : "",
+      notes: availableUnit.notes || "",
+    };
+  });
 }
 
 function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
   const unitLabel = availableUnit.unit.trim() || `Option ${index + 1}`;
   const availableDate = availableUnit.availableDate;
+  const specialMode = availableUnit.specialMode || "floorPlan";
+  const freeWeeks = specialMode === "custom" ? Number(availableUnit.freeWeeks || 0) : 0;
+  const currentSpecial = freeWeeks > 0 ? getSpecialLabel(freeWeeks) : "";
 
   return {
     id: availableUnit.id,
@@ -986,9 +1036,26 @@ function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
     available: formatAvailableDate(availableDate),
     rent: availableUnit.rent.trim() || defaultRent.trim(),
     status: availableUnit.status,
+    specialMode,
+    freeWeeks,
+    currentSpecial,
+    special: currentSpecial
+      ? {
+          type: "weeks_free",
+          freeWeeks,
+          label: currentSpecial,
+        }
+      : null,
     notes: availableUnit.notes.trim(),
     requestCount: 0,
   };
+}
+
+function getUnitSpecialSelectValue(availableUnit) {
+  if (availableUnit.specialMode === "none") return "none";
+  if (availableUnit.specialMode === "custom") return String(availableUnit.freeWeeks || "0.5");
+
+  return "floorPlan";
 }
 
 function getFloorPlanAvailabilityLabel(availableUnits) {
