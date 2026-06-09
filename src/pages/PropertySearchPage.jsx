@@ -13,6 +13,7 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = [-96.797, 32.7767];
 const CLICK_DRAW_RADIUS_MILES = 1.5;
 const MIN_DRAW_RADIUS_MILES = 0.25;
+const DRAW_UPDATE_DISTANCE_MILES = 0.05;
 
 export default function PropertySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,7 +21,7 @@ export default function PropertySearchPage() {
   const [searchTerm, setSearchTerm] = useState(searchFromUrl);
   const [selectedArea, setSelectedArea] = useState(null);
   const [mappableSearchProperties, setMappableSearchProperties] = useState([]);
-  const properties = getPublicSearchProperties();
+  const properties = useMemo(() => getPublicSearchProperties(), []);
   const searchMatchedProperties = useMemo(
     () =>
       properties.filter((property) =>
@@ -291,6 +292,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
   const markersRef = useRef([]);
   const drawStartRef = useRef(null);
   const drawCurrentRef = useRef(null);
+  const draftRadiusRef = useRef(0);
   const isDrawingAreaRef = useRef(false);
   const [mapboxGl, setMapboxGl] = useState(null);
   const [mapError, setMapError] = useState("");
@@ -425,6 +427,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
     setMapMarkerPointerEvents(mapRef.current, "auto");
     drawStartRef.current = null;
     drawCurrentRef.current = null;
+    draftRadiusRef.current = 0;
   }, [isDrawingArea]);
 
   const startAreaDrawing = (event) => {
@@ -438,6 +441,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
 
     drawStartRef.current = drawingPoint;
     drawCurrentRef.current = drawingPoint;
+    draftRadiusRef.current = CLICK_DRAW_RADIUS_MILES;
     setDraftArea({
       center: drawingPoint,
       radiusMiles: CLICK_DRAW_RADIUS_MILES,
@@ -453,12 +457,21 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
     if (!drawingPoint) return;
 
     drawCurrentRef.current = drawingPoint;
+    const radiusMiles = Math.max(
+      getDistanceMiles(drawStartRef.current, drawingPoint),
+      MIN_DRAW_RADIUS_MILES
+    );
+    if (
+      Math.abs(radiusMiles - draftRadiusRef.current) <
+      DRAW_UPDATE_DISTANCE_MILES
+    ) {
+      return;
+    }
+
+    draftRadiusRef.current = radiusMiles;
     setDraftArea({
       center: drawStartRef.current,
-      radiusMiles: Math.max(
-        getDistanceMiles(drawStartRef.current, drawingPoint),
-        MIN_DRAW_RADIUS_MILES
-      ),
+      radiusMiles,
     });
   };
 
@@ -488,6 +501,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
     setDraftArea(null);
     drawStartRef.current = null;
     drawCurrentRef.current = null;
+    draftRadiusRef.current = 0;
     setIsDrawingArea(false);
   };
 
@@ -496,6 +510,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
     setDraftArea(null);
     drawStartRef.current = null;
     drawCurrentRef.current = null;
+    draftRadiusRef.current = 0;
   };
 
   useEffect(() => {
@@ -587,6 +602,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
             setDraftArea(null);
             drawStartRef.current = null;
             drawCurrentRef.current = null;
+            draftRadiusRef.current = 0;
           }}
           className={`rounded-2xl px-4 py-3 text-sm font-black shadow-sm ring-1 ${
             isDrawingArea
@@ -605,6 +621,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
               setIsDrawingArea(false);
               drawStartRef.current = null;
               drawCurrentRef.current = null;
+              draftRadiusRef.current = 0;
             }}
             className="rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#e4572e] shadow-sm ring-1 ring-[#f4c8b8] hover:bg-[#fff0ea]"
           >
