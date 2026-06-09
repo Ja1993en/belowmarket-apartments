@@ -587,6 +587,15 @@ function getFloorPlanSpecial(floorPlan) {
 }
 
 function getUnitSpecial(unit, floorPlanSpecial) {
+    const adminFeeSpecial =
+        unit.adminFeeSpecial ||
+        unit.special?.adminFeeSpecial ||
+        getAdminFeeSpecialFromLabel(unit.currentSpecial || unit.special?.label || "");
+    const adminFeeSpecialType =
+        unit.adminFeeSpecialType ||
+        unit.special?.adminFeeSpecialType ||
+        getAdminFeeSpecialTypeFromLabel(adminFeeSpecial || unit.currentSpecial || unit.special?.label || "");
+
     if (unit.specialMode === "none") {
         return {
             hasSpecial: false,
@@ -599,10 +608,28 @@ function getUnitSpecial(unit, floorPlanSpecial) {
     const unitLabel = unit.currentSpecial || unit.special?.label || "";
 
     if (unit.specialMode === "custom" || unitFreeWeeks > 0 || unitLabel) {
+        const label = getSpecialLabel(
+            unitFreeWeeks,
+            adminFeeSpecial || getAdminFeeSpecialFromLabel(unitLabel),
+            adminFeeSpecialType
+        );
+
         return {
-            hasSpecial: unitFreeWeeks > 0 || Boolean(unitLabel),
+            hasSpecial: unitFreeWeeks > 0 || Boolean(unitLabel) || Boolean(adminFeeSpecial),
             freeWeeks: unitFreeWeeks,
-            label: unitLabel || (unitFreeWeeks > 0 ? `${unitFreeWeeks} weeks free` : ""),
+            label: label || unitLabel || (unitFreeWeeks > 0 ? `${unitFreeWeeks} weeks free` : ""),
+        };
+    }
+
+    if (adminFeeSpecial) {
+        return {
+            hasSpecial: floorPlanSpecial.hasSpecial || Boolean(adminFeeSpecial),
+            freeWeeks: floorPlanSpecial.freeWeeks,
+            label: getSpecialLabel(
+                floorPlanSpecial.freeWeeks,
+                adminFeeSpecial,
+                adminFeeSpecialType
+            ) || floorPlanSpecial.label,
         };
     }
 
@@ -703,6 +730,46 @@ function normalizeYearBuilt(value) {
 function getWeeksFromSpecialLabel(label) {
     const match = String(label || "").match(/(\d+(?:\.\d+)?)\s*\+?\s*weeks?/i);
     return match ? Number(match[1]) : 0;
+}
+
+function getSpecialLabel(freeWeeks, adminFeeSpecial = "", adminFeeSpecialType = "admin") {
+    const specialParts = [];
+
+    if (freeWeeks) {
+        specialParts.push(`${freeWeeks} ${freeWeeks === 1 ? "week" : "weeks"} free`);
+    }
+
+    const feeSpecialLabel = getFeeSpecialLabel(adminFeeSpecial, adminFeeSpecialType);
+    if (feeSpecialLabel) {
+        specialParts.push(feeSpecialLabel);
+    }
+
+    return specialParts.join(" + ");
+}
+
+function getAdminFeeSpecialFromLabel(label) {
+    const parts = String(label || "")
+        .split("+")
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+    return parts.find((part) => !/weeks?\s+free/i.test(part)) || "";
+}
+
+function getAdminFeeSpecialTypeFromLabel(label) {
+    return /application\s+fees?/i.test(String(label || "")) ? "application" : "admin";
+}
+
+function getFeeSpecialLabel(adminFeeSpecial, adminFeeSpecialType) {
+    const trimmedSpecial = adminFeeSpecial.trim();
+    if (!trimmedSpecial) return "";
+
+    if (/(admin|application)\s+fees?/i.test(trimmedSpecial)) {
+        return trimmedSpecial;
+    }
+
+    const feeLabel = adminFeeSpecialType === "application" ? "application fee" : "admin fee";
+    return `${trimmedSpecial} ${feeLabel}`;
 }
 
 function getRentalPriceLabel(property, matchedFloorPlan) {

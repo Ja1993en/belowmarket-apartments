@@ -696,6 +696,7 @@ function FloorPlanEditor({
     if (value === "none") {
       onAvailabilityChange(floorPlan.id, availableUnitId, "specialMode", "none");
       onAvailabilityChange(floorPlan.id, availableUnitId, "freeWeeks", "");
+      onAvailabilityChange(floorPlan.id, availableUnitId, "adminFeeSpecial", "");
       return;
     }
 
@@ -1060,6 +1061,54 @@ function FloorPlanEditor({
                     ))}
                   </select>
                 </label>
+                <div className="rounded-2xl bg-white p-4 md:col-span-2 xl:col-span-2">
+                  <span className="text-sm font-semibold text-slate-500">
+                    Unit Fee Special
+                  </span>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    {FEE_SPECIAL_TYPES.map((feeType) => (
+                      <label
+                        key={feeType.value}
+                        className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-black ${
+                          availableUnit.adminFeeSpecialType === feeType.value
+                            ? "border-slate-950 bg-slate-950 text-white"
+                            : "border-slate-200 bg-white text-slate-700"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name={`${availableUnit.id}-unit-fee-special-type`}
+                          value={feeType.value}
+                          checked={availableUnit.adminFeeSpecialType === feeType.value}
+                          onChange={(event) =>
+                            onAvailabilityChange(
+                              floorPlan.id,
+                              availableUnit.id,
+                              "adminFeeSpecialType",
+                              event.target.value
+                            )
+                          }
+                          className="h-4 w-4 accent-slate-950"
+                        />
+                        {feeType.label}
+                      </label>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={availableUnit.adminFeeSpecial}
+                    onChange={(event) =>
+                      onAvailabilityChange(
+                        floorPlan.id,
+                        availableUnit.id,
+                        "adminFeeSpecial",
+                        event.target.value
+                      )
+                    }
+                    placeholder="$99 or waived"
+                    className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                  />
+                </div>
                 <FormField
                   label="Note"
                   value={availableUnit.notes}
@@ -1234,6 +1283,8 @@ function createBlankAvailableUnit() {
     status: "available",
     specialMode: "floorPlan",
     freeWeeks: "",
+    adminFeeSpecial: "",
+    adminFeeSpecialType: "admin",
     notes: "",
   };
 }
@@ -1378,6 +1429,14 @@ function normalizeAvailableUnitsForDraft(availableUnits = [], defaultRent = "") 
     const specialLabel = availableUnit.currentSpecial || availableUnit.special?.label || "";
     const parsedFreeWeeks =
       availableUnit.freeWeeks ?? availableUnit.special?.freeWeeks ?? getWeeksFromSpecialLabel(specialLabel);
+    const adminFeeSpecial =
+      availableUnit.adminFeeSpecial ||
+      availableUnit.special?.adminFeeSpecial ||
+      getAdminFeeSpecialFromLabel(specialLabel);
+    const adminFeeSpecialType =
+      availableUnit.adminFeeSpecialType ||
+      availableUnit.special?.adminFeeSpecialType ||
+      getAdminFeeSpecialTypeFromLabel(adminFeeSpecial || specialLabel);
 
     return {
       ...createBlankAvailableUnit(),
@@ -1389,6 +1448,8 @@ function normalizeAvailableUnitsForDraft(availableUnits = [], defaultRent = "") 
       specialMode:
         availableUnit.specialMode || (Number(parsedFreeWeeks || 0) > 0 ? "custom" : "floorPlan"),
       freeWeeks: Number(parsedFreeWeeks || 0) > 0 ? String(parsedFreeWeeks) : "",
+      adminFeeSpecial,
+      adminFeeSpecialType,
       notes: availableUnit.notes || "",
     };
   });
@@ -1399,7 +1460,11 @@ function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
   const availableDate = availableUnit.availableDate;
   const specialMode = availableUnit.specialMode || "floorPlan";
   const freeWeeks = specialMode === "custom" ? Number(availableUnit.freeWeeks || 0) : 0;
-  const currentSpecial = freeWeeks > 0 ? getSpecialLabel(freeWeeks) : "";
+  const adminFeeSpecial = specialMode === "none" ? "" : availableUnit.adminFeeSpecial.trim();
+  const adminFeeSpecialType = availableUnit.adminFeeSpecialType || "admin";
+  const currentSpecial = specialMode === "none"
+    ? ""
+    : getSpecialLabel(freeWeeks, adminFeeSpecial, adminFeeSpecialType);
 
   return {
     id: availableUnit.id,
@@ -1410,11 +1475,15 @@ function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
     status: availableUnit.status,
     specialMode,
     freeWeeks,
+    adminFeeSpecial,
+    adminFeeSpecialType,
     currentSpecial,
     special: currentSpecial
       ? {
           type: "weeks_free",
           freeWeeks,
+          adminFeeSpecial,
+          adminFeeSpecialType,
           label: currentSpecial,
         }
       : null,
