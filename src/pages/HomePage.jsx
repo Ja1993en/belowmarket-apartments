@@ -755,6 +755,14 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     <p className="mt-1 line-clamp-2 text-sm font-black leading-5 text-[#102426]">
                         {dealSummary.specialLabel}
                     </p>
+                    <div className="mt-2 border-t border-[#f2d08a] pt-2">
+                        <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
+                            Effective Rent
+                        </p>
+                        <p className="mt-1 text-sm font-black leading-5 text-[#102426]">
+                            {priceLabel}
+                        </p>
+                    </div>
                     {dealSummary.specialCountLabel && (
                         <p className="mt-1 text-xs font-bold text-[#7a432e]">
                             {dealSummary.specialCountLabel}
