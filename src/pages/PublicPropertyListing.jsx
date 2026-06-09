@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getAnyPropertyById } from "../data/propertyStorage";
+import {
+    getPropertyAddressLabel,
+    getPublicSearchProperties,
+} from "../data/propertySearchData";
 const floorPlans = [
     {
         name: "A1",
@@ -128,7 +131,29 @@ const galleryImages = [
 
 function normalizeListingFloorPlans(property) {
     if (!property?.floorPlans?.length) {
-        return floorPlans;
+        if (!property) return floorPlans;
+
+        return [
+            {
+                name: property.bedrooms?.join(" / ") || "Available Floor Plan",
+                beds: property.bedrooms?.join(" / ") || "Beds not listed",
+                baths: "Contact for details",
+                sqft: "Contact for details",
+                rent: property.startingRent || property.rent || "Contact for pricing",
+                effectiveRent: property.effectiveRent || "",
+                marketRent: property.marketRent || "",
+                savings: property.savings || "",
+                belowMarketPercent: property.belowMarketPercent || "",
+                available: "Contact for availability",
+                status: "available",
+                special:
+                    property.special && property.special !== "Special not listed"
+                        ? { label: property.special }
+                        : null,
+                availableUnits: [],
+                image: property.photos?.[0]?.url || property.image,
+            },
+        ];
     }
 
     return property.floorPlans.map((plan, index) => {
@@ -172,7 +197,22 @@ function normalizeListingFloorPlans(property) {
 export default function PublicPropertyListing() {
     {/* Usestate start*/ }
     const { propertyId } = useParams();
-    const property = getAnyPropertyById(propertyId);
+    const property = getPublicSearchProperties().find(
+        (listingProperty) => listingProperty.id === String(propertyId)
+    );
+    const addressLabel = property ? getPropertyAddressLabel(property) : "";
+    const startingRentLabel = property?.startingRent || property?.rent || "Contact for pricing";
+    const effectiveRentLabel = property?.effectiveRent || "";
+    const marketRentLabel = property?.marketRent || "";
+    const savingsLabel = property?.savings || "";
+    const hasPropertySpecial = Boolean(
+        property?.special && property.special !== "Special not listed"
+    );
+    const propertySpecialLabel = hasPropertySpecial
+        ? property.special
+        : "No active special listed";
+    const managementLabel =
+        property?.managementCompany || property?.manager || "Property management not listed";
     const propertyGalleryImages =
         property?.photos?.length > 0
             ? property.photos.map((photo, index) => ({
@@ -333,13 +373,13 @@ export default function PublicPropertyListing() {
             baths: selectedFloorPlan?.baths,
             sqft: selectedFloorPlan?.sqft,
             rent: selectedFloorPlan?.rent,
-            estimatedRentAfterSpecial: selectedFloorPlan?.special
+            estimatedRentAfterSpecial: hasCalculableSelectedSpecial
                 ? Math.round(effectiveRent)
                 : null,
-            monthlySavings: selectedFloorPlan?.special
+            monthlySavings: hasCalculableSelectedSpecial
                 ? Math.round(monthlySavings)
                 : null,
-            concessionValue: selectedFloorPlan?.special
+            concessionValue: hasCalculableSelectedSpecial
                 ? Math.round(concessionValue)
                 : null, special: selectedFloorPlan?.special || null,
             propertySnapshot: {
@@ -389,10 +429,10 @@ export default function PublicPropertyListing() {
                     </p>
 
                     <Link
-                        to="/admin/properties"
+                        to="/properties"
                         className="mt-6 inline-block rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
                     >
-                        Back to Properties
+                        Back to Search
                     </Link>
                 </div>
             </main>
@@ -400,11 +440,13 @@ export default function PublicPropertyListing() {
     }
 
     const rentNumber = selectedFloorPlan
-        ? Number(selectedFloorPlan.rent.replace(/[^0-9]/g, ""))
+        ? Number(String(selectedFloorPlan.rent || "").replace(/[^0-9]/g, ""))
         : 0;
 
     const freeWeeks =
         selectedFloorPlan?.special?.freeWeeks || 0;
+    const hasSelectedFloorPlanSpecial = Boolean(selectedFloorPlan?.special);
+    const hasCalculableSelectedSpecial = freeWeeks > 0 && rentNumber > 0;
 
     const leaseMonths =
         selectedFloorPlan?.leaseTermMonths || 12;
@@ -440,7 +482,7 @@ export default function PublicPropertyListing() {
         <main className="min-h-screen bg-slate-100 p-6 pb-32 text-slate-950 md:pb-32">
             <div className="mx-auto max-w-7xl space-y-8">
                 <Link
-                    to="/"
+                    to="/properties"
                     className="inline-block rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50"
                 >
                     Back to Search
@@ -487,7 +529,7 @@ export default function PublicPropertyListing() {
                         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_340px]">
                             <div className="min-w-0">
                                 <p className="text-sm font-bold text-slate-500">
-                                    Public Property Listing
+                                    {managementLabel}
                                 </p>
 
                                 <h1 className="mt-2 text-4xl font-black text-slate-900">
@@ -495,39 +537,45 @@ export default function PublicPropertyListing() {
                                 </h1>
 
                                 <p className="mt-2 text-slate-500">
-                                    {property.area} • Starting at {property.rent}
+                                    {addressLabel} • Starting at {startingRentLabel}
                                     {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
                                 </p>
 
 
-                                <div className="mt-5 rounded-2xl bg-emerald-50 p-4">
-                                    <p className="text-sm font-bold text-emerald-700">
-                                        Current Special
-                                    </p>
+                                {hasPropertySpecial && (
+                                    <div className="mt-5 rounded-2xl bg-emerald-50 p-4">
+                                        <p className="text-sm font-bold text-emerald-700">
+                                            Current Special
+                                        </p>
 
-                                    <p className="mt-1 font-black text-slate-900">
-                                        {property.special}
-                                    </p>
-                                </div>
+                                        <p className="mt-1 font-black text-slate-900">
+                                            {propertySpecialLabel}
+                                        </p>
+
+                                        <p className="mt-2 text-sm font-semibold text-emerald-700">
+                                            Specials are shown separately so renters can compare the normal rent and the estimated effective rent.
+                                        </p>
+                                    </div>
+                                )}
 
 
                                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                                     <PriceCompareCard
-                                        label="This Property"
-                                        price={`${property.effectiveRent}/mo`}
-                                        note="Current effective rent"
+                                        label={effectiveRentLabel ? "Estimated Effective" : "Starting Rent"}
+                                        price={effectiveRentLabel || startingRentLabel}
+                                        note={effectiveRentLabel ? "After listed special" : "Before specials and fees"}
                                     />
 
                                     <PriceCompareCard
                                         label="Market Average"
-                                        price={`${property.marketRent}/mo`}
-                                        note={`Similar ${property.area} units`}
+                                        price={marketRentLabel || "Not listed"}
+                                        note={`Similar ${property.area || property.city || "nearby"} units`}
                                     />
 
                                     <PriceCompareCard
                                         label="Estimated Savings"
-                                        price={property.savings}
-                                        note="Based on current pricing"
+                                        price={savingsLabel || "$0/mo"}
+                                        note="Based on available pricing"
                                     />
 
                                 </div>
@@ -540,9 +588,29 @@ export default function PublicPropertyListing() {
                                     </h2>
 
                                     <div className="mt-5 grid gap-4 md:grid-cols-3">
-                                        <ReasonCard icon="💰" title="Save Money" text="Estimated savings of about $225 per month compared to similar apartments nearby." />
-                                        <ReasonCard icon="📍" title="Great Location" text="Close to restaurants, shopping, entertainment, and major Dallas employers." />
-                                        <ReasonCard icon="🎁" title="Limited-Time Special" text="Current 6 weeks free special can significantly reduce your effective rent." />
+                                        <ReasonCard
+                                            icon="💰"
+                                            title="Transparent Pricing"
+                                            text={
+                                                savingsLabel
+                                                    ? `Estimated savings of ${savingsLabel} based on the current listing data.`
+                                                    : "Compare starting rent, market rent, and specials before requesting a tour."
+                                            }
+                                        />
+                                        <ReasonCard
+                                            icon="📍"
+                                            title="Location Context"
+                                            text={`${property.name} is listed near ${property.area || property.city || "the Dallas area"} with address details shown up front.`}
+                                        />
+                                        <ReasonCard
+                                            icon="🎁"
+                                            title={hasPropertySpecial ? "Active Special" : "Special Status"}
+                                            text={
+                                                hasPropertySpecial
+                                                    ? `${propertySpecialLabel} is currently listed for this property.`
+                                                    : "No active special is listed, so pricing is shown as normal rent."
+                                            }
+                                        />
 
                                     </div>
                                 </div>
@@ -715,7 +783,7 @@ export default function PublicPropertyListing() {
                                         </h2>
 
                                         <p className="mt-2 text-slate-500">
-                                            2810 McKinney Ave, Dallas, TX 75204
+                                            {addressLabel}
                                         </p>
 
                                         <div className="mt-5 flex h-80 items-center justify-center rounded-3xl bg-slate-200">
@@ -764,8 +832,14 @@ export default function PublicPropertyListing() {
                                     <p className="mt-2 text-sm text-slate-500">
                                         Call or text: 945-269-3768
                                     </p>
-                                    <p className="mt-3 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
-                                        Ask about 6 weeks free before it expires.
+                                    <p className={`mt-3 rounded-2xl px-4 py-3 text-sm font-bold ${
+                                        hasPropertySpecial
+                                            ? "bg-emerald-50 text-emerald-700"
+                                            : "bg-slate-50 text-slate-600"
+                                    }`}>
+                                        {hasPropertySpecial
+                                            ? `Ask about ${propertySpecialLabel}.`
+                                            : "Ask for current pricing, fees, and availability."}
                                     </p>
 
                                     <div className="mt-4 space-y-3">
@@ -931,15 +1005,6 @@ export default function PublicPropertyListing() {
 
                         </div>
 
-                        <div className="mt-8">
-                            <Link
-                                to="/admin/properties"
-                                className="inline-block rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
-                            >
-                                Back to Admin
-                            </Link>
-                        </div>
-
                     </div>
                 </div>
             </div>
@@ -1073,7 +1138,7 @@ export default function PublicPropertyListing() {
                                             {selectedFloorPlan.rent}
                                         </p>
                                     </div>
-                                    {selectedFloorPlan.special && (
+                                    {hasCalculableSelectedSpecial && (
                                         <div className="rounded-2xl bg-emerald-50 p-4">
                                             <p className="text-sm font-bold text-emerald-700">
                                                 Estimated Rent After Special                                            </p>
@@ -1089,7 +1154,7 @@ export default function PublicPropertyListing() {
 
                                     )}
 
-                                    {selectedFloorPlan.special && (
+                                    {hasCalculableSelectedSpecial && (
                                         <p className="mt-3 text-sm font-semibold text-slate-500">
                                             Rent after special is estimated using a {leaseMonths}-month lease term.
                                         </p>
@@ -1217,7 +1282,7 @@ export default function PublicPropertyListing() {
                                     </div>
                                 </div>
 
-                                {selectedFloorPlan.special && (
+                                {hasSelectedFloorPlanSpecial && (
                                     <div className="mt-5 rounded-2xl bg-emerald-50 p-4">
                                         <p className="text-sm font-bold text-emerald-700">
                                             Special Offer
@@ -1225,12 +1290,20 @@ export default function PublicPropertyListing() {
                                         <p className="mt-1 font-black text-slate-900">
                                             {selectedFloorPlan.special.label}
                                         </p>
-                                        <p className="mt-2 text-sm font-semibold text-emerald-700">
-                                            Estimated concession value: ${Math.round(concessionValue).toLocaleString()}
-                                        </p>
-                                        <p className="mt-1 text-xs leading-5 text-emerald-700">
-                                            Based on {selectedFloorPlan.special.freeWeeks} free weeks applied across a {leaseMonths}-month lease.
-                                        </p>
+                                        {hasCalculableSelectedSpecial ? (
+                                            <>
+                                                <p className="mt-2 text-sm font-semibold text-emerald-700">
+                                                    Estimated concession value: ${Math.round(concessionValue).toLocaleString()}
+                                                </p>
+                                                <p className="mt-1 text-xs leading-5 text-emerald-700">
+                                                    Based on {selectedFloorPlan.special.freeWeeks} free weeks applied across a {leaseMonths}-month lease.
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <p className="mt-2 text-sm font-semibold text-emerald-700">
+                                                Contact us to confirm exactly how this special is applied.
+                                            </p>
+                                        )}
 
 
                                     </div>
