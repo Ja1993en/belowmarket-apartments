@@ -44,6 +44,10 @@ const MAX_UPLOAD_SIZE = 1.5 * 1024 * 1024;
 const LEASING_WEEKS_PER_MONTH = 4;
 const WEEKS_FREE_OPTIONS = Array.from({ length: 25 }, (_, index) => index * 0.5);
 const LEASE_TERM_OPTIONS = ["6", "9", "12", "13", "14", "15", "18"];
+const FEE_SPECIAL_TYPES = [
+  { value: "admin", label: "Admin fee" },
+  { value: "application", label: "Application fee" },
+];
 const NEW_MANAGEMENT_COMPANY_VALUE = "__new_management_company__";
 
 export default function PropertyFormPage() {
@@ -774,11 +778,44 @@ function FloorPlanEditor({
             ))}
           </select>
         </label>
-        <FormField
-          label="Admin/Application Fee Special"
-          value={floorPlan.adminFeeSpecial}
-          onChange={(value) => onChange(floorPlan.id, "adminFeeSpecial", value)}
-        />
+        <div className="rounded-2xl bg-white p-4">
+          <span className="text-sm font-semibold text-slate-500">
+            Fee Special
+          </span>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {FEE_SPECIAL_TYPES.map((feeType) => (
+              <label
+                key={feeType.value}
+                className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-black ${
+                  floorPlan.adminFeeSpecialType === feeType.value
+                    ? "border-slate-950 bg-slate-950 text-white"
+                    : "border-slate-200 bg-white text-slate-700"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name={`${floorPlan.id}-fee-special-type`}
+                  value={feeType.value}
+                  checked={floorPlan.adminFeeSpecialType === feeType.value}
+                  onChange={(event) =>
+                    onChange(floorPlan.id, "adminFeeSpecialType", event.target.value)
+                  }
+                  className="h-4 w-4 accent-slate-950"
+                />
+                {feeType.label}
+              </label>
+            ))}
+          </div>
+          <input
+            type="text"
+            value={floorPlan.adminFeeSpecial}
+            onChange={(event) =>
+              onChange(floorPlan.id, "adminFeeSpecial", event.target.value)
+            }
+            placeholder="$99 or waived"
+            className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+          />
+        </div>
         <label className="rounded-2xl bg-white p-4">
           <span className="text-sm font-semibold text-slate-500">
             Lease Term
@@ -1178,6 +1215,7 @@ function createBlankFloorPlan() {
     currentSpecial: "",
     freeWeeks: "0",
     adminFeeSpecial: "",
+    adminFeeSpecialType: "admin",
     leaseTermMonths: "12",
     availability: "",
     availableUnits: [createBlankAvailableUnit()],
@@ -1215,6 +1253,7 @@ function normalizeFloorPlansForDraft(property) {
           marketRent: property.marketRent || "",
           freeWeeks: "0",
           adminFeeSpecial: "",
+          adminFeeSpecialType: "admin",
           leaseTermMonths: "12",
           image: "",
           photos: [],
@@ -1228,6 +1267,10 @@ function normalizeFloorPlansForDraft(property) {
         floorPlan.adminFeeSpecial ||
         floorPlan.special?.adminFeeSpecial ||
         getAdminFeeSpecialFromLabel(currentSpecialLabel);
+      const adminFeeSpecialType =
+        floorPlan.adminFeeSpecialType ||
+        floorPlan.special?.adminFeeSpecialType ||
+        getAdminFeeSpecialTypeFromLabel(adminFeeSpecial || currentSpecialLabel);
 
       return {
         ...createBlankFloorPlan(),
@@ -1242,6 +1285,7 @@ function normalizeFloorPlansForDraft(property) {
         marketRent: floorPlan.marketRent || "",
         freeWeeks: String(parsedFreeWeeks || 0),
         adminFeeSpecial,
+        adminFeeSpecialType,
         leaseTermMonths: String(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12),
         image: floorPlan.image || floorPlan.photos?.[0]?.url || "",
         photos: normalizeFloorPlanPhotos(floorPlan, index),
@@ -1266,7 +1310,8 @@ function normalizeFloorPlanForStorage(floorPlan) {
   const freeWeeks = Number(floorPlan.freeWeeks || 0);
   const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
   const adminFeeSpecial = floorPlan.adminFeeSpecial.trim();
-  const currentSpecial = getSpecialLabel(freeWeeks, adminFeeSpecial);
+  const adminFeeSpecialType = floorPlan.adminFeeSpecialType || "admin";
+  const currentSpecial = getSpecialLabel(freeWeeks, adminFeeSpecial, adminFeeSpecialType);
   const availableUnits = floorPlan.availableUnits
     .map((availableUnit, index) =>
       normalizeAvailableUnitForStorage(
@@ -1302,12 +1347,14 @@ function normalizeFloorPlanForStorage(floorPlan) {
     currentSpecial,
     freeWeeks,
     adminFeeSpecial,
+    adminFeeSpecialType,
     leaseTermMonths,
     special: currentSpecial
       ? {
           type: "weeks_free",
           freeWeeks,
           adminFeeSpecial,
+          adminFeeSpecialType,
           leaseTermMonths,
           label: currentSpecial,
         }
@@ -1458,15 +1505,16 @@ function formatCurrency(value) {
   return `$${Math.round(value).toLocaleString()}`;
 }
 
-function getSpecialLabel(freeWeeks, adminFeeSpecial = "") {
+function getSpecialLabel(freeWeeks, adminFeeSpecial = "", adminFeeSpecialType = "admin") {
   const specialParts = [];
 
   if (freeWeeks) {
     specialParts.push(`${freeWeeks} ${freeWeeks === 1 ? "week" : "weeks"} free`);
   }
 
-  if (adminFeeSpecial.trim()) {
-    specialParts.push(adminFeeSpecial.trim());
+  const feeSpecialLabel = getFeeSpecialLabel(adminFeeSpecial, adminFeeSpecialType);
+  if (feeSpecialLabel) {
+    specialParts.push(feeSpecialLabel);
   }
 
   return specialParts.join(" + ");
@@ -1484,6 +1532,22 @@ function getAdminFeeSpecialFromLabel(label) {
     .filter(Boolean);
 
   return parts.find((part) => !/weeks?\s+free/i.test(part)) || "";
+}
+
+function getAdminFeeSpecialTypeFromLabel(label) {
+  return /application\s+fees?/i.test(String(label || "")) ? "application" : "admin";
+}
+
+function getFeeSpecialLabel(adminFeeSpecial, adminFeeSpecialType) {
+  const trimmedSpecial = adminFeeSpecial.trim();
+  if (!trimmedSpecial) return "";
+
+  if (/(admin|application)\s+fees?/i.test(trimmedSpecial)) {
+    return trimmedSpecial;
+  }
+
+  const feeLabel = adminFeeSpecialType === "application" ? "application fee" : "admin fee";
+  return `${trimmedSpecial} ${feeLabel}`;
 }
 
 function normalizePropertyPhotos(property) {
