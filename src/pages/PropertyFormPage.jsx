@@ -760,7 +760,7 @@ function FloorPlanEditor({
         />
         <label className="rounded-2xl bg-white p-4">
           <span className="text-sm font-semibold text-slate-500">
-            Current Special
+            Weeks Free Special
           </span>
           <select
             value={String(floorPlan.freeWeeks)}
@@ -774,6 +774,11 @@ function FloorPlanEditor({
             ))}
           </select>
         </label>
+        <FormField
+          label="Admin/Application Fee Special"
+          value={floorPlan.adminFeeSpecial}
+          onChange={(value) => onChange(floorPlan.id, "adminFeeSpecial", value)}
+        />
         <label className="rounded-2xl bg-white p-4">
           <span className="text-sm font-semibold text-slate-500">
             Lease Term
@@ -1172,6 +1177,7 @@ function createBlankFloorPlan() {
     belowMarketPercent: "",
     currentSpecial: "",
     freeWeeks: "0",
+    adminFeeSpecial: "",
     leaseTermMonths: "12",
     availability: "",
     availableUnits: [createBlankAvailableUnit()],
@@ -1208,6 +1214,7 @@ function normalizeFloorPlansForDraft(property) {
           effectiveRent: property.effectiveRent || "",
           marketRent: property.marketRent || "",
           freeWeeks: "0",
+          adminFeeSpecial: "",
           leaseTermMonths: "12",
           image: "",
           photos: [],
@@ -1217,6 +1224,10 @@ function normalizeFloorPlansForDraft(property) {
 
       const currentSpecialLabel = floorPlan.currentSpecial || floorPlan.special?.label || "";
       const parsedFreeWeeks = floorPlan.freeWeeks ?? floorPlan.special?.freeWeeks ?? getWeeksFromSpecialLabel(currentSpecialLabel);
+      const adminFeeSpecial =
+        floorPlan.adminFeeSpecial ||
+        floorPlan.special?.adminFeeSpecial ||
+        getAdminFeeSpecialFromLabel(currentSpecialLabel);
 
       return {
         ...createBlankFloorPlan(),
@@ -1230,6 +1241,7 @@ function normalizeFloorPlansForDraft(property) {
         totalMonthlyRent: floorPlan.totalMonthlyRent || floorPlan.rent || "",
         marketRent: floorPlan.marketRent || "",
         freeWeeks: String(parsedFreeWeeks || 0),
+        adminFeeSpecial,
         leaseTermMonths: String(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12),
         image: floorPlan.image || floorPlan.photos?.[0]?.url || "",
         photos: normalizeFloorPlanPhotos(floorPlan, index),
@@ -1253,7 +1265,8 @@ function normalizeFloorPlanForStorage(floorPlan) {
   const calculatedValues = calculateFloorPlanValues(floorPlan);
   const freeWeeks = Number(floorPlan.freeWeeks || 0);
   const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
-  const currentSpecial = getSpecialLabel(freeWeeks);
+  const adminFeeSpecial = floorPlan.adminFeeSpecial.trim();
+  const currentSpecial = getSpecialLabel(freeWeeks, adminFeeSpecial);
   const availableUnits = floorPlan.availableUnits
     .map((availableUnit, index) =>
       normalizeAvailableUnitForStorage(
@@ -1288,11 +1301,13 @@ function normalizeFloorPlanForStorage(floorPlan) {
     belowMarketPercent: calculatedValues.belowMarketPercent,
     currentSpecial,
     freeWeeks,
+    adminFeeSpecial,
     leaseTermMonths,
-    special: freeWeeks > 0
+    special: currentSpecial
       ? {
           type: "weeks_free",
           freeWeeks,
+          adminFeeSpecial,
           leaseTermMonths,
           label: currentSpecial,
         }
@@ -1443,14 +1458,32 @@ function formatCurrency(value) {
   return `$${Math.round(value).toLocaleString()}`;
 }
 
-function getSpecialLabel(freeWeeks) {
-  if (!freeWeeks) return "";
-  return `${freeWeeks} ${freeWeeks === 1 ? "week" : "weeks"} free`;
+function getSpecialLabel(freeWeeks, adminFeeSpecial = "") {
+  const specialParts = [];
+
+  if (freeWeeks) {
+    specialParts.push(`${freeWeeks} ${freeWeeks === 1 ? "week" : "weeks"} free`);
+  }
+
+  if (adminFeeSpecial.trim()) {
+    specialParts.push(adminFeeSpecial.trim());
+  }
+
+  return specialParts.join(" + ");
 }
 
 function getWeeksFromSpecialLabel(label) {
   const match = String(label || "").match(/(\d+(?:\.\d+)?)\s*weeks?/i);
   return match ? Number(match[1]) : 0;
+}
+
+function getAdminFeeSpecialFromLabel(label) {
+  const parts = String(label || "")
+    .split("+")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return parts.find((part) => !/weeks?\s+free/i.test(part)) || "";
 }
 
 function normalizePropertyPhotos(property) {
