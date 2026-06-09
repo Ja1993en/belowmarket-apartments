@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Building2, MapPin, Navigation, Search, Tag } from "lucide-react";
 
@@ -8,6 +8,9 @@ import {
   getPublicSearchProperties,
   matchesPropertySearch,
 } from "../data/propertySearchData";
+
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+const DALLAS_CENTER = [-96.797, 32.7767];
 
 export default function PropertySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -164,15 +167,6 @@ export default function PropertySearchPage() {
       <section className="border-b border-[#d7e6df] bg-white">
         <div className="relative h-[320px] overflow-hidden md:h-[380px] lg:h-[430px]">
           <SearchMap properties={filteredProperties} />
-
-          <div className="absolute bottom-4 left-4 z-10 rounded-2xl bg-white/95 px-4 py-3 shadow-lg ring-1 ring-[#d7e6df]">
-            <p className="text-xs font-black uppercase text-[#1f6f63]">
-              Map view
-            </p>
-            <p className="mt-1 text-sm font-bold text-[#526260]">
-              Pins show visible search results
-            </p>
-          </div>
         </div>
       </section>
 
@@ -219,6 +213,155 @@ export default function PropertySearchPage() {
 }
 
 function SearchMap({ properties }) {
+  if (!MAPBOX_TOKEN) {
+    return <FallbackSearchMap properties={properties} />;
+  }
+
+  return <MapboxSearchMap properties={properties} />;
+}
+
+function MapboxSearchMap({ properties }) {
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+  const markersRef = useRef([]);
+  const [mapboxGl, setMapboxGl] = useState(null);
+  const [mapError, setMapError] = useState("");
+  const [mappableProperties, setMappableProperties] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadMapboxGl()
+      .then((loadedMapboxGl) => {
+        if (isMounted) {
+          loadedMapboxGl.accessToken = MAPBOX_TOKEN;
+          setMapboxGl(loadedMapboxGl);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) {
+          setMapError("Could not load the live map.");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    resolveMappableProperties(properties)
+      .then((resolvedProperties) => {
+        if (isMounted) {
+          setMappableProperties(resolvedProperties);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) {
+          setMappableProperties([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [properties]);
+
+  useEffect(() => {
+    if (!mapboxGl || !mapContainerRef.current || mapRef.current) return;
+
+    mapRef.current = new mapboxGl.Map({
+      container: mapContainerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: DALLAS_CENTER,
+      zoom: 10.5,
+      attributionControl: false,
+    });
+
+    mapRef.current.addControl(
+      new mapboxGl.NavigationControl({ showCompass: false }),
+      "bottom-right"
+    );
+
+    return () => {
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, [mapboxGl]);
+
+  useEffect(() => {
+    if (!mapboxGl || !mapRef.current) return;
+
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = [];
+
+    const bounds = new mapboxGl.LngLatBounds();
+
+    mappableProperties.forEach((property) => {
+      const markerElement = document.createElement("a");
+      markerElement.href = property.isFallback ? "/start" : `/properties/${property.id}`;
+      markerElement.className =
+        "rounded-full bg-[#173f3f] px-3 py-2 text-xs font-black text-white shadow-xl ring-2 ring-white transition hover:scale-105 hover:bg-[#102426]";
+      markerElement.textContent = getPrimaryRentLabel(property);
+
+      const marker = new mapboxGl.Marker({ element: markerElement })
+        .setLngLat([property.longitude, property.latitude])
+        .addTo(mapRef.current);
+
+      markersRef.current.push(marker);
+      bounds.extend([property.longitude, property.latitude]);
+    });
+
+    if (mappableProperties.length > 1) {
+      mapRef.current.fitBounds(bounds, {
+        padding: 80,
+        maxZoom: 12.8,
+        duration: 500,
+      });
+    } else if (mappableProperties.length === 1) {
+      mapRef.current.flyTo({
+        center: [mappableProperties[0].longitude, mappableProperties[0].latitude],
+        zoom: 13,
+        duration: 500,
+      });
+    }
+  }, [mapboxGl, mappableProperties]);
+
+  if (mapError) {
+    return <FallbackSearchMap properties={properties} />;
+  }
+
+  return (
+    <div className="relative h-full bg-[#dcebe4]">
+      <div ref={mapContainerRef} className="h-full w-full" />
+      <div className="pointer-events-none absolute right-4 top-4 z-10 flex items-center gap-2 rounded-2xl bg-white/95 px-3 py-2 text-sm font-black text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df]">
+        <Navigation className="h-4 w-4 text-[#2d7dd2]" />
+        Live map
+      </div>
+      {mappableProperties.length === 0 && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4">
+          <div className="rounded-3xl bg-white/95 p-6 text-center shadow-xl ring-1 ring-[#d7e6df]">
+            <Building2 className="mx-auto h-8 w-8 text-[#1f6f63]" />
+            <p className="mt-2 text-lg font-black text-[#102426]">
+              No map pins yet
+            </p>
+            <p className="mt-1 text-sm font-semibold text-[#526260]">
+              Add coordinates or a complete property address for live map pins.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FallbackSearchMap({ properties }) {
   const visiblePins = properties.slice(0, 8);
 
   return (
@@ -320,6 +463,143 @@ function SearchResultCard({ property }) {
       </div>
     </Link>
   );
+}
+
+function loadMapboxGl() {
+  if (window.mapboxgl) {
+    return Promise.resolve(window.mapboxgl);
+  }
+
+  if (!document.querySelector("link[data-mapbox-gl='true']")) {
+    const mapboxStyles = document.createElement("link");
+    mapboxStyles.rel = "stylesheet";
+    mapboxStyles.href = "https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css";
+    mapboxStyles.dataset.mapboxGl = "true";
+    document.head.appendChild(mapboxStyles);
+  }
+
+  const existingScript = document.querySelector("script[data-mapbox-gl='true']");
+  if (existingScript) {
+    return new Promise((resolve, reject) => {
+      existingScript.addEventListener("load", () => resolve(window.mapboxgl), {
+        once: true,
+      });
+      existingScript.addEventListener("error", reject, { once: true });
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const mapboxScript = document.createElement("script");
+    mapboxScript.src = "https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js";
+    mapboxScript.async = true;
+    mapboxScript.dataset.mapboxGl = "true";
+    mapboxScript.addEventListener("load", () => resolve(window.mapboxgl), {
+      once: true,
+    });
+    mapboxScript.addEventListener("error", reject, { once: true });
+    document.head.appendChild(mapboxScript);
+  });
+}
+
+async function resolveMappableProperties(properties) {
+  const resolvedProperties = await Promise.all(
+    properties.map(async (property) => {
+      const existingCoordinates = getPropertyCoordinates(property);
+
+      if (existingCoordinates) {
+        return {
+          ...property,
+          ...existingCoordinates,
+        };
+      }
+
+      const geocodedCoordinates = await geocodePropertyAddress(property);
+
+      if (!geocodedCoordinates) {
+        return null;
+      }
+
+      return {
+        ...property,
+        ...geocodedCoordinates,
+      };
+    })
+  );
+
+  return resolvedProperties.filter(Boolean);
+}
+
+function getPropertyCoordinates(property) {
+  const latitude = Number(property.latitude || property.lat);
+  const longitude = Number(property.longitude || property.lng);
+
+  if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+    return { latitude, longitude };
+  }
+
+  if (Array.isArray(property.coordinates) && property.coordinates.length >= 2) {
+    const [coordinateLongitude, coordinateLatitude] = property.coordinates.map(Number);
+
+    if (Number.isFinite(coordinateLatitude) && Number.isFinite(coordinateLongitude)) {
+      return {
+        latitude: coordinateLatitude,
+        longitude: coordinateLongitude,
+      };
+    }
+  }
+
+  return null;
+}
+
+async function geocodePropertyAddress(property) {
+  const addressLabel = getPropertyAddressLabel(property);
+  if (!addressLabel || addressLabel === "Dallas, TX") return null;
+
+  const cacheKey = `bma-mapbox-geocode:${addressLabel.toLowerCase()}`;
+  const cachedCoordinates = getCachedCoordinates(cacheKey);
+  if (cachedCoordinates) return cachedCoordinates;
+
+  const geocodingUrl = new URL(
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(addressLabel)}.json`
+  );
+  geocodingUrl.searchParams.set("access_token", MAPBOX_TOKEN);
+  geocodingUrl.searchParams.set("country", "US");
+  geocodingUrl.searchParams.set("limit", "1");
+
+  const response = await fetch(geocodingUrl);
+  if (!response.ok) return null;
+
+  const geocodingResult = await response.json();
+  const firstFeature = geocodingResult.features?.[0];
+  const [longitude, latitude] = firstFeature?.center || [];
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  const coordinates = { latitude, longitude };
+  localStorage.setItem(cacheKey, JSON.stringify(coordinates));
+
+  return coordinates;
+}
+
+function getCachedCoordinates(cacheKey) {
+  try {
+    const cachedValue = localStorage.getItem(cacheKey);
+    if (!cachedValue) return null;
+
+    const coordinates = JSON.parse(cachedValue);
+    const latitude = Number(coordinates.latitude);
+    const longitude = Number(coordinates.longitude);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return null;
+    }
+
+    return { latitude, longitude };
+  } catch {
+    return null;
+  }
 }
 
 function getPrimaryRentLabel(property) {

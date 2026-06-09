@@ -15,6 +15,8 @@ export const FALLBACK_DALLAS_DEALS = [
     bedrooms: ["1 Bed"],
     savings: "$224/mo",
     special: "6 weeks free",
+    latitude: 32.864,
+    longitude: -96.768,
     image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -28,6 +30,8 @@ export const FALLBACK_DALLAS_DEALS = [
     bedrooms: ["1 Bed", "2 Bed", "3 Bed"],
     savings: "$0/mo",
     special: "Special not listed",
+    latitude: 32.853,
+    longitude: -96.766,
     image: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -41,6 +45,8 @@ export const FALLBACK_DALLAS_DEALS = [
     bedrooms: ["1 Bed", "2 Bed"],
     savings: "$0/mo",
     special: "Special not listed",
+    latitude: 32.986,
+    longitude: -96.824,
     image: "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -54,6 +60,8 @@ export const FALLBACK_DALLAS_DEALS = [
     bedrooms: ["Studio", "1 Bed", "2 Bed", "3 Bed"],
     savings: "$0/mo",
     special: "Special not listed",
+    latitude: 32.893,
+    longitude: -96.731,
     image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
   },
 ];
