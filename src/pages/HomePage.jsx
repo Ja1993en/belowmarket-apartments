@@ -375,8 +375,9 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
         return {
             hasSpecial: false,
             specialLabel: "No listed special on available units",
+            normalRentLabel: getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans)),
             effectiveRentLabel: getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans)),
-            priceCaption: "Starting rent",
+            priceCaption: "Normal rent",
             badgeLabel: "",
             specialCountLabel: "0 available options with specials",
         };
@@ -390,15 +391,22 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
         return {
             hasSpecial: true,
             specialLabel: allSpecialLabels[0] || "Special available",
+            normalRentLabel: "Contact for pricing",
             effectiveRentLabel: "Contact for pricing",
-            priceCaption: "Effective rent on units with special",
+            priceCaption: "Normal rent before special",
             badgeLabel: "Special",
             specialCountLabel: getSpecialCountLabel(specialDealUnits.length, dealOptionCount),
         };
     }
 
+    const normalRentValues = specialDealUnits
+        .map((dealUnit) => dealUnit.startingRentNumber)
+        .filter((value) => value > 0);
     const minEffectiveRent = Math.min(...effectiveRentValues);
     const maxEffectiveRent = Math.max(...effectiveRentValues);
+    const normalRentLabel = normalRentValues.length > 0
+        ? formatRentRange(Math.min(...normalRentValues), Math.max(...normalRentValues))
+        : getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans));
     const maxFreeWeeks = Math.max(
         ...specialDealUnits.map((dealUnit) => Number(dealUnit.freeWeeks || 0))
     );
@@ -408,8 +416,9 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
     return {
         hasSpecial: true,
         specialLabel,
+        normalRentLabel,
         effectiveRentLabel: formatRentRange(minEffectiveRent, maxEffectiveRent),
-        priceCaption: "Effective rent on units with special",
+        priceCaption: "Normal rent before special",
         badgeLabel: maxFreeWeeks > 0 ? `${maxFreeWeeks} weeks free` : "Special",
         specialCountLabel: getSpecialCountLabel(specialCount, dealOptionCount),
     };
@@ -492,6 +501,7 @@ function createSpecialDealUnit({ floorPlan, unitRent, specialLabel, freeWeeks })
     return {
         specialLabel,
         freeWeeks,
+        startingRentNumber: parseCurrency(unitRent),
         effectiveRentNumber,
     };
 }
@@ -534,8 +544,9 @@ function getFallbackDealSummary(property) {
     return {
         hasSpecial: false,
         specialLabel: property.special || "Special not listed",
+        normalRentLabel: property.rent,
         effectiveRentLabel: property.rent,
-        priceCaption: "Listed rent range",
+        priceCaption: "Normal rent",
         badgeLabel: "",
         specialCountLabel: "Special not listed in source data",
     };
@@ -709,7 +720,8 @@ function getAddressLabel(property) {
 function SuggestedRentalCard({ property, matchedFloorPlan }) {
     const primaryImage = property.photos?.[0]?.url || property.image;
     const dealSummary = property.dealSummary || getPropertyDealSummary(property);
-    const priceLabel = dealSummary.effectiveRentLabel || getRentalPriceLabel(property, matchedFloorPlan);
+    const normalRentLabel = dealSummary.normalRentLabel || getRentalPriceLabel(property, matchedFloorPlan);
+    const effectiveRentLabel = dealSummary.effectiveRentLabel || normalRentLabel;
     const bedsLabel = getBedsLabel(property, matchedFloorPlan);
     const addressLabel = getAddressLabel(property);
     const savingsValue = matchedFloorPlan?.savings || property.savings || "";
@@ -744,7 +756,7 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                 </p>
 
                 <p className="mt-3 text-lg font-black text-[#102426]">
-                    {priceLabel}
+                    {normalRentLabel}
                 </p>
                 <p className="mt-0.5 text-xs font-bold text-[#526260]">
                     {dealSummary.priceCaption || "Total Monthly Price"}
@@ -759,10 +771,10 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     </p>
                     <div className="mt-2 border-t border-[#f2d08a] pt-2">
                         <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
-                            Effective Rent
+                            Calculated Effective Rent
                         </p>
                         <p className="mt-1 text-sm font-black leading-5 text-[#102426]">
-                            {priceLabel}
+                            {effectiveRentLabel}
                         </p>
                     </div>
                     {dealSummary.specialCountLabel && (
