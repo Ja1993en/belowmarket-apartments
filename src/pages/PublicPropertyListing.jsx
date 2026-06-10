@@ -31,6 +31,55 @@ const NEARBY_PLACE_QUERIES = [
         type: "gym",
     },
 ];
+const SCHOOL_DISTRICT_BY_ZIP = {
+    75252: {
+        district: "Plano ISD",
+        districtGrade: "A",
+    },
+    75287: {
+        district: "Plano ISD",
+        districtGrade: "A",
+    },
+    75231: {
+        district: "Richardson ISD",
+        districtGrade: "B+",
+    },
+    75206: {
+        district: "Dallas ISD",
+        districtGrade: "B",
+    },
+};
+const SCHOOL_DISTRICT_BY_CITY = {
+    dallas: {
+        district: "Dallas ISD",
+        districtGrade: "B",
+    },
+    plano: {
+        district: "Plano ISD",
+        districtGrade: "A",
+    },
+    richardson: {
+        district: "Richardson ISD",
+        districtGrade: "B+",
+    },
+};
+const DEFAULT_SCHOOL_LEVELS = [
+    {
+        level: "Elementary",
+        name: "Elementary school zone",
+        grade: "Verify",
+    },
+    {
+        level: "Middle",
+        name: "Middle school zone",
+        grade: "Verify",
+    },
+    {
+        level: "High",
+        name: "High school zone",
+        grade: "Verify",
+    },
+];
 const floorPlans = [
     {
         name: "A1",
@@ -242,6 +291,7 @@ export default function PublicPropertyListing() {
         : "No active special listed";
     const managementLabel =
         property?.managementCompany || property?.manager || "Property management not listed";
+    const schoolSnapshot = getPropertySchoolSnapshot(property);
     const propertyGalleryImages =
         property?.photos?.length > 0
             ? property.photos.map((photo, index) => ({
@@ -821,17 +871,21 @@ export default function PublicPropertyListing() {
                                         />
                                     </div>
 
-                                    <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                                        <h2 className="text-2xl font-black text-[#102426]">
-                                            Nearby
-                                        </h2>
+                                    <div className="space-y-6">
+                                        <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                                            <h2 className="text-2xl font-black text-[#102426]">
+                                                Nearby
+                                            </h2>
 
-                                        <div className="mt-5 space-y-3">
-                                            <NearbyItem label="Grocery" value="Pinned on map" />
-                                            <NearbyItem label="Stores" value="Pinned on map" />
-                                            <NearbyItem label="Gym" value="Pinned on map" />
-                                            <NearbyItem label="Property" value="Gold BMA pin" />
+                                            <div className="mt-5 space-y-3">
+                                                <NearbyItem label="Grocery" value="Pinned on map" />
+                                                <NearbyItem label="Stores" value="Pinned on map" />
+                                                <NearbyItem label="Gym" value="Pinned on map" />
+                                                <NearbyItem label="Property" value="Gold BMA pin" />
+                                            </div>
                                         </div>
+
+                                        <SchoolSnapshotCard schoolSnapshot={schoolSnapshot} />
                                     </div>
                                 </div>
 
@@ -1597,6 +1651,126 @@ function NearbyItem({ label, value }) {
             <p className="text-sm font-semibold text-[#526260]">{value}</p>
         </div>
     );
+}
+
+function SchoolSnapshotCard({ schoolSnapshot }) {
+    return (
+        <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <p className="text-sm font-black text-[#1f6f63]">
+                        School District
+                    </p>
+                    <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                        {schoolSnapshot.district}
+                    </h2>
+                </div>
+
+                <span className={`shrink-0 rounded-2xl px-3 py-2 text-sm font-black ${getSchoolGradeClass(schoolSnapshot.districtGrade)}`}>
+                    {schoolSnapshot.districtGrade}
+                </span>
+            </div>
+
+            <div className="mt-5 space-y-3">
+                {schoolSnapshot.schools.map((school) => (
+                    <SchoolGradeItem key={`${school.level}-${school.name}`} school={school} />
+                ))}
+            </div>
+
+            <p className="mt-4 rounded-2xl bg-[#f5f8f1] p-3 text-xs font-semibold leading-5 text-[#526260]">
+                {schoolSnapshot.note}
+            </p>
+        </div>
+    );
+}
+
+function SchoolGradeItem({ school }) {
+    return (
+        <div className="rounded-2xl bg-[#f5f8f1] p-4">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <p className="text-xs font-black uppercase text-[#1f6f63]">
+                        {school.level}
+                    </p>
+                    <p className="mt-1 truncate font-black text-[#102426]">
+                        {school.name}
+                    </p>
+                </div>
+
+                <span className={`shrink-0 rounded-xl px-3 py-1 text-sm font-black ${getSchoolGradeClass(school.grade)}`}>
+                    {school.grade}
+                </span>
+            </div>
+
+            {school.note && (
+                <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
+                    {school.note}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function getPropertySchoolSnapshot(property) {
+    const zipCode = String(property?.zipcode || property?.zip || "").trim();
+    const cityKey = String(property?.city || "").trim().toLowerCase();
+    const locationSnapshot =
+        SCHOOL_DISTRICT_BY_ZIP[zipCode] || SCHOOL_DISTRICT_BY_CITY[cityKey] || null;
+    const district = property?.schoolDistrict || locationSnapshot?.district || "School district not listed";
+    const districtGrade =
+        property?.schoolGrade || property?.districtGrade || locationSnapshot?.districtGrade || "Verify";
+    const hasExactAddress = hasPreciseStreetAddress(property);
+    const schools = normalizeSchoolList(property?.schools, district);
+    const shouldVerify = districtGrade === "Verify" || !hasExactAddress;
+    const note =
+        property?.schoolNote ||
+        (shouldVerify
+            ? "School information is location-based guidance. Add or confirm the full street address and verify attendance zones with the district before a renter applies."
+            : "School information is tied to this property location. Attendance zones and ratings can change, so renters should verify directly with the school district.");
+
+    return {
+        district,
+        districtGrade,
+        schools,
+        note,
+    };
+}
+
+function normalizeSchoolList(schools, district) {
+    const sourceSchools = Array.isArray(schools) && schools.length > 0
+        ? schools
+        : DEFAULT_SCHOOL_LEVELS;
+
+    return sourceSchools.map((school) => ({
+        level: school.level || "School",
+        name: school.name || `${school.level || "School"} zone`,
+        grade: school.grade || "Verify",
+        note:
+            school.note ||
+            `Location-based estimate. Confirm attendance zone with ${district}.`,
+    }));
+}
+
+function getSchoolGradeClass(grade) {
+    const gradeLabel = String(grade || "").trim().toUpperCase();
+
+    if (!gradeLabel || gradeLabel === "VERIFY") {
+        return "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]";
+    }
+
+    if (gradeLabel.startsWith("A")) {
+        return "bg-[#d8efe6] text-[#1f6f63] ring-1 ring-[#a9cfc2]";
+    }
+
+    if (gradeLabel.startsWith("B")) {
+        return "bg-[#eef5ff] text-[#174a7c] ring-1 ring-[#b8d9f0]";
+    }
+
+    if (gradeLabel.startsWith("C")) {
+        return "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]";
+    }
+
+    return "bg-[#fff0ea] text-[#7a432e] ring-1 ring-[#f4c8b8]";
 }
 
 function PropertyLocationMap({ property, addressLabel }) {

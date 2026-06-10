@@ -21,6 +21,28 @@ export const FALLBACK_DALLAS_DEALS = [
     latitude: 32.864,
     longitude: -96.768,
     mapAccuracy: "approximate",
+    schoolDistrict: "Full street address needed",
+    schoolGrade: "Verify",
+    schools: [
+      {
+        level: "Elementary",
+        name: "Attendance zone needed",
+        grade: "Verify",
+        note: "Add the full property address to confirm assigned schools.",
+      },
+      {
+        level: "Middle",
+        name: "Attendance zone needed",
+        grade: "Verify",
+        note: "Add the full property address to confirm assigned schools.",
+      },
+      {
+        level: "High",
+        name: "Attendance zone needed",
+        grade: "Verify",
+        note: "Add the full property address to confirm assigned schools.",
+      },
+    ],
     image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -38,6 +60,28 @@ export const FALLBACK_DALLAS_DEALS = [
     special: "6 weeks free + $99 admin fee",
     latitude: 32.987165,
     longitude: -96.772025,
+    schoolDistrict: "Plano ISD",
+    schoolGrade: "A",
+    schools: [
+      {
+        level: "Elementary",
+        name: "Elementary school zone",
+        grade: "A-",
+        note: "Location-based estimate. Confirm attendance zone with Plano ISD.",
+      },
+      {
+        level: "Middle",
+        name: "Middle school zone",
+        grade: "A",
+        note: "Location-based estimate. Confirm attendance zone with Plano ISD.",
+      },
+      {
+        level: "High",
+        name: "High school zone",
+        grade: "A-",
+        note: "Location-based estimate. Confirm attendance zone with Plano ISD.",
+      },
+    ],
     image: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -53,6 +97,28 @@ export const FALLBACK_DALLAS_DEALS = [
     special: "Special not listed",
     latitude: 32.859682,
     longitude: -96.764093,
+    schoolDistrict: "Dallas ISD",
+    schoolGrade: "B",
+    schools: [
+      {
+        level: "Elementary",
+        name: "Elementary school zone",
+        grade: "B",
+        note: "Location-based estimate. Confirm attendance zone with Dallas ISD.",
+      },
+      {
+        level: "Middle",
+        name: "Middle school zone",
+        grade: "B",
+        note: "Location-based estimate. Confirm attendance zone with Dallas ISD.",
+      },
+      {
+        level: "High",
+        name: "High school zone",
+        grade: "B-",
+        note: "Location-based estimate. Confirm attendance zone with Dallas ISD.",
+      },
+    ],
     image: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -68,6 +134,28 @@ export const FALLBACK_DALLAS_DEALS = [
     special: "Special not listed",
     latitude: 33.006938,
     longitude: -96.820116,
+    schoolDistrict: "Plano ISD",
+    schoolGrade: "A",
+    schools: [
+      {
+        level: "Elementary",
+        name: "Elementary school zone",
+        grade: "A-",
+        note: "Location-based estimate. Confirm attendance zone with Plano ISD.",
+      },
+      {
+        level: "Middle",
+        name: "Middle school zone",
+        grade: "A",
+        note: "Location-based estimate. Confirm attendance zone with Plano ISD.",
+      },
+      {
+        level: "High",
+        name: "High school zone",
+        grade: "A-",
+        note: "Location-based estimate. Confirm attendance zone with Plano ISD.",
+      },
+    ],
     image: "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -83,6 +171,28 @@ export const FALLBACK_DALLAS_DEALS = [
     special: "Special not listed",
     latitude: 32.893765,
     longitude: -96.726659,
+    schoolDistrict: "Richardson ISD",
+    schoolGrade: "B+",
+    schools: [
+      {
+        level: "Elementary",
+        name: "Elementary school zone",
+        grade: "B+",
+        note: "Location-based estimate. Confirm attendance zone with Richardson ISD.",
+      },
+      {
+        level: "Middle",
+        name: "Middle school zone",
+        grade: "B+",
+        note: "Location-based estimate. Confirm attendance zone with Richardson ISD.",
+      },
+      {
+        level: "High",
+        name: "High school zone",
+        grade: "B",
+        note: "Location-based estimate. Confirm attendance zone with Richardson ISD.",
+      },
+    ],
     image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
   },
 ];
