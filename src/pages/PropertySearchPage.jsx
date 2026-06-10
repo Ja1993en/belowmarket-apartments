@@ -7,6 +7,8 @@ import {
   getPropertyPrimaryImage,
   getPropertySearchSuggestions,
   getPublicSearchProperties,
+  hasPreciseStreetAddress,
+  isReliableGeocodeResult,
   matchesPropertySearch,
 } from "../data/propertySearchData";
 
@@ -457,11 +459,19 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
     const bounds = new mapboxGl.LngLatBounds();
 
     mappableProperties.forEach((property) => {
+      const isApproximatePin = property.mapAccuracy === "approximate";
       const markerElement = document.createElement("a");
       markerElement.href = `/properties/${property.id}`;
       markerElement.className =
-        "rounded-full bg-[#173f3f] px-3 py-2 text-xs font-black text-white shadow-xl ring-2 ring-white transition hover:scale-105 hover:bg-[#102426]";
+        `rounded-full px-3 py-2 text-xs font-black text-white shadow-xl ring-2 ring-white transition hover:scale-105 ${
+          isApproximatePin
+            ? "bg-[#8a5b0a] hover:bg-[#684307]"
+            : "bg-[#173f3f] hover:bg-[#102426]"
+        }`;
       markerElement.textContent = getPrimaryRentLabel(property);
+      markerElement.title = `${property.name}${
+        isApproximatePin ? " - approximate location" : ""
+      }`;
       markerElement.addEventListener("mousedown", (event) => {
         if (!isChoosingAreaRef.current) return;
 
@@ -485,6 +495,17 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
 
       const marker = new mapboxGl.Marker({ element: markerElement })
         .setLngLat([property.longitude, property.latitude])
+        .setPopup(
+          new mapboxGl.Popup({ offset: 18 }).setHTML(
+            `<strong>${escapeMapText(property.name)}</strong><br>${escapeMapText(
+              getPropertyAddressLabel(property)
+            )}${
+              isApproximatePin
+                ? "<br><em>Approximate location until a full street address is added.</em>"
+                : ""
+            }`
+          )
+        )
         .addTo(mapRef.current);
 
       markersRef.current.push(marker);
@@ -737,6 +758,17 @@ function loadMapboxGl() {
 async function resolveMappableProperties(properties) {
   const resolvedProperties = await Promise.all(
     properties.map(async (property) => {
+      if (hasPreciseStreetAddress(property)) {
+        const geocodedCoordinates = await geocodePropertyAddress(property);
+
+        if (geocodedCoordinates) {
+          return {
+            ...property,
+            ...geocodedCoordinates,
+          };
+        }
+      }
+
       const existingCoordinates = getPropertyCoordinates(property);
 
       if (existingCoordinates) {
@@ -767,7 +799,11 @@ function getPropertyCoordinates(property) {
   const longitude = Number(property.longitude || property.lng);
 
   if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-    return { latitude, longitude };
+    return {
+      latitude,
+      longitude,
+      mapAccuracy: property.mapAccuracy || "exact",
+    };
   }
 
   if (Array.isArray(property.coordinates) && property.coordinates.length >= 2) {
@@ -777,6 +813,7 @@ function getPropertyCoordinates(property) {
       return {
         latitude: coordinateLatitude,
         longitude: coordinateLongitude,
+        mapAccuracy: property.mapAccuracy || "exact",
       };
     }
   }
@@ -786,6 +823,7 @@ function getPropertyCoordinates(property) {
 
 async function geocodePropertyAddress(property) {
   if (!MAPBOX_TOKEN) return null;
+  if (!hasPreciseStreetAddress(property)) return null;
 
   const addressLabel = getPropertyAddressLabel(property);
   if (!addressLabel || addressLabel === "Dallas, TX") return null;
@@ -806,6 +844,8 @@ async function geocodePropertyAddress(property) {
 
   const geocodingResult = await response.json();
   const firstFeature = geocodingResult.features?.[0];
+  if (!isReliableGeocodeResult(firstFeature)) return null;
+
   const [longitude, latitude] = firstFeature?.center || [];
 
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
@@ -971,4 +1011,13 @@ function getMapPinPosition(index) {
   ];
 
   return positions[index % positions.length];
+}
+
+function escapeMapText(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }

@@ -20,6 +20,7 @@ export const FALLBACK_DALLAS_DEALS = [
     special: "6 weeks free",
     latitude: 32.864,
     longitude: -96.768,
+    mapAccuracy: "approximate",
     image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -35,8 +36,8 @@ export const FALLBACK_DALLAS_DEALS = [
     bedrooms: ["Studio", "1 Bed"],
     savings: "$110 - $140/mo",
     special: "6 weeks free + $99 admin fee",
-    latitude: 32.987,
-    longitude: -96.773,
+    latitude: 32.987165,
+    longitude: -96.772025,
     image: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -50,8 +51,8 @@ export const FALLBACK_DALLAS_DEALS = [
     bedrooms: ["1 Bed", "2 Bed", "3 Bed"],
     savings: "$0/mo",
     special: "Special not listed",
-    latitude: 32.853,
-    longitude: -96.766,
+    latitude: 32.859682,
+    longitude: -96.764093,
     image: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -65,8 +66,8 @@ export const FALLBACK_DALLAS_DEALS = [
     bedrooms: ["1 Bed", "2 Bed"],
     savings: "$0/mo",
     special: "Special not listed",
-    latitude: 32.986,
-    longitude: -96.824,
+    latitude: 33.006938,
+    longitude: -96.820116,
     image: "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?auto=format&fit=crop&w=900&q=80",
   },
   {
@@ -80,8 +81,8 @@ export const FALLBACK_DALLAS_DEALS = [
     bedrooms: ["Studio", "1 Bed", "2 Bed", "3 Bed"],
     savings: "$0/mo",
     special: "Special not listed",
-    latitude: 32.893,
-    longitude: -96.731,
+    latitude: 32.893765,
+    longitude: -96.726659,
     image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
   },
 ];
@@ -156,6 +157,26 @@ export function getPropertyAddressLabel(property) {
   const addressParts = [property.address, cityStateZip].filter(Boolean);
 
   return addressParts.join(" ") || property.area || "Dallas, TX";
+}
+
+export function hasPreciseStreetAddress(property) {
+  return Boolean(
+    property?.address &&
+      /\d/.test(property.address) &&
+      property?.city &&
+      property?.state
+  );
+}
+
+export function isReliableGeocodeResult(feature) {
+  const relevance = Number(feature?.relevance);
+  const placeTypes = feature?.place_type || [];
+
+  return (
+    Number.isFinite(relevance) &&
+    relevance >= 0.8 &&
+    (placeTypes.includes("address") || placeTypes.includes("poi"))
+  );
 }
 
 export function getPhotoImageUrl(photo) {

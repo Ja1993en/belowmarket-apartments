@@ -5,6 +5,8 @@ import {
     getPropertyAddressLabel,
     getPropertyPrimaryImage,
     getPublicSearchProperties,
+    hasPreciseStreetAddress,
+    isReliableGeocodeResult,
 } from "../data/propertySearchData";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -1701,14 +1703,24 @@ function PropertyLocationMap({ property, addressLabel }) {
         markersRef.current.forEach((marker) => marker.remove());
         markersRef.current = [];
 
+        const isApproximatePin = propertyCoordinates.mapAccuracy === "approximate";
         const propertyMarker = new mapboxGl.Marker({
-            element: createPropertyMapMarker(property?.name || "Property"),
+            element: createPropertyMapMarker(
+                property?.name || "Property",
+                isApproximatePin
+            ),
             anchor: "bottom",
         })
             .setLngLat([propertyCoordinates.longitude, propertyCoordinates.latitude])
             .setPopup(
                 new mapboxGl.Popup({ offset: 28 }).setHTML(
-                    `<strong>${escapeMapText(property?.name || "Property")}</strong><br>${escapeMapText(addressLabel)}`
+                    `<strong>${escapeMapText(property?.name || "Property")}</strong><br>${escapeMapText(
+                        addressLabel
+                    )}${
+                        isApproximatePin
+                            ? "<br><em>Approximate location until a full street address is added.</em>"
+                            : ""
+                    }`
                 )
             )
             .addTo(mapRef.current);
@@ -1821,6 +1833,11 @@ function loadMapboxGl() {
 }
 
 async function resolvePropertyCoordinates(property) {
+    if (hasPreciseStreetAddress(property)) {
+        const geocodedCoordinates = await geocodeListingAddress(property);
+        if (geocodedCoordinates) return geocodedCoordinates;
+    }
+
     const existingCoordinates = getPropertyCoordinates(property);
     if (existingCoordinates) return existingCoordinates;
 
@@ -1832,7 +1849,11 @@ function getPropertyCoordinates(property) {
     const longitude = Number(property?.longitude || property?.lng);
 
     if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-        return { latitude, longitude };
+        return {
+            latitude,
+            longitude,
+            mapAccuracy: property.mapAccuracy || "exact",
+        };
     }
 
     if (Array.isArray(property?.coordinates) && property.coordinates.length >= 2) {
@@ -1846,6 +1867,7 @@ function getPropertyCoordinates(property) {
             return {
                 latitude: coordinateLatitude,
                 longitude: coordinateLongitude,
+                mapAccuracy: property.mapAccuracy || "exact",
             };
         }
     }
@@ -1855,6 +1877,7 @@ function getPropertyCoordinates(property) {
 
 async function geocodeListingAddress(property) {
     if (!property || !MAPBOX_TOKEN) return null;
+    if (!hasPreciseStreetAddress(property)) return null;
 
     const addressLabel = getPropertyAddressLabel(property);
     if (!addressLabel || addressLabel === "Dallas, TX") return null;
@@ -1875,6 +1898,8 @@ async function geocodeListingAddress(property) {
 
     const geocodingResult = await response.json();
     const firstFeature = geocodingResult.features?.[0];
+    if (!isReliableGeocodeResult(firstFeature)) return null;
+
     const [longitude, latitude] = firstFeature?.center || [];
 
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
@@ -1978,14 +2003,19 @@ function createNearbyPlacePins(center) {
     ];
 }
 
-function createPropertyMapMarker(propertyName) {
+function createPropertyMapMarker(propertyName, isApproximatePin = false) {
     const markerElement = document.createElement("div");
     markerElement.className =
         "flex -translate-y-1 flex-col items-center gap-1";
+    markerElement.title = `${propertyName}${
+        isApproximatePin ? " - approximate location" : ""
+    }`;
+    const markerBackground = isApproximatePin ? "bg-[#8a5b0a]" : "bg-[#f2b84b]";
+    const markerText = isApproximatePin ? "text-white" : "text-[#102426]";
     markerElement.innerHTML = `
         <div class="max-w-[150px] truncate rounded-full bg-[#102426] px-3 py-1 text-xs font-black text-white shadow-lg">${escapeMapText(propertyName)}</div>
-        <div class="flex h-11 w-11 items-center justify-center rounded-full border-4 border-white bg-[#f2b84b] text-xs font-black text-[#102426] shadow-xl ring-2 ring-[#8a5b0a]/25">BMA</div>
-        <div class="-mt-2 h-4 w-4 rotate-45 border-b-4 border-r-4 border-white bg-[#f2b84b] shadow-md"></div>
+        <div class="flex h-11 w-11 items-center justify-center rounded-full border-4 border-white ${markerBackground} text-xs font-black ${markerText} shadow-xl ring-2 ring-[#8a5b0a]/25">BMA</div>
+        <div class="-mt-2 h-4 w-4 rotate-45 border-b-4 border-r-4 border-white ${markerBackground} shadow-md"></div>
     `;
 
     return markerElement;
