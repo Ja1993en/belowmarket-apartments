@@ -262,17 +262,17 @@ export default function AdminDashboard() {
 
 
     return (
-        <div className="space-y-6">
-            <section className="rounded-3xl bg-[#102426] p-6 text-white shadow-sm">
-                <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-                    <div className="max-w-3xl">
+        <div className="mx-auto w-full max-w-7xl space-y-5 text-left">
+            <section className="overflow-hidden rounded-3xl bg-[#102426] text-white shadow-sm">
+                <div className="grid gap-5 p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                    <div className="min-w-0">
                         <p className="text-sm font-black text-[#f2b84b]">
                             Admin Dashboard
                         </p>
-                        <h1 className="mt-2 text-4xl font-black text-[#fff7df]">
+                        <h1 className="mt-2 max-w-3xl text-3xl font-black leading-tight text-[#fff7df] md:text-4xl">
                             Today's operating snapshot
                         </h1>
-                        <p className="mt-2 text-sm font-semibold leading-6 text-[#d7ece6]">
+                        <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#d7ece6]">
                             Track renter activity, property readiness, tours, and recommendation flow from one focused workspace.
                         </p>
 
@@ -293,18 +293,18 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:w-48 lg:grid-cols-1">
                         <button
                             type="button"
                             onClick={loadDashboardData}
                             disabled={isLoadingDashboard}
-                            className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
+                            className="min-h-12 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
                         >
                             {isLoadingDashboard ? "Refreshing..." : "Refresh Dashboard"}
                         </button>
                         <Link
                             to="/admin/properties/new"
-                            className="rounded-2xl bg-white/10 px-5 py-3 text-center text-sm font-bold text-white hover:bg-white/15"
+                            className="flex min-h-12 items-center justify-center rounded-2xl bg-white/10 px-5 py-3 text-center text-sm font-bold text-white hover:bg-white/15"
                         >
                             Add Property
                         </Link>
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {dashboardError && (
-                    <p className="mt-5 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a]">
+                    <p className="mx-5 mb-5 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] md:mx-6 md:mb-6">
                         {dashboardError}
                     </p>
                 )}
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
                 </section>
             )}
 
-            <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 {dashboardStatsWithTours.map((stat) => (
                     <DashboardCard
                         key={stat.title}
@@ -342,51 +342,29 @@ export default function AdminDashboard() {
                 ))}
             </section>
 
-            <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-                        <div>
-                            <p className="text-sm font-black text-[#1f6f63]">
-                                Work Queue
-                            </p>
-                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
-                                Today's priorities
-                            </h2>
-                        </div>
-                        <Link
-                            to="/admin/leads"
-                            className="w-fit rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
-                        >
-                            Open Leads
-                        </Link>
-                    </div>
-
-                    <div className="mt-5 space-y-3">
+            <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+                <DashboardPanel
+                    eyebrow="Work Queue"
+                    title="Today's priorities"
+                    actionLabel="Open Leads"
+                    actionTo="/admin/leads"
+                    className="xl:col-span-5"
+                >
+                    <div className="grid gap-3">
                         {priorityItems.map((item) => (
                             <PriorityItem key={item.label} item={item} />
                         ))}
                     </div>
-                </div>
+                </DashboardPanel>
 
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-                        <div>
-                            <p className="text-sm font-black text-[#1f6f63]">
-                                Activity
-                            </p>
-                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
-                                Latest updates
-                            </h2>
-                        </div>
-                        <Link
-                            to="/admin/data-history"
-                            className="w-fit rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
-                        >
-                            Data History
-                        </Link>
-                    </div>
-
-                    <div className="mt-5 space-y-3">
+                <DashboardPanel
+                    eyebrow="Activity"
+                    title="Latest updates"
+                    actionLabel="Data History"
+                    actionTo="/admin/data-history"
+                    className="xl:col-span-7"
+                >
+                    <div className="grid gap-3">
                         {recentActivities.map((activity, index) => (
                             <ActivityItem
                                 key={`${activity.title}-${activity.time}-${index}`}
@@ -396,29 +374,19 @@ export default function AdminDashboard() {
                             />
                         ))}
                     </div>
-                </div>
+                </DashboardPanel>
             </section>
 
-            <section className="grid gap-6 xl:grid-cols-2">
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                        <div>
-                            <p className="text-sm font-black text-[#1f6f63]">
-                                Renters
-                            </p>
-                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
-                                Recent active leads
-                            </h2>
-                        </div>
-                        <Link
-                            to="/admin/leads"
-                            className="w-fit rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
-                        >
-                            View All Leads
-                        </Link>
-                    </div>
-
-                    <div className="mt-5 space-y-3">
+            <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+                <DashboardPanel
+                    eyebrow="Renters"
+                    title="Recent active leads"
+                    actionLabel="View All Leads"
+                    actionTo="/admin/leads"
+                    actionStyle="dark"
+                    className="xl:col-span-5"
+                >
+                    <div className="grid gap-3">
                         {recentLeads.length > 0 ? (
                             recentLeads.map((lead) => (
                                 <RecentLead
@@ -432,27 +400,17 @@ export default function AdminDashboard() {
                             <EmptyPanel message="No active leads to show right now." />
                         )}
                     </div>
-                </div>
+                </DashboardPanel>
 
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                        <div>
-                            <p className="text-sm font-black text-[#1f6f63]">
-                                Properties
-                            </p>
-                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
-                                Lead interest by property
-                            </h2>
-                        </div>
-                        <Link
-                            to="/admin/properties"
-                            className="w-fit rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
-                        >
-                            View Properties
-                        </Link>
-                    </div>
-
-                    <div className="mt-5 grid gap-3 md:grid-cols-2">
+                <DashboardPanel
+                    eyebrow="Properties"
+                    title="Lead interest by property"
+                    actionLabel="View Properties"
+                    actionTo="/admin/properties"
+                    actionStyle="dark"
+                    className="xl:col-span-7"
+                >
+                    <div className="grid gap-3 sm:grid-cols-2">
                         {topProperties.slice(0, 4).map((property) => (
                             <TopProperty
                                 key={property.name}
@@ -463,19 +421,16 @@ export default function AdminDashboard() {
                             />
                         ))}
                     </div>
-                </div>
+                </DashboardPanel>
             </section>
 
-            <section className="grid gap-6 xl:grid-cols-2">
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <h2 className="text-2xl font-black text-[#102426]">
-                        Performance pipeline
-                    </h2>
-                    <p className="mt-1 text-sm font-semibold text-[#526260]">
-                        Track movement from recommendations to tours and move-ins.
-                    </p>
-
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+                <DashboardPanel
+                    title="Performance pipeline"
+                    description="Track movement from recommendations to tours and move-ins."
+                    className="xl:col-span-7"
+                >
+                    <div className="grid gap-3 sm:grid-cols-2">
                         {performanceSteps.map((step) => (
                             <PerformanceStep
                                 key={step.label}
@@ -484,17 +439,14 @@ export default function AdminDashboard() {
                             />
                         ))}
                     </div>
-                </div>
+                </DashboardPanel>
 
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <h2 className="text-2xl font-black text-[#102426]">
-                        Quick actions
-                    </h2>
-                    <p className="mt-1 text-sm font-semibold text-[#526260]">
-                        Common admin tasks.
-                    </p>
-
-                    <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-1">
+                <DashboardPanel
+                    title="Quick actions"
+                    description="Common admin tasks."
+                    className="xl:col-span-5"
+                >
+                    <div className="grid gap-3">
                         {quickActions.map((action) => (
                             <QuickAction
                                 key={action.title}
@@ -505,28 +457,17 @@ export default function AdminDashboard() {
                             />
                         ))}
                     </div>
-                </div>
+                </DashboardPanel>
             </section>
 
-            <section className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                    <div>
-                        <h2 className="text-2xl font-black text-[#102426]">
-                            System overview
-                        </h2>
-                        <p className="mt-1 text-sm font-semibold text-[#526260]">
-                            Platform connection and deployment status.
-                        </p>
-                    </div>
-                    <Link
-                        to="/admin/properties"
-                        className="w-fit rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
-                    >
-                        Review Listings
-                    </Link>
-                </div>
-
-                <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <DashboardPanel
+                title="System overview"
+                description="Platform connection and deployment status."
+                actionLabel="Review Listings"
+                actionTo="/admin/properties"
+                actionStyle="gold"
+            >
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     {systemStatus.map((item) => (
                         <SystemStatusCard
                             key={item.label}
@@ -535,7 +476,7 @@ export default function AdminDashboard() {
                         />
                     ))}
                 </div>
-            </section>
+            </DashboardPanel>
         </div>
     );
 }
@@ -544,7 +485,7 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
     const cardContent = (
         <>
             <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e7f3ee]">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#e7f3ee]">
                     <Icon className="h-6 w-6 text-[#1f6f63]" />
                 </div>
 
@@ -554,8 +495,8 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
             </div>
 
             <p className="mt-5 text-sm font-bold text-[#526260]">{title}</p>
-            <h2 className="mt-2 text-4xl font-black text-[#102426]">{value}</h2>
-            <p className="mt-2 text-sm font-semibold text-[#526260]">{subtitle}</p>
+            <h2 className="mt-2 text-3xl font-black leading-none text-[#102426] md:text-4xl">{value}</h2>
+            <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">{subtitle}</p>
         </>
     );
 
@@ -563,7 +504,7 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
         return (
             <Link
                 to={to}
-                className="block rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm hover:border-[#f2b84b] hover:shadow-md"
+                className="block min-h-[180px] min-w-0 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm hover:border-[#f2b84b] hover:shadow-md"
             >
                 {cardContent}
             </Link>
@@ -571,9 +512,59 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
     }
 
     return (
-        <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+        <div className="min-h-[180px] min-w-0 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
             {cardContent}
         </div>
+    );
+}
+
+function DashboardPanel({
+    eyebrow,
+    title,
+    description,
+    actionLabel,
+    actionTo,
+    actionStyle = "soft",
+    className = "",
+    children,
+}) {
+    const actionClasses = {
+        soft: "bg-[#e7f3ee] text-[#173f3f] hover:bg-[#d7e6df]",
+        dark: "bg-[#173f3f] text-white hover:bg-[#102426]",
+        gold: "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]",
+    };
+
+    return (
+        <section className={`min-w-0 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm md:p-6 ${className}`}>
+            <div className="mb-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                <div className="min-w-0">
+                    {eyebrow && (
+                        <p className="text-sm font-black text-[#1f6f63]">
+                            {eyebrow}
+                        </p>
+                    )}
+                    <h2 className="mt-1 text-2xl font-black leading-tight text-[#102426]">
+                        {title}
+                    </h2>
+                    {description && (
+                        <p className="mt-1 text-sm font-semibold leading-6 text-[#526260]">
+                            {description}
+                        </p>
+                    )}
+                </div>
+
+                {actionLabel && actionTo && (
+                    <Link
+                        to={actionTo}
+                        className={`flex min-h-11 w-fit items-center justify-center rounded-2xl px-4 py-3 text-sm font-bold ${actionClasses[actionStyle]}`}
+                    >
+                        {actionLabel}
+                    </Link>
+                )}
+            </div>
+
+            {children}
+        </section>
     );
 }
 
@@ -581,13 +572,13 @@ function PriorityItem({ item }) {
     return (
         <Link
             to={item.to}
-            className="flex items-center justify-between gap-4 rounded-2xl bg-[#f5f8f1] p-4 text-left ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+            className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-2xl bg-[#f5f8f1] p-4 text-left ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
         >
-            <div>
+            <div className="min-w-0">
                 <p className="text-sm font-black text-[#102426]">
                     {item.label}
                 </p>
-                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
                     {item.detail}
                 </p>
             </div>
@@ -609,13 +600,13 @@ function EmptyPanel({ message }) {
 function ActivityItem({ title, description, time }) {
     return (
         <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-            <div className="flex items-start justify-between gap-4">
-                <div>
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+                <div className="min-w-0">
                     <p className="font-bold text-[#102426]">{title}</p>
-                    <p className="mt-1 text-sm font-semibold text-[#526260]">{description}</p>
+                    <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">{description}</p>
                 </div>
 
-                <span className="text-xs font-bold text-[#78908a]">{time}</span>
+                <span className="text-xs font-bold text-[#78908a] md:text-right">{time}</span>
             </div>
         </div>
     );
@@ -625,15 +616,15 @@ function QuickAction({ icon: Icon, title, description, to }) {
     return (
         <Link
             to={to}
-            className="flex w-full items-center gap-4 rounded-2xl bg-[#f5f8f1] p-4 text-left ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+            className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-2xl bg-[#f5f8f1] p-4 text-left ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
         >
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white">
                 <Icon className="h-5 w-5 text-[#1f6f63]" />
             </div>
 
-            <div>
+            <div className="min-w-0">
                 <p className="font-bold text-[#102426]">{title}</p>
-                <p className="mt-1 text-sm font-semibold text-[#526260]">{description}</p>
+                <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">{description}</p>
             </div>
         </Link>
     );
@@ -641,7 +632,7 @@ function QuickAction({ icon: Icon, title, description, to }) {
 
 function PerformanceStep({ label, value }) {
     return (
-        <div className="rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
+        <div className="min-h-[130px] rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
             <p className="min-h-[40px] text-sm font-semibold leading-5 text-[#526260]">
                 {label}
             </p>
@@ -655,13 +646,13 @@ function PerformanceStep({ label, value }) {
 
 function RecentLead({ name, preference, status }) {
     return (
-        <div className="flex flex-col justify-between gap-3 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df] md:flex-row md:items-center">
-            <div>
+        <div className="grid min-w-0 gap-3 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df] md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+            <div className="min-w-0">
                 <p className="font-bold text-[#102426]">{name}</p>
-                <p className="mt-1 text-sm font-semibold text-[#526260]">{preference}</p>
+                <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">{preference}</p>
             </div>
 
-            <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
+            <span className="w-fit rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
                 {status}
             </span>
         </div>
@@ -670,8 +661,8 @@ function RecentLead({ name, preference, status }) {
 
 function TopProperty({ name, area, leads, special }) {
     return (
-        <div className="rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
-            <p className="truncate text-lg font-black text-[#102426]">
+        <div className="min-h-[170px] min-w-0 rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
+            <p className="truncate text-lg font-black leading-tight text-[#102426]">
                 {name}
             </p>
 
@@ -684,7 +675,7 @@ function TopProperty({ name, area, leads, special }) {
                     {leads}
                 </span>
 
-                <span className="w-fit rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
+                <span className="max-w-full rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold leading-5 text-[#1f6f63]">
                     {special}
                 </span>
             </div>
@@ -695,7 +686,7 @@ function TopProperty({ name, area, leads, special }) {
 
 function SystemStatusCard({ label, value }) {
     return (
-        <div className="rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
+        <div className="min-h-[110px] rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
             <p className="text-sm font-semibold text-[#526260]">
                 {label}
             </p>
