@@ -7,6 +7,7 @@ import {
 
 const STORAGE_KEY = "belowMarketProperties";
 const CUSTOM_PROPERTIES_KEY = "belowMarketCustomProperties";
+const DELETED_PROPERTIES_KEY = "belowMarketDeletedProperties";
 
 const DEFAULT_PROPERTY_IMAGE =
   "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80";
@@ -19,16 +20,21 @@ export function getStoredCustomProperties() {
   return JSON.parse(localStorage.getItem(CUSTOM_PROPERTIES_KEY) || "[]");
 }
 
+export function getDeletedPropertyIds() {
+  return JSON.parse(localStorage.getItem(DELETED_PROPERTIES_KEY) || "[]");
+}
+
 export function getAllProperties() {
   const updates = getStoredPropertyUpdates();
   const customProperties = getStoredCustomProperties();
+  const deletedPropertyIds = new Set(getDeletedPropertyIds());
 
-  const savedMockProperties = mockProperties.map((property) => normalizePropertyCompany({
+  const savedMockProperties = mockProperties.filter((property) => !deletedPropertyIds.has(property.id)).map((property) => normalizePropertyCompany({
       ...property,
       ...(updates[property.id] || {}),
     }));
 
-  const savedCustomProperties = customProperties.map((property) => normalizePropertyCompany({
+  const savedCustomProperties = customProperties.filter((property) => !deletedPropertyIds.has(property.id)).map((property) => normalizePropertyCompany({
       ...property,
       ...(updates[property.id] || {}),
     }));
@@ -83,6 +89,37 @@ export function updateStoredProperty(propertyId, updates) {
   return getAnyPropertyById(propertyId);
 }
 
+export function deleteStoredProperty(propertyId) {
+  const normalizedPropertyId = String(propertyId);
+  const customProperties = getStoredCustomProperties();
+  const customProperty = customProperties.find(
+    (property) => property.id === normalizedPropertyId
+  );
+
+  if (customProperty) {
+    localStorage.setItem(
+      CUSTOM_PROPERTIES_KEY,
+      JSON.stringify(
+        customProperties.filter((property) => property.id !== normalizedPropertyId)
+      )
+    );
+  }
+
+  const savedUpdates = getStoredPropertyUpdates();
+  if (savedUpdates[normalizedPropertyId]) {
+    const nextUpdates = { ...savedUpdates };
+    delete nextUpdates[normalizedPropertyId];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUpdates));
+  }
+
+  const deletedPropertyIds = new Set(getDeletedPropertyIds());
+  deletedPropertyIds.add(normalizedPropertyId);
+  localStorage.setItem(
+    DELETED_PROPERTIES_KEY,
+    JSON.stringify([...deletedPropertyIds])
+  );
+}
+
 export function createStoredProperty(propertyDraft) {
   const customProperties = getStoredCustomProperties();
   const propertyId = createUniquePropertyId(propertyDraft.name);
@@ -100,6 +137,7 @@ export function createStoredProperty(propertyDraft) {
     yearBuilt: propertyDraft.yearBuilt,
     rent: propertyDraft.rent,
     marketRent: propertyDraft.marketRent,
+    requiredMonthlyFees: propertyDraft.requiredMonthlyFees,
     effectiveRent: propertyDraft.effectiveRent,
     monthlyConcession: propertyDraft.monthlyConcession,
     savings: propertyDraft.savings,
@@ -110,6 +148,10 @@ export function createStoredProperty(propertyDraft) {
     photos: propertyDraft.photos || [],
     floorPlans: propertyDraft.floorPlans || [],
     bedrooms: propertyDraft.bedrooms || [],
+    schoolDistrict: propertyDraft.schoolDistrict,
+    schoolGrade: propertyDraft.schoolGrade,
+    schoolNote: propertyDraft.schoolNote,
+    schools: propertyDraft.schools || [],
     updated: "Just now",
   };
 
@@ -135,7 +177,10 @@ function normalizePropertyCompany(property) {
 }
 
 function createUniquePropertyId(name) {
-  const existingIds = new Set(getAllProperties().map((property) => property.id));
+  const existingIds = new Set([
+    ...getAllProperties().map((property) => property.id),
+    ...getDeletedPropertyIds(),
+  ]);
   const fallbackId = `property-${Date.now()}`;
   const baseId = slugify(name) || fallbackId;
   let propertyId = baseId;

@@ -10,13 +10,26 @@ import {
     Plus,
 } from "lucide-react";
 
-import { getAllProperties } from "../data/propertyStorage";
+import { deleteStoredProperty, getAllProperties } from "../data/propertyStorage";
 
 
 
 
 export default function PropertiesTab() {
-    const properties = getAllProperties();
+    const [properties, setProperties] = useState(() => getAllProperties());
+    const [notice, setNotice] = useState("");
+    const refreshProperties = () => setProperties(getAllProperties());
+    const deleteProperty = (property) => {
+        const confirmed = window.confirm(
+            `Delete ${property.name}? This removes it from the admin list and public search.`
+        );
+
+        if (!confirmed) return;
+
+        deleteStoredProperty(property.id);
+        refreshProperties();
+        setNotice(`${property.name} was deleted.`);
+    };
     
     const propertyStats = [
         {
@@ -34,15 +47,13 @@ export default function PropertiesTab() {
         {
           icon: Clock3,
           title: "Hidden Listings",
-          value: properties.filter(
-            (property) => property.status === "Pending Review"
-          ).length,
-          subtitle: "Need admin approval",
+          value: properties.filter((property) => property.status !== "Live").length,
+          subtitle: "Draft or pending",
         },
         {
           icon: BadgeDollarSign,
           title: "Active Specials",
-          value: properties.filter((property) => property.special).length,
+          value: properties.filter((property) => hasVisibleSpecial(property.special)).length,
           subtitle: "Current concessions",
         },
       ];
@@ -160,6 +171,7 @@ export default function PropertiesTab() {
                             setSearchTerm("");
                             setStatusFilter("All");
                             setVisibilityFilter("All");
+                            setNotice("");
                         }}
                         className="rounded-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
                     >
@@ -167,13 +179,19 @@ export default function PropertiesTab() {
                     </button>
                 </div>
 
+                {notice && (
+                    <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+                        {notice}
+                    </p>
+                )}
+
                 <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-12 text-center">
                     <div className="mt-6 min-h-[260px] space-y-3">
                         <AnimatePresence mode="popLayout">
                             {filteredProperties.length > 0 ? (
                                 filteredProperties.map((property) => (
                                     <motion.div
-                                        key={property.name}
+                                        key={property.id}
                                         layout
                                         initial={{ opacity: 0, y: 8 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -194,6 +212,7 @@ export default function PropertiesTab() {
                                             status={property.status}
                                             special={property.special}
                                             updated={property.updated}
+                                            onDelete={() => deleteProperty(property)}
                                         />
                                     </motion.div>
                                 ))
@@ -264,19 +283,25 @@ function getStatusClasses(status) {
 }
 
 function getSpecialClasses(special) {
-    if (special.toLowerCase().includes("free")) {
+    const normalizedSpecial = String(special || "").toLowerCase();
+
+    if (normalizedSpecial.includes("free")) {
         return "bg-emerald-100 text-emerald-700";
     }
 
-    if (special.toLowerCase().includes("$")) {
+    if (normalizedSpecial.includes("$")) {
         return "bg-indigo-100 text-indigo-700";
     }
 
-    if (special.toLowerCase().includes("reduced")) {
+    if (normalizedSpecial.includes("reduced")) {
         return "bg-amber-100 text-amber-700";
     }
 
     return "bg-slate-100 text-slate-700";
+}
+
+function hasVisibleSpecial(special) {
+    return Boolean(special && special !== "Special not listed");
 }
 
 function PropertyRow({
@@ -293,6 +318,7 @@ function PropertyRow({
     status,
     special,
     updated,
+    onDelete,
 }) {
     const initials = name
         .split(" ")
@@ -351,7 +377,7 @@ function PropertyRow({
                         special
                     )}`}
                 >
-                    {special}
+                    {hasVisibleSpecial(special) ? special : "No special"}
                 </span>
 
                 <div className="flex gap-2">
@@ -368,7 +394,11 @@ function PropertyRow({
                         Edit
                     </Link>
 
-                    <button className="rounded-xl bg-red-100 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-200">
+                    <button
+                        type="button"
+                        onClick={onDelete}
+                        className="rounded-xl bg-red-100 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-200"
+                    >
                         Delete
                     </button>
                 </div>
