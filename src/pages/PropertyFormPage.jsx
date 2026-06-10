@@ -51,7 +51,11 @@ const emptyPropertyDraft = {
 
 const MAX_UPLOAD_COUNT = 8;
 const MAX_FLOOR_PLAN_UPLOAD_COUNT = 4;
-const MAX_UPLOAD_SIZE = 1.5 * 1024 * 1024;
+const MAX_UPLOAD_SIZE = 12 * 1024 * 1024;
+const PROPERTY_PHOTO_MAX_DIMENSION = 1100;
+const FLOOR_PLAN_PHOTO_MAX_DIMENSION = 850;
+const PROPERTY_PHOTO_TARGET_BYTES = 180 * 1024;
+const FLOOR_PLAN_PHOTO_TARGET_BYTES = 120 * 1024;
 const LEASING_WEEKS_PER_MONTH = 4;
 const WEEKS_FREE_OPTIONS = Array.from({ length: 25 }, (_, index) => index * 0.5);
 const LEASE_TERM_OPTIONS = ["6", "9", "12", "13", "14", "15", "18"];
@@ -97,7 +101,7 @@ export default function PropertyFormPage() {
     }
 
     if (oversizedFile) {
-      setSaveError("Each uploaded photo must be 1.5 MB or smaller.");
+      setSaveError("Each uploaded photo must be 12 MB or smaller.");
       return;
     }
 
@@ -148,13 +152,18 @@ export default function PropertyFormPage() {
     }
 
     if (oversizedFile) {
-      setSaveError("Each uploaded floor plan photo must be 1.5 MB or smaller.");
+      setSaveError("Each uploaded floor plan photo must be 12 MB or smaller.");
       return;
     }
 
     try {
       const uploadedPhotos = await Promise.all(
-        acceptedFiles.map((file) => readPhotoFile(file, "Floor Plan"))
+        acceptedFiles.map((file) =>
+          readPhotoFile(file, "Floor Plan", {
+            maxDimension: FLOOR_PLAN_PHOTO_MAX_DIMENSION,
+            targetBytes: FLOOR_PLAN_PHOTO_TARGET_BYTES,
+          })
+        )
       );
 
       setPropertyDraft((currentDraft) => ({
@@ -595,6 +604,9 @@ export default function PropertyFormPage() {
               <p className="mt-1 text-sm font-semibold text-[#526260]">
                 {propertyDraft.photos.length} of {MAX_UPLOAD_COUNT} uploaded
               </p>
+              <p className="mt-1 text-xs font-bold text-[#6b7775]">
+                Photos are optimized before saving so larger uploads do not block the form.
+              </p>
             </div>
 
             <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]">
@@ -896,6 +908,9 @@ function FloorPlanEditor({
             </h4>
             <p className="mt-1 text-sm font-semibold text-[#526260]">
               {(floorPlan.photos || []).length} of {MAX_FLOOR_PLAN_UPLOAD_COUNT} uploaded
+            </p>
+            <p className="mt-1 text-xs font-bold text-[#6b7775]">
+              Floor plan photos are compressed before saving.
             </p>
           </div>
 
@@ -1702,20 +1717,122 @@ function normalizeFloorPlanPhotos(floorPlan, index) {
   return [];
 }
 
-function readPhotoFile(file, category = "Property") {
+async function readPhotoFile(file, category = "Property", options = {}) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Only image uploads are supported.");
+  }
+
+  const compressedPhoto = await compressImageFile(file, {
+    maxDimension: PROPERTY_PHOTO_MAX_DIMENSION,
+    targetBytes: PROPERTY_PHOTO_TARGET_BYTES,
+    ...options,
+  });
+
+  return {
+    id: `${file.name}-${file.lastModified}-${Date.now()}`,
+    name: file.name,
+    url: compressedPhoto.dataUrl,
+    category,
+    originalSize: file.size,
+    storedSize: compressedPhoto.size,
+  };
+}
+
+async function compressImageFile(file, options) {
+  const image = await loadImage(file);
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const qualityLevels = [0.82, 0.72, 0.62, 0.52];
+  let maxDimension = options.maxDimension;
+  let bestBlob = null;
+
+  if (!context) {
+    throw new Error("Image compression is not available in this browser.");
+  }
+
+  for (let sizeAttempt = 0; sizeAttempt < 4; sizeAttempt += 1) {
+    const scale = Math.min(
+      1,
+      maxDimension / image.naturalWidth,
+      maxDimension / image.naturalHeight
+    );
+
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    for (const quality of qualityLevels) {
+      const blob = await canvasToBlob(canvas, "image/jpeg", quality);
+
+      if (!bestBlob || blob.size < bestBlob.size) {
+        bestBlob = blob;
+      }
+
+      if (blob.size <= options.targetBytes) {
+        return {
+          dataUrl: await blobToDataUrl(blob),
+          size: blob.size,
+        };
+      }
+    }
+
+    maxDimension = Math.round(maxDimension * 0.82);
+  }
+
+  if (!bestBlob) {
+    throw new Error("Could not compress image.");
+  }
+
+  return {
+    dataUrl: await blobToDataUrl(bestBlob),
+    size: bestBlob.size,
+  };
+}
+
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const imageUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(imageUrl);
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(imageUrl);
+      reject(new Error("Could not read this image file."));
+    };
+
+    image.src = imageUrl;
+  });
+}
+
+function canvasToBlob(canvas, type, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob);
+          return;
+        }
+
+        reject(new Error("Could not compress image."));
+      },
+      type,
+      quality
+    );
+  });
+}
+
+function blobToDataUrl(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = () => {
-      resolve({
-        id: `${file.name}-${file.lastModified}-${Date.now()}`,
-        name: file.name,
-        url: reader.result,
-        category,
-      });
-    };
-
+    reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(blob);
   });
 }
