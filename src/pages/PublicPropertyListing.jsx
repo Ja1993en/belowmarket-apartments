@@ -1,9 +1,32 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
     getPropertyAddressLabel,
     getPublicSearchProperties,
 } from "../data/propertySearchData";
+
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
+const NEARBY_PLACE_QUERIES = [
+    {
+        query: "grocery",
+        label: "Nearby Grocery",
+        detail: "Grocery options near this property",
+        type: "grocery",
+    },
+    {
+        query: "shopping",
+        label: "Nearby Stores",
+        detail: "Shopping and daily essentials nearby",
+        type: "stores",
+    },
+    {
+        query: "gym",
+        label: "Nearby Gym",
+        detail: "Fitness options near this property",
+        type: "gym",
+    },
+];
 const floorPlans = [
     {
         name: "A1",
@@ -197,7 +220,8 @@ function normalizeListingFloorPlans(property) {
 export default function PublicPropertyListing() {
     {/* Usestate start*/ }
     const { propertyId } = useParams();
-    const property = getPublicSearchProperties().find(
+    const publicProperties = useMemo(() => getPublicSearchProperties(), []);
+    const property = publicProperties.find(
         (listingProperty) => listingProperty.id === String(propertyId)
     );
     const addressLabel = property ? getPropertyAddressLabel(property) : "";
@@ -786,17 +810,10 @@ export default function PublicPropertyListing() {
                                             {addressLabel}
                                         </p>
 
-                                        <div className="mt-5 flex h-80 items-center justify-center rounded-3xl bg-[#d7e6df]">
-                                            <div className="text-center">
-                                                <p className="text-lg font-black text-[#173f3f]">
-                                                    Map Preview
-                                                </p>
-
-                                                <p className="mt-2 text-sm text-[#526260]">
-                                                    Google Maps or Mapbox will connect here later.
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <PropertyLocationMap
+                                            property={property}
+                                            addressLabel={addressLabel}
+                                        />
                                     </div>
 
                                     <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
@@ -805,10 +822,10 @@ export default function PublicPropertyListing() {
                                         </h2>
 
                                         <div className="mt-5 space-y-3">
-                                            <NearbyItem label="Coffee" value="4 min walk" />
-                                            <NearbyItem label="Grocery" value="7 min drive" />
-                                            <NearbyItem label="Gym" value="5 min walk" />
-                                            <NearbyItem label="Downtown Dallas" value="9 min drive" />
+                                            <NearbyItem label="Grocery" value="Pinned on map" />
+                                            <NearbyItem label="Stores" value="Pinned on map" />
+                                            <NearbyItem label="Gym" value="Pinned on map" />
+                                            <NearbyItem label="Property" value="Gold BMA pin" />
                                         </div>
                                     </div>
                                 </div>
@@ -1575,6 +1592,431 @@ function NearbyItem({ label, value }) {
             <p className="text-sm font-semibold text-[#526260]">{value}</p>
         </div>
     );
+}
+
+function PropertyLocationMap({ property, addressLabel }) {
+    const mapContainerRef = useRef(null);
+    const mapRef = useRef(null);
+    const markersRef = useRef([]);
+    const [mapboxGl, setMapboxGl] = useState(null);
+    const [mapError, setMapError] = useState(
+        MAPBOX_TOKEN ? "" : "Map token is missing."
+    );
+    const [propertyCoordinates, setPropertyCoordinates] = useState(null);
+    const [nearbyPlaces, setNearbyPlaces] = useState([]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        if (!MAPBOX_TOKEN) return undefined;
+
+        loadMapboxGl()
+            .then((loadedMapboxGl) => {
+                if (isMounted) {
+                    loadedMapboxGl.accessToken = MAPBOX_TOKEN;
+                    setMapboxGl(loadedMapboxGl);
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                if (isMounted) {
+                    setMapError("Could not load the live map.");
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        resolvePropertyCoordinates(property)
+            .then((coordinates) => {
+                if (isMounted) {
+                    setPropertyCoordinates(coordinates || DALLAS_CENTER);
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                if (isMounted) {
+                    setPropertyCoordinates(DALLAS_CENTER);
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [property]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        resolveNearbyPlacePins(propertyCoordinates)
+            .then((places) => {
+                if (isMounted) {
+                    setNearbyPlaces(places);
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                if (isMounted) {
+                    setNearbyPlaces(createNearbyPlacePins(propertyCoordinates));
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [propertyCoordinates]);
+
+    useEffect(() => {
+        if (!mapboxGl || !propertyCoordinates || !mapContainerRef.current) return;
+
+        if (!mapRef.current) {
+            mapRef.current = new mapboxGl.Map({
+                container: mapContainerRef.current,
+                style: "mapbox://styles/mapbox/streets-v12",
+                center: [propertyCoordinates.longitude, propertyCoordinates.latitude],
+                zoom: 14,
+                attributionControl: false,
+            });
+
+            mapRef.current.addControl(
+                new mapboxGl.NavigationControl({ showCompass: false }),
+                "bottom-right"
+            );
+        } else {
+            mapRef.current.flyTo({
+                center: [propertyCoordinates.longitude, propertyCoordinates.latitude],
+                zoom: 14,
+                duration: 500,
+            });
+        }
+
+        markersRef.current.forEach((marker) => marker.remove());
+        markersRef.current = [];
+
+        const propertyMarker = new mapboxGl.Marker({
+            element: createPropertyMapMarker(property?.name || "Property"),
+            anchor: "bottom",
+        })
+            .setLngLat([propertyCoordinates.longitude, propertyCoordinates.latitude])
+            .setPopup(
+                new mapboxGl.Popup({ offset: 28 }).setHTML(
+                    `<strong>${escapeMapText(property?.name || "Property")}</strong><br>${escapeMapText(addressLabel)}`
+                )
+            )
+            .addTo(mapRef.current);
+
+        markersRef.current.push(propertyMarker);
+
+        nearbyPlaces.forEach((place) => {
+            const marker = new mapboxGl.Marker({
+                element: createNearbyMapMarker(place),
+                anchor: "bottom",
+            })
+                .setLngLat([place.longitude, place.latitude])
+                .setPopup(
+                    new mapboxGl.Popup({ offset: 20 }).setHTML(
+                        `<strong>${escapeMapText(place.label)}</strong><br>${escapeMapText(place.detail)}`
+                    )
+                )
+                .addTo(mapRef.current);
+
+            markersRef.current.push(marker);
+        });
+
+        return () => {
+            markersRef.current.forEach((marker) => marker.remove());
+            markersRef.current = [];
+        };
+    }, [addressLabel, mapboxGl, nearbyPlaces, property, propertyCoordinates]);
+
+    useEffect(
+        () => () => {
+            markersRef.current.forEach((marker) => marker.remove());
+            markersRef.current = [];
+            mapRef.current?.remove();
+            mapRef.current = null;
+        },
+        []
+    );
+
+    if (mapError) {
+        return (
+            <div className="mt-5 flex h-80 items-center justify-center rounded-3xl bg-[#d7e6df]">
+                <div className="px-6 text-center">
+                    <p className="text-lg font-black text-[#173f3f]">
+                        Map could not load
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[#526260]">
+                        {addressLabel}
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="mt-5 overflow-hidden rounded-3xl border border-[#d7e6df] bg-[#dcebe4]">
+            <div ref={mapContainerRef} className="h-80 w-full" />
+            <div className="grid gap-2 border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-4">
+                <MapLegendItem color="bg-[#f2b84b]" label="Property" />
+                <MapLegendItem color="bg-[#1f6f63]" label="Grocery" />
+                <MapLegendItem color="bg-[#2d7dd2]" label="Stores" />
+                <MapLegendItem color="bg-[#173f3f]" label="Gym" />
+            </div>
+        </div>
+    );
+}
+
+function MapLegendItem({ color, label }) {
+    return (
+        <div className="flex items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426]">
+            <span className={`h-3 w-3 rounded-full ${color}`} />
+            {label}
+        </div>
+    );
+}
+
+function loadMapboxGl() {
+    if (window.mapboxgl) {
+        return Promise.resolve(window.mapboxgl);
+    }
+
+    if (!document.querySelector("link[data-mapbox-gl='true']")) {
+        const mapboxStyles = document.createElement("link");
+        mapboxStyles.rel = "stylesheet";
+        mapboxStyles.href = "https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css";
+        mapboxStyles.dataset.mapboxGl = "true";
+        document.head.appendChild(mapboxStyles);
+    }
+
+    const existingScript = document.querySelector("script[data-mapbox-gl='true']");
+    if (existingScript) {
+        return new Promise((resolve, reject) => {
+            existingScript.addEventListener("load", () => resolve(window.mapboxgl), {
+                once: true,
+            });
+            existingScript.addEventListener("error", reject, { once: true });
+        });
+    }
+
+    return new Promise((resolve, reject) => {
+        const mapboxScript = document.createElement("script");
+        mapboxScript.src = "https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js";
+        mapboxScript.async = true;
+        mapboxScript.dataset.mapboxGl = "true";
+        mapboxScript.addEventListener("load", () => resolve(window.mapboxgl), {
+            once: true,
+        });
+        mapboxScript.addEventListener("error", reject, { once: true });
+        document.head.appendChild(mapboxScript);
+    });
+}
+
+async function resolvePropertyCoordinates(property) {
+    const existingCoordinates = getPropertyCoordinates(property);
+    if (existingCoordinates) return existingCoordinates;
+
+    return geocodeListingAddress(property);
+}
+
+function getPropertyCoordinates(property) {
+    const latitude = Number(property?.latitude || property?.lat);
+    const longitude = Number(property?.longitude || property?.lng);
+
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        return { latitude, longitude };
+    }
+
+    if (Array.isArray(property?.coordinates) && property.coordinates.length >= 2) {
+        const [coordinateLongitude, coordinateLatitude] =
+            property.coordinates.map(Number);
+
+        if (
+            Number.isFinite(coordinateLatitude) &&
+            Number.isFinite(coordinateLongitude)
+        ) {
+            return {
+                latitude: coordinateLatitude,
+                longitude: coordinateLongitude,
+            };
+        }
+    }
+
+    return null;
+}
+
+async function geocodeListingAddress(property) {
+    if (!property || !MAPBOX_TOKEN) return null;
+
+    const addressLabel = getPropertyAddressLabel(property);
+    if (!addressLabel || addressLabel === "Dallas, TX") return null;
+
+    const cacheKey = `bma-mapbox-geocode:${addressLabel.toLowerCase()}`;
+    const cachedCoordinates = getCachedCoordinates(cacheKey);
+    if (cachedCoordinates) return cachedCoordinates;
+
+    const geocodingUrl = new URL(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(addressLabel)}.json`
+    );
+    geocodingUrl.searchParams.set("access_token", MAPBOX_TOKEN);
+    geocodingUrl.searchParams.set("country", "US");
+    geocodingUrl.searchParams.set("limit", "1");
+
+    const response = await fetch(geocodingUrl);
+    if (!response.ok) return null;
+
+    const geocodingResult = await response.json();
+    const firstFeature = geocodingResult.features?.[0];
+    const [longitude, latitude] = firstFeature?.center || [];
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return null;
+    }
+
+    const coordinates = { latitude, longitude };
+    localStorage.setItem(cacheKey, JSON.stringify(coordinates));
+
+    return coordinates;
+}
+
+function getCachedCoordinates(cacheKey) {
+    try {
+        const cachedValue = localStorage.getItem(cacheKey);
+        if (!cachedValue) return null;
+
+        const coordinates = JSON.parse(cachedValue);
+        const latitude = Number(coordinates.latitude);
+        const longitude = Number(coordinates.longitude);
+
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+            return null;
+        }
+
+        return { latitude, longitude };
+    } catch {
+        return null;
+    }
+}
+
+async function resolveNearbyPlacePins(center) {
+    if (!center) return [];
+
+    const fallbackPlaces = createNearbyPlacePins(center);
+    if (!MAPBOX_TOKEN) return fallbackPlaces;
+
+    const resolvedPlaces = await Promise.all(
+        NEARBY_PLACE_QUERIES.map(async (placeQuery, index) => {
+            const searchUrl = new URL(
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(placeQuery.query)}.json`
+            );
+            searchUrl.searchParams.set("access_token", MAPBOX_TOKEN);
+            searchUrl.searchParams.set(
+                "proximity",
+                `${center.longitude},${center.latitude}`
+            );
+            searchUrl.searchParams.set("types", "poi");
+            searchUrl.searchParams.set("country", "US");
+            searchUrl.searchParams.set("limit", "1");
+
+            const response = await fetch(searchUrl);
+            if (!response.ok) return fallbackPlaces[index];
+
+            const searchResult = await response.json();
+            const firstFeature = searchResult.features?.[0];
+            const [longitude, latitude] = firstFeature?.center || [];
+
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+                return fallbackPlaces[index];
+            }
+
+            return {
+                ...placeQuery,
+                label: firstFeature.text || placeQuery.label,
+                detail: firstFeature.place_name || placeQuery.detail,
+                latitude,
+                longitude,
+            };
+        })
+    );
+
+    return resolvedPlaces;
+}
+
+function createNearbyPlacePins(center) {
+    if (!center) return [];
+
+    return [
+        {
+            label: "Nearby Grocery",
+            detail: "Grocery options near this property",
+            type: "grocery",
+            latitude: center.latitude + 0.006,
+            longitude: center.longitude - 0.004,
+        },
+        {
+            label: "Nearby Stores",
+            detail: "Shopping and daily essentials nearby",
+            type: "stores",
+            latitude: center.latitude - 0.004,
+            longitude: center.longitude + 0.006,
+        },
+        {
+            label: "Nearby Gym",
+            detail: "Fitness options near this property",
+            type: "gym",
+            latitude: center.latitude + 0.003,
+            longitude: center.longitude + 0.008,
+        },
+    ];
+}
+
+function createPropertyMapMarker(propertyName) {
+    const markerElement = document.createElement("div");
+    markerElement.className =
+        "flex -translate-y-1 flex-col items-center gap-1";
+    markerElement.innerHTML = `
+        <div class="max-w-[150px] truncate rounded-full bg-[#102426] px-3 py-1 text-xs font-black text-white shadow-lg">${escapeMapText(propertyName)}</div>
+        <div class="flex h-11 w-11 items-center justify-center rounded-full border-4 border-white bg-[#f2b84b] text-xs font-black text-[#102426] shadow-xl ring-2 ring-[#8a5b0a]/25">BMA</div>
+        <div class="-mt-2 h-4 w-4 rotate-45 border-b-4 border-r-4 border-white bg-[#f2b84b] shadow-md"></div>
+    `;
+
+    return markerElement;
+}
+
+function createNearbyMapMarker(place) {
+    const markerElement = document.createElement("div");
+    const colors = {
+        grocery: "bg-[#1f6f63]",
+        stores: "bg-[#2d7dd2]",
+        gym: "bg-[#173f3f]",
+    };
+    const abbreviations = {
+        grocery: "G",
+        stores: "S",
+        gym: "GY",
+    };
+
+    markerElement.className = "flex flex-col items-center gap-1";
+    markerElement.innerHTML = `
+        <div class="rounded-full bg-white/95 px-2 py-1 text-[11px] font-black text-[#102426] shadow-sm">${escapeMapText(place.label.replace("Nearby ", ""))}</div>
+        <div class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white ${colors[place.type]} text-[11px] font-black text-white shadow-lg">${abbreviations[place.type]}</div>
+    `;
+
+    return markerElement;
+}
+
+function escapeMapText(value) {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 
