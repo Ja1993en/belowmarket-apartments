@@ -300,6 +300,18 @@ export default function PublicPropertyListing() {
             })).filter((photo) => photo.url)
             : galleryImages;
     const listingFloorPlans = normalizeListingFloorPlans(property);
+    const renterDecisionFacts = getRenterDecisionFacts({
+        effectiveRentLabel,
+        hasPropertySpecial,
+        listingFloorPlans,
+        managementLabel,
+        marketRentLabel,
+        property,
+        propertySpecialLabel,
+        savingsLabel,
+        schoolSnapshot,
+        startingRentLabel,
+    });
     const floorPlanFilters = [
         "All",
         ...new Set(listingFloorPlans.map((plan) => plan.beds).filter(Boolean)),
@@ -662,35 +674,31 @@ export default function PublicPropertyListing() {
 
 
                                 <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                                    <h2 className="text-xl font-black text-[#102426]">
-                                        Why Renters Choose This Property
-                                    </h2>
+                                    <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+                                        <div>
+                                            <p className="text-sm font-black text-[#1f6f63]">
+                                                Renter decision snapshot
+                                            </p>
+                                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                                                What to know before you tour
+                                            </h2>
+                                        </div>
 
-                                    <div className="mt-5 grid gap-4 md:grid-cols-3">
-                                        <ReasonCard
-                                            icon="💰"
-                                            title="Transparent Pricing"
-                                            text={
-                                                savingsLabel
-                                                    ? `Estimated savings of ${savingsLabel} based on the current listing data.`
-                                                    : "Compare starting rent, market rent, and specials before requesting a tour."
-                                            }
-                                        />
-                                        <ReasonCard
-                                            icon="📍"
-                                            title="Location Context"
-                                            text={`${property.name} is listed near ${property.area || property.city || "the Dallas area"} with address details shown up front.`}
-                                        />
-                                        <ReasonCard
-                                            icon="🎁"
-                                            title={hasPropertySpecial ? "Active Special" : "Special Status"}
-                                            text={
-                                                hasPropertySpecial
-                                                    ? `${propertySpecialLabel} is currently listed for this property.`
-                                                    : "No active special is listed, so pricing is shown as normal rent."
-                                            }
-                                        />
+                                        <p className="max-w-md text-sm font-semibold leading-6 text-[#526260]">
+                                            These facts are pulled from the listing data so renters can compare price, schools, availability, and fees faster.
+                                        </p>
+                                    </div>
 
+                                    <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                        {renterDecisionFacts.map((fact) => (
+                                            <RenterDecisionFactCard
+                                                key={fact.label}
+                                                label={fact.label}
+                                                value={fact.value}
+                                                detail={fact.detail}
+                                                tone={fact.tone}
+                                            />
+                                        ))}
                                     </div>
                                 </div>
                                 {/*Floor Plans*/}
@@ -2372,6 +2380,32 @@ function PriceCompareCard({ label, price, note }) {
         </div>
     );
 }
+
+function RenterDecisionFactCard({ label, value, detail, tone = "default" }) {
+    const toneClass = {
+        default: "bg-[#f5f8f1] text-[#102426] ring-[#d7e6df]",
+        deal: "bg-[#fff8e6] text-[#102426] ring-[#f2d08a]",
+        school: "bg-[#eef5ff] text-[#102426] ring-[#b8d9f0]",
+        caution: "bg-[#fff0ea] text-[#102426] ring-[#f4c8b8]",
+    }[tone] || "bg-[#f5f8f1] text-[#102426] ring-[#d7e6df]";
+
+    return (
+        <div className={`rounded-2xl p-4 ring-1 ${toneClass}`}>
+            <p className="text-xs font-black uppercase text-[#526260]">
+                {label}
+            </p>
+
+            <p className="mt-2 text-xl font-black leading-tight text-[#102426]">
+                {value}
+            </p>
+
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+                {detail}
+            </p>
+        </div>
+    );
+}
+
 function HighlightCard({ title, text }) {
     return (
         <div className="rounded-2xl bg-[#f5f8f1] p-5">
@@ -2382,12 +2416,83 @@ function HighlightCard({ title, text }) {
 }
 
 
-function ReasonCard({ icon, title, text }) {
-    return (
-        <div className="rounded-2xl bg-[#f5f8f1] p-4">
-            <div className="text-2xl">{icon}</div>
-            <p className="mt-3 font-bold text-[#102426]">{title}</p>
-            <p className="mt-2 text-sm text-[#526260]">{text}</p>
-        </div>
+function getRenterDecisionFacts({
+    effectiveRentLabel,
+    hasPropertySpecial,
+    listingFloorPlans,
+    managementLabel,
+    marketRentLabel,
+    property,
+    propertySpecialLabel,
+    savingsLabel,
+    schoolSnapshot,
+    startingRentLabel,
+}) {
+    const floorPlanCount = listingFloorPlans.length;
+    const totalAvailableUnits = listingFloorPlans.reduce(
+        (unitCount, floorPlan) => unitCount + (floorPlan.availableUnits?.length || 0),
+        0
     );
+    const bedLabels = [
+        ...new Set(listingFloorPlans.map((floorPlan) => floorPlan.beds).filter(Boolean)),
+    ];
+    const bedSummary =
+        bedLabels.length > 0
+            ? bedLabels.join(", ")
+            : property.bedrooms?.join(", ") || "Beds not listed";
+    const feeLabel = property.requiredMonthlyFees || property.monthlyFees || "";
+    const locationAccuracy =
+        property.mapAccuracy === "approximate"
+            ? "Approximate until the full street address is added"
+            : "Address and map pin are available";
+    const marketComparison = marketRentLabel && marketRentLabel !== "Not listed"
+        ? `Market comparison listed at ${marketRentLabel}.`
+        : "Market comparison is not listed yet.";
+
+    return [
+        {
+            label: "Rent renter should compare",
+            value: effectiveRentLabel || startingRentLabel,
+            detail: effectiveRentLabel
+                ? `Normal listed rent starts at ${startingRentLabel}. Effective rent reflects the listed special, not necessarily the monthly amount due.`
+                : `No effective rent is listed, so renters should compare the normal rent of ${startingRentLabel}.`,
+            tone: hasPropertySpecial ? "deal" : "default",
+        },
+        {
+            label: "Special and savings",
+            value: hasPropertySpecial ? propertySpecialLabel : "No active special",
+            detail: hasPropertySpecial
+                ? `${savingsLabel || "Savings not calculated"} shown from current listing data. Confirm whether the credit is applied upfront or across the lease.`
+                : "This listing is currently shown without a concession, so the rent range is the main comparison point.",
+            tone: hasPropertySpecial ? "deal" : "default",
+        },
+        {
+            label: "Floor plans available",
+            value: `${floorPlanCount} layout${floorPlanCount === 1 ? "" : "s"}`,
+            detail:
+                totalAvailableUnits > 0
+                    ? `${totalAvailableUnits} listed unit${totalAvailableUnits === 1 ? "" : "s"} across ${bedSummary}.`
+                    : `Available bedroom types: ${bedSummary}. Request current unit availability before touring.`,
+        },
+        {
+            label: "Fees to ask about",
+            value: feeLabel || "Confirm fees",
+            detail: feeLabel
+                ? `Listed required monthly fees are ${feeLabel}. Ask what is included, such as amenities, valet trash, pest control, or parking.`
+                : "Ask for required monthly add-ons, one-time fees, deposit, parking, utilities, and whether specials apply to base rent only.",
+            tone: feeLabel ? "deal" : "caution",
+        },
+        {
+            label: "Schools",
+            value: `${schoolSnapshot.district} (${schoolSnapshot.districtGrade})`,
+            detail: "School grades and attendance zones should be verified with the district before applying.",
+            tone: "school",
+        },
+        {
+            label: "Property context",
+            value: property.yearBuilt ? `Built ${property.yearBuilt}` : managementLabel,
+            detail: `${managementLabel}. ${marketComparison} ${locationAccuracy}.`,
+            tone: property.mapAccuracy === "approximate" ? "caution" : "default",
+        },
+    ];
 }
