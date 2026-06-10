@@ -8,6 +8,7 @@ import {
     hasPreciseStreetAddress,
     isReliableGeocodeResult,
 } from "../data/propertySearchData";
+import { getMarketRentBenchmark } from "../data/marketRentBenchmarks";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
@@ -206,6 +207,8 @@ const galleryImages = [
 ];
 
 function normalizeListingFloorPlans(property) {
+    const addMarketBenchmark = (plan) => enrichFloorPlanWithMarketBenchmark(property, plan);
+
     if (!property?.floorPlans?.length) {
         if (!property) return floorPlans;
 
@@ -229,12 +232,12 @@ function normalizeListingFloorPlans(property) {
                 availableUnits: [],
                 image: getPropertyPrimaryImage(property),
             },
-        ];
+        ].map(addMarketBenchmark);
     }
 
     return property.floorPlans.map((plan, index) => {
         if (typeof plan === "string") {
-            return {
+            return addMarketBenchmark({
                 name: plan,
                 beds: property.bedrooms?.[0] || "Not set",
                 baths: "Not set",
@@ -248,10 +251,10 @@ function normalizeListingFloorPlans(property) {
                 status: "available",
                 special: property.special ? { label: property.special } : null,
                 availableUnits: [],
-            };
+            });
         }
 
-        return {
+        return addMarketBenchmark({
             ...plan,
             name: plan.name || `Floor Plan ${index + 1}`,
             beds: plan.bedrooms || plan.beds || "Not set",
@@ -267,8 +270,71 @@ function normalizeListingFloorPlans(property) {
             status: plan.status || "available",
             special: plan.special || (plan.currentSpecial ? { label: plan.currentSpecial } : null),
             availableUnits: plan.availableUnits || [],
-        };
+        });
     });
+}
+
+function enrichFloorPlanWithMarketBenchmark(property, plan) {
+    const benchmark = getMarketRentBenchmark(property, plan);
+    const manualMarketRent = plan.marketRent || property?.marketRent || "";
+    const effectiveRentNumber =
+        parseCurrency(plan.effectiveRent) || parseCurrency(plan.rent);
+
+    if (manualMarketRent) {
+        const manualMarketRentNumber = parseCurrency(manualMarketRent);
+        const shouldShowManualComparison =
+            manualMarketRentNumber > 0 &&
+            (!effectiveRentNumber || manualMarketRentNumber > effectiveRentNumber);
+
+        return {
+            ...plan,
+            marketRent: shouldShowManualComparison ? manualMarketRent : "",
+            marketRentSource: shouldShowManualComparison
+                ? "Property-entered market rent"
+                : "",
+        };
+    }
+
+    if (!benchmark) {
+        return {
+            ...plan,
+            marketRent: "",
+            marketRentSource: "",
+        };
+    }
+
+    const shouldShowBenchmark =
+        benchmark.marketRent > 0 &&
+        effectiveRentNumber > 0 &&
+        benchmark.marketRent > effectiveRentNumber;
+
+    if (!shouldShowBenchmark) {
+        return {
+            ...plan,
+            marketRent: "",
+            marketRentSource: "",
+            marketRentHiddenReason:
+                "Class-adjusted benchmark did not show positive renter value.",
+        };
+    }
+
+    const benchmarkSavingsNumber = Math.max(benchmark.marketRent - effectiveRentNumber, 0);
+    const benchmarkPercentNumber = benchmark.marketRent
+        ? Math.round((benchmarkSavingsNumber / benchmark.marketRent) * 100)
+        : 0;
+
+    return {
+        ...plan,
+        marketRent: formatCurrency(benchmark.marketRent),
+        marketRentSource: benchmark.source,
+        marketRentConfidence: benchmark.confidence,
+        marketRentAreaName: benchmark.areaName,
+        marketRentLastUpdated: benchmark.lastUpdated,
+        marketRentPropertyClass: benchmark.propertyClassLabel,
+        marketRentClassConfidence: benchmark.classConfidence,
+        savings: plan.savings || (benchmarkSavingsNumber ? `${formatCurrency(benchmarkSavingsNumber)}/mo` : "$0/mo"),
+        belowMarketPercent: plan.belowMarketPercent || `${benchmarkPercentNumber}%`,
+    };
 }
 
 export default function PublicPropertyListing() {
@@ -281,8 +347,6 @@ export default function PublicPropertyListing() {
     const addressLabel = property ? getPropertyAddressLabel(property) : "";
     const startingRentLabel = property?.startingRent || property?.rent || "Contact for pricing";
     const effectiveRentLabel = property?.effectiveRent || "";
-    const marketRentLabel = property?.marketRent || "";
-    const savingsLabel = property?.savings || "";
     const hasPropertySpecial = Boolean(
         property?.special && property.special !== "Special not listed"
     );
@@ -300,6 +364,15 @@ export default function PublicPropertyListing() {
             })).filter((photo) => photo.url)
             : galleryImages;
     const listingFloorPlans = normalizeListingFloorPlans(property);
+    const benchmarkFloorPlan = listingFloorPlans.find(
+        (plan) => plan.marketRent && plan.marketRentSource
+    );
+    const marketRentLabel = benchmarkFloorPlan?.marketRent || "";
+    const marketRentSourceLabel =
+        benchmarkFloorPlan?.marketRentConfidence ||
+        benchmarkFloorPlan?.marketRentSource ||
+        "";
+    const savingsLabel = property?.savings || benchmarkFloorPlan?.savings || "";
     const renterDecisionFacts = getRenterDecisionFacts({
         effectiveRentLabel,
         hasPropertySpecial,
@@ -660,7 +733,7 @@ export default function PublicPropertyListing() {
                                     <PriceCompareCard
                                         label="Market Average"
                                         price={marketRentLabel || "Not listed"}
-                                        note={`Similar ${property.area || property.city || "nearby"} units`}
+                                        note={marketRentSourceLabel || `Similar ${property.area || property.city || "nearby"} units`}
                                     />
 
                                     <PriceCompareCard
@@ -789,6 +862,12 @@ export default function PublicPropertyListing() {
                                             rent={plan.rent}
                                             effectiveRent={plan.effectiveRent}
                                             marketRent={plan.marketRent}
+                                            marketRentSource={plan.marketRentSource}
+                                            marketRentConfidence={plan.marketRentConfidence}
+                                            marketRentAreaName={plan.marketRentAreaName}
+                                            marketRentLastUpdated={plan.marketRentLastUpdated}
+                                            marketRentPropertyClass={plan.marketRentPropertyClass}
+                                            marketRentClassConfidence={plan.marketRentClassConfidence}
                                             savings={plan.savings}
                                             belowMarketPercent={plan.belowMarketPercent}
                                             available={plan.available}
@@ -1242,6 +1321,24 @@ export default function PublicPropertyListing() {
                                         <p className="mt-3 text-sm font-semibold text-[#526260]">
                                             Rent after special is estimated using a {leaseMonths}-month lease term.
                                         </p>
+                                    )}
+
+                                    {selectedFloorPlan.marketRent && (
+                                        <div className="rounded-2xl bg-[#f5f8f1] p-4">
+                                            <p className="text-sm font-bold text-[#526260]">
+                                                Market Comparison
+                                            </p>
+
+                                            <p className="mt-1 text-2xl font-black text-[#102426]">
+                                                {selectedFloorPlan.marketRent}
+                                            </p>
+
+                                            {selectedFloorPlan.marketRentSource && (
+                                                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                                    {selectedFloorPlan.marketRentConfidence || selectedFloorPlan.marketRentSource}
+                                                </p>
+                                            )}
+                                        </div>
                                     )}
 
 
@@ -2243,6 +2340,12 @@ function FloorPlanCard({
     rent,
     effectiveRent,
     marketRent,
+    marketRentSource,
+    marketRentConfidence,
+    marketRentAreaName,
+    marketRentLastUpdated,
+    marketRentPropertyClass,
+    marketRentClassConfidence,
     savings,
     belowMarketPercent,
     available,
@@ -2310,6 +2413,16 @@ function FloorPlanCard({
                 )}
             </div>
 
+            {marketRentSource && (
+                <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+                    Market comparison: {marketRentConfidence || marketRentSource}
+                    {marketRentAreaName ? ` for ${marketRentAreaName}` : ""}
+                    {marketRentPropertyClass ? ` • ${marketRentPropertyClass}` : ""}
+                    {marketRentClassConfidence ? ` (${marketRentClassConfidence})` : ""}
+                    {marketRentLastUpdated ? ` • Updated ${marketRentLastUpdated}` : ""}
+                </p>
+            )}
+
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-h-7">
                     {belowMarketPercent && (
@@ -2353,6 +2466,16 @@ function FloorPlanMetric({ label, value, highlight = false }) {
             <p className="mt-0.5 truncate text-sm font-black">{value}</p>
         </div>
     );
+}
+
+function parseCurrency(value) {
+    const firstCurrencyValue = String(value || "").replace(/,/g, "").match(/\d+(\.\d+)?/);
+    const parsedValue = Number(firstCurrencyValue?.[0] || 0);
+    return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function formatCurrency(value) {
+    return `$${Math.round(value).toLocaleString()}`;
 }
 
 function AmenityItem({ label }) {
