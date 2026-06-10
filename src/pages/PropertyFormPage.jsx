@@ -52,10 +52,10 @@ const emptyPropertyDraft = {
 const MAX_UPLOAD_COUNT = 8;
 const MAX_FLOOR_PLAN_UPLOAD_COUNT = 4;
 const MAX_UPLOAD_SIZE = 12 * 1024 * 1024;
-const PROPERTY_PHOTO_MAX_DIMENSION = 1100;
-const FLOOR_PLAN_PHOTO_MAX_DIMENSION = 850;
-const PROPERTY_PHOTO_TARGET_BYTES = 180 * 1024;
-const FLOOR_PLAN_PHOTO_TARGET_BYTES = 120 * 1024;
+const PROPERTY_PHOTO_MAX_DIMENSION = 900;
+const FLOOR_PLAN_PHOTO_MAX_DIMENSION = 700;
+const PROPERTY_PHOTO_TARGET_BYTES = 95 * 1024;
+const FLOOR_PLAN_PHOTO_TARGET_BYTES = 70 * 1024;
 const LEASING_WEEKS_PER_MONTH = 4;
 const WEEKS_FREE_OPTIONS = Array.from({ length: 25 }, (_, index) => index * 0.5);
 const LEASE_TERM_OPTIONS = ["6", "9", "12", "13", "14", "15", "18"];
@@ -125,6 +125,10 @@ export default function PropertyFormPage() {
   };
 
   const removePhoto = (photoId) => {
+    if (saveError) {
+      setSaveError("");
+    }
+
     setPropertyDraft((currentDraft) => {
       const nextPhotos = currentDraft.photos.filter((photo) => photo.id !== photoId);
       const removedPrimary = currentDraft.photos.find((photo) => photo.id === photoId)
@@ -192,6 +196,10 @@ export default function PropertyFormPage() {
   };
 
   const removeFloorPlanPhoto = (floorPlanId, photoId) => {
+    if (saveError) {
+      setSaveError("");
+    }
+
     setPropertyDraft((currentDraft) => ({
       ...currentDraft,
       floorPlans: currentDraft.floorPlans.map((floorPlan) => {
@@ -339,7 +347,7 @@ export default function PropertyFormPage() {
     }));
   };
 
-  const saveProperty = (event) => {
+  const saveProperty = async (event) => {
     event.preventDefault();
     setSaveError("");
 
@@ -364,7 +372,19 @@ export default function PropertyFormPage() {
       return;
     }
 
-    const floorPlans = propertyDraft.floorPlans
+    let optimizedDraft;
+
+    try {
+      optimizedDraft = await optimizeDraftPhotos(propertyDraft);
+    } catch (error) {
+      console.error(error);
+      setSaveError("Could not optimize these photos. Try removing one photo and saving again.");
+      return;
+    }
+
+    setPropertyDraft(optimizedDraft);
+
+    const floorPlans = optimizedDraft.floorPlans
       .map(normalizeFloorPlanForStorage)
       .filter((floorPlan) => floorPlan.name && floorPlan.rent);
 
@@ -376,17 +396,17 @@ export default function PropertyFormPage() {
     const primaryFloorPlan = floorPlans[0];
 
     const propertyPayload = {
-      ...propertyDraft,
-      name: propertyDraft.name.trim(),
-      area: propertyDraft.area.trim(),
-      manager: propertyDraft.manager.trim() || "Not assigned",
+      ...optimizedDraft,
+      name: optimizedDraft.name.trim(),
+      area: optimizedDraft.area.trim(),
+      manager: optimizedDraft.manager.trim() || "Not assigned",
       managementCompanyId: selectedManagementCompany.id,
       managementCompany: selectedManagementCompany.name,
-      address: propertyDraft.address.trim(),
-      city: propertyDraft.city.trim(),
-      state: propertyDraft.state.trim(),
-      zipcode: propertyDraft.zipcode.trim(),
-      yearBuilt: propertyDraft.yearBuilt.trim(),
+      address: optimizedDraft.address.trim(),
+      city: optimizedDraft.city.trim(),
+      state: optimizedDraft.state.trim(),
+      zipcode: optimizedDraft.zipcode.trim(),
+      yearBuilt: optimizedDraft.yearBuilt.trim(),
       rent: primaryFloorPlan.rent || "Contact for pricing",
       marketRent: primaryFloorPlan.marketRent,
       requiredMonthlyFees: primaryFloorPlan.requiredMonthlyFees,
@@ -396,10 +416,10 @@ export default function PropertyFormPage() {
       belowMarketPercent: primaryFloorPlan.belowMarketPercent,
       special: primaryFloorPlan.currentSpecial,
       image:
-        propertyDraft.photos.map(getPhotoImageUrl).find(Boolean) ||
-        propertyDraft.image.trim() ||
+        optimizedDraft.photos.map(getPhotoImageUrl).find(Boolean) ||
+        optimizedDraft.image.trim() ||
         "",
-      photos: propertyDraft.photos,
+      photos: optimizedDraft.photos,
       floorPlans,
       bedrooms: [
         ...new Set(floorPlans.map((floorPlan) => floorPlan.beds).filter(Boolean)),
@@ -1742,6 +1762,84 @@ function normalizeFloorPlanPhotos(floorPlan, index) {
   return [];
 }
 
+async function optimizeDraftPhotos(propertyDraft) {
+  const propertyPhotoResult = await optimizePhotoList(propertyDraft.photos, {
+    maxDimension: PROPERTY_PHOTO_MAX_DIMENSION,
+    targetBytes: PROPERTY_PHOTO_TARGET_BYTES,
+  });
+
+  const floorPlans = await Promise.all(
+    propertyDraft.floorPlans.map(async (floorPlan) => {
+      const floorPlanPhotoResult = await optimizePhotoList(floorPlan.photos || [], {
+        maxDimension: FLOOR_PLAN_PHOTO_MAX_DIMENSION,
+        targetBytes: FLOOR_PLAN_PHOTO_TARGET_BYTES,
+      });
+
+      return {
+        ...floorPlan,
+        image: floorPlanPhotoResult.urlMap.get(floorPlan.image) || floorPlan.image,
+        photos: floorPlanPhotoResult.photos,
+      };
+    })
+  );
+
+  return {
+    ...propertyDraft,
+    image: propertyPhotoResult.urlMap.get(propertyDraft.image) || propertyDraft.image,
+    photos: propertyPhotoResult.photos,
+    floorPlans,
+  };
+}
+
+async function optimizePhotoList(photos = [], options) {
+  const urlMap = new Map();
+  const optimizedPhotos = await Promise.all(
+    photos.map(async (photo) => {
+      const optimizedPhoto = await optimizePhotoForStorage(photo, options);
+      const currentUrl = getPhotoImageUrl(photo);
+      const nextUrl = getPhotoImageUrl(optimizedPhoto);
+
+      if (currentUrl && nextUrl && currentUrl !== nextUrl) {
+        urlMap.set(currentUrl, nextUrl);
+      }
+
+      return optimizedPhoto;
+    })
+  );
+
+  return {
+    photos: optimizedPhotos,
+    urlMap,
+  };
+}
+
+async function optimizePhotoForStorage(photo, options) {
+  const photoUrl = getPhotoImageUrl(photo);
+
+  if (!photoUrl || !isDataUrl(photoUrl)) return photo;
+
+  const currentSize = photo.storedSize || getDataUrlByteSize(photoUrl);
+  if (currentSize <= options.targetBytes * 1.15) {
+    return {
+      ...photo,
+      storedSize: currentSize,
+    };
+  }
+
+  const compressedPhoto = await compressImageUrl(photoUrl, options);
+  const photoWithoutLargeFallbacks = { ...photo };
+  delete photoWithoutLargeFallbacks.dataUrl;
+  delete photoWithoutLargeFallbacks.src;
+  delete photoWithoutLargeFallbacks.previewUrl;
+  delete photoWithoutLargeFallbacks.image;
+
+  return {
+    ...photoWithoutLargeFallbacks,
+    url: compressedPhoto.dataUrl,
+    storedSize: compressedPhoto.size,
+  };
+}
+
 async function readPhotoFile(file, category = "Property", options = {}) {
   if (!file.type.startsWith("image/")) {
     throw new Error("Only image uploads are supported.");
@@ -1764,7 +1862,17 @@ async function readPhotoFile(file, category = "Property", options = {}) {
 }
 
 async function compressImageFile(file, options) {
-  const image = await loadImage(file);
+  const imageUrl = URL.createObjectURL(file);
+
+  try {
+    return await compressImageUrl(imageUrl, options);
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
+async function compressImageUrl(imageUrl, options) {
+  const image = await loadImage(imageUrl);
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   const qualityLevels = [0.82, 0.72, 0.62, 0.52];
@@ -1819,20 +1927,27 @@ async function compressImageFile(file, options) {
 function loadImage(file) {
   return new Promise((resolve, reject) => {
     const image = new Image();
-    const imageUrl = URL.createObjectURL(file);
 
     image.onload = () => {
-      URL.revokeObjectURL(imageUrl);
       resolve(image);
     };
 
     image.onerror = () => {
-      URL.revokeObjectURL(imageUrl);
       reject(new Error("Could not read this image file."));
     };
 
-    image.src = imageUrl;
+    image.src = file;
   });
+}
+
+function isDataUrl(value) {
+  return String(value || "").startsWith("data:");
+}
+
+function getDataUrlByteSize(dataUrl) {
+  const base64Value = String(dataUrl).split(",")[1] || "";
+
+  return Math.ceil((base64Value.length * 3) / 4);
 }
 
 function canvasToBlob(canvas, type, quality) {
