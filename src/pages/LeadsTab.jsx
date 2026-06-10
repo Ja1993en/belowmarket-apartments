@@ -330,44 +330,44 @@ export default function LeadsTab() {
     dataTypeFilter !== "All Data";
 
   return (
-    <div>
+    <div className="text-left">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1 className="text-4xl font-black text-slate-900">Leads</h1>
-          <p className="mt-2 text-slate-500">
+          <h1 className="text-4xl font-black text-[#102426]">Leads</h1>
+          <p className="mt-2 font-semibold text-[#526260]">
             Manage renter leads, messages, and property recommendations.
           </p>
           {searchParams.get("tourFilter") && (
-            <p className="mt-3 inline-flex rounded-full bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-700">
+            <p className="mt-3 inline-flex rounded-full bg-[#d8efe6] px-4 py-2 text-sm font-bold text-[#1f6f63]">
               Showing dashboard tour follow-ups
             </p>
           )}
           {lastLoadedAt && (
-            <p className="mt-2 text-xs font-semibold text-slate-400">
+            <p className="mt-2 text-xs font-semibold text-[#78908a]">
               Last refreshed {lastLoadedAt.toLocaleTimeString()}
             </p>
           )}
 
           {isLoadingLeads && (
-            <p className="mt-2 text-sm font-bold text-slate-500">
+            <p className="mt-2 text-sm font-bold text-[#526260]">
               Loading leads...
             </p>
           )}
 
           {loadError && (
-            <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+            <p className="mt-3 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
               {loadError}
             </p>
           )}
 
           {isUsingFallbackData && (
-            <p className="mt-2 text-xs font-semibold text-amber-600">
+            <p className="mt-2 text-xs font-semibold text-[#8a5b0a]">
               Local fallback mode is active.
             </p>
           )}
 
           {testLeadMessage && (
-            <p className="mt-3 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+            <p className="mt-3 rounded-2xl bg-[#d8efe6] px-4 py-3 text-sm font-bold text-[#1f6f63] ring-1 ring-[#a9cfc2]">
               {testLeadMessage}
             </p>
           )}
@@ -377,7 +377,7 @@ export default function LeadsTab() {
           <button
             onClick={loadLeads}
             disabled={isLoadingLeads}
-            className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+            className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
           >
             {isLoadingLeads ? "Refreshing..." : "Refresh"}
           </button>
@@ -386,7 +386,7 @@ export default function LeadsTab() {
             type="button"
             onClick={createTestLead}
             disabled={isCreatingTestLead}
-            className="rounded-2xl bg-emerald-100 px-5 py-3 text-center text-sm font-bold text-emerald-700 hover:bg-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-50 disabled:text-emerald-300"
+            className="rounded-2xl bg-[#d8efe6] px-5 py-3 text-center text-sm font-bold text-[#1f6f63] hover:bg-[#c5e5d8] disabled:cursor-not-allowed disabled:bg-[#e7f3ee] disabled:text-[#78908a]"
           >
             {isCreatingTestLead ? "Creating..." : "Create Test Lead"}
           </button>
@@ -396,7 +396,7 @@ export default function LeadsTab() {
               type="button"
               onClick={archiveTestLeads}
               disabled={isArchivingTestLeads}
-              className="rounded-2xl bg-amber-100 px-5 py-3 text-center text-sm font-bold text-amber-700 hover:bg-amber-200 disabled:cursor-not-allowed disabled:bg-amber-50 disabled:text-amber-300"
+              className="rounded-2xl bg-[#fff8e6] px-5 py-3 text-center text-sm font-bold text-[#8a5b0a] hover:bg-[#f9edc8] disabled:cursor-not-allowed disabled:bg-[#e7f3ee] disabled:text-[#78908a]"
             >
               {isArchivingTestLeads ? "Archiving..." : "Archive Test Leads"}
             </button>
@@ -404,42 +404,43 @@ export default function LeadsTab() {
 
           <Link
             to="/start"
-            className="rounded-2xl bg-slate-950 px-5 py-3 text-center text-sm font-bold text-white hover:bg-slate-800"
+            className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-center text-sm font-black text-[#102426] hover:bg-[#f9d783]"
           >
             + Add Lead
           </Link>
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-7">        <LeadStatCard
-        icon={Users}
-        title="Total Leads"
-        value={activeLeads.length}
-        subtitle="All renter requests"
-        onClick={() => {
-          setSearchTerm("");
-          setStatusFilter("All");
-          setSourceFilter("All");
-          setPriorityFilter("All");
-          setSortBy("newest");
-          setRecommendationFilter("All");
-          setTourFilter("All");
-          setActivityFilter("All Activity");
-          setDataTypeFilter("All Data");
-          setSearchParams({});
-        }}
-        isActive={
-          searchTerm === "" &&
-          statusFilter === "All" &&
-          sourceFilter === "All" &&
-          priorityFilter === "All" &&
-          sortBy === "newest" &&
-          recommendationFilter === "All" &&
-          tourFilter === "All" &&
-          activityFilter === "All Activity" &&
-          dataTypeFilter === "All Data"
-        }
-      />
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <LeadStatCard
+          icon={Users}
+          title="Total Leads"
+          value={activeLeads.length}
+          subtitle="All renter requests"
+          onClick={() => {
+            setSearchTerm("");
+            setStatusFilter("All");
+            setSourceFilter("All");
+            setPriorityFilter("All");
+            setSortBy("newest");
+            setRecommendationFilter("All");
+            setTourFilter("All");
+            setActivityFilter("All Activity");
+            setDataTypeFilter("All Data");
+            setSearchParams({});
+          }}
+          isActive={
+            searchTerm === "" &&
+            statusFilter === "All" &&
+            sourceFilter === "All" &&
+            priorityFilter === "All" &&
+            sortBy === "newest" &&
+            recommendationFilter === "All" &&
+            tourFilter === "All" &&
+            activityFilter === "All Activity" &&
+            dataTypeFilter === "All Data"
+          }
+        />
         <LeadStatCard
           icon={Clock3}
           title="Needs Action"
@@ -940,37 +941,37 @@ function LeadStatCard({
       type="button"
       onClick={onClick}
       disabled={!onClick}
-      className={`rounded-3xl border p-6 text-left shadow-sm transition ${onClick ? "hover:-translate-y-1 hover:shadow-md" : ""
+      className={`min-h-[170px] rounded-3xl border p-5 text-left shadow-sm transition ${onClick ? "hover:-translate-y-1 hover:shadow-md" : ""
         } ${isActive
-          ? "border-slate-950 bg-slate-950 text-white"
-          : "border-slate-200 bg-white text-slate-950"
+          ? "border-[#102426] bg-[#102426] text-white"
+          : "border-[#d7e6df] bg-white text-[#102426] hover:border-[#f2b84b]"
         }`}
     >
       <div
-        className={`flex h-12 w-12 items-center justify-center rounded-2xl ${isActive ? "bg-white/10" : "bg-slate-100"
+        className={`flex h-11 w-11 items-center justify-center rounded-2xl ${isActive ? "bg-[#f2b84b]" : "bg-[#e7f3ee]"
           }`}
       >
         <Icon
-          className={`h-5 w-5 ${isActive ? "text-white" : "text-slate-700"
+          className={`h-5 w-5 ${isActive ? "text-[#102426]" : "text-[#1f6f63]"
             }`}
         />
       </div>
 
       <p
-        className={`mt-5 text-sm font-semibold ${isActive ? "text-slate-300" : "text-slate-500"
+        className={`mt-4 text-sm font-semibold ${isActive ? "text-[#d7ece6]" : "text-[#526260]"
           }`}
       >
         {title}
       </p>
 
       <h2
-        className={`mt-3 text-4xl font-black ${isActive ? "text-white" : "text-slate-900"
+        className={`mt-2 text-3xl font-black leading-none ${isActive ? "text-[#fff7df]" : "text-[#102426]"
           }`}
       >
         {value}
       </h2>
 
-      <p className={`mt-2 text-sm ${isActive ? "text-slate-300" : "text-slate-500"}`}>
+      <p className={`mt-2 text-sm font-semibold leading-5 ${isActive ? "text-[#d7ece6]" : "text-[#526260]"}`}>
         {subtitle}
       </p>
     </button>
