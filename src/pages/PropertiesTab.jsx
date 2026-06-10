@@ -92,7 +92,7 @@ export default function PropertiesTab() {
     });
 
     return (
-        <div>
+        <div className="text-left">
             <h1 className="text-4xl font-black text-[#102426]">
                 Properties
             </h1>
@@ -127,7 +127,7 @@ export default function PropertiesTab() {
 
                     <Link
                         to="/admin/properties/new"
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
                     >
                         <Plus className="h-4 w-4" />
                         Add Property
@@ -140,14 +140,14 @@ export default function PropertiesTab() {
                         value={searchTerm}
                         onChange={(event) => setSearchTerm(event.target.value)}
                         placeholder="Search properties..."
-                        className="w-full rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                        className="w-full rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
                     />
 
 
                     <select
                         value={statusFilter}
                         onChange={(event) => setStatusFilter(event.target.value)}
-                        className="rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#2d7dd2]"
+                        className="rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
                     >
                         <option>All</option>
                         <option>Live</option>
@@ -158,7 +158,7 @@ export default function PropertiesTab() {
                     <select
                         value={visibilityFilter}
                         onChange={(event) => setVisibilityFilter(event.target.value)}
-                        className="rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#2d7dd2]"
+                        className="rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
                     >
                         <option>All</option>
                         <option>Public</option>
@@ -397,7 +397,7 @@ function PropertyRow({
                     <button
                         type="button"
                         onClick={onDelete}
-                        className="rounded-xl bg-red-100 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-200"
+                        className="rounded-xl bg-[#fde8df] px-4 py-2 text-sm font-bold text-[#b33818] hover:bg-[#f9d4c6]"
                     >
                         Delete
                     </button>

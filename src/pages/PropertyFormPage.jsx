@@ -396,14 +396,14 @@ export default function PropertyFormPage() {
 
   if (isEditing && !existingProperty) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-black text-slate-900">Property not found</h1>
-        <p className="mt-2 text-slate-500">
+      <div className="rounded-3xl border border-[#d7e6df] bg-white p-8 text-left shadow-sm">
+        <h1 className="text-3xl font-black text-[#102426]">Property not found</h1>
+        <p className="mt-2 font-semibold text-[#526260]">
           This property ID does not match any property in your current data.
         </p>
         <Link
           to="/admin/properties"
-          className="mt-6 inline-block rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+          className="mt-6 inline-block rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
         >
           Back to Properties
         </Link>
@@ -412,25 +412,25 @@ export default function PropertyFormPage() {
   }
 
   return (
-    <div>
+    <div className="text-left">
       <Link
         to="/admin/properties"
-        className="inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+        className="inline-flex items-center gap-2 rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Properties
       </Link>
 
-      <div className="mt-6 rounded-3xl bg-slate-950 p-6 text-white shadow-sm">
+      <div className="mt-6 rounded-3xl bg-[#102426] p-6 text-white shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-white/10 p-3">
+          <div className="rounded-2xl bg-[#f2b84b] p-3 text-[#102426]">
             <Building2 className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-300">
+            <p className="text-sm font-black text-[#f2b84b]">
               {isEditing ? "Edit Property" : "Add Property"}
             </p>
-            <h1 className="mt-1 text-4xl font-black">
+            <h1 className="mt-1 text-4xl font-black text-[#fff7df]">
               {propertyDraft.name || "New Property"}
             </h1>
           </div>
@@ -438,7 +438,7 @@ export default function PropertyFormPage() {
       </div>
 
       <form onSubmit={saveProperty} className="mt-6 space-y-6">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-2">
             <FormField
               label="Property Name"
@@ -451,8 +451,8 @@ export default function PropertyFormPage() {
               value={propertyDraft.manager}
               onChange={(value) => updateDraft("manager", value)}
             />
-            <label className="rounded-2xl bg-slate-50 p-4">
-              <span className="text-sm font-semibold text-slate-500">
+            <label className="rounded-2xl bg-[#f5f8f1] p-4">
+              <span className="text-sm font-semibold text-[#526260]">
                 Management Company
               </span>
               <select
@@ -465,7 +465,7 @@ export default function PropertyFormPage() {
                       getManagementCompanyById(event.target.value)?.name || "",
                   }))
                 }
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
               >
                 <option value="">Select management company</option>
                 {managementCompanies.map((company) => (
@@ -529,8 +529,8 @@ export default function PropertyFormPage() {
               value={propertyDraft.schoolGrade}
               onChange={(value) => updateDraft("schoolGrade", value)}
             />
-            <label className="rounded-2xl bg-slate-50 p-4 md:col-span-2">
-              <span className="text-sm font-semibold text-slate-500">
+            <label className="rounded-2xl bg-[#f5f8f1] p-4 md:col-span-2">
+              <span className="text-sm font-semibold text-[#526260]">
                 School Note
               </span>
               <input
@@ -538,22 +538,22 @@ export default function PropertyFormPage() {
                 value={propertyDraft.schoolNote}
                 onChange={(event) => updateDraft("schoolNote", event.target.value)}
                 placeholder="Example: Verify attendance zones with Dallas ISD"
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
               />
             </label>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="rounded-2xl bg-slate-50 p-4">
-              <span className="text-sm font-semibold text-slate-500">
+            <label className="rounded-2xl bg-[#f5f8f1] p-4">
+              <span className="text-sm font-semibold text-[#526260]">
                 Listing Status
               </span>
               <select
                 value={propertyDraft.status}
                 onChange={(event) => updateDraft("status", event.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
               >
                 <option>Live</option>
                 <option>Pending Review</option>
@@ -563,13 +563,13 @@ export default function PropertyFormPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-              <h2 className="text-2xl font-black text-slate-900">
+              <h2 className="text-2xl font-black text-[#102426]">
                 Floor Plans
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm font-semibold text-[#526260]">
                 {propertyDraft.floorPlans.length} floor plan
                 {propertyDraft.floorPlans.length === 1 ? "" : "s"}
               </p>
@@ -578,7 +578,7 @@ export default function PropertyFormPage() {
             <button
               type="button"
               onClick={addFloorPlan}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
             >
               <Plus className="h-4 w-4" />
               Add Floor Plan
@@ -605,18 +605,18 @@ export default function PropertyFormPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-              <h2 className="text-2xl font-black text-slate-900">
+              <h2 className="text-2xl font-black text-[#102426]">
                 Property Photos
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm font-semibold text-[#526260]">
                 {propertyDraft.photos.length} of {MAX_UPLOAD_COUNT} uploaded
               </p>
             </div>
 
-            <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800">
+            <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]">
               <ImagePlus className="h-4 w-4" />
               Upload Photos
               <input
@@ -637,7 +637,7 @@ export default function PropertyFormPage() {
                 return (
                   <div
                     key={photo.id}
-                    className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                    className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-[#f5f8f1]"
                   >
                     <img
                       src={photo.url}
@@ -646,7 +646,7 @@ export default function PropertyFormPage() {
                     />
 
                     <div className="space-y-3 p-3">
-                      <p className="truncate text-sm font-bold text-slate-900">
+                      <p className="truncate text-sm font-bold text-[#102426]">
                         {photo.name}
                       </p>
 
@@ -655,8 +655,8 @@ export default function PropertyFormPage() {
                           type="button"
                           onClick={() => setPrimaryPhoto(photo.id)}
                           className={`inline-flex flex-1 items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-bold ${isPrimaryPhoto
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-white text-slate-700 hover:bg-slate-100"
+                            ? "bg-[#d8efe6] text-[#1f6f63]"
+                            : "bg-white text-[#173f3f] hover:bg-[#e7f3ee]"
                             }`}
                         >
                           <Star className="h-3.5 w-3.5" />
@@ -666,7 +666,7 @@ export default function PropertyFormPage() {
                         <button
                           type="button"
                           onClick={() => removePhoto(photo.id)}
-                          className="inline-flex items-center justify-center rounded-xl bg-red-100 px-3 py-2 text-red-700 hover:bg-red-200"
+                          className="inline-flex items-center justify-center rounded-xl bg-[#fde8df] px-3 py-2 text-[#b33818] hover:bg-[#f9d4c6]"
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
@@ -680,7 +680,7 @@ export default function PropertyFormPage() {
         </section>
 
         {saveError && (
-          <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+          <p className="rounded-2xl bg-[#fde8df] px-4 py-3 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
             {saveError}
           </p>
         )}
@@ -688,7 +688,7 @@ export default function PropertyFormPage() {
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             type="submit"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
           >
             <Save className="h-4 w-4" />
             {isEditing ? "Save Property" : "Create Property"}
@@ -696,7 +696,7 @@ export default function PropertyFormPage() {
 
           <Link
             to="/admin/properties"
-            className="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+            className="inline-flex items-center justify-center rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
           >
             Cancel
           </Link>
@@ -741,10 +741,10 @@ function FloorPlanEditor({
   return (
     <div
       key={floorPlan.id}
-      className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+      className="rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] p-4"
     >
       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-        <h3 className="text-lg font-black text-slate-900">
+        <h3 className="text-lg font-black text-[#102426]">
           Floor Plan {index + 1}
         </h3>
 
@@ -752,7 +752,7 @@ function FloorPlanEditor({
           type="button"
           onClick={() => onRemove(floorPlan.id)}
           disabled={!canRemove}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-100 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-200 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#fde8df] px-3 py-2 text-sm font-bold text-[#b33818] hover:bg-[#f9d4c6] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
         >
           <X className="h-4 w-4" />
           Remove
@@ -760,7 +760,7 @@ function FloorPlanEditor({
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800 md:col-span-2 xl:col-span-3">
+        <p className="rounded-2xl border border-[#f2d08a] bg-[#fff8e6] p-4 text-sm font-bold leading-6 text-[#8a5b0a] md:col-span-2 xl:col-span-3">
           Enter base rent separately from required monthly fees. Free-week specials are calculated from base rent only and shown as an estimated monthly value. Most properties apply specials as account credits, so renter payment timing may vary by property.
         </p>
         <FormField
@@ -799,13 +799,13 @@ function FloorPlanEditor({
           onChange={(value) => onChange(floorPlan.id, "marketRent", value)}
         />
         <label className="rounded-2xl bg-white p-4">
-          <span className="text-sm font-semibold text-slate-500">
+          <span className="text-sm font-semibold text-[#526260]">
             Weeks Free Special
           </span>
           <select
             value={String(floorPlan.freeWeeks)}
             onChange={(event) => onChange(floorPlan.id, "freeWeeks", event.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+            className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
           >
             {WEEKS_FREE_OPTIONS.map((weeks) => (
               <option key={weeks} value={String(weeks)}>
@@ -815,7 +815,7 @@ function FloorPlanEditor({
           </select>
         </label>
         <div className="rounded-2xl bg-white p-4">
-          <span className="text-sm font-semibold text-slate-500">
+          <span className="text-sm font-semibold text-[#526260]">
             Fee Special
           </span>
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -824,8 +824,8 @@ function FloorPlanEditor({
                 key={feeType.value}
                 className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-black ${
                   floorPlan.adminFeeSpecialType === feeType.value
-                    ? "border-slate-950 bg-slate-950 text-white"
-                    : "border-slate-200 bg-white text-slate-700"
+                    ? "border-[#f2b84b] bg-[#102426] text-[#fff7df]"
+                    : "border-[#d7e6df] bg-white text-[#173f3f] hover:border-[#f2b84b]"
                 }`}
               >
                 <input
@@ -836,7 +836,7 @@ function FloorPlanEditor({
                   onChange={(event) =>
                     onChange(floorPlan.id, "adminFeeSpecialType", event.target.value)
                   }
-                  className="h-4 w-4 accent-slate-950"
+                  className="h-4 w-4 accent-[#f2b84b]"
                 />
                 {feeType.label}
               </label>
@@ -849,11 +849,11 @@ function FloorPlanEditor({
               onChange(floorPlan.id, "adminFeeSpecial", event.target.value)
             }
             placeholder="$99 or waived"
-            className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+            className="mt-3 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
           />
         </div>
         <label className="rounded-2xl bg-white p-4">
-          <span className="text-sm font-semibold text-slate-500">
+          <span className="text-sm font-semibold text-[#526260]">
             Lease Term
           </span>
           <select
@@ -861,7 +861,7 @@ function FloorPlanEditor({
             onChange={(event) =>
               onChange(floorPlan.id, "leaseTermMonths", event.target.value)
             }
-            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+            className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
           >
             {LEASE_TERM_OPTIONS.map((months) => (
               <option key={months} value={months}>
@@ -881,13 +881,13 @@ function FloorPlanEditor({
           value={calculatedValues.belowMarketPercent}
         />
         <label className="rounded-2xl bg-white p-4">
-          <span className="text-sm font-semibold text-slate-500">
+          <span className="text-sm font-semibold text-[#526260]">
             Status
           </span>
           <select
             value={floorPlan.status}
             onChange={(event) => onChange(floorPlan.id, "status", event.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+            className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
           >
             <option value="available">Available</option>
             <option value="limited">Limited</option>
@@ -895,14 +895,14 @@ function FloorPlanEditor({
           </select>
         </label>
         <label className="rounded-2xl bg-white p-4 md:col-span-2 xl:col-span-3">
-          <span className="text-sm font-semibold text-slate-500">
+          <span className="text-sm font-semibold text-[#526260]">
             Notes
           </span>
           <input
             type="text"
             value={floorPlan.notes}
             onChange={(event) => onChange(floorPlan.id, "notes", event.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+            className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
           />
         </label>
       </div>
@@ -910,15 +910,15 @@ function FloorPlanEditor({
       <div className="mt-5 rounded-2xl bg-white p-4">
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
           <div>
-            <h4 className="text-base font-black text-slate-900">
+            <h4 className="text-base font-black text-[#102426]">
               Floor Plan Photos
             </h4>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm font-semibold text-[#526260]">
               {(floorPlan.photos || []).length} of {MAX_FLOOR_PLAN_UPLOAD_COUNT} uploaded
             </p>
           </div>
 
-          <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800">
+          <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]">
             <ImagePlus className="h-4 w-4" />
             Upload Floor Plan Photos
             <input
@@ -939,7 +939,7 @@ function FloorPlanEditor({
               return (
                 <div
                   key={photo.id}
-                  className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                  className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-[#f5f8f1]"
                 >
                   <img
                     src={photo.url}
@@ -948,7 +948,7 @@ function FloorPlanEditor({
                   />
 
                   <div className="space-y-2 p-3">
-                    <p className="truncate text-sm font-bold text-slate-900">
+                    <p className="truncate text-sm font-bold text-[#102426]">
                       {photo.name}
                     </p>
 
@@ -957,8 +957,8 @@ function FloorPlanEditor({
                         type="button"
                         onClick={() => onPrimaryPhotoSet(floorPlan.id, photo.id)}
                         className={`inline-flex flex-1 items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-bold ${isPrimaryPhoto
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-white text-slate-700 hover:bg-slate-100"
+                          ? "bg-[#d8efe6] text-[#1f6f63]"
+                          : "bg-white text-[#173f3f] hover:bg-[#e7f3ee]"
                           }`}
                       >
                         <Star className="h-3.5 w-3.5" />
@@ -968,7 +968,7 @@ function FloorPlanEditor({
                       <button
                         type="button"
                         onClick={() => onPhotoRemove(floorPlan.id, photo.id)}
-                        className="inline-flex items-center justify-center rounded-xl bg-red-100 px-3 py-2 text-red-700 hover:bg-red-200"
+                        className="inline-flex items-center justify-center rounded-xl bg-[#fde8df] px-3 py-2 text-[#b33818] hover:bg-[#f9d4c6]"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
@@ -984,10 +984,10 @@ function FloorPlanEditor({
       <div className="mt-5 rounded-2xl bg-white p-4">
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
           <div>
-            <h4 className="text-base font-black text-slate-900">
+            <h4 className="text-base font-black text-[#102426]">
               Available Dates
             </h4>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm font-semibold text-[#526260]">
               {floorPlan.availableUnits.length} availability row
               {floorPlan.availableUnits.length === 1 ? "" : "s"}
             </p>
@@ -996,7 +996,7 @@ function FloorPlanEditor({
           <button
             type="button"
             onClick={() => onAvailabilityAdd(floorPlan.id)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#f2b84b] px-4 py-2 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
           >
             <Plus className="h-4 w-4" />
             Add Date
@@ -1007,10 +1007,10 @@ function FloorPlanEditor({
           {floorPlan.availableUnits.map((availableUnit, availabilityIndex) => (
             <div
               key={availableUnit.id}
-              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+              className="rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] p-4"
             >
               <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-                <p className="text-sm font-black text-slate-900">
+                <p className="text-sm font-black text-[#102426]">
                   Availability {availabilityIndex + 1}
                 </p>
                 <button
@@ -1019,7 +1019,7 @@ function FloorPlanEditor({
                     onAvailabilityRemove(floorPlan.id, availableUnit.id)
                   }
                   disabled={floorPlan.availableUnits.length === 1}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-100 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-200 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#fde8df] px-3 py-2 text-xs font-bold text-[#b33818] hover:bg-[#f9d4c6] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
                 >
                   <X className="h-3.5 w-3.5" />
                   Remove
@@ -1055,7 +1055,7 @@ function FloorPlanEditor({
                   }
                 />
                 <label className="rounded-2xl bg-white p-4">
-                  <span className="text-sm font-semibold text-slate-500">
+                  <span className="text-sm font-semibold text-[#526260]">
                     Unit Status
                   </span>
                   <select
@@ -1068,7 +1068,7 @@ function FloorPlanEditor({
                         event.target.value
                       )
                     }
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                    className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
                   >
                     <option value="available">Available</option>
                     <option value="pending">Pending</option>
@@ -1076,7 +1076,7 @@ function FloorPlanEditor({
                   </select>
                 </label>
                 <label className="rounded-2xl bg-white p-4">
-                  <span className="text-sm font-semibold text-slate-500">
+                  <span className="text-sm font-semibold text-[#526260]">
                     Unit Special
                   </span>
                   <select
@@ -1084,7 +1084,7 @@ function FloorPlanEditor({
                     onChange={(event) =>
                       updateUnitSpecial(availableUnit.id, event.target.value)
                     }
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                    className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
                   >
                     <option value="floorPlan">Use floor plan special</option>
                     <option value="none">No special</option>
@@ -1096,7 +1096,7 @@ function FloorPlanEditor({
                   </select>
                 </label>
                 <div className="rounded-2xl bg-white p-4 md:col-span-2 xl:col-span-2">
-                  <span className="text-sm font-semibold text-slate-500">
+                  <span className="text-sm font-semibold text-[#526260]">
                     Unit Fee Special
                   </span>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -1105,8 +1105,8 @@ function FloorPlanEditor({
                         key={feeType.value}
                         className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-black ${
                           availableUnit.adminFeeSpecialType === feeType.value
-                            ? "border-slate-950 bg-slate-950 text-white"
-                            : "border-slate-200 bg-white text-slate-700"
+                            ? "border-[#f2b84b] bg-[#102426] text-[#fff7df]"
+                            : "border-[#d7e6df] bg-white text-[#173f3f] hover:border-[#f2b84b]"
                         }`}
                       >
                         <input
@@ -1122,7 +1122,7 @@ function FloorPlanEditor({
                               event.target.value
                             )
                           }
-                          className="h-4 w-4 accent-slate-950"
+                          className="h-4 w-4 accent-[#f2b84b]"
                         />
                         {feeType.label}
                       </label>
@@ -1140,7 +1140,7 @@ function FloorPlanEditor({
                       )
                     }
                     placeholder="$99 or waived"
-                    className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+                    className="mt-3 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
                   />
                 </div>
                 <FormField
@@ -1161,8 +1161,8 @@ function FloorPlanEditor({
 
 function FormField({ label, value, onChange, required = false, type = "text" }) {
   return (
-    <label className="rounded-2xl bg-slate-50 p-4">
-      <span className="text-sm font-semibold text-slate-500">
+    <label className="rounded-2xl bg-[#f5f8f1] p-4">
+      <span className="text-sm font-semibold text-[#526260]">
         {label}
       </span>
       <input
@@ -1170,7 +1170,7 @@ function FormField({ label, value, onChange, required = false, type = "text" }) 
         value={value}
         onChange={(event) => onChange(event.target.value)}
         required={required}
-        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-black text-slate-900 outline-none focus:border-slate-400"
+        className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
       />
     </label>
   );
@@ -1179,10 +1179,10 @@ function FormField({ label, value, onChange, required = false, type = "text" }) 
 function CalculatedField({ label, value }) {
   return (
     <div className="rounded-2xl bg-white p-4">
-      <span className="text-sm font-semibold text-slate-500">
+      <span className="text-sm font-semibold text-[#526260]">
         {label}
       </span>
-      <p className="mt-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2 font-black text-slate-900">
+      <p className="mt-2 rounded-xl border border-[#d7e6df] bg-[#e7f3ee] px-3 py-2 font-black text-[#102426]">
         {value || "Calculated"}
       </p>
     </div>
