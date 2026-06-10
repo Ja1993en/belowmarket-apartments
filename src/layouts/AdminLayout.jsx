@@ -29,17 +29,17 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-950">
+    <div className="min-h-screen bg-[#f5f8f1] text-[#102426]">
       <div className="flex">
-        <aside className="hidden min-h-screen w-72 bg-slate-950 p-6 text-white md:block">
+        <aside className="hidden min-h-screen w-72 bg-[#102426] p-6 text-white md:block">
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-white/10 p-3">
+            <div className="rounded-2xl bg-[#f2b84b] p-3 text-[#102426]">
               <Building2 className="h-6 w-6" />
             </div>
 
             <div>
               <h1 className="text-xl font-black">Below Market Apartments</h1>
-              <p className="text-xs text-slate-400">Admin Portal</p>
+              <p className="text-xs font-bold text-[#d7ece6]">Admin Portal</p>
             </div>
           </div>
 
@@ -52,21 +52,21 @@ export default function AdminLayout() {
         </aside>
 
         <main className="min-h-screen flex-1">
-          <header className="flex items-center justify-between border-b bg-white px-6 py-4">
+          <header className="flex items-center justify-between border-b border-[#d7e6df] bg-white/95 px-6 py-4 shadow-sm backdrop-blur">
             <div className="flex items-center gap-3">
-              <Menu className="h-6 w-6 md:hidden" />
+              <Menu className="h-6 w-6 text-[#173f3f] md:hidden" />
               <div>
-                <p className="text-sm font-bold text-slate-500">
+                <p className="text-sm font-bold text-[#526260]">
                   Admin Dashboard
                 </p>
-                <h2 className="text-xl font-black">Below Market Apartments</h2>
+                <h2 className="text-xl font-black text-[#102426]">Below Market Apartments</h2>
               </div>
             </div>
 
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800"
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
             >
               <LogOut className="h-4 w-4" />
               Logout
@@ -89,8 +89,8 @@ function NavItem({ to, icon: Icon, label }) {
       className={({ isActive }) =>
         `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition ${
           isActive
-            ? "bg-white text-slate-950"
-            : "text-slate-300 hover:bg-white/10 hover:text-white"
+            ? "bg-[#f2b84b] text-[#102426]"
+            : "text-[#d7ece6] hover:bg-white/10 hover:text-white"
         }`
       }
     >
