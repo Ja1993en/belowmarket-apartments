@@ -12,24 +12,42 @@ import { getMarketRentBenchmark } from "../data/marketRentBenchmarks";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
+const NEARBY_PLACE_RADIUS_MILES = 10;
 const NEARBY_PLACE_QUERIES = [
     {
-        query: "grocery",
-        label: "Nearby Grocery",
-        detail: "Grocery options near this property",
-        type: "grocery",
+        query: "Walmart",
+        label: "Walmart",
+        detail: "Closest Walmart found near this property",
+        type: "walmart",
+        keywords: ["walmart"],
     },
     {
-        query: "shopping",
-        label: "Nearby Stores",
-        detail: "Shopping and daily essentials nearby",
-        type: "stores",
+        query: "Target",
+        label: "Target",
+        detail: "Closest Target found near this property",
+        type: "target",
+        keywords: ["target"],
     },
     {
-        query: "gym",
-        label: "Nearby Gym",
-        detail: "Fitness options near this property",
-        type: "gym",
+        query: "LA Fitness",
+        label: "LA Fitness",
+        detail: "Closest LA Fitness found near this property",
+        type: "laFitness",
+        keywords: ["la fitness", "lafitness"],
+    },
+    {
+        query: "Planet Fitness",
+        label: "Planet Fitness",
+        detail: "Closest Planet Fitness found near this property",
+        type: "planetFitness",
+        keywords: ["planet fitness"],
+    },
+    {
+        query: "Kroger",
+        label: "Kroger",
+        detail: "Closest Kroger found near this property",
+        type: "kroger",
+        keywords: ["kroger"],
     },
 ];
 const SCHOOL_DISTRICT_BY_ZIP = {
@@ -396,6 +414,7 @@ export default function PublicPropertyListing() {
     const [activeFloorPlanFilter, setActiveFloorPlanFilter] = useState("All");
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
     const [showSidebarError, setShowSidebarError] = useState(false);
+    const [nearbyPlaces, setNearbyPlaces] = useState([]);
     {/* Usestate end*/ }
 
     const filteredGalleryImages =
@@ -942,7 +961,7 @@ export default function PublicPropertyListing() {
                                 </div>
 
                                 {/*Location*/}
-                                <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_.8fr]">
+                                <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.45fr)]">
                                     <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                                         <h2 className="text-2xl font-black text-[#102426]">
                                             Location
@@ -955,6 +974,8 @@ export default function PublicPropertyListing() {
                                         <PropertyLocationMap
                                             property={property}
                                             addressLabel={addressLabel}
+                                            nearbyPlaces={nearbyPlaces}
+                                            onNearbyPlacesChange={setNearbyPlaces}
                                         />
                                     </div>
 
@@ -965,9 +986,26 @@ export default function PublicPropertyListing() {
                                             </h2>
 
                                             <div className="mt-5 space-y-3">
-                                                <NearbyItem label="Grocery" value="Pinned on map" />
-                                                <NearbyItem label="Stores" value="Pinned on map" />
-                                                <NearbyItem label="Gym" value="Pinned on map" />
+                                                <NearbyItem
+                                                    label="Walmart"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "walmart")}
+                                                />
+                                                <NearbyItem
+                                                    label="Target"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "target")}
+                                                />
+                                                <NearbyItem
+                                                    label="LA Fitness"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "laFitness")}
+                                                />
+                                                <NearbyItem
+                                                    label="Planet Fitness"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "planetFitness")}
+                                                />
+                                                <NearbyItem
+                                                    label="Kroger"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "kroger")}
+                                                />
                                                 <NearbyItem label="Property" value="Gold BMA pin" />
                                             </div>
                                         </div>
@@ -1751,11 +1789,28 @@ export default function PublicPropertyListing() {
 
 function NearbyItem({ label, value }) {
     return (
-        <div className="flex items-center justify-between rounded-2xl bg-[#f5f8f1] p-4">
+        <div className="grid gap-1 rounded-2xl bg-[#f5f8f1] p-4">
             <p className="font-bold text-[#102426]">{label}</p>
-            <p className="text-sm font-semibold text-[#526260]">{value}</p>
+            <p className="text-sm font-semibold leading-5 text-[#526260]">{value}</p>
         </div>
     );
+}
+
+function getNearbyPlaceName(nearbyPlaces, type) {
+    const matchedPlace = nearbyPlaces.find((place) => place.type === type);
+    if (!matchedPlace) return "No verified location within 10 miles";
+
+    const distanceLabel = Number.isFinite(matchedPlace.distanceMiles)
+        ? ` (${matchedPlace.distanceMiles.toFixed(1)} mi away)`
+        : "";
+
+    return `${getCleanNearbyPlaceLabel(matchedPlace)}${distanceLabel}`;
+}
+
+function getCleanNearbyPlaceLabel(place) {
+    return String(place?.label || "")
+        .replace(/^Nearby\s+/i, "")
+        .trim() || "Nearby place";
 }
 
 function SchoolSnapshotCard({ schoolSnapshot }) {
@@ -1878,7 +1933,12 @@ function getSchoolGradeClass(grade) {
     return "bg-[#fff0ea] text-[#7a432e] ring-1 ring-[#f4c8b8]";
 }
 
-function PropertyLocationMap({ property, addressLabel }) {
+function PropertyLocationMap({
+    property,
+    addressLabel,
+    nearbyPlaces,
+    onNearbyPlacesChange,
+}) {
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
     const markersRef = useRef([]);
@@ -1887,7 +1947,6 @@ function PropertyLocationMap({ property, addressLabel }) {
         MAPBOX_TOKEN ? "" : "Map token is missing."
     );
     const [propertyCoordinates, setPropertyCoordinates] = useState(null);
-    const [nearbyPlaces, setNearbyPlaces] = useState([]);
 
     useEffect(() => {
         let isMounted = true;
@@ -1937,23 +1996,23 @@ function PropertyLocationMap({ property, addressLabel }) {
     useEffect(() => {
         let isMounted = true;
 
-        resolveNearbyPlacePins(propertyCoordinates)
+        resolveNearbyPlaces(propertyCoordinates)
             .then((places) => {
                 if (isMounted) {
-                    setNearbyPlaces(places);
+                    onNearbyPlacesChange(places);
                 }
             })
             .catch((error) => {
                 console.error(error);
                 if (isMounted) {
-                    setNearbyPlaces(createNearbyPlacePins(propertyCoordinates));
+                    onNearbyPlacesChange([]);
                 }
             });
 
         return () => {
             isMounted = false;
         };
-    }, [propertyCoordinates]);
+    }, [onNearbyPlacesChange, propertyCoordinates]);
 
     useEffect(() => {
         if (!mapboxGl || !propertyCoordinates || !mapContainerRef.current) return;
@@ -2014,7 +2073,9 @@ function PropertyLocationMap({ property, addressLabel }) {
                 .setLngLat([place.longitude, place.latitude])
                 .setPopup(
                     new mapboxGl.Popup({ offset: 20 }).setHTML(
-                        `<strong>${escapeMapText(place.label)}</strong><br>${escapeMapText(place.detail)}`
+                        `<strong>${escapeMapText(getCleanNearbyPlaceLabel(place))}</strong><br>${escapeMapText(
+                            place.detail
+                        )}<br>${escapeMapText(place.distanceMiles.toFixed(1))} miles away`
                     )
                 )
                 .addTo(mapRef.current);
@@ -2055,12 +2116,14 @@ function PropertyLocationMap({ property, addressLabel }) {
 
     return (
         <div className="mt-5 overflow-hidden rounded-3xl border border-[#d7e6df] bg-[#dcebe4]">
-            <div ref={mapContainerRef} className="h-80 w-full" />
-            <div className="grid gap-2 border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-4">
+            <div ref={mapContainerRef} className="h-[420px] w-full md:h-[480px]" />
+            <div className="grid gap-2 border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 <MapLegendItem color="bg-[#f2b84b]" label="Property" />
-                <MapLegendItem color="bg-[#1f6f63]" label="Grocery" />
-                <MapLegendItem color="bg-[#2d7dd2]" label="Stores" />
-                <MapLegendItem color="bg-[#173f3f]" label="Gym" />
+                <MapLegendItem color="bg-[#2d7dd2]" label="Walmart" />
+                <MapLegendItem color="bg-[#e4572e]" label="Target" />
+                <MapLegendItem color="bg-[#173f3f]" label="LA Fitness" />
+                <MapLegendItem color="bg-[#8a5b0a]" label="Planet Fitness" />
+                <MapLegendItem color="bg-[#1f6f63]" label="Kroger" />
             </div>
         </div>
     );
@@ -2210,76 +2273,173 @@ function getCachedCoordinates(cacheKey) {
     }
 }
 
-async function resolveNearbyPlacePins(center) {
+async function resolveNearbyPlaces(center) {
     if (!center) return [];
 
-    const fallbackPlaces = createNearbyPlacePins(center);
-    if (!MAPBOX_TOKEN) return fallbackPlaces;
+    if (!MAPBOX_TOKEN) return [];
 
+    const sessionToken = `bma-nearby-${Math.round(center.latitude * 10000)}-${Math.round(
+        center.longitude * 10000
+    )}`;
     const resolvedPlaces = await Promise.all(
-        NEARBY_PLACE_QUERIES.map(async (placeQuery, index) => {
+        NEARBY_PLACE_QUERIES.map(async (placeQuery) => {
             const searchUrl = new URL(
-                `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(placeQuery.query)}.json`
+                "https://api.mapbox.com/search/searchbox/v1/suggest"
             );
+            searchUrl.searchParams.set("q", placeQuery.query);
             searchUrl.searchParams.set("access_token", MAPBOX_TOKEN);
             searchUrl.searchParams.set(
                 "proximity",
                 `${center.longitude},${center.latitude}`
             );
+            searchUrl.searchParams.set("session_token", sessionToken);
             searchUrl.searchParams.set("types", "poi");
             searchUrl.searchParams.set("country", "US");
-            searchUrl.searchParams.set("limit", "1");
+            searchUrl.searchParams.set("limit", "10");
 
             const response = await fetch(searchUrl);
-            if (!response.ok) return fallbackPlaces[index];
+            if (!response.ok) return null;
 
             const searchResult = await response.json();
-            const firstFeature = searchResult.features?.[0];
-            const [longitude, latitude] = firstFeature?.center || [];
+            const matchingSuggestions = (searchResult.suggestions || [])
+                .filter((suggestion) => isNearbySuggestionResult(suggestion, placeQuery))
+                .sort(
+                    (firstSuggestion, secondSuggestion) =>
+                        getSuggestionDistanceMiles(firstSuggestion) -
+                        getSuggestionDistanceMiles(secondSuggestion)
+                );
 
-            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-                return fallbackPlaces[index];
+            for (const suggestion of matchingSuggestions) {
+                const placeResult = await retrieveSearchBoxPlace(
+                    suggestion.mapbox_id,
+                    sessionToken
+                );
+                const place = getNearbyPlaceResult(placeResult, placeQuery, center);
+
+                if (place) {
+                    return place;
+                }
             }
 
-            return {
-                ...placeQuery,
-                label: firstFeature.text || placeQuery.label,
-                detail: firstFeature.place_name || placeQuery.detail,
-                latitude,
-                longitude,
-            };
+            return null;
         })
     );
 
-    return resolvedPlaces;
+    return resolvedPlaces.filter(Boolean);
 }
 
-function createNearbyPlacePins(center) {
-    if (!center) return [];
+async function retrieveSearchBoxPlace(mapboxId, sessionToken) {
+    if (!mapboxId) return null;
 
-    return [
-        {
-            label: "Nearby Grocery",
-            detail: "Grocery options near this property",
-            type: "grocery",
-            latitude: center.latitude + 0.006,
-            longitude: center.longitude - 0.004,
-        },
-        {
-            label: "Nearby Stores",
-            detail: "Shopping and daily essentials nearby",
-            type: "stores",
-            latitude: center.latitude - 0.004,
-            longitude: center.longitude + 0.006,
-        },
-        {
-            label: "Nearby Gym",
-            detail: "Fitness options near this property",
-            type: "gym",
-            latitude: center.latitude + 0.003,
-            longitude: center.longitude + 0.008,
-        },
-    ];
+    const retrieveUrl = new URL(
+        `https://api.mapbox.com/search/searchbox/v1/retrieve/${encodeURIComponent(mapboxId)}`
+    );
+    retrieveUrl.searchParams.set("access_token", MAPBOX_TOKEN);
+    retrieveUrl.searchParams.set("session_token", sessionToken);
+
+    const response = await fetch(retrieveUrl);
+    if (!response.ok) return null;
+
+    const retrieveResult = await response.json();
+
+    return retrieveResult.features?.[0] || null;
+}
+
+function getNearbyPlaceResult(feature, placeQuery, center) {
+    if (!feature) return null;
+
+    const properties = feature.properties || {};
+    const coordinates = getSearchBoxCoordinates(feature);
+
+    if (!coordinates) return null;
+
+    const distanceMiles = getDistanceInMiles(center, coordinates);
+    if (distanceMiles > NEARBY_PLACE_RADIUS_MILES) return null;
+
+    return {
+        ...placeQuery,
+        label: properties.name || placeQuery.label,
+        detail:
+            properties.full_address ||
+            properties.place_formatted ||
+            placeQuery.detail,
+        placeId: properties.mapbox_id || feature.id,
+        distanceMiles,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+    };
+}
+
+function getSearchBoxCoordinates(feature) {
+    const propertyCoordinates = feature?.properties?.coordinates;
+    const longitude = Number(
+        propertyCoordinates?.longitude || feature?.geometry?.coordinates?.[0]
+    );
+    const latitude = Number(
+        propertyCoordinates?.latitude || feature?.geometry?.coordinates?.[1]
+    );
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return null;
+    }
+
+    return { latitude, longitude };
+}
+
+function isNearbySuggestionResult(suggestion, placeQuery) {
+    if (!suggestion?.mapbox_id || suggestion.feature_type !== "poi") {
+        return false;
+    }
+
+    return hasNearbyPlaceKeyword(suggestion, placeQuery);
+}
+
+function hasNearbyPlaceKeyword(place, placeQuery) {
+    const text = [
+        place.name,
+        place.name_preferred,
+        place.full_address,
+        place.place_formatted,
+        ...(place.brand || []),
+        ...(place.brand_id || []),
+    ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+    const compactText = text.replace(/[^a-z0-9]/g, "");
+
+    return placeQuery.keywords.some((keyword) => {
+        const normalizedKeyword = keyword.toLowerCase();
+        const compactKeyword = normalizedKeyword.replace(/[^a-z0-9]/g, "");
+
+        return text.includes(normalizedKeyword) || compactText.includes(compactKeyword);
+    });
+}
+
+function getSuggestionDistanceMiles(suggestion) {
+    const distanceMeters = Number(suggestion?.distance);
+    if (!Number.isFinite(distanceMeters)) return Number.POSITIVE_INFINITY;
+
+    return distanceMeters / 1609.344;
+}
+
+function getDistanceInMiles(firstPoint, secondPoint) {
+    const earthRadiusMiles = 3958.8;
+    const firstLatitude = degreesToRadians(firstPoint.latitude);
+    const secondLatitude = degreesToRadians(secondPoint.latitude);
+    const latitudeDistance = degreesToRadians(secondPoint.latitude - firstPoint.latitude);
+    const longitudeDistance = degreesToRadians(secondPoint.longitude - firstPoint.longitude);
+    const haversine =
+        Math.sin(latitudeDistance / 2) ** 2 +
+        Math.cos(firstLatitude) *
+            Math.cos(secondLatitude) *
+            Math.sin(longitudeDistance / 2) ** 2;
+
+    return 2 * earthRadiusMiles * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+}
+
+function degreesToRadians(degrees) {
+    return degrees * (Math.PI / 180);
 }
 
 function createPropertyMapMarker(propertyName, isApproximatePin = false) {
@@ -2303,19 +2463,23 @@ function createPropertyMapMarker(propertyName, isApproximatePin = false) {
 function createNearbyMapMarker(place) {
     const markerElement = document.createElement("div");
     const colors = {
-        grocery: "bg-[#1f6f63]",
-        stores: "bg-[#2d7dd2]",
-        gym: "bg-[#173f3f]",
+        walmart: "bg-[#2d7dd2]",
+        target: "bg-[#e4572e]",
+        laFitness: "bg-[#173f3f]",
+        planetFitness: "bg-[#8a5b0a]",
+        kroger: "bg-[#1f6f63]",
     };
     const abbreviations = {
-        grocery: "G",
-        stores: "S",
-        gym: "GY",
+        walmart: "W",
+        target: "T",
+        laFitness: "LA",
+        planetFitness: "PF",
+        kroger: "K",
     };
 
     markerElement.className = "flex flex-col items-center gap-1";
     markerElement.innerHTML = `
-        <div class="rounded-full bg-white/95 px-2 py-1 text-[11px] font-black text-[#102426] shadow-sm">${escapeMapText(place.label.replace("Nearby ", ""))}</div>
+        <div class="rounded-full bg-white/95 px-2 py-1 text-[11px] font-black text-[#102426] shadow-sm">${escapeMapText(getCleanNearbyPlaceLabel(place))}</div>
         <div class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white ${colors[place.type]} text-[11px] font-black text-white shadow-lg">${abbreviations[place.type]}</div>
     `;
 
