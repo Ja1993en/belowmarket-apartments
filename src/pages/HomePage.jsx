@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { getAllProperties } from "../data/propertyStorage";
 import {
     FALLBACK_DALLAS_DEALS,
+    getPropertyPrimaryImage,
     getPropertySearchSuggestions,
     getPublicSearchProperties,
 } from "../data/propertySearchData";
@@ -914,7 +915,7 @@ function getAddressLabel(property) {
 }
 
 function SuggestedRentalCard({ property, matchedFloorPlan }) {
-    const primaryImage = property.photos?.[0]?.url || property.image;
+    const primaryImage = getPropertyPrimaryImage(property);
     const dealSummary = property.dealSummary || getPropertyDealSummary(property);
     const normalRentLabel = dealSummary.normalRentLabel || getRentalPriceLabel(property, matchedFloorPlan);
     const effectiveRentLabel = dealSummary.effectiveRentLabel || normalRentLabel;

@@ -12,6 +12,7 @@ import {
   getManagementCompanyById,
   getManagementCompanyIdByName,
 } from "../data/managementCompanyStorage";
+import { getPhotoImageUrl } from "../data/propertySearchData";
 
 const emptyPropertyDraft = {
   name: "",
@@ -362,7 +363,10 @@ export default function PropertyFormPage() {
       savings: primaryFloorPlan.savings,
       belowMarketPercent: primaryFloorPlan.belowMarketPercent,
       special: primaryFloorPlan.currentSpecial,
-      image: propertyDraft.photos[0]?.url || propertyDraft.image.trim() || "",
+      image:
+        propertyDraft.photos.map(getPhotoImageUrl).find(Boolean) ||
+        propertyDraft.image.trim() ||
+        "",
       photos: propertyDraft.photos,
       floorPlans,
       bedrooms: [
@@ -1339,7 +1343,10 @@ function normalizeFloorPlansForDraft(property) {
         adminFeeSpecial,
         adminFeeSpecialType,
         leaseTermMonths: String(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12),
-        image: floorPlan.image || floorPlan.photos?.[0]?.url || "",
+        image:
+          floorPlan.image ||
+          (floorPlan.photos || []).map(getPhotoImageUrl).find(Boolean) ||
+          "",
         photos: normalizeFloorPlanPhotos(floorPlan, index),
         availability: floorPlan.availability || floorPlan.available || "",
         availableUnits: normalizeAvailableUnitsForDraft(
@@ -1385,7 +1392,10 @@ function normalizeFloorPlanForStorage(floorPlan) {
     baths: floorPlan.bathrooms.trim(),
     squareFeet: floorPlan.squareFeet.trim(),
     sqft: floorPlan.squareFeet.trim(),
-    image: floorPlan.image || floorPlan.photos?.[0]?.url || "",
+    image:
+      floorPlan.image ||
+      (floorPlan.photos || []).map(getPhotoImageUrl).find(Boolean) ||
+      "",
     photos: floorPlan.photos || [],
     startingRent,
     baseRent: startingRent,

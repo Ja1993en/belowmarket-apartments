@@ -4,6 +4,7 @@ import { Building2, MapPin, Navigation, Search, Tag } from "lucide-react";
 
 import {
   getPropertyAddressLabel,
+  getPropertyPrimaryImage,
   getPropertySearchSuggestions,
   getPublicSearchProperties,
   matchesPropertySearch,
@@ -657,7 +658,7 @@ function SearchResultCard({ property }) {
       className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md"
     >
       <img
-        src={property.photos?.[0]?.url || property.image}
+        src={getPropertyPrimaryImage(property)}
         alt={property.name}
         className="aspect-[16/10] w-full object-cover"
       />

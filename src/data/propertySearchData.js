@@ -1,5 +1,8 @@
 import { getAllProperties } from "./propertyStorage";
 
+export const DEFAULT_PROPERTY_IMAGE =
+  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80";
+
 export const FALLBACK_DALLAS_DEALS = [
   {
     id: "mirasol-park-lane",
@@ -136,6 +139,30 @@ export function getPropertyAddressLabel(property) {
   const addressParts = [property.address, cityStateZip].filter(Boolean);
 
   return addressParts.join(" ") || property.area || "Dallas, TX";
+}
+
+export function getPhotoImageUrl(photo) {
+  return [
+    photo?.url,
+    photo?.src,
+    photo?.dataUrl,
+    photo?.previewUrl,
+    photo?.image,
+  ].find(Boolean) || "";
+}
+
+export function getPropertyPrimaryImage(property) {
+  const uploadedPhotoUrl = (property?.photos || [])
+    .map(getPhotoImageUrl)
+    .find(Boolean);
+
+  return (
+    uploadedPhotoUrl ||
+    property?.image ||
+    property?.imageUrl ||
+    property?.photoUrl ||
+    DEFAULT_PROPERTY_IMAGE
+  );
 }
 
 function getSuggestionCandidates(property) {

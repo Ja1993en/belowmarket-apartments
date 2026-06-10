@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { CheckCircle2, Copy, ExternalLink, Search, Send } from "lucide-react";
 import { getAnyLeadById, updateLocalLead } from "../data/leadStorage";
 import { getAllProperties } from "../data/propertyStorage";
+import { getPropertyPrimaryImage } from "../data/propertySearchData";
 import {
   getSupabaseLeadById,
   updateSupabaseLeadRecommendations,
@@ -307,7 +308,7 @@ export default function SendPropertiesPage() {
               {filteredProperties.length > 0 ? (
                 filteredProperties.map((property) => {
                   const isSelected = selectedPropertyIds.includes(property.id);
-                  const primaryImage = property.photos?.[0]?.url || property.image;
+                  const primaryImage = getPropertyPrimaryImage(property);
                   const managerName = property.managementCompany || property.manager;
                   const locationLabel = [
                     property.city,

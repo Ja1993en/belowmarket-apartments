@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
+    getPhotoImageUrl,
     getPropertyAddressLabel,
+    getPropertyPrimaryImage,
     getPublicSearchProperties,
 } from "../data/propertySearchData";
 
@@ -174,7 +176,7 @@ function normalizeListingFloorPlans(property) {
                         ? { label: property.special }
                         : null,
                 availableUnits: [],
-                image: property.photos?.[0]?.url || property.image,
+                image: getPropertyPrimaryImage(property),
             },
         ];
     }
@@ -205,6 +207,7 @@ function normalizeListingFloorPlans(property) {
             baths: plan.bathrooms || plan.baths || "Not set",
             sqft: plan.squareFeet || plan.sqft || "Not set",
             rent: plan.startingRent || plan.rent || "Contact for pricing",
+            image: plan.image || (plan.photos || []).map(getPhotoImageUrl).find(Boolean) || "",
             effectiveRent: plan.effectiveRent || "",
             marketRent: plan.marketRent || "",
             savings: plan.savings || "",
@@ -241,8 +244,8 @@ export default function PublicPropertyListing() {
         property?.photos?.length > 0
             ? property.photos.map((photo, index) => ({
                 category: photo.category || `Photo ${index + 1}`,
-                url: photo.url,
-            }))
+                url: getPhotoImageUrl(photo),
+            })).filter((photo) => photo.url)
             : galleryImages;
     const listingFloorPlans = normalizeListingFloorPlans(property);
     const floorPlanFilters = [

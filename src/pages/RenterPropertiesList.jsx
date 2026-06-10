@@ -15,6 +15,7 @@ import {
 } from "../data/leadStorage";
 
 import { getAnyPropertyById } from "../data/propertyStorage";
+import { getPropertyPrimaryImage } from "../data/propertySearchData";
 
 export default function RenterPropertiesList() {
   const { token } = useParams();
@@ -452,7 +453,7 @@ function RecommendedPropertyCard({
 }) {
   const isTourRequested = requestedPropertyIds.includes(property.id);
   const isTourSelected = selectedTourPropertyId === property.id;
-  const primaryImage = property.photos?.[0]?.url || property.image;
+  const primaryImage = getPropertyPrimaryImage(property);
 
   return (
     <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
