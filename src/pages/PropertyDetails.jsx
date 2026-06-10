@@ -1,123 +1,8 @@
 import { useState } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { leads } from "../data/mockData";
+import { getAllLeads } from "../data/leadStorage";
+import { getPhotoImageUrl } from "../data/propertySearchData";
 import { getAnyPropertyById, updateStoredProperty } from "../data/propertyStorage";
-const floorPlans = [
-    {
-        name: "A1",
-        beds: "1 Bed",
-        baths: "1 Bath",
-        sqft: "715 sqft",
-        rent: "$1,425",
-        available: "4 units",
-    },
-    {
-        name: "B2",
-        beds: "2 Bed",
-        baths: "2 Bath",
-        sqft: "1,095 sqft",
-        rent: "$1,995",
-        available: "2 units",
-    },
-    {
-        name: "S1",
-        beds: "Studio",
-        baths: "1 Bath",
-        sqft: "585 sqft",
-        rent: "$1,299",
-        available: "6 units",
-    },
-];
-
-const specials = [
-    {
-        title: "6 Weeks Free",
-        type: "Rent Concession",
-        status: "Active",
-    },
-    {
-        title: "$99 App Fee",
-        type: "Application Fee",
-        status: "Active",
-    },
-    {
-        title: "Waived Admin Fee",
-        type: "Admin Fee",
-        status: "Active",
-    },
-];
-
-const photos = [
-    {
-        label: "Exterior",
-        image:
-            "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80",
-    },
-    {
-        label: "Pool",
-        image:
-            "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=900&q=80",
-    },
-    {
-        label: "Kitchen",
-        image:
-            "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?auto=format&fit=crop&w=900&q=80",
-    },
-];
-
-const propertyLeads = [
-    {
-        name: "Ashley Brown",
-        status: "Tour Scheduled",
-        locator: "Jalen McNeal",
-    },
-    {
-        name: "Marcus Hill",
-        status: "Recommendation Sent",
-        locator: "Sarah Smith",
-    },
-    {
-        name: "Tierra Lane",
-        status: "New Lead",
-        locator: "Jalen McNeal",
-    },
-];
-
-const propertyActivity = [
-    {
-        title: "Property updated",
-        description: "Starting rent changed to $1,425+.",
-        time: "Today",
-    },
-    {
-        title: "Special added",
-        description: "6 Weeks Free was added as an active special.",
-        time: "Yesterday",
-    },
-    {
-        title: "Photo uploaded",
-        description: "Exterior photo was added to the gallery.",
-        time: "3 days ago",
-    },
-];
-
-const propertyNotes = [
-    {
-        note: "Confirmed 6 weeks free special with leasing office.",
-        author: "Admin",
-        time: "Today",
-    },
-    {
-        note: "Need to verify updated A1 pricing before publishing.",
-        author: "Jalen",
-        time: "Yesterday",
-    },
-    {
-        note: "Property manager requested new photos be uploaded.",
-        author: "Admin",
-        time: "3 days ago",
-    },
-];
 
 export default function PropertyDetails() {
     const { propertyId } = useParams();
@@ -141,9 +26,10 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
         propertyDraft.rent !== property?.rent ||
         propertyDraft.status !== property?.status;
 
-    const propertyLeadCount = leads.filter((lead) =>
-        lead.recommendedPropertyIds.includes(propertyId)
-    ).length;
+    const propertyLeads = getAllLeads().filter((lead) =>
+        lead.recommendedPropertyIds?.includes(propertyId)
+    );
+    const propertyLeadCount = propertyLeads.length;
 
     const savePropertyChanges = () => {
         const updatedProperty = updateStoredProperty(property.id, propertyDraft);
@@ -182,6 +68,10 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
     }
 
     const propertyFloorPlans = normalizePropertyFloorPlans(property);
+    const propertySpecials = getPropertySpecials(property);
+    const propertyPhotos = getPropertyPhotos(property);
+    const propertyActivity = [];
+    const propertyNotes = [];
 
     return (
         <div>
@@ -303,8 +193,8 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
 
             <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2 2xl:grid-cols-4">
                 <DetailCard title="Floor Plans" value={propertyFloorPlans.length} />
-                <DetailCard title="Available Units" value="12" />
-                <DetailCard title="Active Specials" value={property.special ? 1 : 0} />
+                <DetailCard title="Available Units" value={getAvailableUnitCount(propertyFloorPlans)} />
+                <DetailCard title="Active Specials" value={propertySpecials.length} />
                 <DetailCard title="Leads Sent" value={propertyLeadCount} />
             </div>
 
@@ -426,8 +316,9 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                             </button>
                         </div>
 
-                        <div className="space-y-3">
-                            {propertyFloorPlans.map((plan) => (
+                        {propertyFloorPlans.length > 0 ? (
+                            <div className="space-y-3">
+                                {propertyFloorPlans.map((plan) => (
                                 <FloorPlanRow
                                     key={plan.name}
                                     name={plan.name}
@@ -442,8 +333,11 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                                     currentSpecial={plan.currentSpecial}
                                     available={plan.available}
                                 />
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <EmptyTabState message="No floor plans have been added for this property yet." />
+                        )}
                     </div>
                 )}
 
@@ -456,16 +350,20 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                             </button>
                         </div>
 
-                        <div className="space-y-3">
-                            {propertyLeads.map((lead) => (
+                        {propertyLeads.length > 0 ? (
+                            <div className="space-y-3">
+                                {propertyLeads.map((lead) => (
                                 <PropertyLeadRow
-                                    key={lead.name}
+                                    key={lead.id || lead.name}
                                     name={lead.name}
                                     status={lead.status}
-                                    locator={lead.locator}
+                                    locator={lead.assignedTo || "Not assigned"}
                                 />
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <EmptyTabState message="No renter leads have been connected to this property yet." />
+                        )}
                     </div>
                 )}
 
@@ -478,15 +376,15 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-2">
-                            <InfoBox label="Property Website" value="https://themonroe.com" />
-                            <InfoBox label="Leasing Phone" value="(214) 555-1234" />
-                            <InfoBox label="Leasing Email" value="leasing@themonroe.com" />
+                            <InfoBox label="Property Website" value={property.website || "Not set"} />
+                            <InfoBox label="Leasing Phone" value={property.leasingPhone || property.phone || "Not set"} />
+                            <InfoBox label="Leasing Email" value={property.leasingEmail || property.email || "Not set"} />
                             <InfoBox
                                 label="Management Company"
                                 value={property.managementCompany || property.manager}
                             />
                             <InfoBox label="Property Status" value={property.status} />
-                            <InfoBox label="Pet Policy" value="Cats and Dogs Allowed" />
+                            <InfoBox label="Pet Policy" value={property.petPolicy || "Not set"} />
                         </div>
                     </div>
                 )}
@@ -500,15 +398,19 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                             </button>
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-3">
-                            {specials.map((special) => (
+                        {propertySpecials.length > 0 ? (
+                            <div className="grid gap-4 md:grid-cols-3">
+                                {propertySpecials.map((special) => (
                                 <SpecialCard
                                     key={special.title}
                                     title={special.title}
                                     type={special.type}
                                 />
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <EmptyTabState message="No specials have been added for this property yet." />
+                        )}
                     </div>
                 )}
 
@@ -520,29 +422,37 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                             </button>
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-3">
-                            {photos.map((photo) => (
+                        {propertyPhotos.length > 0 ? (
+                            <div className="grid gap-4 md:grid-cols-3">
+                                {propertyPhotos.map((photo) => (
                                 <PhotoCard
                                     key={photo.label}
                                     label={photo.label}
                                     image={photo.image}
                                 />
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <EmptyTabState message="No photos have been uploaded for this property yet." />
+                        )}
                     </div>
                 )}
 
 
                 {activeTab === "activity" && (
                     <div className="mt-6 space-y-3">
-                        {propertyActivity.map((activity) => (
-                            <ActivityRow
-                                key={activity.title}
-                                title={activity.title}
-                                description={activity.description}
-                                time={activity.time}
-                            />
-                        ))}
+                        {propertyActivity.length > 0 ? (
+                            propertyActivity.map((activity) => (
+                                <ActivityRow
+                                    key={activity.title}
+                                    title={activity.title}
+                                    description={activity.description}
+                                    time={activity.time}
+                                />
+                            ))
+                        ) : (
+                            <EmptyTabState message="No activity has been logged for this property yet." />
+                        )}
 
                     </div>
 
@@ -556,16 +466,20 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
                             </button>
                         </div>
 
-                        <div className="space-y-3">
-                            {propertyNotes.map((item) => (
+                        {propertyNotes.length > 0 ? (
+                            <div className="space-y-3">
+                                {propertyNotes.map((item) => (
                                 <NoteRow
                                     key={item.note}
                                     note={item.note}
                                     author={item.author}
                                     time={item.time}
                                 />
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <EmptyTabState message="No notes have been added for this property yet." />
+                        )}
                     </div>
                 )}
 
@@ -615,6 +529,14 @@ function InfoBox({ label, value }) {
             <p className="mt-2 font-black text-slate-900">
                 {value}
             </p>
+        </div>
+    );
+}
+
+function EmptyTabState({ message }) {
+    return (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+            <p className="text-sm font-bold text-slate-500">{message}</p>
         </div>
     );
 }
@@ -696,7 +618,7 @@ function FloorPlanRow({
 
 function normalizePropertyFloorPlans(property) {
     if (!property?.floorPlans?.length) {
-        return floorPlans;
+        return [];
     }
 
     return property.floorPlans.map((plan, index) => {
@@ -730,6 +652,63 @@ function normalizePropertyFloorPlans(property) {
             available: plan.availability || plan.available || "Not set",
         };
     });
+}
+
+function getPropertySpecials(property) {
+    const specialLabels = new Set();
+
+    if (hasVisibleSpecial(property?.special)) {
+        specialLabels.add(property.special);
+    }
+
+    (property?.floorPlans || []).forEach((plan) => {
+        if (typeof plan === "string") return;
+
+        [
+            plan.currentSpecial,
+            plan.special?.label,
+            plan.special2?.label,
+            plan.specialLabel,
+        ].forEach((specialLabel) => {
+            if (hasVisibleSpecial(specialLabel)) {
+                specialLabels.add(specialLabel);
+            }
+        });
+    });
+
+    return [...specialLabels].map((specialLabel) => ({
+        title: specialLabel,
+        type: "Current Special",
+    }));
+}
+
+function hasVisibleSpecial(value) {
+    const normalizedValue = String(value || "").trim().toLowerCase();
+
+    return Boolean(
+        normalizedValue &&
+            normalizedValue !== "special not listed" &&
+            normalizedValue !== "none"
+    );
+}
+
+function getPropertyPhotos(property) {
+    return (property?.photos || [])
+        .map((photo, index) => ({
+            label: photo.label || photo.name || `Photo ${index + 1}`,
+            image: getPhotoImageUrl(photo),
+        }))
+        .filter((photo) => photo.image);
+}
+
+function getAvailableUnitCount(floorPlans) {
+    const availableCount = floorPlans.reduce((count, plan) => {
+        const availableNumber = Number(String(plan.available || "").match(/\d+/)?.[0] || 0);
+
+        return count + availableNumber;
+    }, 0);
+
+    return availableCount || 0;
 }
 
 function SpecialCard({ title, type }) {

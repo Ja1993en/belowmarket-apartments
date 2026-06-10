@@ -4,7 +4,6 @@ import { Search } from "lucide-react";
 
 import { getAllProperties } from "../data/propertyStorage";
 import {
-    FALLBACK_DALLAS_DEALS,
     getPropertyPrimaryImage,
     getPropertySearchSuggestions,
     getPublicSearchProperties,
@@ -184,15 +183,32 @@ export default function HomePage() {
                     </Link>
                 </div>
 
-                <div className="mt-5 grid auto-cols-[minmax(220px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-2 xl:grid-flow-row xl:grid-cols-4 xl:overflow-visible xl:pb-0">
-                    {featuredDallasDeals.map((property) => (
-                        <SuggestedRentalCard
-                            key={property.id}
-                            property={property}
-                            matchedFloorPlan={property.matchedFloorPlan}
-                        />
-                    ))}
-                </div>
+                {featuredDallasDeals.length > 0 ? (
+                    <div className="mt-5 grid auto-cols-[minmax(220px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-2 xl:grid-flow-row xl:grid-cols-4 xl:overflow-visible xl:pb-0">
+                        {featuredDallasDeals.map((property) => (
+                            <SuggestedRentalCard
+                                key={property.id}
+                                property={property}
+                                matchedFloorPlan={property.matchedFloorPlan}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="mt-5 rounded-3xl border border-dashed border-[#d7e6df] bg-white p-8 text-center shadow-sm">
+                        <p className="text-xl font-black text-[#102426]">
+                            No live Dallas deals yet
+                        </p>
+                        <p className="mx-auto mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
+                            Add a property in the admin dashboard and set it to Live to show it here.
+                        </p>
+                        <Link
+                            to="/admin/properties/new"
+                            className="mt-5 inline-flex rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                        >
+                            Add Property
+                        </Link>
+                    </div>
+                )}
 
                 <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                     <div className="grid gap-6 lg:grid-cols-[1.1fr_1.4fr] lg:items-start">
@@ -394,25 +410,8 @@ function getFeaturedDallasDeals(properties) {
             dealSummary,
         };
     }).filter(isDallasProperty);
-    const fallbackDeals = FALLBACK_DALLAS_DEALS.map((property) => ({
-        ...property,
-        isFallback: true,
-        dealSummary: getFallbackDealSummary(property),
-        matchedFloorPlan: {
-            name: property.name,
-            bedrooms: property.bedrooms?.[0] || "",
-            startingRent: property.rent,
-            effectiveRent: property.rent,
-            savings: property.savings,
-        },
-    }));
-    const sortedLiveDallasDeals = sortPropertiesByDeal(liveDallasDeals, "Highest savings");
-    const liveDealIds = new Set(sortedLiveDallasDeals.map((property) => property.id));
-    const availableFallbackDeals = fallbackDeals.filter(
-        (property) => !liveDealIds.has(property.id)
-    );
 
-    return [...sortedLiveDallasDeals, ...availableFallbackDeals].slice(
+    return sortPropertiesByDeal(liveDallasDeals, "Highest savings").slice(
         0,
         FEATURED_DALLAS_DEAL_LIMIT
     );
@@ -685,28 +684,6 @@ function getUnitSpecial(unit, floorPlanSpecial) {
     }
 
     return floorPlanSpecial;
-}
-
-function getFallbackDealSummary(property) {
-    const savingsValue = parseCurrency(property.savings);
-    const hasSpecial = Boolean(property.special && property.special !== "Special not listed");
-
-    return {
-        hasSpecial,
-        specialLabel: property.special || "Special not listed",
-        normalRentLabel: property.rent,
-        effectiveRentLabel: property.effectiveRent || property.rent,
-        priceCaption: "Normal monthly rent with fees",
-        concessionValueLabel: savingsValue ? property.savings : "",
-        rentBreakdownLabel: property.startingRent && property.requiredMonthlyFees
-            ? `${property.startingRent} base rent + ${property.requiredMonthlyFees} required fees`
-            : "",
-        specialCalculationLabel: hasSpecial
-            ? "Special usually applies as an account credit. Payment timing may vary by property."
-            : "",
-        badgeLabel: hasSpecial ? property.special : "",
-        specialCountLabel: hasSpecial ? "Special applies to base rent only" : "",
-    };
 }
 
 function isDallasProperty(property) {

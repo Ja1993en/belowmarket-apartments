@@ -99,101 +99,6 @@ const DEFAULT_SCHOOL_LEVELS = [
         grade: "Verify",
     },
 ];
-const floorPlans = [
-    {
-        name: "A1",
-        availableUnitCount: 3,
-        beds: "1 Bed",
-        baths: "1 Bath",
-        sqft: "715 sqft",
-        rent: "$1,425",
-        available: "4 available",
-        status: "available",
-        special: {
-            type: "free_weeks",
-            freeWeeks: 6,
-            appFee: 99,
-            adminFee: 0,
-            label: "6 Weeks Free + $99 App/Admin",
-        },
-        leaseTermMonths: 12,
-        availableUnits: [
-            {
-                unit: "2203",
-                rent: "$1,425",
-                available: "Available Now",
-                requestCount: 8,
-
-
-            },
-            {
-                unit: "1407",
-                rent: "$1,455",
-                available: "Available in 30 Days",
-                requestCount: 2,
-            },
-            {
-                unit: "3410",
-                rent: "$1,495",
-                available: "Available July 15",
-                requestCount: 2,
-            },
-        ],
-        image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=600&q=80",
-    },
-    {
-        name: "B2",
-        availableUnitCount: 2,
-        beds: "2 Bed",
-        baths: "2 Bath",
-        sqft: "1,095 sqft",
-        rent: "$1,995",
-        available: "2 available",
-        status: "limited",
-        badge: "Limited Availability",
-        availableUnits: [
-            {
-                unit: "5102",
-                rent: "$1,995",
-                available: "Available Now",
-                requestCount: 2,
-            },
-            {
-                unit: "4308",
-                rent: "$2,045",
-                available: "Available in 45 Days",
-                requestCount: 6,
-            },
-        ],
-
-    },
-    {
-        name: "S1",
-        availableUnitCount: 6,
-        beds: "Studio",
-        baths: "1 Bath",
-        sqft: "585 sqft",
-        rent: "$1,299",
-        available: "6 available",
-        status: "available",
-        badge: "Lowest Price",
-        availableUnits: [
-            {
-                unit: "1205",
-                rent: "$1,299",
-                available: "Available Now",
-                requestCount: 8,
-            },
-            {
-                unit: "2309",
-                rent: "$1,325",
-                available: "Available in 30 Days",
-                requestCount: 1
-            },
-        ],
-    },
-];
-
 const amenities = [
     "Resort-style pool",
     "Fitness center",
@@ -228,7 +133,7 @@ function normalizeListingFloorPlans(property) {
     const addMarketBenchmark = (plan) => enrichFloorPlanWithMarketBenchmark(property, plan);
 
     if (!property?.floorPlans?.length) {
-        if (!property) return floorPlans;
+        if (!property) return [];
 
         return [
             {
@@ -2726,10 +2631,10 @@ function getRenterDecisionFacts({
     const bedSummary =
         bedLabels.length > 0
             ? bedLabels.join(", ")
-            : property.bedrooms?.join(", ") || "Beds not listed";
-    const feeLabel = property.requiredMonthlyFees || property.monthlyFees || "";
+            : property?.bedrooms?.join(", ") || "Beds not listed";
+    const feeLabel = property?.requiredMonthlyFees || property?.monthlyFees || "";
     const locationAccuracy =
-        property.mapAccuracy === "approximate"
+        property?.mapAccuracy === "approximate"
             ? "Approximate until the full street address is added"
             : "Address and map pin are available";
     const marketComparison = marketRentLabel && marketRentLabel !== "Not listed"
@@ -2777,9 +2682,9 @@ function getRenterDecisionFacts({
         },
         {
             label: "Property context",
-            value: property.yearBuilt ? `Built ${property.yearBuilt}` : managementLabel,
+            value: property?.yearBuilt ? `Built ${property.yearBuilt}` : managementLabel,
             detail: `${managementLabel}. ${marketComparison} ${locationAccuracy}.`,
-            tone: property.mapAccuracy === "approximate" ? "caution" : "default",
+            tone: property?.mapAccuracy === "approximate" ? "caution" : "default",
         },
     ];
 }

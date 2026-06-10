@@ -1,4 +1,3 @@
-import { properties as mockProperties } from "./mockData";
 import {
   getManagementCompanyById,
   getManagementCompanyIdByName,
@@ -29,17 +28,12 @@ export function getAllProperties() {
   const customProperties = getStoredCustomProperties();
   const deletedPropertyIds = new Set(getDeletedPropertyIds());
 
-  const savedMockProperties = mockProperties.filter((property) => !deletedPropertyIds.has(property.id)).map((property) => normalizePropertyCompany({
-      ...property,
-      ...(updates[property.id] || {}),
-    }));
-
   const savedCustomProperties = customProperties.filter((property) => !deletedPropertyIds.has(property.id)).map((property) => normalizePropertyCompany({
       ...property,
       ...(updates[property.id] || {}),
     }));
 
-  return [...savedMockProperties, ...savedCustomProperties];
+  return savedCustomProperties;
 }
 
 export function getAnyPropertyById(propertyId) {

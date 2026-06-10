@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import { clearLegacyDemoData } from "./data/localDataReset";
 import AdminLayout from "./layouts/AdminLayout";
 
 import AdminDashboard from "./pages/AdminDashboard";
@@ -17,6 +18,8 @@ import StartPage from "./pages/StartPage";
 import LeadDetailsPage from "./pages/LeadDetailsPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import PropertySearchPage from "./pages/PropertySearchPage";
+
+clearLegacyDemoData();
 
 export default function App() {
   return (
