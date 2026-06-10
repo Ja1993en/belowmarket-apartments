@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">Below Market Apartments</title>
-  <rect width="64" height="64" rx="18" fill="#173f3f"/>
-  <text x="32" y="38" fill="#f2b84b" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="900" letter-spacing="0" text-anchor="middle">BMA</text>
+  <rect width="64" height="64" rx="14" fill="#173f3f"/>
+  <text x="32" y="40" fill="#f2b84b" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="900" letter-spacing="0" text-anchor="middle">BMA</text>
 </svg>
