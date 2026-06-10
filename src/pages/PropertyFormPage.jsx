@@ -131,12 +131,12 @@ export default function PropertyFormPage() {
 
     setPropertyDraft((currentDraft) => {
       const nextPhotos = currentDraft.photos.filter((photo) => photo.id !== photoId);
-      const removedPrimary = currentDraft.photos.find((photo) => photo.id === photoId)
-        ?.url === currentDraft.image;
+      const removedPhoto = currentDraft.photos.find((photo) => photo.id === photoId);
+      const removedPrimary = getPhotoImageUrl(removedPhoto) === currentDraft.image;
 
       return {
         ...currentDraft,
-        image: removedPrimary ? nextPhotos[0]?.url || "" : currentDraft.image,
+        image: removedPrimary ? getPhotoImageUrl(nextPhotos[0]) || "" : currentDraft.image,
         photos: nextPhotos,
       };
     });
@@ -206,12 +206,12 @@ export default function PropertyFormPage() {
         if (floorPlan.id !== floorPlanId) return floorPlan;
 
         const nextPhotos = (floorPlan.photos || []).filter((photo) => photo.id !== photoId);
-        const removedPrimary = (floorPlan.photos || []).find((photo) => photo.id === photoId)
-          ?.url === floorPlan.image;
+        const removedPhoto = (floorPlan.photos || []).find((photo) => photo.id === photoId);
+        const removedPrimary = getPhotoImageUrl(removedPhoto) === floorPlan.image;
 
         return {
           ...floorPlan,
-          image: removedPrimary ? nextPhotos[0]?.url || "" : floorPlan.image,
+          image: removedPrimary ? getPhotoImageUrl(nextPhotos[0]) || "" : floorPlan.image,
           photos: nextPhotos,
         };
       }),
@@ -228,7 +228,7 @@ export default function PropertyFormPage() {
 
         return {
           ...floorPlan,
-          image: photo?.url || floorPlan.image,
+          image: getPhotoImageUrl(photo) || floorPlan.image,
           photos: photo
             ? [photo, ...(floorPlan.photos || []).filter((item) => item.id !== photoId)]
             : floorPlan.photos || [],
@@ -243,7 +243,7 @@ export default function PropertyFormPage() {
 
       return {
         ...currentDraft,
-        image: photo?.url || currentDraft.image,
+        image: getPhotoImageUrl(photo) || currentDraft.image,
         photos: photo
           ? [photo, ...currentDraft.photos.filter((item) => item.id !== photoId)]
           : currentDraft.photos,
@@ -426,15 +426,16 @@ export default function PropertyFormPage() {
       ],
     };
 
-    try {
-      const savedProperty = isEditing
-        ? updateStoredProperty(propertyId, propertyPayload)
-        : createStoredProperty(propertyPayload);
+    const savedProperty = savePropertyWithPhotoFallback({
+      isEditing,
+      propertyId,
+      propertyPayload,
+    });
 
+    if (savedProperty) {
       navigate(`/admin/properties/${savedProperty.id}`);
-    } catch (error) {
-      console.error(error);
-      setSaveError("Could not save this property. Try fewer or smaller photos.");
+    } else {
+      setSaveError("Could not save this property. Try deleting more photos, then save again.");
     }
   };
 
@@ -1277,6 +1278,48 @@ function resolveManagementCompany({
   return createdCompany;
 }
 
+function savePropertyWithPhotoFallback({ isEditing, propertyId, propertyPayload }) {
+  try {
+    return isEditing
+      ? updateStoredProperty(propertyId, propertyPayload)
+      : createStoredProperty(propertyPayload);
+  } catch (error) {
+    console.error(error);
+  }
+
+  const storageSafePayload = createStorageSafePhotoPayload(propertyPayload);
+
+  try {
+    return isEditing
+      ? updateStoredProperty(propertyId, storageSafePayload)
+      : createStoredProperty(storageSafePayload);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+function createStorageSafePhotoPayload(propertyPayload) {
+  const propertyPhotos = (propertyPayload.photos || []).slice(0, 4);
+  const floorPlans = (propertyPayload.floorPlans || []).map((floorPlan) => {
+    const floorPlanPhotos = (floorPlan.photos || []).slice(0, 1);
+    const floorPlanImage = getPhotoImageUrl(floorPlanPhotos[0]) || "";
+
+    return {
+      ...floorPlan,
+      photos: floorPlanPhotos,
+      image: floorPlanImage,
+    };
+  });
+
+  return {
+    ...propertyPayload,
+    photos: propertyPhotos,
+    image: getPhotoImageUrl(propertyPhotos[0]) || "",
+    floorPlans,
+  };
+}
+
 function createDraftFromProperty(property) {
   const managementCompanyId =
     property.managementCompanyId ||
@@ -1767,6 +1810,12 @@ async function optimizeDraftPhotos(propertyDraft) {
     maxDimension: PROPERTY_PHOTO_MAX_DIMENSION,
     targetBytes: PROPERTY_PHOTO_TARGET_BYTES,
   });
+  const optimizedPropertyImage =
+    propertyPhotoResult.urlMap.get(propertyDraft.image) ||
+    (await optimizeImageUrlForStorage(propertyDraft.image, {
+      maxDimension: PROPERTY_PHOTO_MAX_DIMENSION,
+      targetBytes: PROPERTY_PHOTO_TARGET_BYTES,
+    }));
 
   const floorPlans = await Promise.all(
     propertyDraft.floorPlans.map(async (floorPlan) => {
@@ -1774,10 +1823,16 @@ async function optimizeDraftPhotos(propertyDraft) {
         maxDimension: FLOOR_PLAN_PHOTO_MAX_DIMENSION,
         targetBytes: FLOOR_PLAN_PHOTO_TARGET_BYTES,
       });
+      const optimizedFloorPlanImage =
+        floorPlanPhotoResult.urlMap.get(floorPlan.image) ||
+        (await optimizeImageUrlForStorage(floorPlan.image, {
+          maxDimension: FLOOR_PLAN_PHOTO_MAX_DIMENSION,
+          targetBytes: FLOOR_PLAN_PHOTO_TARGET_BYTES,
+        }));
 
       return {
         ...floorPlan,
-        image: floorPlanPhotoResult.urlMap.get(floorPlan.image) || floorPlan.image,
+        image: optimizedFloorPlanImage,
         photos: floorPlanPhotoResult.photos,
       };
     })
@@ -1785,7 +1840,7 @@ async function optimizeDraftPhotos(propertyDraft) {
 
   return {
     ...propertyDraft,
-    image: propertyPhotoResult.urlMap.get(propertyDraft.image) || propertyDraft.image,
+    image: optimizedPropertyImage,
     photos: propertyPhotoResult.photos,
     floorPlans,
   };
@@ -1815,28 +1870,47 @@ async function optimizePhotoList(photos = [], options) {
 
 async function optimizePhotoForStorage(photo, options) {
   const photoUrl = getPhotoImageUrl(photo);
+  const sanitizedPhoto = sanitizePhotoForStorage(photo, photoUrl);
 
-  if (!photoUrl || !isDataUrl(photoUrl)) return photo;
+  if (!photoUrl || !isDataUrl(photoUrl)) return sanitizedPhoto;
 
   const currentSize = photo.storedSize || getDataUrlByteSize(photoUrl);
+
   if (currentSize <= options.targetBytes * 1.15) {
     return {
-      ...photo,
+      ...sanitizedPhoto,
       storedSize: currentSize,
     };
   }
 
   const compressedPhoto = await compressImageUrl(photoUrl, options);
-  const photoWithoutLargeFallbacks = { ...photo };
-  delete photoWithoutLargeFallbacks.dataUrl;
-  delete photoWithoutLargeFallbacks.src;
-  delete photoWithoutLargeFallbacks.previewUrl;
-  delete photoWithoutLargeFallbacks.image;
 
   return {
-    ...photoWithoutLargeFallbacks,
+    ...sanitizedPhoto,
     url: compressedPhoto.dataUrl,
     storedSize: compressedPhoto.size,
+  };
+}
+
+async function optimizeImageUrlForStorage(imageUrl, options) {
+  if (!imageUrl || !isDataUrl(imageUrl)) return imageUrl || "";
+
+  if (getDataUrlByteSize(imageUrl) <= options.targetBytes * 1.15) {
+    return imageUrl;
+  }
+
+  const compressedImage = await compressImageUrl(imageUrl, options);
+
+  return compressedImage.dataUrl;
+}
+
+function sanitizePhotoForStorage(photo, fallbackUrl = "") {
+  return {
+    id: photo.id,
+    name: photo.name,
+    category: photo.category,
+    url: photo.url || fallbackUrl,
+    originalSize: photo.originalSize,
   };
 }
 
