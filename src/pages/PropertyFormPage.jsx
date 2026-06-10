@@ -47,9 +47,6 @@ const emptyPropertyDraft = {
   photos: [],
   floorPlans: [createBlankFloorPlan()],
   bedrooms: "",
-  schoolDistrict: "",
-  schoolGrade: "",
-  schoolNote: "",
 };
 
 const MAX_UPLOAD_COUNT = 8;
@@ -386,9 +383,6 @@ export default function PropertyFormPage() {
       bedrooms: [
         ...new Set(floorPlans.map((floorPlan) => floorPlan.beds).filter(Boolean)),
       ],
-      schoolDistrict: propertyDraft.schoolDistrict.trim(),
-      schoolGrade: propertyDraft.schoolGrade.trim(),
-      schoolNote: propertyDraft.schoolNote.trim(),
     };
 
     try {
@@ -528,28 +522,6 @@ export default function PropertyFormPage() {
               value={propertyDraft.yearBuilt}
               onChange={(value) => updateDraft("yearBuilt", value)}
             />
-            <FormField
-              label="School District"
-              value={propertyDraft.schoolDistrict}
-              onChange={(value) => updateDraft("schoolDistrict", value)}
-            />
-            <FormField
-              label="School Grade"
-              value={propertyDraft.schoolGrade}
-              onChange={(value) => updateDraft("schoolGrade", value)}
-            />
-            <label className="rounded-2xl bg-[#f5f8f1] p-4 md:col-span-2">
-              <span className="text-sm font-semibold text-[#526260]">
-                School Note
-              </span>
-              <input
-                type="text"
-                value={propertyDraft.schoolNote}
-                onChange={(event) => updateDraft("schoolNote", event.target.value)}
-                placeholder="Example: Verify attendance zones with Dallas ISD"
-                className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
-              />
-            </label>
           </div>
         </section>
 
@@ -1296,9 +1268,6 @@ function createDraftFromProperty(property) {
     photos: normalizePropertyPhotos(property),
     floorPlans: normalizeFloorPlansForDraft(property),
     bedrooms: (property.bedrooms || []).join(", "),
-    schoolDistrict: property.schoolDistrict || "",
-    schoolGrade: property.schoolGrade || property.districtGrade || "",
-    schoolNote: property.schoolNote || "",
   };
 }
 
