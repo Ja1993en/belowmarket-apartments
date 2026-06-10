@@ -192,6 +192,37 @@ export default function HomePage() {
                         />
                     ))}
                 </div>
+
+                <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                    <div className="grid gap-6 lg:grid-cols-[1.1fr_1.4fr] lg:items-start">
+                        <div>
+                            <p className="text-sm font-black text-[#1f6f63]">
+                                Our mission
+                            </p>
+                            <h2 className="mt-2 text-3xl font-black text-[#102426]">
+                                Bringing renters, apartment locators, and property managers together.
+                            </h2>
+                            <p className="mt-3 text-sm font-semibold leading-6 text-[#526260]">
+                                Below Market Apartments is built to make the rental process more transparent, more useful, and more connected. Our goal is to help renters find real value, help apartment locators match people with better options, and help property managers fill available homes with qualified renters.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-3 md:grid-cols-3">
+                            <MissionBenefit
+                                title="Renters"
+                                text="See specials, effective rent, normal rent, and local context in one place before requesting help."
+                            />
+                            <MissionBenefit
+                                title="Locators"
+                                text="Work from cleaner property data so recommendations are faster, more accurate, and easier to explain."
+                            />
+                            <MissionBenefit
+                                title="Managers"
+                                text="Put active availability, specials, and floor plans in front of renters who are already looking for value."
+                            />
+                        </div>
+                    </div>
+                </div>
             </section>
         </main>
     );
@@ -963,5 +994,16 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
 
             </div>
         </Link>
+    );
+}
+
+function MissionBenefit({ title, text }) {
+    return (
+        <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+            <p className="font-black text-[#102426]">{title}</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+                {text}
+            </p>
+        </div>
     );
 }
