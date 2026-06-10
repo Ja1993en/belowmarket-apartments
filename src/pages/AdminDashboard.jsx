@@ -62,25 +62,6 @@ const systemStatus = [
     },
 ];
 
-const setupChecklist = [
-    {
-        title: "Add your first property",
-        to: "/admin/properties/new",
-    },
-    {
-        title: "Create your first lead",
-        to: "/admin/leads",
-    },
-    {
-        title: "Send property recommendations",
-        to: "/admin/leads/1/send-properties",
-    },
-    {
-        title: "Connect database later",
-        to: "/admin/data-history",
-    },
-];
-
 export default function AdminDashboard() {
     const properties = getAllProperties();
     const [dashboardLeads, setDashboardLeads] = useState(
@@ -139,25 +120,33 @@ export default function AdminDashboard() {
         return () => window.clearTimeout(loadTimer);
     }, []);
 
+    const activeDashboardLeads = dashboardLeads.filter(
+        (lead) => lead.status !== "Archived"
+    );
+    const recommendationCount = activeDashboardLeads.filter(
+        (lead) => (lead.recommendedPropertyIds?.length || 0) > 0
+    ).length;
+    const livePropertyCount = properties.filter(
+        (property) => property.status === "Live"
+    ).length;
+
     const dashboardStats = [
         {
             icon: Building2,
             title: "Properties",
             value: properties.length,
-            subtitle: "Tracked properties",
+            subtitle: `${livePropertyCount} live listings`,
         },
         {
             icon: Users,
             title: "Leads",
-            value: dashboardLeads.length,
-            subtitle: "Open renter leads",
+            value: activeDashboardLeads.length,
+            subtitle: "Active renter leads",
         },
         {
             icon: Send,
             title: "Recommendations",
-            value: dashboardLeads.filter(
-                (lead) => (lead.recommendedPropertyIds?.length || 0) > 0
-            ).length,
+            value: recommendationCount,
             subtitle: "Renter lists prepared",
         },
         {
@@ -208,7 +197,7 @@ export default function AdminDashboard() {
     const performanceSteps = [
         {
             label: "Recommendations Sent",
-            value: dashboardLeads.filter(
+            value: activeDashboardLeads.filter(
                 (lead) => lead.status === "Recommendation Sent"
             ).length,
         },
@@ -238,7 +227,7 @@ export default function AdminDashboard() {
         },
     ];
 
-    const recentLeads = dashboardLeads.slice(0, 5).map((lead) => ({
+    const recentLeads = activeDashboardLeads.slice(0, 5).map((lead) => ({
         name: lead.name,
         preference: lead.preference,
         status: lead.status,
@@ -248,140 +237,156 @@ export default function AdminDashboard() {
         !dashboardError &&
         !isUsingFallbackDashboardData &&
         dashboardLeads.length === 0;
+    const priorityItems = [
+        {
+            label: "Tour follow-ups",
+            value: tourFollowUpCount,
+            detail: tourFollowUpCount
+                ? "Review renters waiting on tour follow-up."
+                : "No tour follow-ups waiting right now.",
+            to: "/admin/leads?tourFilter=Not%20Followed%20Up",
+        },
+        {
+            label: "Active leads",
+            value: activeDashboardLeads.length,
+            detail: "Open renter conversations to manage.",
+            to: "/admin/leads",
+        },
+        {
+            label: "Live listings",
+            value: livePropertyCount,
+            detail: "Properties visible to renters.",
+            to: "/admin/properties",
+        },
+    ];
 
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-            <div>
-                <h1 className="text-4xl font-black text-[#102426]">
-                    Dashboard
-                </h1>
+            <section className="rounded-3xl bg-[#102426] p-6 text-white shadow-sm">
+                <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
+                    <div className="max-w-3xl">
+                        <p className="text-sm font-black text-[#f2b84b]">
+                            Admin Dashboard
+                        </p>
+                        <h1 className="mt-2 text-4xl font-black text-[#fff7df]">
+                            Today's operating snapshot
+                        </h1>
+                        <p className="mt-2 text-sm font-semibold leading-6 text-[#d7ece6]">
+                            Track renter activity, property readiness, tours, and recommendation flow from one focused workspace.
+                        </p>
 
-                <p className="mt-2 font-semibold text-[#526260]">
-                    Welcome back. Here's what's happening today.
-                </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {dashboardLoadedAt && (
+                                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#d7ece6]">
+                                    Refreshed {dashboardLoadedAt.toLocaleTimeString()}
+                                </span>
+                            )}
+                            {isUsingFallbackDashboardData && (
+                                <span className="rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-bold text-[#8a5b0a]">
+                                    Local fallback data
+                                </span>
+                            )}
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#d7ece6]">
+                                {livePropertyCount} live listings
+                            </span>
+                        </div>
+                    </div>
 
-                {dashboardLoadedAt && (
-                    <p className="mt-2 text-xs font-semibold text-[#78908a]">
-                        Dashboard refreshed {dashboardLoadedAt.toLocaleTimeString()}
-                    </p>
-                )}
-
-                {isLoadingDashboard && (
-                    <p className="mt-2 text-sm font-bold text-[#526260]">
-                        Loading dashboard data...
-                    </p>
-                )}
+                    <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                        <button
+                            type="button"
+                            onClick={loadDashboardData}
+                            disabled={isLoadingDashboard}
+                            className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
+                        >
+                            {isLoadingDashboard ? "Refreshing..." : "Refresh Dashboard"}
+                        </button>
+                        <Link
+                            to="/admin/properties/new"
+                            className="rounded-2xl bg-white/10 px-5 py-3 text-center text-sm font-bold text-white hover:bg-white/15"
+                        >
+                            Add Property
+                        </Link>
+                    </div>
+                </div>
 
                 {dashboardError && (
-                    <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+                    <p className="mt-5 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a]">
                         {dashboardError}
                     </p>
                 )}
+            </section>
 
-                {isUsingFallbackDashboardData && (
-                    <p className="mt-2 text-xs font-semibold text-amber-600">
-                        Local fallback dashboard mode is active.
+            {hasNoSupabaseLeads && (
+                <section className="rounded-3xl border border-dashed border-[#a9cfc2] bg-white p-5 shadow-sm">
+                    <p className="text-sm font-black text-[#102426]">
+                        No Supabase leads yet.
                     </p>
-                )}
-
-                {hasNoSupabaseLeads && (
-                    <div className="mt-4 rounded-2xl border border-dashed border-[#a9cfc2] bg-white px-5 py-4">
-                        <p className="text-sm font-black text-[#102426]">
-                            No Supabase leads yet.
-                        </p>
-                        <p className="mt-1 text-sm font-semibold text-[#526260]">
-                            Create a test lead from the Leads page or submit the public start form to verify the production data loop.
-                        </p>
-                    </div>
-                )}
-
-            </div>
-
-            <button
-                type="button"
-                onClick={loadDashboardData}
-                disabled={isLoadingDashboard}
-                className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
-            >
-                {isLoadingDashboard ? "Refreshing..." : "Refresh Dashboard"}
-            </button>
-            </div>
-
-
-
-            <div className="rounded-3xl bg-[#102426] p-6 text-white shadow-sm">
-                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                    <div>
-                        <p className="text-sm font-bold text-[#d7ece6]">
-                            Platform Status
-                        </p>
-
-                        <h2 className="mt-2 text-2xl font-black text-[#fff7df]">
-                            Your apartment platform is ready for setup.
-                        </h2>
-
-                        <p className="mt-2 text-sm font-semibold text-[#d7ece6]">
-                            Start by adding properties, creating leads, and sending recommendations.
-                        </p>
-                    </div>
-
-                    <div className="rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426]">
-                        Setup Mode
-                    </div>
-                </div>
-            </div>
-
-            <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                    <div>
-                        <h2 className="text-2xl font-black text-[#102426]">
-                            Setup Checklist
-                        </h2>
-
-                        <p className="mt-1 text-sm font-semibold text-[#526260]">
-                            Complete these steps to get your apartment platform ready.
-                        </p>
-                    </div>
-
-                    <span className="rounded-full bg-[#fff8e6] px-4 py-2 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                        0 of 4 complete
-                    </span>
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-4">
-                    {setupChecklist.map((item) => (
-                        <ChecklistItem
-                            key={item.title}
-                            title={item.title}
-                            to={item.to}
-                        />
-                    ))}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-5">
-                {dashboardStatsWithTours.map((stat) => (<DashboardCard
-                    key={stat.title}
-                    icon={stat.icon}
-                    title={stat.title}
-                    value={stat.value}
-                    subtitle={stat.subtitle}
-                    to={stat.to}
-                />
-                ))}
-            </div>
-
-            <div className="grid gap-6 xl:grid-cols-2">
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <h2 className="text-2xl font-black text-[#102426]">Recent Activity</h2>
-
                     <p className="mt-1 text-sm font-semibold text-[#526260]">
-                        Latest platform updates will appear here.
+                        Create a test lead from the Leads page or submit the public start form to verify the production data loop.
                     </p>
+                </section>
+            )}
 
-                    <div className="mt-6 space-y-4">
+            <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+                {dashboardStatsWithTours.map((stat) => (
+                    <DashboardCard
+                        key={stat.title}
+                        icon={stat.icon}
+                        title={stat.title}
+                        value={stat.value}
+                        subtitle={stat.subtitle}
+                        to={stat.to}
+                    />
+                ))}
+            </section>
+
+            <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                    <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                        <div>
+                            <p className="text-sm font-black text-[#1f6f63]">
+                                Work Queue
+                            </p>
+                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                                Today's priorities
+                            </h2>
+                        </div>
+                        <Link
+                            to="/admin/leads"
+                            className="w-fit rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
+                        >
+                            Open Leads
+                        </Link>
+                    </div>
+
+                    <div className="mt-5 space-y-3">
+                        {priorityItems.map((item) => (
+                            <PriorityItem key={item.label} item={item} />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                    <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                        <div>
+                            <p className="text-sm font-black text-[#1f6f63]">
+                                Activity
+                            </p>
+                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                                Latest updates
+                            </h2>
+                        </div>
+                        <Link
+                            to="/admin/data-history"
+                            className="w-fit rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
+                        >
+                            Data History
+                        </Link>
+                    </div>
+
+                    <div className="mt-5 space-y-3">
                         {recentActivities.map((activity, index) => (
                             <ActivityItem
                                 key={`${activity.title}-${activity.time}-${index}`}
@@ -392,43 +397,104 @@ export default function AdminDashboard() {
                         ))}
                     </div>
                 </div>
+            </section>
 
-                <div className="rounded-3xl border border-dashed border-[#a9cfc2] bg-white p-8 text-center shadow-sm">
-                    <h2 className="text-2xl font-black text-[#102426]">
-                        No live data connected yet
-                    </h2>
-
-                    <p className="mx-auto mt-2 max-w-2xl font-semibold text-[#526260]">
-                        Your dashboard is using placeholder numbers for now. Once Supabase is connected,
-                        this section will automatically show real properties, leads, recommendations,
-                        and update history.
-                    </p>
-
-                    <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                        <Link
-                            to="/admin/properties/new"
-                            className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
-                        >
-                            Add Property
-                        </Link>
-
+            <section className="grid gap-6 xl:grid-cols-2">
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                        <div>
+                            <p className="text-sm font-black text-[#1f6f63]">
+                                Renters
+                            </p>
+                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                                Recent active leads
+                            </h2>
+                        </div>
                         <Link
                             to="/admin/leads"
-                            className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
+                            className="w-fit rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
                         >
-                            Create Lead
+                            View All Leads
                         </Link>
+                    </div>
+
+                    <div className="mt-5 space-y-3">
+                        {recentLeads.length > 0 ? (
+                            recentLeads.map((lead) => (
+                                <RecentLead
+                                    key={`${lead.name}-${lead.preference}`}
+                                    name={lead.name}
+                                    preference={lead.preference}
+                                    status={lead.status}
+                                />
+                            ))
+                        ) : (
+                            <EmptyPanel message="No active leads to show right now." />
+                        )}
                     </div>
                 </div>
 
                 <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <h2 className="text-2xl font-black text-[#102426]">Quick Actions</h2>
+                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                        <div>
+                            <p className="text-sm font-black text-[#1f6f63]">
+                                Properties
+                            </p>
+                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                                Lead interest by property
+                            </h2>
+                        </div>
+                        <Link
+                            to="/admin/properties"
+                            className="w-fit rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                        >
+                            View Properties
+                        </Link>
+                    </div>
 
+                    <div className="mt-5 grid gap-3 md:grid-cols-2">
+                        {topProperties.slice(0, 4).map((property) => (
+                            <TopProperty
+                                key={property.name}
+                                name={property.name}
+                                area={property.area}
+                                leads={property.leads}
+                                special={property.special}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            <section className="grid gap-6 xl:grid-cols-2">
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                    <h2 className="text-2xl font-black text-[#102426]">
+                        Performance pipeline
+                    </h2>
+                    <p className="mt-1 text-sm font-semibold text-[#526260]">
+                        Track movement from recommendations to tours and move-ins.
+                    </p>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                        {performanceSteps.map((step) => (
+                            <PerformanceStep
+                                key={step.label}
+                                label={step.label}
+                                value={step.value}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                    <h2 className="text-2xl font-black text-[#102426]">
+                        Quick actions
+                    </h2>
                     <p className="mt-1 text-sm font-semibold text-[#526260]">
                         Common admin tasks.
                     </p>
 
-                    <div className="mt-6 space-y-3">
+                    <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-1">
                         {quickActions.map((action) => (
                             <QuickAction
                                 key={action.title}
@@ -440,138 +506,36 @@ export default function AdminDashboard() {
                         ))}
                     </div>
                 </div>
+            </section>
 
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                        <div>
-                            <h2 className="text-2xl font-black text-[#102426]">
-                                Performance Overview
-                            </h2>
-
-                            <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                Track how leads move from recommendations to tours and move-ins.
-                            </p>
-                        </div>
+            <section className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                    <div>
+                        <h2 className="text-2xl font-black text-[#102426]">
+                            System overview
+                        </h2>
+                        <p className="mt-1 text-sm font-semibold text-[#526260]">
+                            Platform connection and deployment status.
+                        </p>
                     </div>
-
-                    <div className="mt-6 grid gap-4 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4">
-                        {performanceSteps.map((step) => (
-                            <PerformanceStep
-                                key={step.label}
-                                label={step.label}
-                                value={step.value}
-                            />
-                        ))}
-                    </div>
+                    <Link
+                        to="/admin/properties"
+                        className="w-fit rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                    >
+                        Review Listings
+                    </Link>
                 </div>
 
-
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                        <div>
-                            <h2 className="text-2xl font-black text-[#102426]">
-                                Recent Leads
-                            </h2>
-
-                            <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                Latest renter leads submitted to your platform.
-                            </p>
-                        </div>
-
-                        <Link
-                            to="/admin/leads"
-                            className="rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
-                        >
-                            View All Leads
-                        </Link>
-                    </div>
-
-                    <div className="mt-6 space-y-3">
-                        {recentLeads.map((lead) => (
-                            <RecentLead
-                                key={lead.name}
-                                name={lead.name}
-                                preference={lead.preference}
-                                status={lead.status}
-                            />
-                        ))}
-                    </div>
+                <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    {systemStatus.map((item) => (
+                        <SystemStatusCard
+                            key={item.label}
+                            label={item.label}
+                            value={item.value}
+                        />
+                    ))}
                 </div>
-
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm xl:col-span-2">
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                        <div>
-                            <h2 className="text-2xl font-black text-[#102426]">
-                                Top Properties
-                            </h2>
-
-                            <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                Properties getting the most lead interest.
-                            </p>
-                        </div>
-
-                        <Link
-                            to="/admin/properties"
-                            className="rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
-                        >
-                            View All Properties
-                        </Link>
-                    </div>
-
-                    <div className="mt-6 grid gap-4 md:grid-cols-3">
-                        {topProperties.map((property) => (
-                            <TopProperty
-                                key={property.name}
-                                name={property.name}
-                                area={property.area}
-                                leads={property.leads}
-                                special={property.special}
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                <div className="rounded-3xl bg-[#102426] p-6 text-white shadow-sm xl:col-span-2">
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                        <div>
-                            <h2 className="text-2xl font-black text-[#fff7df]">
-                                Keep listing data current
-                            </h2>
-
-                            <p className="mt-2 text-sm font-semibold text-[#d7ece6]">
-                                Review property pricing, specials, photos, schools, and availability before renters see a listing.
-                            </p>
-                        </div>
-
-                        <Link
-                            to="/admin/properties"
-                            className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
-                        >
-                            Review Properties
-                        </Link>
-                    </div>
-                </div>
-
-                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm xl:col-span-2">
-                    <h2 className="text-2xl font-black text-[#102426]">
-                        System Overview
-                    </h2>
-
-                    <p className="mt-1 text-sm font-semibold text-[#526260]">
-                        Current platform status.
-                    </p>
-
-                    <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-4">
-                        {systemStatus.map((item) => (
-                            <SystemStatusCard
-                                key={item.label}
-                                label={item.label}
-                                value={item.value}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </div>
+            </section>
         </div>
     );
 }
@@ -609,6 +573,35 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
     return (
         <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
             {cardContent}
+        </div>
+    );
+}
+
+function PriorityItem({ item }) {
+    return (
+        <Link
+            to={item.to}
+            className="flex items-center justify-between gap-4 rounded-2xl bg-[#f5f8f1] p-4 text-left ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+        >
+            <div>
+                <p className="text-sm font-black text-[#102426]">
+                    {item.label}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                    {item.detail}
+                </p>
+            </div>
+            <span className="shrink-0 rounded-2xl bg-white px-4 py-2 text-xl font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+                {item.value}
+            </span>
+        </Link>
+    );
+}
+
+function EmptyPanel({ message }) {
+    return (
+        <div className="rounded-2xl border border-dashed border-[#a9cfc2] bg-[#f5f8f1] p-5 text-sm font-bold text-[#526260]">
+            {message}
         </div>
     );
 }
@@ -699,23 +692,6 @@ function TopProperty({ name, area, leads, special }) {
     );
 }
 
-
-function ChecklistItem({ title, to }) {
-    return (
-        <Link
-            to={to}
-            className="block rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
-        >
-            <div className="mb-3 h-4 w-4 rounded-full border-2 border-[#a9cfc2]" />
-
-            <p className="font-bold text-[#102426]">{title}</p>
-
-            <p className="mt-1 text-sm font-semibold text-[#526260]">
-                Pending
-            </p>
-        </Link>
-    );
-}
 
 function SystemStatusCard({ label, value }) {
     return (
