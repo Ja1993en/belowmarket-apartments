@@ -79,6 +79,10 @@ export default function PropertyFormPage() {
   );
 
   const updateDraft = (field, value) => {
+    if (saveError) {
+      setSaveError("");
+    }
+
     setPropertyDraft((currentDraft) => ({
       ...currentDraft,
       [field]: value,
@@ -240,6 +244,10 @@ export default function PropertyFormPage() {
   };
 
   const updateFloorPlan = (floorPlanId, field, value) => {
+    if (saveError) {
+      setSaveError("");
+    }
+
     setPropertyDraft((currentDraft) => ({
       ...currentDraft,
       floorPlans: currentDraft.floorPlans.map((floorPlan) =>
@@ -254,6 +262,10 @@ export default function PropertyFormPage() {
   };
 
   const updateFloorPlanAvailability = (floorPlanId, availabilityId, field, value) => {
+    if (saveError) {
+      setSaveError("");
+    }
+
     setPropertyDraft((currentDraft) => ({
       ...currentDraft,
       floorPlans: currentDraft.floorPlans.map((floorPlan) =>
@@ -1400,8 +1412,13 @@ function normalizeFloorPlansForDraft(property) {
 
 function normalizeFloorPlanForStorage(floorPlan) {
   const name = floorPlan.name.trim();
-  const startingRent = floorPlan.startingRent.trim();
-  const calculatedValues = calculateFloorPlanValues(floorPlan);
+  const unitRentFallback = getFirstAvailableUnitRent(floorPlan.availableUnits);
+  const startingRent = floorPlan.startingRent.trim() || unitRentFallback;
+  const floorPlanForCalculation = {
+    ...floorPlan,
+    startingRent,
+  };
+  const calculatedValues = calculateFloorPlanValues(floorPlanForCalculation);
   const freeWeeks = Number(floorPlan.freeWeeks || 0);
   const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
   const adminFeeSpecial = floorPlan.adminFeeSpecial.trim();
@@ -1412,7 +1429,7 @@ function normalizeFloorPlanForStorage(floorPlan) {
       normalizeAvailableUnitForStorage(
         availableUnit,
         index,
-        floorPlan.startingRent
+        startingRent
       )
     )
     .filter((availableUnit) =>
@@ -1464,6 +1481,14 @@ function normalizeFloorPlanForStorage(floorPlan) {
     notes: floorPlan.notes.trim(),
     availableUnits,
   };
+}
+
+function getFirstAvailableUnitRent(availableUnits = []) {
+  return (
+    availableUnits
+      .map((availableUnit) => availableUnit.rent?.trim())
+      .find(Boolean) || ""
+  );
 }
 
 function normalizeAvailableUnitsForDraft(availableUnits = [], defaultRent = "") {
