@@ -927,7 +927,7 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
     const savingsValue = matchedFloorPlan?.savings || property.savings || "";
     const hasSavings = parseCurrency(savingsValue) > 0;
     const badgeLabel = dealSummary.badgeLabel || (hasSavings ? `${savingsValue} savings` : "");
-    const cardHref = property.isFallback ? "/start" : `/properties/${property.id}`;
+    const cardHref = `/properties/${property.id}`;
 
     return (
         <Link

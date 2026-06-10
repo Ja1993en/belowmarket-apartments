@@ -458,7 +458,7 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
 
     mappableProperties.forEach((property) => {
       const markerElement = document.createElement("a");
-      markerElement.href = property.isFallback ? "/start" : `/properties/${property.id}`;
+      markerElement.href = `/properties/${property.id}`;
       markerElement.className =
         "rounded-full bg-[#173f3f] px-3 py-2 text-xs font-black text-white shadow-xl ring-2 ring-white transition hover:scale-105 hover:bg-[#102426]";
       markerElement.textContent = getPrimaryRentLabel(property);
@@ -616,7 +616,7 @@ function FallbackSearchMap({ properties }) {
 
       {visiblePins.map((property, index) => {
         const position = getMapPinPosition(index);
-        const pinHref = property.isFallback ? "/start" : `/properties/${property.id}`;
+        const pinHref = `/properties/${property.id}`;
 
         return (
           <Link
@@ -650,7 +650,7 @@ function FallbackSearchMap({ properties }) {
 function SearchResultCard({ property }) {
   const addressLabel = getPropertyAddressLabel(property);
   const hasSpecial = Boolean(property.special && property.special !== "Special not listed");
-  const cardHref = property.isFallback ? "/start" : `/properties/${property.id}`;
+  const cardHref = `/properties/${property.id}`;
 
   return (
     <Link
