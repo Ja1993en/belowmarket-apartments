@@ -251,24 +251,25 @@ export default function AdminDashboard() {
 
 
     return (
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+        <div className="space-y-6">
+            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
-                <h1 className="text-4xl font-black text-slate-900">
+                <h1 className="text-4xl font-black text-[#102426]">
                     Dashboard
                 </h1>
 
-                <p className="mt-2 text-slate-500">
+                <p className="mt-2 font-semibold text-[#526260]">
                     Welcome back. Here's what's happening today.
                 </p>
 
                 {dashboardLoadedAt && (
-                    <p className="mt-2 text-xs font-semibold text-slate-400">
+                    <p className="mt-2 text-xs font-semibold text-[#78908a]">
                         Dashboard refreshed {dashboardLoadedAt.toLocaleTimeString()}
                     </p>
                 )}
 
                 {isLoadingDashboard && (
-                    <p className="mt-2 text-sm font-bold text-slate-500">
+                    <p className="mt-2 text-sm font-bold text-[#526260]">
                         Loading dashboard data...
                     </p>
                 )}
@@ -286,11 +287,11 @@ export default function AdminDashboard() {
                 )}
 
                 {hasNoSupabaseLeads && (
-                    <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-4">
-                        <p className="text-sm font-black text-slate-900">
+                    <div className="mt-4 rounded-2xl border border-dashed border-[#a9cfc2] bg-white px-5 py-4">
+                        <p className="text-sm font-black text-[#102426]">
                             No Supabase leads yet.
                         </p>
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-sm font-semibold text-[#526260]">
                             Create a test lead from the Leads page or submit the public start form to verify the production data loop.
                         </p>
                     </div>
@@ -302,48 +303,49 @@ export default function AdminDashboard() {
                 type="button"
                 onClick={loadDashboardData}
                 disabled={isLoadingDashboard}
-                className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+                className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
             >
                 {isLoadingDashboard ? "Refreshing..." : "Refresh Dashboard"}
             </button>
+            </div>
 
 
 
-            <div className="mt-6 rounded-3xl bg-slate-950 p-6 text-white shadow-sm">
+            <div className="rounded-3xl bg-[#102426] p-6 text-white shadow-sm">
                 <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                     <div>
-                        <p className="text-sm font-bold text-slate-300">
+                        <p className="text-sm font-bold text-[#d7ece6]">
                             Platform Status
                         </p>
 
-                        <h2 className="mt-2 text-2xl font-black">
+                        <h2 className="mt-2 text-2xl font-black text-[#fff7df]">
                             Your apartment platform is ready for setup.
                         </h2>
 
-                        <p className="mt-2 text-sm text-slate-300">
+                        <p className="mt-2 text-sm font-semibold text-[#d7ece6]">
                             Start by adding properties, creating leads, and sending recommendations.
                         </p>
                     </div>
 
-                    <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm font-bold">
+                    <div className="rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426]">
                         Setup Mode
                     </div>
                 </div>
             </div>
 
-            <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                 <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                     <div>
-                        <h2 className="text-2xl font-black text-slate-900">
+                        <h2 className="text-2xl font-black text-[#102426]">
                             Setup Checklist
                         </h2>
 
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-sm font-semibold text-[#526260]">
                             Complete these steps to get your apartment platform ready.
                         </p>
                     </div>
 
-                    <span className="rounded-full bg-amber-100 px-4 py-2 text-sm font-bold text-amber-700">
+                    <span className="rounded-full bg-[#fff8e6] px-4 py-2 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
                         0 of 4 complete
                     </span>
                 </div>
@@ -359,7 +361,7 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2 2xl:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-5">
                 {dashboardStatsWithTours.map((stat) => (<DashboardCard
                     key={stat.title}
                     icon={stat.icon}
@@ -371,11 +373,11 @@ export default function AdminDashboard() {
                 ))}
             </div>
 
-            <div className="mt-8 grid gap-6 xl:grid-cols-[1.4fr_.8fr]">
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 className="text-2xl font-black text-slate-900">Recent Activity</h2>
+            <div className="grid gap-6 xl:grid-cols-2">
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                    <h2 className="text-2xl font-black text-[#102426]">Recent Activity</h2>
 
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm font-semibold text-[#526260]">
                         Latest platform updates will appear here.
                     </p>
 
@@ -391,12 +393,12 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                <div className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
-                    <h2 className="text-2xl font-black text-slate-900">
+                <div className="rounded-3xl border border-dashed border-[#a9cfc2] bg-white p-8 text-center shadow-sm">
+                    <h2 className="text-2xl font-black text-[#102426]">
                         No live data connected yet
                     </h2>
 
-                    <p className="mx-auto mt-2 max-w-2xl text-slate-500">
+                    <p className="mx-auto mt-2 max-w-2xl font-semibold text-[#526260]">
                         Your dashboard is using placeholder numbers for now. Once Supabase is connected,
                         this section will automatically show real properties, leads, recommendations,
                         and update history.
@@ -405,24 +407,24 @@ export default function AdminDashboard() {
                     <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                         <Link
                             to="/admin/properties/new"
-                            className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                            className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
                         >
                             Add Property
                         </Link>
 
                         <Link
                             to="/admin/leads"
-                            className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                            className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
                         >
                             Create Lead
                         </Link>
                     </div>
                 </div>
 
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 className="text-2xl font-black text-slate-900">Quick Actions</h2>
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                    <h2 className="text-2xl font-black text-[#102426]">Quick Actions</h2>
 
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm font-semibold text-[#526260]">
                         Common admin tasks.
                     </p>
 
@@ -439,14 +441,14 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                         <div>
-                            <h2 className="text-2xl font-black text-slate-900">
+                            <h2 className="text-2xl font-black text-[#102426]">
                                 Performance Overview
                             </h2>
 
-                            <p className="mt-1 text-sm text-slate-500">
+                            <p className="mt-1 text-sm font-semibold text-[#526260]">
                                 Track how leads move from recommendations to tours and move-ins.
                             </p>
                         </div>
@@ -464,21 +466,21 @@ export default function AdminDashboard() {
                 </div>
 
 
-                <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                         <div>
-                            <h2 className="text-2xl font-black text-slate-900">
+                            <h2 className="text-2xl font-black text-[#102426]">
                                 Recent Leads
                             </h2>
 
-                            <p className="mt-1 text-sm text-slate-500">
+                            <p className="mt-1 text-sm font-semibold text-[#526260]">
                                 Latest renter leads submitted to your platform.
                             </p>
                         </div>
 
                         <Link
                             to="/admin/leads"
-                            className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                            className="rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
                         >
                             View All Leads
                         </Link>
@@ -496,21 +498,21 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm xl:col-span-2">
                     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                         <div>
-                            <h2 className="text-2xl font-black text-slate-900">
+                            <h2 className="text-2xl font-black text-[#102426]">
                                 Top Properties
                             </h2>
 
-                            <p className="mt-1 text-sm text-slate-500">
+                            <p className="mt-1 text-sm font-semibold text-[#526260]">
                                 Properties getting the most lead interest.
                             </p>
                         </div>
 
                         <Link
                             to="/admin/properties"
-                            className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                            className="rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
                         >
                             View All Properties
                         </Link>
@@ -529,33 +531,33 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                <div className="mt-8 rounded-3xl bg-slate-950 p-6 text-white shadow-sm">
+                <div className="rounded-3xl bg-[#102426] p-6 text-white shadow-sm xl:col-span-2">
                     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                         <div>
-                            <h2 className="text-2xl font-black">
-                                Dashboard foundation complete
+                            <h2 className="text-2xl font-black text-[#fff7df]">
+                                Keep listing data current
                             </h2>
 
-                            <p className="mt-2 text-sm text-slate-300">
-                                The next step is building the Properties page, then connecting the dashboard cards to Supabase data.
+                            <p className="mt-2 text-sm font-semibold text-[#d7ece6]">
+                                Review property pricing, specials, photos, schools, and availability before renters see a listing.
                             </p>
                         </div>
 
                         <Link
                             to="/admin/properties"
-                            className="rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-950 hover:bg-slate-100"
+                            className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
                         >
-                            Build Properties Page
+                            Review Properties
                         </Link>
                     </div>
                 </div>
 
-                <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 className="text-2xl font-black text-slate-900">
+                <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm xl:col-span-2">
+                    <h2 className="text-2xl font-black text-[#102426]">
                         System Overview
                     </h2>
 
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm font-semibold text-[#526260]">
                         Current platform status.
                     </p>
 
@@ -578,18 +580,18 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
     const cardContent = (
         <>
             <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100">
-                    <Icon className="h-6 w-6 text-slate-700" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e7f3ee]">
+                    <Icon className="h-6 w-6 text-[#1f6f63]" />
                 </div>
 
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
+                <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-xs font-bold text-[#526260] ring-1 ring-[#d7e6df]">
                     {to ? "Open" : "Active"}
                 </span>
             </div>
 
-            <p className="mt-5 text-sm font-bold text-slate-500">{title}</p>
-            <h2 className="mt-2 text-4xl font-black text-slate-900">{value}</h2>
-            <p className="mt-2 text-sm text-slate-500">{subtitle}</p>
+            <p className="mt-5 text-sm font-bold text-[#526260]">{title}</p>
+            <h2 className="mt-2 text-4xl font-black text-[#102426]">{value}</h2>
+            <p className="mt-2 text-sm font-semibold text-[#526260]">{subtitle}</p>
         </>
     );
 
@@ -597,7 +599,7 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
         return (
             <Link
                 to={to}
-                className="block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-slate-300 hover:shadow-md"
+                className="block rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm hover:border-[#f2b84b] hover:shadow-md"
             >
                 {cardContent}
             </Link>
@@ -605,7 +607,7 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
     }
 
     return (
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
             {cardContent}
         </div>
     );
@@ -613,14 +615,14 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
 
 function ActivityItem({ title, description, time }) {
     return (
-        <div className="rounded-2xl bg-slate-50 p-4">
+        <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <p className="font-bold text-slate-900">{title}</p>
-                    <p className="mt-1 text-sm text-slate-500">{description}</p>
+                    <p className="font-bold text-[#102426]">{title}</p>
+                    <p className="mt-1 text-sm font-semibold text-[#526260]">{description}</p>
                 </div>
 
-                <span className="text-xs font-bold text-slate-400">{time}</span>
+                <span className="text-xs font-bold text-[#78908a]">{time}</span>
             </div>
         </div>
     );
@@ -630,15 +632,15 @@ function QuickAction({ icon: Icon, title, description, to }) {
     return (
         <Link
             to={to}
-            className="flex w-full items-center gap-4 rounded-2xl bg-slate-50 p-4 text-left hover:bg-slate-100"
+            className="flex w-full items-center gap-4 rounded-2xl bg-[#f5f8f1] p-4 text-left ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
         >
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white">
-                <Icon className="h-5 w-5 text-slate-700" />
+                <Icon className="h-5 w-5 text-[#1f6f63]" />
             </div>
 
             <div>
-                <p className="font-bold text-slate-900">{title}</p>
-                <p className="mt-1 text-sm text-slate-500">{description}</p>
+                <p className="font-bold text-[#102426]">{title}</p>
+                <p className="mt-1 text-sm font-semibold text-[#526260]">{description}</p>
             </div>
         </Link>
     );
@@ -646,12 +648,12 @@ function QuickAction({ icon: Icon, title, description, to }) {
 
 function PerformanceStep({ label, value }) {
     return (
-        <div className="rounded-2xl bg-slate-50 p-5">
-            <p className="min-h-[40px] text-sm font-semibold leading-5 text-slate-500">
+        <div className="rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
+            <p className="min-h-[40px] text-sm font-semibold leading-5 text-[#526260]">
                 {label}
             </p>
 
-            <p className="mt-3 text-3xl font-black text-slate-900">
+            <p className="mt-3 text-3xl font-black text-[#102426]">
                 {value}
             </p>
         </div>
@@ -660,13 +662,13 @@ function PerformanceStep({ label, value }) {
 
 function RecentLead({ name, preference, status }) {
     return (
-        <div className="flex flex-col justify-between gap-3 rounded-2xl bg-slate-50 p-4 md:flex-row md:items-center">
+        <div className="flex flex-col justify-between gap-3 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df] md:flex-row md:items-center">
             <div>
-                <p className="font-bold text-slate-900">{name}</p>
-                <p className="mt-1 text-sm text-slate-500">{preference}</p>
+                <p className="font-bold text-[#102426]">{name}</p>
+                <p className="mt-1 text-sm font-semibold text-[#526260]">{preference}</p>
             </div>
 
-            <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700">
+            <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
                 {status}
             </span>
         </div>
@@ -675,21 +677,21 @@ function RecentLead({ name, preference, status }) {
 
 function TopProperty({ name, area, leads, special }) {
     return (
-        <div className="rounded-2xl bg-slate-50 p-5">
-            <p className="truncate text-lg font-black text-slate-900">
+        <div className="rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
+            <p className="truncate text-lg font-black text-[#102426]">
                 {name}
             </p>
 
-            <p className="mt-1 truncate text-sm text-slate-500">
+            <p className="mt-1 truncate text-sm font-semibold text-[#526260]">
                 {area}
             </p>
 
             <div className="mt-5 flex flex-col gap-2">
-                <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-bold text-[#173f3f] ring-1 ring-[#d7e6df]">
                     {leads}
                 </span>
 
-                <span className="w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                <span className="w-fit rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
                     {special}
                 </span>
             </div>
@@ -702,13 +704,13 @@ function ChecklistItem({ title, to }) {
     return (
         <Link
             to={to}
-            className="block rounded-2xl bg-slate-50 p-4 hover:bg-slate-100"
+            className="block rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
         >
-            <div className="mb-3 h-4 w-4 rounded-full border-2 border-slate-300" />
+            <div className="mb-3 h-4 w-4 rounded-full border-2 border-[#a9cfc2]" />
 
-            <p className="font-bold text-slate-900">{title}</p>
+            <p className="font-bold text-[#102426]">{title}</p>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm font-semibold text-[#526260]">
                 Pending
             </p>
         </Link>
@@ -717,12 +719,12 @@ function ChecklistItem({ title, to }) {
 
 function SystemStatusCard({ label, value }) {
     return (
-        <div className="rounded-2xl bg-slate-50 p-5">
-            <p className="text-sm font-semibold text-slate-500">
+        <div className="rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
+            <p className="text-sm font-semibold text-[#526260]">
                 {label}
             </p>
 
-            <p className="mt-3 text-lg font-black text-slate-900">
+            <p className="mt-3 text-lg font-black text-[#102426]">
                 {value}
             </p>
         </div>
