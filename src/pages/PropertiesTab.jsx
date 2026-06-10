@@ -101,7 +101,7 @@ export default function PropertiesTab() {
                 Manage apartment properties, specials, pricing, and availability.
             </p>
 
-            <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2 2xl:grid-cols-4">
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {propertyStats.map((stat) => (
                     <PropertyStatCard
                         key={stat.title}
@@ -246,16 +246,16 @@ export default function PropertiesTab() {
 
 function PropertyStatCard({ icon: Icon, title, value, subtitle }) {
     return (
-        <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-[#f2b84b] hover:shadow-md">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e7f3ee]">
+        <div className="min-h-[170px] rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-[#f2b84b] hover:shadow-md">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e7f3ee]">
                 <Icon className="h-5 w-5 text-[#1f6f63]" />
             </div>
 
-            <p className="mt-5 text-sm font-semibold text-[#526260]">
+            <p className="mt-4 text-sm font-semibold text-[#526260]">
                 {title}
             </p>
 
-            <h2 className="mt-3 text-4xl font-black text-[#102426]">
+            <h2 className="mt-2 text-3xl font-black leading-none text-[#102426]">
                 {value}
             </h2>
 
