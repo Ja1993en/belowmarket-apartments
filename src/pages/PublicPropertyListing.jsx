@@ -2723,16 +2723,16 @@ function getRenterDecisionFacts({
             label: "Estimated monthly value",
             value: effectiveRentLabel || startingRentLabel,
             detail: effectiveRentLabel
-                ? `Base rent starts at ${startingRentLabel}. Specials may lower the estimated effective rent, but your monthly payment may still be based on base rent plus fees.`
-                : `Base rent starts at ${startingRentLabel}. Ask leasing for required monthly fees before comparing total cost.`,
+                ? `Base rent: ${startingRentLabel}. Confirm the actual monthly payment with fees.`
+                : `Base rent: ${startingRentLabel}. Ask leasing for required monthly fees.`,
             tone: hasPropertySpecial ? "deal" : "default",
         },
         {
             label: "Current special",
             value: hasPropertySpecial ? propertySpecialLabel : "No active special",
             detail: hasPropertySpecial
-                ? `${savingsLabel || "Savings not calculated"} estimated from listing data. Ask whether the credit is applied upfront, monthly, or to your resident account.`
-                : "No concession is listed, so compare the regular rent and required fees.",
+                ? `${savingsLabel || "Savings not calculated"} estimated. Ask how the credit is applied.`
+                : "Compare regular rent plus required fees.",
             tone: hasPropertySpecial ? "deal" : "default",
         },
         {
@@ -2740,30 +2740,30 @@ function getRenterDecisionFacts({
             value: `${floorPlanCount} layout${floorPlanCount === 1 ? "" : "s"}`,
             detail:
                 totalAvailableUnits > 0
-                    ? `${totalAvailableUnits} listed unit${totalAvailableUnits === 1 ? "" : "s"} across ${bedSummary}. Confirm the unit is still available before touring.`
-                    : `Available bedroom types: ${bedSummary}. Request current unit availability before touring.`,
+                    ? `${totalAvailableUnits} listed unit${totalAvailableUnits === 1 ? "" : "s"} across ${bedSummary}. Confirm before touring.`
+                    : `${bedSummary}. Request current availability before touring.`,
         },
         {
             label: "Ask before applying",
             value: feeLabel || "Confirm fees",
             detail: feeLabel
-                ? `Listed required monthly fees are ${feeLabel}. Confirm what is included before applying.`
-                : "Confirm required monthly add-ons, one-time fees, and whether specials apply to base rent only.",
+                ? `Listed fees: ${feeLabel}. Confirm what is included.`
+                : "Confirm fees and whether specials apply to base rent only.",
             detailLines: feeQuestions,
             tone: feeLabel ? "deal" : "caution",
         },
         {
             label: "School district",
             value: schoolLabel,
-            detail: "Verify school zones directly with the district before applying.",
+            detail: "Verify attendance zones before applying.",
             tone: "school",
         },
         {
             label: "Managed by",
             value: managementLabel,
             detail: property?.yearBuilt
-                ? `Property built in ${property.yearBuilt}. Ask about renovations, package fees, parking, and maintenance response times.`
-                : "Ask about maintenance response times, package fees, parking, and resident charges.",
+                ? `Built ${property.yearBuilt}. Ask about fees, parking, packages, and maintenance.`
+                : "Ask about fees, parking, packages, and maintenance.",
         },
     ];
 }
