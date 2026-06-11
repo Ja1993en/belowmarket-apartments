@@ -50,6 +50,8 @@ const NEARBY_PLACE_QUERIES = [
         keywords: ["kroger"],
     },
 ];
+const mapboxGeocodeRequests = new Map();
+const mapboxNearbyPlaceRequests = new Map();
 const SCHOOL_DISTRICT_BY_ZIP = {
     75252: {
         district: "Plano ISD",
@@ -2189,6 +2191,20 @@ async function geocodeMapboxQuery(query, options = {}) {
     const cachedCoordinates = getCachedCoordinates(options.cacheKey);
     if (cachedCoordinates) return cachedCoordinates;
 
+    if (options.cacheKey && mapboxGeocodeRequests.has(options.cacheKey)) {
+        return mapboxGeocodeRequests.get(options.cacheKey);
+    }
+
+    const geocodeRequest = fetchMapboxGeocode(query, options);
+
+    if (options.cacheKey) {
+        mapboxGeocodeRequests.set(options.cacheKey, geocodeRequest);
+    }
+
+    return geocodeRequest;
+}
+
+async function fetchMapboxGeocode(query, options = {}) {
     const geocodingUrl = new URL(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`
     );
@@ -2244,14 +2260,62 @@ function setCachedCoordinates(cacheKey, coordinates) {
     }
 }
 
+function getNearbyPlacesCacheKey(center) {
+    return `bma-nearby:${Math.round(center.latitude * 10000)}:${Math.round(
+        center.longitude * 10000
+    )}`;
+}
+
+function getCachedNearbyPlaces(cacheKey) {
+    try {
+        const cachedValue = localStorage.getItem(cacheKey);
+        if (!cachedValue) return null;
+
+        const places = JSON.parse(cachedValue);
+        if (!Array.isArray(places)) return null;
+
+        return places.filter(
+            (place) =>
+                place &&
+                Number.isFinite(Number(place.latitude)) &&
+                Number.isFinite(Number(place.longitude))
+        );
+    } catch {
+        return null;
+    }
+}
+
+function setCachedNearbyPlaces(cacheKey, places) {
+    if (!cacheKey) return;
+
+    try {
+        localStorage.setItem(cacheKey, JSON.stringify(places));
+    } catch (error) {
+        console.warn("Could not cache nearby map places.", error);
+    }
+}
+
 async function resolveNearbyPlaces(center) {
     if (!center) return [];
 
     if (!MAPBOX_TOKEN) return [];
 
-    const sessionToken = `bma-nearby-${Math.round(center.latitude * 10000)}-${Math.round(
-        center.longitude * 10000
-    )}`;
+    const cacheKey = getNearbyPlacesCacheKey(center);
+    const cachedPlaces = getCachedNearbyPlaces(cacheKey);
+    if (cachedPlaces) return cachedPlaces;
+
+    if (mapboxNearbyPlaceRequests.has(cacheKey)) {
+        return mapboxNearbyPlaceRequests.get(cacheKey);
+    }
+
+    const nearbyPlacesRequest = fetchNearbyPlaces(center, cacheKey);
+    mapboxNearbyPlaceRequests.set(cacheKey, nearbyPlacesRequest);
+
+    return nearbyPlacesRequest;
+}
+
+async function fetchNearbyPlaces(center, cacheKey) {
+    const sessionToken = cacheKey;
     const resolvedPlaces = await Promise.all(
         NEARBY_PLACE_QUERIES.map(async (placeQuery) => {
             const searchUrl = new URL(
@@ -2296,7 +2360,10 @@ async function resolveNearbyPlaces(center) {
         })
     );
 
-    return resolvedPlaces.filter(Boolean);
+    const places = resolvedPlaces.filter(Boolean);
+    setCachedNearbyPlaces(cacheKey, places);
+
+    return places;
 }
 
 async function retrieveSearchBoxPlace(mapboxId, sessionToken) {

@@ -22,6 +22,7 @@ const SPECIAL_FILTER_OPTIONS = [
   { label: "6 weeks free", weeks: 6 },
   { label: "8 weeks free", weeks: 8 },
 ];
+const mapboxGeocodeRequests = new Map();
 
 export default function PropertySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -70,6 +71,15 @@ export default function PropertySearchPage() {
       return distanceFromCenter <= selectedArea.radiusMiles;
     });
   }, [mappableSearchProperties, selectedArea, specialMatchedProperties]);
+  const mappableFilteredProperties = useMemo(() => {
+    const filteredPropertyIds = new Set(
+      filteredProperties.map((property) => property.id)
+    );
+
+    return mappableSearchProperties.filter((property) =>
+      filteredPropertyIds.has(property.id)
+    );
+  }, [filteredProperties, mappableSearchProperties]);
   const selectedSpecialLabel = selectedSpecialWeeks
     ? `${selectedSpecialWeeks} weeks free`
     : "";
@@ -336,6 +346,7 @@ export default function PropertySearchPage() {
         <div className="relative h-[320px] overflow-hidden md:h-[380px] lg:h-[430px]">
           <SearchMap
             properties={filteredProperties}
+            mappableProperties={mappableFilteredProperties}
             selectedArea={selectedArea}
             onAreaChange={setSelectedArea}
           />
@@ -384,7 +395,7 @@ export default function PropertySearchPage() {
   );
 }
 
-function SearchMap({ properties, selectedArea, onAreaChange }) {
+function SearchMap({ properties, mappableProperties, selectedArea, onAreaChange }) {
   if (!MAPBOX_TOKEN) {
     return <FallbackSearchMap properties={properties} />;
   }
@@ -392,13 +403,14 @@ function SearchMap({ properties, selectedArea, onAreaChange }) {
   return (
     <MapboxSearchMap
       properties={properties}
+      mappableProperties={mappableProperties}
       selectedArea={selectedArea}
       onAreaChange={onAreaChange}
     />
   );
 }
 
-function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
+function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaChange }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -407,7 +419,6 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
   const [mapError, setMapError] = useState("");
   const [isChoosingArea, setIsChoosingArea] = useState(false);
   const [areaRadiusMiles, setAreaRadiusMiles] = useState(DEFAULT_AREA_RADIUS_MILES);
-  const [mappableProperties, setMappableProperties] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -430,27 +441,6 @@ function MapboxSearchMap({ properties, selectedArea, onAreaChange }) {
       isMounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    resolveMappableProperties(properties)
-      .then((resolvedProperties) => {
-        if (isMounted) {
-          setMappableProperties(resolvedProperties);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        if (isMounted) {
-          setMappableProperties([]);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [properties]);
 
   useEffect(() => {
     if (!mapboxGl || !mapContainerRef.current || mapRef.current) return;
@@ -971,6 +961,20 @@ async function geocodeMapboxQuery(query, options = {}) {
   const cachedCoordinates = getCachedCoordinates(options.cacheKey);
   if (cachedCoordinates) return cachedCoordinates;
 
+  if (options.cacheKey && mapboxGeocodeRequests.has(options.cacheKey)) {
+    return mapboxGeocodeRequests.get(options.cacheKey);
+  }
+
+  const geocodeRequest = fetchMapboxGeocode(query, options);
+
+  if (options.cacheKey) {
+    mapboxGeocodeRequests.set(options.cacheKey, geocodeRequest);
+  }
+
+  return geocodeRequest;
+}
+
+async function fetchMapboxGeocode(query, options = {}) {
   const geocodingUrl = new URL(
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`
   );
