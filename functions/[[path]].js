@@ -209,21 +209,42 @@ function formatMoney(value) {
 }
 
 function injectMeta(html, meta) {
-  const metaBlock = buildMetaBlock({
+  const resolvedMeta = {
     ...DEFAULT_META,
     ...meta,
-  });
+  };
+  const metaBlock = buildMetaBlock(resolvedMeta);
 
   const withTitle = html.replace(
     /<title>[\s\S]*?<\/title>/,
-    `<title>${escapeText(meta.title || DEFAULT_META.title)}</title>`
+    `<title>${escapeText(resolvedMeta.title)}</title>`
+  );
+  const withDescription = replaceOrInsertHeadTag(
+    withTitle,
+    /<meta\s+name=["']description["'][^>]*>/i,
+    `<meta name="description" content="${escapeAttribute(
+      resolvedMeta.description
+    )}" />`
+  );
+  const withCanonical = replaceOrInsertHeadTag(
+    withDescription,
+    /<link\s+rel=["']canonical["'][^>]*>/i,
+    `<link rel="canonical" href="${escapeAttribute(resolvedMeta.url)}" />`
   );
 
-  if (META_BLOCK_PATTERN.test(withTitle)) {
-    return withTitle.replace(META_BLOCK_PATTERN, metaBlock);
+  if (META_BLOCK_PATTERN.test(withCanonical)) {
+    return withCanonical.replace(META_BLOCK_PATTERN, metaBlock);
   }
 
-  return withTitle.replace("</head>", `${metaBlock}\n  </head>`);
+  return withCanonical.replace("</head>", `${metaBlock}\n  </head>`);
+}
+
+function replaceOrInsertHeadTag(html, pattern, tag) {
+  if (pattern.test(html)) {
+    return html.replace(pattern, tag);
+  }
+
+  return html.replace("</head>", `    ${tag}\n  </head>`);
 }
 
 function buildMetaBlock(meta) {
