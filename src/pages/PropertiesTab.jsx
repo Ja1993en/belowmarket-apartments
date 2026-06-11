@@ -29,18 +29,37 @@ export default function PropertiesTab() {
         getLegacyLocalPropertyCount()
     );
     const [isMigratingProperties, setIsMigratingProperties] = useState(false);
+    const [autoMigrationAttempted, setAutoMigrationAttempted] = useState(false);
     const refreshProperties = async () => {
         try {
             setIsLoadingProperties(true);
             const savedProperties = await getAllProperties();
+            const currentLegacyCount = getLegacyLocalPropertyCount();
+
+            if (savedProperties.length === 0 && currentLegacyCount > 0 && !autoMigrationAttempted) {
+                setAutoMigrationAttempted(true);
+                setIsMigratingProperties(true);
+
+                const migratedProperties = await migrateLegacyLocalPropertiesToSupabase();
+                const refreshedProperties = await getAllProperties();
+
+                setProperties(refreshedProperties);
+                setLegacyPropertyCount(getLegacyLocalPropertyCount());
+                setNotice(`${migratedProperties.length} laptop-saved propert${migratedProperties.length === 1 ? "y" : "ies"} automatically moved into Supabase.`);
+                setLoadError("");
+                return;
+            }
+
             setProperties(savedProperties);
+            setLegacyPropertyCount(currentLegacyCount);
             setLoadError("");
         } catch (error) {
             console.error(error);
             setProperties([]);
-            setLoadError("Could not load properties from Supabase.");
+            setLoadError(`Could not load properties from Supabase. ${error?.message || "Check the database connection."}`);
         } finally {
             setIsLoadingProperties(false);
+            setIsMigratingProperties(false);
         }
     };
 
@@ -181,7 +200,7 @@ export default function PropertiesTab() {
                         <div>
                             <h2 className="text-xl font-black text-[#102426]">Move laptop-saved properties to Supabase</h2>
                             <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                This browser has {legacyPropertyCount} old local propert{legacyPropertyCount === 1 ? "y" : "ies"}. Move them to Supabase so they appear on your phone and every device.
+                                This browser has {legacyPropertyCount} old local propert{legacyPropertyCount === 1 ? "y" : "ies"}. They will be moved to Supabase automatically when this page loads, or you can run it again manually.
                             </p>
                         </div>
                         <button
