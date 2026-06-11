@@ -26,7 +26,7 @@ export default function PropertiesTab() {
     const [loadError, setLoadError] = useState("");
     const [isLoadingProperties, setIsLoadingProperties] = useState(true);
     const [legacyPropertyCount, setLegacyPropertyCount] = useState(() =>
-        getLegacyLocalPropertyCount()
+        getLegacyLocalPropertyCount({ includeMigrated: true })
     );
     const [isMigratingProperties, setIsMigratingProperties] = useState(false);
     const [autoMigrationAttempted, setAutoMigrationAttempted] = useState(false);
@@ -34,18 +34,24 @@ export default function PropertiesTab() {
         try {
             setIsLoadingProperties(true);
             const savedProperties = await getAllProperties();
-            const currentLegacyCount = getLegacyLocalPropertyCount();
+            const currentLegacyCount = getLegacyLocalPropertyCount({
+                includeMigrated: true,
+            });
 
             if (savedProperties.length === 0 && currentLegacyCount > 0 && !autoMigrationAttempted) {
                 setAutoMigrationAttempted(true);
                 setIsMigratingProperties(true);
 
-                const migratedProperties = await migrateLegacyLocalPropertiesToSupabase();
+                const migratedProperties = await migrateLegacyLocalPropertiesToSupabase({
+                    includeMigrated: true,
+                });
                 const refreshedProperties = await getAllProperties();
 
                 setProperties(refreshedProperties);
-                setLegacyPropertyCount(getLegacyLocalPropertyCount());
-                setNotice(`${migratedProperties.length} laptop-saved propert${migratedProperties.length === 1 ? "y" : "ies"} automatically moved into Supabase.`);
+                setLegacyPropertyCount(getLegacyLocalPropertyCount({
+                    includeMigrated: true,
+                }));
+                setNotice(`${migratedProperties.length} browser-saved propert${migratedProperties.length === 1 ? "y" : "ies"} recovered into Supabase.`);
                 setLoadError("");
                 return;
             }
@@ -82,10 +88,14 @@ export default function PropertiesTab() {
             setIsMigratingProperties(true);
             setNotice("");
 
-            const migratedProperties = await migrateLegacyLocalPropertiesToSupabase();
+            const migratedProperties = await migrateLegacyLocalPropertiesToSupabase({
+                includeMigrated: true,
+            });
 
             await refreshProperties();
-            setLegacyPropertyCount(getLegacyLocalPropertyCount());
+            setLegacyPropertyCount(getLegacyLocalPropertyCount({
+                includeMigrated: true,
+            }));
             setNotice(`${migratedProperties.length} browser-saved propert${migratedProperties.length === 1 ? "y" : "ies"} moved into Supabase. If photos are missing, create the property-photos bucket and re-upload them later.`);
         } catch (error) {
             console.error(error);
@@ -198,9 +208,9 @@ export default function PropertiesTab() {
                 <div className="mt-6 rounded-3xl border border-[#f2d08a] bg-[#fff8e6] p-5 shadow-sm">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h2 className="text-xl font-black text-[#102426]">Move laptop-saved properties to Supabase</h2>
+                            <h2 className="text-xl font-black text-[#102426]">Recover browser-saved properties to Supabase</h2>
                             <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                This browser has {legacyPropertyCount} old local propert{legacyPropertyCount === 1 ? "y" : "ies"}. They will be moved to Supabase automatically when this page loads, or you can run it again manually.
+                                This browser has {legacyPropertyCount} old local propert{legacyPropertyCount === 1 ? "y" : "ies"}. Use this if Supabase is empty or a first migration happened before the database table existed.
                             </p>
                         </div>
                         <button
@@ -209,7 +219,7 @@ export default function PropertiesTab() {
                             disabled={isMigratingProperties}
                             className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
                         >
-                            {isMigratingProperties ? "Moving..." : "Move to Supabase"}
+                            {isMigratingProperties ? "Recovering..." : "Recover to Supabase"}
                         </button>
                     </div>
                 </div>

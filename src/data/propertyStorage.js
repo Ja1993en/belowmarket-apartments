@@ -70,12 +70,12 @@ export async function deleteStoredProperty(propertyId) {
   if (error) throw error;
 }
 
-export function getLegacyLocalPropertyCount() {
-  return getLegacyLocalProperties().length;
+export function getLegacyLocalPropertyCount(options = {}) {
+  return getLegacyLocalProperties(options).length;
 }
 
-export async function migrateLegacyLocalPropertiesToSupabase() {
-  const legacyProperties = getLegacyLocalProperties();
+export async function migrateLegacyLocalPropertiesToSupabase(options = {}) {
+  const legacyProperties = getLegacyLocalProperties(options);
   const migratedProperties = [];
 
   for (const property of legacyProperties) {
@@ -103,36 +103,70 @@ export async function migrateLegacyLocalPropertiesToSupabase() {
   return migratedProperties;
 }
 
-function getLegacyLocalProperties() {
+function getLegacyLocalProperties({ includeMigrated = false } = {}) {
   if (typeof localStorage === "undefined") return [];
 
   try {
-    const customProperties = JSON.parse(
-      localStorage.getItem("belowMarketCustomProperties") || "[]"
+    const customProperties = normalizeLegacyPropertyList(
+      JSON.parse(localStorage.getItem("belowMarketCustomProperties") || "[]")
     );
-    const propertyUpdates = JSON.parse(
-      localStorage.getItem("belowMarketProperties") || "{}"
+    const propertyUpdates = normalizeLegacyPropertyUpdates(
+      JSON.parse(localStorage.getItem("belowMarketProperties") || "{}")
     );
     const deletedPropertyIds = new Set(
       JSON.parse(localStorage.getItem("belowMarketDeletedProperties") || "[]")
     );
     const migratedPropertyIds = new Set(getMigratedLegacyPropertyIds());
+    const propertiesById = new Map();
 
-    return customProperties
+    customProperties.forEach((property) => {
+      if (!property?.id) return;
+
+      propertiesById.set(property.id, {
+        ...property,
+        ...(propertyUpdates[property.id] || {}),
+      });
+    });
+
+    Object.entries(propertyUpdates).forEach(([propertyId, updates]) => {
+      if (!propertiesById.has(propertyId) && updates?.name) {
+        propertiesById.set(propertyId, {
+          ...updates,
+          id: propertyId,
+        });
+      }
+    });
+
+    return [...propertiesById.values()]
       .filter(
         (property) =>
           property?.id &&
           !deletedPropertyIds.has(property.id) &&
-          !migratedPropertyIds.has(property.id)
-      )
-      .map((property) => ({
-        ...property,
-        ...(propertyUpdates[property.id] || {}),
-      }));
+          (includeMigrated || !migratedPropertyIds.has(property.id))
+      );
   } catch (error) {
     console.error("Could not read legacy local properties.", error);
     return [];
   }
+}
+
+function normalizeLegacyPropertyList(value) {
+  if (Array.isArray(value)) return value;
+
+  if (value && typeof value === "object") {
+    return Object.entries(value).map(([propertyId, property]) => ({
+      ...(property || {}),
+      id: property?.id || propertyId,
+    }));
+  }
+
+  return [];
+}
+
+function normalizeLegacyPropertyUpdates(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) return value;
+
+  return {};
 }
 
 function getMigratedLegacyPropertyIds() {
