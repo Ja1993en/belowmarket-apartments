@@ -757,41 +757,49 @@ function loadMapboxGl() {
 
 async function resolveMappableProperties(properties) {
   const resolvedProperties = await Promise.all(
-    properties.map(async (property) => {
-      if (hasPreciseStreetAddress(property)) {
-        const geocodedCoordinates = await geocodePropertyAddress(property);
-
-        if (geocodedCoordinates) {
-          return {
-            ...property,
-            ...geocodedCoordinates,
-          };
-        }
-      }
-
-      const existingCoordinates = getPropertyCoordinates(property);
-
-      if (existingCoordinates) {
-        return {
-          ...property,
-          ...existingCoordinates,
-        };
-      }
-
-      const geocodedCoordinates = await geocodePropertyAddress(property);
-
-      if (!geocodedCoordinates) {
-        return null;
-      }
-
-      return {
-        ...property,
-        ...geocodedCoordinates,
-      };
-    })
+    properties.map(async (property) => resolveMappableProperty(property))
   );
 
   return resolvedProperties.filter(Boolean);
+}
+
+async function resolveMappableProperty(property) {
+  try {
+    const existingCoordinates = getPropertyCoordinates(property);
+
+    if (existingCoordinates) {
+      return {
+        ...property,
+        ...existingCoordinates,
+      };
+    }
+
+    if (hasPreciseStreetAddress(property)) {
+      const geocodedCoordinates = await geocodePropertyAddress(property);
+
+      if (geocodedCoordinates) {
+        return {
+          ...property,
+          ...geocodedCoordinates,
+        };
+      }
+    }
+
+    const approximateCoordinates = await geocodePropertyArea(property);
+
+    if (approximateCoordinates) {
+      return {
+        ...property,
+        ...approximateCoordinates,
+        mapAccuracy: "approximate",
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`Could not map ${property?.name || "property"}.`, error);
+    return null;
+  }
 }
 
 function getPropertyCoordinates(property) {
@@ -828,12 +836,33 @@ async function geocodePropertyAddress(property) {
   const addressLabel = getPropertyAddressLabel(property);
   if (!addressLabel || addressLabel === "Dallas, TX") return null;
 
-  const cacheKey = `bma-mapbox-geocode:${addressLabel.toLowerCase()}`;
-  const cachedCoordinates = getCachedCoordinates(cacheKey);
+  return geocodeMapboxQuery(addressLabel, {
+    cacheKey: `bma-mapbox-geocode:${addressLabel.toLowerCase()}`,
+    requireReliableAddress: true,
+  });
+}
+
+async function geocodePropertyArea(property) {
+  if (!MAPBOX_TOKEN) return null;
+
+  const areaLabel = [property?.city, property?.state, property?.zipcode]
+    .filter(Boolean)
+    .join(", ");
+
+  if (!areaLabel) return null;
+
+  return geocodeMapboxQuery(areaLabel, {
+    cacheKey: `bma-mapbox-area-geocode:${areaLabel.toLowerCase()}`,
+    requireReliableAddress: false,
+  });
+}
+
+async function geocodeMapboxQuery(query, options = {}) {
+  const cachedCoordinates = getCachedCoordinates(options.cacheKey);
   if (cachedCoordinates) return cachedCoordinates;
 
   const geocodingUrl = new URL(
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(addressLabel)}.json`
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`
   );
   geocodingUrl.searchParams.set("access_token", MAPBOX_TOKEN);
   geocodingUrl.searchParams.set("country", "US");
@@ -844,7 +873,9 @@ async function geocodePropertyAddress(property) {
 
   const geocodingResult = await response.json();
   const firstFeature = geocodingResult.features?.[0];
-  if (!isReliableGeocodeResult(firstFeature)) return null;
+  if (options.requireReliableAddress && !isReliableGeocodeResult(firstFeature)) {
+    return null;
+  }
 
   const [longitude, latitude] = firstFeature?.center || [];
 
@@ -853,7 +884,7 @@ async function geocodePropertyAddress(property) {
   }
 
   const coordinates = { latitude, longitude };
-  localStorage.setItem(cacheKey, JSON.stringify(coordinates));
+  setCachedCoordinates(options.cacheKey, coordinates);
 
   return coordinates;
 }
@@ -874,6 +905,16 @@ function getCachedCoordinates(cacheKey) {
     return { latitude, longitude };
   } catch {
     return null;
+  }
+}
+
+function setCachedCoordinates(cacheKey, coordinates) {
+  if (!cacheKey) return;
+
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify(coordinates));
+  } catch (error) {
+    console.warn("Could not cache map coordinates.", error);
   }
 }
 

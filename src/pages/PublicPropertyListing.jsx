@@ -2080,15 +2080,27 @@ function loadMapboxGl() {
 }
 
 async function resolvePropertyCoordinates(property) {
-    if (hasPreciseStreetAddress(property)) {
-        const geocodedCoordinates = await geocodeListingAddress(property);
-        if (geocodedCoordinates) return geocodedCoordinates;
+    try {
+        const existingCoordinates = getPropertyCoordinates(property);
+        if (existingCoordinates) return existingCoordinates;
+
+        if (hasPreciseStreetAddress(property)) {
+            const geocodedCoordinates = await geocodeListingAddress(property);
+            if (geocodedCoordinates) return geocodedCoordinates;
+        }
+
+        const approximateCoordinates = await geocodeListingArea(property);
+        if (approximateCoordinates) {
+            return {
+                ...approximateCoordinates,
+                mapAccuracy: "approximate",
+            };
+        }
+    } catch (error) {
+        console.error(`Could not map ${property?.name || "property"}.`, error);
     }
 
-    const existingCoordinates = getPropertyCoordinates(property);
-    if (existingCoordinates) return existingCoordinates;
-
-    return geocodeListingAddress(property);
+    return null;
 }
 
 function getPropertyCoordinates(property) {
@@ -2129,12 +2141,33 @@ async function geocodeListingAddress(property) {
     const addressLabel = getPropertyAddressLabel(property);
     if (!addressLabel || addressLabel === "Dallas, TX") return null;
 
-    const cacheKey = `bma-mapbox-geocode:${addressLabel.toLowerCase()}`;
-    const cachedCoordinates = getCachedCoordinates(cacheKey);
+    return geocodeMapboxQuery(addressLabel, {
+        cacheKey: `bma-mapbox-geocode:${addressLabel.toLowerCase()}`,
+        requireReliableAddress: true,
+    });
+}
+
+async function geocodeListingArea(property) {
+    if (!property || !MAPBOX_TOKEN) return null;
+
+    const areaLabel = [property.city, property.state, property.zipcode]
+        .filter(Boolean)
+        .join(", ");
+
+    if (!areaLabel) return null;
+
+    return geocodeMapboxQuery(areaLabel, {
+        cacheKey: `bma-mapbox-area-geocode:${areaLabel.toLowerCase()}`,
+        requireReliableAddress: false,
+    });
+}
+
+async function geocodeMapboxQuery(query, options = {}) {
+    const cachedCoordinates = getCachedCoordinates(options.cacheKey);
     if (cachedCoordinates) return cachedCoordinates;
 
     const geocodingUrl = new URL(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(addressLabel)}.json`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`
     );
     geocodingUrl.searchParams.set("access_token", MAPBOX_TOKEN);
     geocodingUrl.searchParams.set("country", "US");
@@ -2145,7 +2178,7 @@ async function geocodeListingAddress(property) {
 
     const geocodingResult = await response.json();
     const firstFeature = geocodingResult.features?.[0];
-    if (!isReliableGeocodeResult(firstFeature)) return null;
+    if (options.requireReliableAddress && !isReliableGeocodeResult(firstFeature)) return null;
 
     const [longitude, latitude] = firstFeature?.center || [];
 
@@ -2154,7 +2187,7 @@ async function geocodeListingAddress(property) {
     }
 
     const coordinates = { latitude, longitude };
-    localStorage.setItem(cacheKey, JSON.stringify(coordinates));
+    setCachedCoordinates(options.cacheKey, coordinates);
 
     return coordinates;
 }
@@ -2175,6 +2208,16 @@ function getCachedCoordinates(cacheKey) {
         return { latitude, longitude };
     } catch {
         return null;
+    }
+}
+
+function setCachedCoordinates(cacheKey, coordinates) {
+    if (!cacheKey) return;
+
+    try {
+        localStorage.setItem(cacheKey, JSON.stringify(coordinates));
+    } catch (error) {
+        console.warn("Could not cache map coordinates.", error);
     }
 }
 
