@@ -887,25 +887,25 @@ export default function PublicPropertyListing() {
                                 </div>
 
                                 {/*Location*/}
-                                <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.45fr)]">
-                                    <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                                        <h2 className="text-2xl font-black text-[#102426]">
-                                            Location
-                                        </h2>
+                                <div className="mt-8 space-y-6">
+                                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.45fr)]">
+                                        <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                                            <h2 className="text-2xl font-black text-[#102426]">
+                                                Location
+                                            </h2>
 
-                                        <p className="mt-2 text-[#526260]">
-                                            {addressLabel}
-                                        </p>
+                                            <p className="mt-2 text-[#526260]">
+                                                {addressLabel}
+                                            </p>
 
-                                        <PropertyLocationMap
-                                            property={property}
-                                            addressLabel={addressLabel}
-                                            nearbyPlaces={nearbyPlaces}
-                                            onNearbyPlacesChange={setNearbyPlaces}
-                                        />
-                                    </div>
+                                            <PropertyLocationMap
+                                                property={property}
+                                                addressLabel={addressLabel}
+                                                nearbyPlaces={nearbyPlaces}
+                                                onNearbyPlacesChange={setNearbyPlaces}
+                                            />
+                                        </div>
 
-                                    <div className="space-y-6">
                                         <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                                             <h2 className="text-2xl font-black text-[#102426]">
                                                 Nearby
@@ -935,9 +935,9 @@ export default function PublicPropertyListing() {
                                                 <NearbyItem label="Property" value="Gold BMA pin" />
                                             </div>
                                         </div>
-
-                                        <SchoolSnapshotCard schoolSnapshot={schoolSnapshot} />
                                     </div>
+
+                                    <SchoolSnapshotCard schoolSnapshot={schoolSnapshot} />
                                 </div>
 
 
@@ -1742,25 +1742,29 @@ function getCleanNearbyPlaceLabel(place) {
 function SchoolSnapshotCard({ schoolSnapshot }) {
     return (
         <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-                <div>
-                    <p className="text-sm font-black text-[#1f6f63]">
-                        School District
-                    </p>
-                    <h2 className="mt-1 text-2xl font-black text-[#102426]">
-                        {schoolSnapshot.district}
-                    </h2>
+            <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-stretch">
+                <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <p className="text-sm font-black text-[#1f6f63]">
+                                School District
+                            </p>
+                            <h2 className="mt-1 text-2xl font-black leading-tight text-[#102426]">
+                                {schoolSnapshot.district}
+                            </h2>
+                        </div>
+
+                        <span className={`shrink-0 rounded-2xl px-3 py-2 text-sm font-black ${getSchoolGradeClass(schoolSnapshot.districtGrade)}`}>
+                            {schoolSnapshot.districtGrade}
+                        </span>
+                    </div>
                 </div>
 
-                <span className={`shrink-0 rounded-2xl px-3 py-2 text-sm font-black ${getSchoolGradeClass(schoolSnapshot.districtGrade)}`}>
-                    {schoolSnapshot.districtGrade}
-                </span>
-            </div>
-
-            <div className="mt-5 space-y-3">
-                {schoolSnapshot.schools.map((school) => (
-                    <SchoolGradeItem key={`${school.level}-${school.name}`} school={school} />
-                ))}
+                <div className="grid gap-3 md:grid-cols-3">
+                    {schoolSnapshot.schools.map((school) => (
+                        <SchoolGradeItem key={`${school.level}-${school.name}`} school={school} />
+                    ))}
+                </div>
             </div>
 
             <p className="mt-4 rounded-2xl bg-[#f5f8f1] p-3 text-xs font-semibold leading-5 text-[#526260]">
