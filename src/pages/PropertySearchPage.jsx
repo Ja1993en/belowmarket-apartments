@@ -17,12 +17,19 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = [-96.797, 32.7767];
 const DEFAULT_AREA_RADIUS_MILES = 2;
 const AREA_RADIUS_OPTIONS = [1, 2, 3, 5];
+const SPECIAL_FILTER_OPTIONS = [
+  { label: "4 weeks free", weeks: 4 },
+  { label: "6 weeks free", weeks: 6 },
+  { label: "8 weeks free", weeks: 8 },
+];
 
 export default function PropertySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchFromUrl = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(searchFromUrl);
   const [selectedArea, setSelectedArea] = useState(null);
+  const [selectedSpecialWeeks, setSelectedSpecialWeeks] = useState("");
+  const [isSpecialFilterOpen, setIsSpecialFilterOpen] = useState(false);
   const [mappableSearchProperties, setMappableSearchProperties] = useState([]);
   const [allProperties, setAllProperties] = useState([]);
   const [propertyLoadError, setPropertyLoadError] = useState("");
@@ -34,14 +41,21 @@ export default function PropertySearchPage() {
       ),
     [properties, searchFromUrl]
   );
+  const specialMatchedProperties = useMemo(() => {
+    if (!selectedSpecialWeeks) return searchMatchedProperties;
+
+    return searchMatchedProperties.filter((property) =>
+      propertyHasWeeksFreeSpecial(property, Number(selectedSpecialWeeks))
+    );
+  }, [searchMatchedProperties, selectedSpecialWeeks]);
   const filteredProperties = useMemo(() => {
-    if (!selectedArea) return searchMatchedProperties;
+    if (!selectedArea) return specialMatchedProperties;
 
     const mappablePropertiesById = new Map(
       mappableSearchProperties.map((property) => [property.id, property])
     );
 
-    return searchMatchedProperties.filter((property) => {
+    return specialMatchedProperties.filter((property) => {
       const mappableProperty = mappablePropertiesById.get(property.id);
       if (!mappableProperty) return false;
 
@@ -55,7 +69,10 @@ export default function PropertySearchPage() {
 
       return distanceFromCenter <= selectedArea.radiusMiles;
     });
-  }, [mappableSearchProperties, searchMatchedProperties, selectedArea]);
+  }, [mappableSearchProperties, selectedArea, specialMatchedProperties]);
+  const selectedSpecialLabel = selectedSpecialWeeks
+    ? `${selectedSpecialWeeks} weeks free`
+    : "";
   const suggestions = useMemo(
     () => getPropertySearchSuggestions(properties, searchTerm),
     [properties, searchTerm]
@@ -87,7 +104,7 @@ export default function PropertySearchPage() {
   useEffect(() => {
     let isMounted = true;
 
-    resolveMappableProperties(searchMatchedProperties)
+    resolveMappableProperties(specialMatchedProperties)
       .then((resolvedProperties) => {
         if (isMounted) {
           setMappableSearchProperties(resolvedProperties);
@@ -103,7 +120,7 @@ export default function PropertySearchPage() {
     return () => {
       isMounted = false;
     };
-  }, [searchMatchedProperties]);
+  }, [specialMatchedProperties]);
 
   const submitSearch = (event) => {
     event.preventDefault();
@@ -173,12 +190,56 @@ export default function PropertySearchPage() {
                 >
                   Beds
                 </button>
-                <button
-                  type="button"
-                  className="h-11 rounded-xl border border-[#d7e6df] bg-white px-4 text-sm font-black text-[#102426] hover:bg-[#f5f8f1]"
-                >
-                  Specials
-                </button>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsSpecialFilterOpen((currentValue) => !currentValue)}
+                    className={`h-11 rounded-xl border px-4 text-sm font-black ${
+                      selectedSpecialWeeks
+                        ? "border-[#f2b84b] bg-[#fff8e6] text-[#8a5b0a]"
+                        : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
+                    }`}
+                  >
+                    {selectedSpecialLabel || "Specials"}
+                  </button>
+
+                  {isSpecialFilterOpen && (
+                    <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-56 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl">
+                      {SPECIAL_FILTER_OPTIONS.map((option) => (
+                        <button
+                          key={option.weeks}
+                          type="button"
+                          onClick={() => {
+                            setSelectedSpecialWeeks(String(option.weeks));
+                            setIsSpecialFilterOpen(false);
+                            setSelectedArea(null);
+                          }}
+                          className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-black hover:bg-[#f5f8f1] ${
+                            selectedSpecialWeeks === String(option.weeks)
+                              ? "bg-[#fff8e6] text-[#8a5b0a]"
+                              : "text-[#102426]"
+                          }`}
+                        >
+                          {option.label}
+                          {selectedSpecialWeeks === String(option.weeks) && (
+                            <span className="text-xs uppercase text-[#1f6f63]">Active</span>
+                          )}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSpecialWeeks("");
+                          setIsSpecialFilterOpen(false);
+                          setSelectedArea(null);
+                        }}
+                        className="w-full border-t border-[#edf4ef] px-4 py-3 text-left text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                      >
+                        Clear special filter
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <button
@@ -242,6 +303,23 @@ export default function PropertySearchPage() {
                   className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
                 >
                   Clear
+                </button>
+              </>
+            )}
+            {selectedSpecialWeeks && (
+              <>
+                <span className="rounded-full bg-[#fff8e6] px-4 py-2 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                  Special: {selectedSpecialLabel}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedSpecialWeeks("");
+                    setSelectedArea(null);
+                  }}
+                  className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                >
+                  Clear special
                 </button>
               </>
             )}
@@ -1056,6 +1134,52 @@ function toRadians(value) {
 
 function toDegrees(value) {
   return (value * 180) / Math.PI;
+}
+
+function propertyHasWeeksFreeSpecial(property, targetWeeks) {
+  return getPropertySpecialValues(property).some((value) => {
+    if (typeof value === "number") return value === targetWeeks;
+
+    return getWeeksFromSpecialText(value) === targetWeeks;
+  });
+}
+
+function getPropertySpecialValues(property) {
+  const specialValues = [
+    property?.special,
+    property?.special?.label,
+    property?.currentSpecial,
+    property?.freeWeeks,
+  ];
+
+  (property?.floorPlans || []).forEach((floorPlan) => {
+    specialValues.push(
+      floorPlan?.special,
+      floorPlan?.special?.label,
+      floorPlan?.currentSpecial,
+      floorPlan?.freeWeeks
+    );
+
+    (floorPlan?.availableUnits || []).forEach((availableUnit) => {
+      specialValues.push(
+        availableUnit?.special,
+        availableUnit?.special?.label,
+        availableUnit?.currentSpecial,
+        availableUnit?.freeWeeks
+      );
+    });
+  });
+
+  return specialValues.filter(
+    (value) => value !== undefined && value !== null && value !== ""
+  );
+}
+
+function getWeeksFromSpecialText(value) {
+  const match = String(value || "").match(/(\d+(?:\.\d+)?)\s*weeks?\s*free/i);
+  if (!match) return null;
+
+  return Number(match[1]);
 }
 
 function getPrimaryRentLabel(property) {
