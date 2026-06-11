@@ -1,7 +1,6 @@
 const SITE_URL = "https://belowmarketapartments.com";
-const DEFAULT_DESCRIPTION =
-  "Find apartments with verified specials, effective rent, and renter-first deal transparency.";
-const DEFAULT_IMAGE_URL = `${SITE_URL}/social-preview.png`;
+const DEFAULT_DESCRIPTION = "Find the best apartment deals near you.";
+const DEFAULT_IMAGE_URL = `${SITE_URL}/social-preview-bma.png`;
 const META_BLOCK_PATTERN =
   /<!-- bma-og-start -->[\s\S]*?<!-- bma-og-end -->/;
 
