@@ -695,12 +695,12 @@ export default function PublicPropertyListing() {
                                                 Quick renter snapshot
                                             </p>
                                             <h2 className="mt-1 text-2xl font-black text-[#102426]">
-                                                Before you tour
+                                                Tour checklist
                                             </h2>
                                         </div>
 
                                         <p className="max-w-md text-sm font-semibold leading-6 text-[#526260]">
-                                            Key details to confirm before you tour or apply.
+                                            Four things to confirm before you schedule or apply.
                                         </p>
                                     </div>
 
@@ -2691,11 +2691,9 @@ function getRenterDecisionFacts({
     effectiveRentLabel,
     hasPropertySpecial,
     listingFloorPlans,
-    managementLabel,
     property,
     propertySpecialLabel,
     savingsLabel,
-    schoolSnapshot,
     startingRentLabel,
 }) {
     const floorPlanCount = listingFloorPlans.length;
@@ -2714,25 +2712,22 @@ function getRenterDecisionFacts({
     const feeQuestions = feeLabel
         ? ["What is included?", "Parking", "Utilities", "Deposit"]
         : ["Monthly fees", "Parking", "Utilities", "Deposit", "Admin/app fees"];
-    const schoolLabel = schoolSnapshot.districtGrade
-        ? `${schoolSnapshot.district} (${schoolSnapshot.districtGrade})`
-        : schoolSnapshot.district;
 
     return [
         {
-            label: "Estimated monthly value",
+            label: "Monthly value",
             value: effectiveRentLabel || startingRentLabel,
             detail: effectiveRentLabel
-                ? `Base rent: ${startingRentLabel}. Confirm the actual monthly payment with fees.`
-                : `Base rent: ${startingRentLabel}. Ask leasing for required monthly fees.`,
+                ? `Base rent ${startingRentLabel}. Confirm fees.`
+                : `Base rent ${startingRentLabel}. Ask about fees.`,
             tone: hasPropertySpecial ? "deal" : "default",
         },
         {
-            label: "Current special",
+            label: "Special",
             value: hasPropertySpecial ? propertySpecialLabel : "No active special",
             detail: hasPropertySpecial
-                ? `${savingsLabel || "Savings not calculated"} estimated. Ask how the credit is applied.`
-                : "Compare regular rent plus required fees.",
+                ? `${savingsLabel || "Savings not calculated"} estimated. Confirm credit timing.`
+                : "Compare regular rent plus fees.",
             tone: hasPropertySpecial ? "deal" : "default",
         },
         {
@@ -2740,30 +2735,17 @@ function getRenterDecisionFacts({
             value: `${floorPlanCount} layout${floorPlanCount === 1 ? "" : "s"}`,
             detail:
                 totalAvailableUnits > 0
-                    ? `${totalAvailableUnits} listed unit${totalAvailableUnits === 1 ? "" : "s"} across ${bedSummary}. Confirm before touring.`
-                    : `${bedSummary}. Request current availability before touring.`,
+                    ? `${totalAvailableUnits} listed unit${totalAvailableUnits === 1 ? "" : "s"} across ${bedSummary}.`
+                    : `${bedSummary}. Request availability.`,
         },
         {
-            label: "Ask before applying",
+            label: "Fees to confirm",
             value: feeLabel || "Confirm fees",
             detail: feeLabel
-                ? `Listed fees: ${feeLabel}. Confirm what is included.`
-                : "Confirm fees and whether specials apply to base rent only.",
+                ? `Listed fees: ${feeLabel}.`
+                : "Ask what is required monthly.",
             detailLines: feeQuestions,
             tone: feeLabel ? "deal" : "caution",
-        },
-        {
-            label: "School district",
-            value: schoolLabel,
-            detail: "Verify attendance zones before applying.",
-            tone: "school",
-        },
-        {
-            label: "Managed by",
-            value: managementLabel,
-            detail: property?.yearBuilt
-                ? `Built ${property.yearBuilt}. Ask about fees, parking, packages, and maintenance.`
-                : "Ask about fees, parking, packages, and maintenance.",
         },
     ];
 }
