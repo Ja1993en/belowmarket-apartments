@@ -67,10 +67,10 @@ export default function PropertiesTab() {
 
             await refreshProperties();
             setLegacyPropertyCount(getLegacyLocalPropertyCount());
-            setNotice(`${migratedProperties.length} browser-saved propert${migratedProperties.length === 1 ? "y" : "ies"} moved into Supabase.`);
+            setNotice(`${migratedProperties.length} browser-saved propert${migratedProperties.length === 1 ? "y" : "ies"} moved into Supabase. If photos are missing, create the property-photos bucket and re-upload them later.`);
         } catch (error) {
             console.error(error);
-            setNotice("Could not migrate browser-saved properties. Confirm the property-photos bucket exists in Supabase.");
+            setNotice("Could not migrate browser-saved properties. Confirm the Supabase properties table is available.");
         } finally {
             setIsMigratingProperties(false);
         }

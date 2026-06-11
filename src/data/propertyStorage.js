@@ -90,7 +90,14 @@ export async function migrateLegacyLocalPropertiesToSupabase() {
   }
 
   if (migratedProperties.length > 0) {
+    const migratedIds = new Set(getMigratedLegacyPropertyIds());
+
+    migratedProperties.forEach((property) => migratedIds.add(property.id));
     localStorage.setItem("belowMarketLegacyPropertiesMigrated", new Date().toISOString());
+    localStorage.setItem(
+      "belowMarketLegacyPropertiesMigratedIds",
+      JSON.stringify([...migratedIds])
+    );
   }
 
   return migratedProperties;
@@ -109,15 +116,31 @@ function getLegacyLocalProperties() {
     const deletedPropertyIds = new Set(
       JSON.parse(localStorage.getItem("belowMarketDeletedProperties") || "[]")
     );
+    const migratedPropertyIds = new Set(getMigratedLegacyPropertyIds());
 
     return customProperties
-      .filter((property) => property?.id && !deletedPropertyIds.has(property.id))
+      .filter(
+        (property) =>
+          property?.id &&
+          !deletedPropertyIds.has(property.id) &&
+          !migratedPropertyIds.has(property.id)
+      )
       .map((property) => ({
         ...property,
         ...(propertyUpdates[property.id] || {}),
       }));
   } catch (error) {
     console.error("Could not read legacy local properties.", error);
+    return [];
+  }
+}
+
+function getMigratedLegacyPropertyIds() {
+  if (typeof localStorage === "undefined") return [];
+
+  try {
+    return JSON.parse(localStorage.getItem("belowMarketLegacyPropertiesMigratedIds") || "[]");
+  } catch {
     return [];
   }
 }
@@ -253,7 +276,14 @@ async function uploadPhoto(photo, index, options) {
       upsert: true,
     });
 
-  if (error) throw error;
+  if (error) {
+    console.warn(
+      "Property photo upload skipped. Create the property-photos bucket to save uploaded images.",
+      error
+    );
+
+    return sanitizePhoto(photo, "");
+  }
 
   const { data } = supabase.storage
     .from(PROPERTY_PHOTOS_BUCKET)
