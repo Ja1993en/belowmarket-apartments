@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { getAllLeads } from "../data/leadStorage";
 import { getPhotoImageUrl } from "../data/propertySearchData";
@@ -9,16 +9,45 @@ export default function PropertyDetails() {
     const [searchParams, setSearchParams] = useSearchParams();
     const startsInEditMode = searchParams.get("edit") === "true";
 const [activeTab, setActiveTab] = useState("overview");
-const [property, setProperty] = useState(() => getAnyPropertyById(propertyId));
+const [property, setProperty] = useState(null);
+const [isLoadingProperty, setIsLoadingProperty] = useState(true);
 const [isEditing, setIsEditing] = useState(startsInEditMode);
     const [propertyDraft, setPropertyDraft] = useState({
-        name: property?.name || "",
-        area: property?.area || "",
-        rent: property?.rent || "",
-        status: property?.status || "Draft",
+        name: "",
+        area: "",
+        rent: "",
+        status: "Draft",
     });
 
     const [saveMessage, setSaveMessage] = useState("");
+
+    useEffect(() => {
+        let isMounted = true;
+
+        getAnyPropertyById(propertyId)
+            .then((savedProperty) => {
+                if (!isMounted) return;
+
+                setProperty(savedProperty);
+                setPropertyDraft({
+                    name: savedProperty?.name || "",
+                    area: savedProperty?.area || "",
+                    rent: savedProperty?.rent || "",
+                    status: savedProperty?.status || "Draft",
+                });
+            })
+            .catch((error) => {
+                console.error(error);
+                if (isMounted) setProperty(null);
+            })
+            .finally(() => {
+                if (isMounted) setIsLoadingProperty(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [propertyId]);
 
     const hasUnsavedChanges =
         propertyDraft.name !== property?.name ||
@@ -31,8 +60,8 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
     );
     const propertyLeadCount = propertyLeads.length;
 
-    const savePropertyChanges = () => {
-        const updatedProperty = updateStoredProperty(property.id, propertyDraft);
+    const savePropertyChanges = async () => {
+        const updatedProperty = await updateStoredProperty(property.id, propertyDraft);
 
         setProperty(updatedProperty);
         setPropertyDraft({
@@ -45,6 +74,15 @@ const [isEditing, setIsEditing] = useState(startsInEditMode);
         setIsEditing(false);
         setSearchParams({}, { replace: true });
     };
+
+    if (isLoadingProperty) {
+        return (
+            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                <h1 className="text-3xl font-black text-slate-900">Loading property...</h1>
+                <p className="mt-2 text-slate-500">Checking Supabase for this property.</p>
+            </div>
+        );
+    }
 
     if (!property) {
         return (

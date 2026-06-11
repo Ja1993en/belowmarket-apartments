@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Building2, ImagePlus, Plus, Save, Star, X } from "lucide-react";
 import {
@@ -68,15 +68,48 @@ const NEW_MANAGEMENT_COMPANY_VALUE = "__new_management_company__";
 export default function PropertyFormPage() {
   const { propertyId } = useParams();
   const navigate = useNavigate();
-  const existingProperty = propertyId ? getAnyPropertyById(propertyId) : null;
   const isEditing = Boolean(propertyId);
+  const [existingProperty, setExistingProperty] = useState(null);
+  const [isLoadingFormData, setIsLoadingFormData] = useState(isEditing);
   const [saveError, setSaveError] = useState("");
-  const [managementCompanies, setManagementCompanies] = useState(() =>
-    getAllManagementCompanies()
-  );
-  const [propertyDraft, setPropertyDraft] = useState(() =>
-    existingProperty ? createDraftFromProperty(existingProperty) : emptyPropertyDraft
-  );
+  const [managementCompanies, setManagementCompanies] = useState([]);
+  const [propertyDraft, setPropertyDraft] = useState(emptyPropertyDraft);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadFormData() {
+      try {
+        setIsLoadingFormData(true);
+        const [companies, savedProperty] = await Promise.all([
+          getAllManagementCompanies(),
+          propertyId ? getAnyPropertyById(propertyId) : Promise.resolve(null),
+        ]);
+
+        if (!isMounted) return;
+
+        setManagementCompanies(companies);
+        setExistingProperty(savedProperty);
+        setPropertyDraft(savedProperty ? createDraftFromProperty(savedProperty) : emptyPropertyDraft);
+        setSaveError("");
+      } catch (error) {
+        console.error(error);
+        if (isMounted) {
+          setSaveError("Could not load property form data from Supabase.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingFormData(false);
+        }
+      }
+    }
+
+    loadFormData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [propertyId]);
 
   const updateDraft = (field, value) => {
     if (saveError) {
@@ -361,7 +394,7 @@ export default function PropertyFormPage() {
       return;
     }
 
-    const selectedManagementCompany = resolveManagementCompany({
+    const selectedManagementCompany = await resolveManagementCompany({
       managementCompanies,
       propertyDraft,
       setManagementCompanies,
@@ -426,7 +459,7 @@ export default function PropertyFormPage() {
       ],
     };
 
-    const savedProperty = savePropertyWithPhotoFallback({
+    const savedProperty = await savePropertyWithPhotoFallback({
       isEditing,
       propertyId,
       propertyPayload,
@@ -435,9 +468,18 @@ export default function PropertyFormPage() {
     if (savedProperty) {
       navigate(`/admin/properties/${savedProperty.id}`);
     } else {
-      setSaveError("Could not save this property because the browser photo storage is full. Remove a few gallery photos or save the listing without photos first.");
+      setSaveError("Could not save this property to Supabase. Confirm the properties tables and property-photos bucket are set up, then try again.");
     }
   };
+
+  if (isLoadingFormData) {
+    return (
+      <div className="rounded-3xl border border-[#d7e6df] bg-white p-8 text-left shadow-sm">
+        <h1 className="text-3xl font-black text-[#102426]">Loading property form...</h1>
+        <p className="mt-2 font-semibold text-[#526260]">Checking Supabase for the latest data.</p>
+      </div>
+    );
+  }
 
   if (isEditing && !existingProperty) {
     return (
@@ -502,14 +544,17 @@ export default function PropertyFormPage() {
               </span>
               <select
                 value={propertyDraft.managementCompanyId}
-                onChange={(event) =>
+                onChange={(event) => {
+                  const selectedCompany = managementCompanies.find(
+                    (company) => company.id === event.target.value
+                  );
+
                   setPropertyDraft((currentDraft) => ({
                     ...currentDraft,
                     managementCompanyId: event.target.value,
-                    managementCompany:
-                      getManagementCompanyById(event.target.value)?.name || "",
-                  }))
-                }
+                    managementCompany: selectedCompany?.name || "",
+                  }));
+                }}
                 className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
               >
                 <option value="">Select management company</option>
@@ -1218,7 +1263,7 @@ function CalculatedField({ label, value }) {
   );
 }
 
-function resolveManagementCompany({
+async function resolveManagementCompany({
   managementCompanies,
   propertyDraft,
   setManagementCompanies,
@@ -1240,15 +1285,15 @@ function resolveManagementCompany({
       return existingCompany;
     }
 
-    const createdCompany = createStoredManagementCompany({
+    const createdCompany = await createStoredManagementCompany({
       name: newCompanyName,
     });
 
-    setManagementCompanies(getAllManagementCompanies());
+    setManagementCompanies(await getAllManagementCompanies());
     return createdCompany;
   }
 
-  const selectedCompany = getManagementCompanyById(propertyDraft.managementCompanyId);
+  const selectedCompany = await getManagementCompanyById(propertyDraft.managementCompanyId);
 
   if (selectedCompany) {
     return selectedCompany;
@@ -1263,26 +1308,26 @@ function resolveManagementCompany({
     return null;
   }
 
-  const existingCompanyId = getManagementCompanyIdByName(fallbackCompanyName);
-  const existingCompany = getManagementCompanyById(existingCompanyId);
+  const existingCompanyId = await getManagementCompanyIdByName(fallbackCompanyName);
+  const existingCompany = await getManagementCompanyById(existingCompanyId);
 
   if (existingCompany) {
     return existingCompany;
   }
 
-  const createdCompany = createStoredManagementCompany({
+  const createdCompany = await createStoredManagementCompany({
     name: fallbackCompanyName,
   });
 
-  setManagementCompanies(getAllManagementCompanies());
+  setManagementCompanies(await getAllManagementCompanies());
   return createdCompany;
 }
 
-function savePropertyWithPhotoFallback({ isEditing, propertyId, propertyPayload }) {
+async function savePropertyWithPhotoFallback({ isEditing, propertyId, propertyPayload }) {
   try {
     return isEditing
-      ? updateStoredProperty(propertyId, propertyPayload)
-      : createStoredProperty(propertyPayload);
+      ? await updateStoredProperty(propertyId, propertyPayload)
+      : await createStoredProperty(propertyPayload);
   } catch (error) {
     console.error(error);
   }
@@ -1291,8 +1336,8 @@ function savePropertyWithPhotoFallback({ isEditing, propertyId, propertyPayload 
 
   try {
     return isEditing
-      ? updateStoredProperty(propertyId, storageSafePayload)
-      : createStoredProperty(storageSafePayload);
+      ? await updateStoredProperty(propertyId, storageSafePayload)
+      : await createStoredProperty(storageSafePayload);
   } catch (error) {
     console.error(error);
     return null;
@@ -1318,9 +1363,7 @@ function createStorageSafePhotoPayload(propertyPayload) {
 }
 
 function createDraftFromProperty(property) {
-  const managementCompanyId =
-    property.managementCompanyId ||
-    getManagementCompanyIdByName(property.managementCompany || property.manager);
+  const managementCompanyId = property.managementCompanyId || "";
 
   return {
     name: property.name || "",

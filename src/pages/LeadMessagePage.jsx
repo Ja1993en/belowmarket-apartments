@@ -1,13 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Copy, ExternalLink, Mail, MessageSquare, Phone } from "lucide-react";
-import { getAnyPropertyById } from "../data/propertyStorage";
+import { getAllProperties } from "../data/propertyStorage";
 import { getSupabaseLeadById } from "../data/supabaseLeadStorage";
-import {
-  getSupabaseTourRequestsForLead,
-  updateSupabaseTourRequestStatus,
-} from "../data/supabaseTourStorage";
-import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import {
   getAnyLeadById,
   getTourRequestsForLead,
@@ -17,21 +12,17 @@ import {
 
 export default function LeadMessagePage() {
   const { leadId } = useParams();
-  const initialLead = isLocalFallbackEnabled ? getAnyLeadById(leadId) : null;
-  const isLocalLead = Boolean(initialLead);
+  const initialLead = getAnyLeadById(leadId);
   const [lead, setLead] = useState(initialLead);
-  const [, setIsLoadingLead] = useState(!initialLead);
-  const recommendedProperties = useMemo(
-    () =>
-      lead
-        ? lead.recommendedPropertyIds
-          .map((propertyId) => getAnyPropertyById(propertyId))
-          .filter(Boolean)
-        : [],
-    [lead]
-  );
+  const [isLoadingLead, setIsLoadingLead] = useState(!initialLead);
+  const [properties, setProperties] = useState([]);
+  const recommendedProperties = lead
+    ? lead.recommendedPropertyIds
+      .map((propertyId) => properties.find((property) => property.id === String(propertyId)))
+      .filter(Boolean)
+    : [];
   const [tourRequests, setTourRequests] = useState(() =>
-      [...(initialLead ? getTourRequestsForLead(leadId) : [])].sort((a, b) =>
+      [...getTourRequestsForLead(leadId)].sort((a, b) =>
         String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
       )
     );
@@ -42,6 +33,24 @@ export default function LeadMessagePage() {
     ).length;
   const [channel, setChannel] = useState("text");
   const [copiedType, setCopiedType] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getAllProperties()
+      .then((savedProperties) => {
+        if (isMounted) setProperties(savedProperties);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) setProperties([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   useEffect(() => {
     const loadSupabaseLead = async () => {
       if (initialLead) return;
@@ -50,10 +59,8 @@ export default function LeadMessagePage() {
         setIsLoadingLead(true);
 
         const supabaseLead = await getSupabaseLeadById(leadId);
-        const supabaseTourRequests = await getSupabaseTourRequestsForLead(leadId);
 
         setLead(supabaseLead);
-        setTourRequests(supabaseTourRequests);
       } catch (error) {
         console.error(error);
       } finally {
@@ -126,41 +133,42 @@ export default function LeadMessagePage() {
     }, 2000);
   };
 
-  const markTourFollowedUp = async () => {
+  const markTourFollowedUp = () => {
     if (!latestTourRequest) return;
 
-    try {
-      if (isLocalLead) {
-        const updatedTourRequests = updateTourRequestStatus(
-          leadId,
-          latestTourRequest.id,
-          "Followed Up"
-        );
+    const updatedTourRequests = updateTourRequestStatus(
+      leadId,
+      latestTourRequest.id,
+      "Followed Up"
+    );
 
-        saveLeadActivity({
-          leadId,
-          title: "Tour followed up",
-          description: `${latestTourRequest.propertyName || "A property"} follow-up completed.`,
-        });
 
-        setTourRequests(
-          updatedTourRequests
-            .filter((request) => request.leadId === String(leadId))
-            .sort((a, b) =>
-              String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
-            )
-        );
-        return;
-      }
+    saveLeadActivity({
+      leadId,
+      title: "Tour followed up",
+      description: `${latestTourRequest.propertyName || "A property"} follow-up completed.`,
+    });
 
-      await updateSupabaseTourRequestStatus(latestTourRequest.id, "Followed Up");
-      setTourRequests(await getSupabaseTourRequestsForLead(leadId));
-    } catch (error) {
-      console.error(error);
-      alert("Could not mark this tour request as followed up.");
-    }
+    setTourRequests(
+      updatedTourRequests
+        .filter((request) => request.leadId === String(leadId))
+        .sort((a, b) =>
+          String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
+        )
+    );
   };
 
+  if (isLoadingLead) {
+    return (
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h1 className="text-3xl font-black text-slate-900">Loading lead...</h1>
+        <p className="mt-2 text-slate-500">
+          Checking Supabase for this lead message.
+        </p>
+      </div>
+    );
+  }
+  
   if (!lead) {
     return (
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">

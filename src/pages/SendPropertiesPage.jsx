@@ -21,7 +21,8 @@ export default function SendPropertiesPage() {
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
   const [propertySearch, setPropertySearch] = useState("");
-  const properties = useMemo(() => getAllProperties(), []);
+  const [properties, setProperties] = useState([]);
+  const [propertyLoadError, setPropertyLoadError] = useState("");
   const recommendedPropertyIds = lead?.recommendedPropertyIds || [];
 
   const recommendedProperties = recommendedPropertyIds
@@ -41,6 +42,25 @@ export default function SendPropertiesPage() {
   const [selectedPropertyIds, setSelectedPropertyIds] = useState(
     defaultSelectedPropertyIds
   );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getAllProperties()
+      .then((savedProperties) => {
+        if (!isMounted) return;
+        setProperties(savedProperties);
+        setPropertyLoadError("");
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) setPropertyLoadError("Could not load properties from Supabase.");
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const loadSupabaseLead = async () => {
@@ -277,7 +297,13 @@ export default function SendPropertiesPage() {
                   </p>
                 )}
 
-                {saveError && (
+                {propertyLoadError && (
+        <div className="mb-4 rounded-2xl bg-[#fde8df] p-4 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
+          {propertyLoadError}
+        </div>
+      )}
+
+      {saveError && (
                   <p className="text-sm font-bold text-red-700">
                     {saveError}
                   </p>

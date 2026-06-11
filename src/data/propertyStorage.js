@@ -1,122 +1,102 @@
-import {
-  getManagementCompanyById,
-  getManagementCompanyIdByName,
-} from "./managementCompanyStorage";
+import { supabase } from "./supabaseClient";
 
-
-const STORAGE_KEY = "belowMarketProperties";
-const CUSTOM_PROPERTIES_KEY = "belowMarketCustomProperties";
-const DELETED_PROPERTIES_KEY = "belowMarketDeletedProperties";
-const MAX_QUOTA_SAFE_PROPERTY_PHOTOS = 4;
-const MAX_QUOTA_SAFE_FLOOR_PLAN_PHOTOS = 1;
-const MAX_QUOTA_SAFE_OTHER_PROPERTY_PHOTOS = 1;
-const MAX_QUOTA_SAFE_PHOTO_BYTES = 140 * 1024;
-
+const PROPERTY_PHOTOS_BUCKET = "property-photos";
 const DEFAULT_PROPERTY_IMAGE =
   "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80";
 
-export function getStoredPropertyUpdates() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+export async function getAllProperties() {
+  const { data, error } = await supabase
+    .from("properties")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+  if (error) throw error;
+
+  return (data || []).map(mapSupabaseProperty);
 }
 
-export function getStoredCustomProperties() {
-  return JSON.parse(localStorage.getItem(CUSTOM_PROPERTIES_KEY) || "[]");
+export async function getAnyPropertyById(propertyId) {
+  if (!propertyId) return null;
+
+  const { data, error } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("id", String(propertyId))
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data ? mapSupabaseProperty(data) : null;
 }
 
-export function getDeletedPropertyIds() {
-  return JSON.parse(localStorage.getItem(DELETED_PROPERTIES_KEY) || "[]");
+export async function createStoredProperty(propertyDraft) {
+  const propertyId = await createUniquePropertyId(propertyDraft.name);
+  const property = await preparePropertyForSupabase(propertyDraft, propertyId);
+
+  const { error } = await supabase
+    .from("properties")
+    .insert(toSupabasePropertyRow(property));
+
+  if (error) throw error;
+
+  return property;
 }
 
-export function getAllProperties() {
-  const updates = getStoredPropertyUpdates();
-  const customProperties = getStoredCustomProperties();
-  const deletedPropertyIds = new Set(getDeletedPropertyIds());
-
-  const savedCustomProperties = customProperties.filter((property) => !deletedPropertyIds.has(property.id)).map((property) => normalizePropertyCompany({
-      ...property,
-      ...(updates[property.id] || {}),
-    }));
-
-  return savedCustomProperties;
-}
-
-export function getAnyPropertyById(propertyId) {
-  return getAllProperties().find(
-    (property) => property.id === String(propertyId)
-  );
-}
-
-export function updateStoredProperty(propertyId, updates) {
-  const customProperties = getStoredCustomProperties();
-  const customProperty = customProperties.find(
-    (property) => property.id === String(propertyId)
-  );
-
-  if (customProperty) {
-    const updatedCustomProperties = customProperties.map((property) =>
-      property.id === String(propertyId)
-        ? {
-            ...property,
-            ...updates,
-            updated: "Just now",
-          }
-        : property
-    );
-
-    writeCustomProperties(updatedCustomProperties, propertyId);
-
-    return getAnyPropertyById(propertyId);
-  }
-
-  const savedUpdates = getStoredPropertyUpdates();
-
-  const nextUpdates = {
-    ...savedUpdates,
-    [propertyId]: {
-      ...(savedUpdates[propertyId] || {}),
-      ...updates,
-      updated: "Just now",
-    },
+export async function updateStoredProperty(propertyId, updates) {
+  const existingProperty = await getAnyPropertyById(propertyId);
+  const mergedProperty = {
+    ...(existingProperty || {}),
+    ...updates,
+    id: String(propertyId),
+    updated: "Just now",
   };
+  const property = await preparePropertyForSupabase(mergedProperty, propertyId);
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUpdates));
+  const { error } = await supabase
+    .from("properties")
+    .upsert(toSupabasePropertyRow(property), { onConflict: "id" });
 
-  return getAnyPropertyById(propertyId);
+  if (error) throw error;
+
+  return property;
 }
 
-export function deleteStoredProperty(propertyId) {
-  const normalizedPropertyId = String(propertyId);
-  const customProperties = getStoredCustomProperties();
-  const customProperty = customProperties.find(
-    (property) => property.id === normalizedPropertyId
-  );
+export async function deleteStoredProperty(propertyId) {
+  const { error } = await supabase
+    .from("properties")
+    .delete()
+    .eq("id", String(propertyId));
 
-  if (customProperty) {
-    writeCustomProperties(
-      customProperties.filter((property) => property.id !== normalizedPropertyId)
-    );
-  }
-
-  const savedUpdates = getStoredPropertyUpdates();
-  if (savedUpdates[normalizedPropertyId]) {
-    const nextUpdates = { ...savedUpdates };
-    delete nextUpdates[normalizedPropertyId];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUpdates));
-  }
-
-  const deletedPropertyIds = new Set(getDeletedPropertyIds());
-  deletedPropertyIds.add(normalizedPropertyId);
-  localStorage.setItem(
-    DELETED_PROPERTIES_KEY,
-    JSON.stringify([...deletedPropertyIds])
-  );
+  if (error) throw error;
 }
 
-export function createStoredProperty(propertyDraft) {
-  const customProperties = getStoredCustomProperties();
-  const propertyId = createUniquePropertyId(propertyDraft.name);
-  const property = {
-    id: propertyId,
+async function preparePropertyForSupabase(propertyDraft, propertyId) {
+  const photos = await uploadPhotoList(propertyDraft.photos || [], {
+    propertyId,
+    folder: "gallery",
+  });
+  const floorPlans = await Promise.all(
+    (propertyDraft.floorPlans || []).map(async (floorPlan, index) => {
+      const floorPlanId = floorPlan.id || `floor-plan-${index + 1}`;
+      const floorPlanPhotos = await uploadPhotoList(floorPlan.photos || [], {
+        propertyId,
+        folder: `floor-plans/${floorPlanId}`,
+      });
+
+      return {
+        ...floorPlan,
+        id: floorPlanId,
+        photos: floorPlanPhotos,
+        image:
+          getPhotoImageUrl(floorPlanPhotos[0]) ||
+          getStoredImageUrl(floorPlan.image) ||
+          "",
+      };
+    })
+  );
+
+  return {
+    id: String(propertyId),
     name: propertyDraft.name,
     area: propertyDraft.area,
     manager: propertyDraft.manager,
@@ -145,9 +125,12 @@ export function createStoredProperty(propertyDraft) {
     belowMarketPercent: propertyDraft.belowMarketPercent,
     status: propertyDraft.status || "Draft",
     special: propertyDraft.special,
-    image: propertyDraft.image || DEFAULT_PROPERTY_IMAGE,
-    photos: propertyDraft.photos || [],
-    floorPlans: propertyDraft.floorPlans || [],
+    image:
+      getPhotoImageUrl(photos[0]) ||
+      getStoredImageUrl(propertyDraft.image) ||
+      DEFAULT_PROPERTY_IMAGE,
+    photos,
+    floorPlans,
     bedrooms: propertyDraft.bedrooms || [],
     schoolDistrict: propertyDraft.schoolDistrict,
     schoolGrade: propertyDraft.schoolGrade,
@@ -155,123 +138,92 @@ export function createStoredProperty(propertyDraft) {
     schools: propertyDraft.schools || [],
     updated: "Just now",
   };
-
-  writeCustomProperties([...customProperties, property], propertyId);
-
-  return property;
 }
 
-function writeCustomProperties(properties, preferredPropertyId = "") {
-  const normalizedPreferredPropertyId = String(preferredPropertyId || "");
-
-  try {
-    localStorage.setItem(CUSTOM_PROPERTIES_KEY, JSON.stringify(properties));
-    return;
-  } catch (error) {
-    if (!isQuotaExceededError(error)) {
-      throw error;
-    }
-  }
-
-  const quotaSafeProperties = compactPropertiesForQuota(
-    properties,
-    normalizedPreferredPropertyId
-  );
-
-  try {
-    localStorage.setItem(
-      CUSTOM_PROPERTIES_KEY,
-      JSON.stringify(quotaSafeProperties)
-    );
-    console.warn(
-      "Property photos were compacted because browser storage is almost full."
-    );
-    return;
-  } catch (error) {
-    if (!isQuotaExceededError(error)) {
-      throw error;
-    }
-  }
-
-  localStorage.setItem(
-    CUSTOM_PROPERTIES_KEY,
-    JSON.stringify(
-      quotaSafeProperties.map((property) =>
-        stripPropertyPhotosForQuota(property, normalizedPreferredPropertyId)
-      )
-    )
-  );
-  console.warn(
-    "Property photos were reduced because browser storage quota was exceeded."
-  );
-}
-
-function compactPropertiesForQuota(properties, preferredPropertyId) {
-  return properties.map((property) => {
-    const isPreferredProperty = String(property.id) === preferredPropertyId;
-    const maxPropertyPhotos = isPreferredProperty
-      ? MAX_QUOTA_SAFE_PROPERTY_PHOTOS
-      : MAX_QUOTA_SAFE_OTHER_PROPERTY_PHOTOS;
-
-    const photos = compactPhotoList(property.photos, maxPropertyPhotos);
-    const floorPlans = (property.floorPlans || []).map((floorPlan) => {
-      const floorPlanPhotos = compactPhotoList(
-        floorPlan.photos,
-        isPreferredProperty ? MAX_QUOTA_SAFE_FLOOR_PLAN_PHOTOS : 0
-      );
-
-      return {
-        ...floorPlan,
-        photos: floorPlanPhotos,
-        image: getPhotoImageUrl(floorPlanPhotos[0]) || getExternalImageUrl(floorPlan.image),
-      };
-    });
-
-    return {
-      ...property,
-      photos,
-      image: getPhotoImageUrl(photos[0]) || getExternalImageUrl(property.image),
-      floorPlans,
-    };
-  });
-}
-
-function stripPropertyPhotosForQuota(property, preferredPropertyId) {
-  const isPreferredProperty = String(property.id) === preferredPropertyId;
-  const photos = isPreferredProperty ? compactPhotoList(property.photos, 1) : [];
-
+function toSupabasePropertyRow(property) {
   return {
-    ...property,
-    photos,
-    image: getPhotoImageUrl(photos[0]) || getExternalImageUrl(property.image),
-    floorPlans: (property.floorPlans || []).map((floorPlan) => ({
-      ...floorPlan,
-      photos: [],
-      image: getExternalImageUrl(floorPlan.image),
-    })),
+    id: property.id,
+    name: property.name || "",
+    status: property.status || "Draft",
+    city: property.city || "",
+    state: property.state || "",
+    zipcode: property.zipcode || "",
+    management_company_id: property.managementCompanyId || null,
+    data: property,
+    updated_at: new Date().toISOString(),
   };
 }
 
-function compactPhotoList(photos = [], limit) {
-  if (limit <= 0) return [];
-
-  return photos
-    .map((photo) => sanitizePhotoForQuota(photo))
-    .filter((photo) => getPhotoImageUrl(photo))
-    .filter((photo) => !isOversizedDataUrl(getPhotoImageUrl(photo)))
-    .slice(0, limit);
-}
-
-function sanitizePhotoForQuota(photo) {
-  const photoUrl = getPhotoImageUrl(photo);
+function mapSupabaseProperty(row) {
+  const data = row.data || {};
 
   return {
-    id: photo?.id,
-    name: photo?.name,
-    category: photo?.category,
-    url: photoUrl,
+    ...data,
+    id: row.id,
+    name: data.name || row.name || "",
+    status: data.status || row.status || "Draft",
+    city: data.city || row.city || "",
+    state: data.state || row.state || "",
+    zipcode: data.zipcode || row.zipcode || "",
+    managementCompanyId: data.managementCompanyId || row.management_company_id || "",
+  };
+}
+
+async function uploadPhotoList(photos, options) {
+  const uploadedPhotos = await Promise.all(
+    photos.map((photo, index) => uploadPhoto(photo, index, options))
+  );
+
+  return uploadedPhotos.filter((photo) => getPhotoImageUrl(photo));
+}
+
+async function uploadPhoto(photo, index, options) {
+  const photoUrl = getPhotoImageUrl(photo);
+  const cleanPhoto = sanitizePhoto(photo, photoUrl);
+
+  if (!photoUrl || !isDataUrl(photoUrl)) {
+    return cleanPhoto;
+  }
+
+  const response = await fetch(photoUrl);
+  const blob = await response.blob();
+  const extension = getFileExtension(blob.type, photo.name);
+  const fileName = `${String(index + 1).padStart(2, "0")}-${Date.now()}-${slugify(
+    photo.name || "photo"
+  )}.${extension}`;
+  const filePath = `${options.propertyId}/${options.folder}/${fileName}`;
+
+  const { error } = await supabase.storage
+    .from(PROPERTY_PHOTOS_BUCKET)
+    .upload(filePath, blob, {
+      cacheControl: "31536000",
+      contentType: blob.type || "image/jpeg",
+      upsert: true,
+    });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage
+    .from(PROPERTY_PHOTOS_BUCKET)
+    .getPublicUrl(filePath);
+
+  return {
+    ...cleanPhoto,
+    url: data.publicUrl,
+    storagePath: filePath,
+    storedSize: blob.size,
+  };
+}
+
+function sanitizePhoto(photo, fallbackUrl = "") {
+  return {
+    id: photo?.id || `photo-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    name: photo?.name || "Property photo",
+    category: photo?.category || "Property",
+    url: fallbackUrl,
     originalSize: photo?.originalSize,
     storedSize: photo?.storedSize,
+    storagePath: photo?.storagePath,
   };
 }
 
@@ -285,55 +237,24 @@ function getPhotoImageUrl(photo) {
   ].find(Boolean) || "";
 }
 
-function getExternalImageUrl(imageUrl) {
+function getStoredImageUrl(imageUrl) {
   if (!imageUrl || isDataUrl(imageUrl)) return "";
 
   return imageUrl;
-}
-
-function isOversizedDataUrl(value) {
-  return isDataUrl(value) && getDataUrlByteSize(value) > MAX_QUOTA_SAFE_PHOTO_BYTES;
 }
 
 function isDataUrl(value) {
   return String(value || "").startsWith("data:");
 }
 
-function getDataUrlByteSize(dataUrl) {
-  const base64Value = String(dataUrl).split(",")[1] || "";
-
-  return Math.ceil((base64Value.length * 3) / 4);
-}
-
-function isQuotaExceededError(error) {
-  return (
-    error?.name === "QuotaExceededError" ||
-    error?.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
-    error?.code === 22 ||
-    error?.code === 1014
-  );
-}
-
-function normalizePropertyCompany(property) {
-  const fallbackCompanyName = property.managementCompany || property.manager || "";
-  const managementCompanyId =
-    property.managementCompanyId || getManagementCompanyIdByName(fallbackCompanyName);
-  const managementCompany = getManagementCompanyById(managementCompanyId);
-
-  return {
-    ...property,
-    managementCompanyId,
-    managementCompany: managementCompany?.name || fallbackCompanyName,
-  };
-}
-
-function createUniquePropertyId(name) {
-  const existingIds = new Set([
-    ...getAllProperties().map((property) => property.id),
-    ...getDeletedPropertyIds(),
-  ]);
+async function createUniquePropertyId(name) {
   const fallbackId = `property-${Date.now()}`;
   const baseId = slugify(name) || fallbackId;
+  const { data, error } = await supabase.from("properties").select("id");
+
+  if (error) throw error;
+
+  const existingIds = new Set((data || []).map((property) => property.id));
   let propertyId = baseId;
   let suffix = 2;
 
@@ -345,8 +266,21 @@ function createUniquePropertyId(name) {
   return propertyId;
 }
 
+function getFileExtension(contentType, fileName = "") {
+  const fileExtension = String(fileName).split(".").pop()?.toLowerCase();
+
+  if (["jpg", "jpeg", "png", "webp"].includes(fileExtension)) {
+    return fileExtension === "jpeg" ? "jpg" : fileExtension;
+  }
+
+  if (contentType === "image/png") return "png";
+  if (contentType === "image/webp") return "webp";
+
+  return "jpg";
+}
+
 function slugify(value) {
-  return value
+  return String(value || "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")

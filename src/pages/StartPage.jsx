@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { saveLocalLead } from "../data/leadStorage";
@@ -20,12 +20,40 @@ const emptyForm = {
 export default function StartPage() {
   const [searchParams] = useSearchParams();
   const propertyId = searchParams.get("property");
-  const sourceProperty = propertyId ? getAnyPropertyById(propertyId) : null;
+  const [sourceProperty, setSourceProperty] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [createdLeadId, setCreatedLeadId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!propertyId) {
+      const clearTimer = window.setTimeout(() => {
+        if (isMounted) setSourceProperty(null);
+      }, 0);
+
+      return () => {
+        isMounted = false;
+        window.clearTimeout(clearTimer);
+      };
+    }
+
+    getAnyPropertyById(propertyId)
+      .then((savedProperty) => {
+        if (isMounted) setSourceProperty(savedProperty);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) setSourceProperty(null);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [propertyId]);
+
   const handleChange = (field, value) => {
     setForm((currentForm) => ({
       ...currentForm,
@@ -132,7 +160,7 @@ export default function StartPage() {
               </h2>
 
               <p className="mx-auto mt-2 max-w-xl font-semibold text-[#526260]">
-                Your renter profile has been captured locally for now. Later this will save directly into Supabase.
+                Your renter profile has been saved to the database.
               </p>
 
               <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">

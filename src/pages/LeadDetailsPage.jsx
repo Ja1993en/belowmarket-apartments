@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getAnyPropertyById } from "../data/propertyStorage";
+import { getAllProperties } from "../data/propertyStorage";
 import {
     getSupabaseLeadById,
     updateSupabaseLead,
@@ -49,6 +49,7 @@ export default function LeadDetailsPage() {
     const [tourRequests, setTourRequests] = useState(
         initialLead ? getTourRequestsForLead(initialLead.id) : []
     );
+    const [properties, setProperties] = useState([]);
     const [isLocalLead, setIsLocalLead] = useState(Boolean(initialLead));
 
     const refreshLead = useCallback(async () => {
@@ -77,6 +78,23 @@ export default function LeadDetailsPage() {
             console.error(error);
         }
     }, [isLocalLead, leadId]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        getAllProperties()
+            .then((savedProperties) => {
+                if (isMounted) setProperties(savedProperties);
+            })
+            .catch((error) => {
+                console.error(error);
+                if (isMounted) setProperties([]);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const loadSupabaseLead = useCallback(async () => {
         try {
@@ -108,7 +126,7 @@ export default function LeadDetailsPage() {
     }, [initialLead, loadSupabaseLead]);
     const recommendedProperties = lead
         ? lead.recommendedPropertyIds
-            .map((propertyId) => getAnyPropertyById(propertyId))
+            .map((propertyId) => properties.find((property) => property.id === String(propertyId)))
             .filter(Boolean)
         : [];
     const recommendationCount = recommendedProperties.length;

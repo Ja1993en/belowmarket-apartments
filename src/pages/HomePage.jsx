@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 
@@ -14,10 +14,34 @@ const FEATURED_DALLAS_DEAL_LIMIT = 4;
 
 export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState("");
+    const [properties, setProperties] = useState([]);
+    const [propertyLoadError, setPropertyLoadError] = useState("");
     const navigate = useNavigate();
 
-    const properties = getAllProperties();
-    const searchableProperties = getPublicSearchProperties();
+    useEffect(() => {
+        let isMounted = true;
+
+        getAllProperties()
+            .then((savedProperties) => {
+                if (!isMounted) return;
+
+                setProperties(savedProperties);
+                setPropertyLoadError("");
+            })
+            .catch((error) => {
+                console.error(error);
+                if (isMounted) {
+                    setProperties([]);
+                    setPropertyLoadError("Could not load live properties from Supabase.");
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const searchableProperties = getPublicSearchProperties(properties);
 
     const publicProperties = properties.filter(
         (property) => property.status === "Live"
@@ -182,6 +206,12 @@ export default function HomePage() {
                         Get matched
                     </Link>
                 </div>
+
+                {propertyLoadError && (
+                    <div className="mt-5 rounded-2xl bg-[#fde8df] p-4 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
+                        {propertyLoadError}
+                    </div>
+                )}
 
                 {featuredDallasDeals.length > 0 ? (
                     <div className="mt-5 grid auto-cols-[minmax(220px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-2 xl:grid-flow-row xl:grid-cols-4 xl:overflow-visible xl:pb-0">

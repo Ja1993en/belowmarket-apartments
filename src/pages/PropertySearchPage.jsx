@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Building2, MapPin, Navigation, Search, Tag } from "lucide-react";
+import { getAllProperties } from "../data/propertyStorage";
 
 import {
   getPropertyAddressLabel,
@@ -23,7 +24,9 @@ export default function PropertySearchPage() {
   const [searchTerm, setSearchTerm] = useState(searchFromUrl);
   const [selectedArea, setSelectedArea] = useState(null);
   const [mappableSearchProperties, setMappableSearchProperties] = useState([]);
-  const properties = useMemo(() => getPublicSearchProperties(), []);
+  const [allProperties, setAllProperties] = useState([]);
+  const [propertyLoadError, setPropertyLoadError] = useState("");
+  const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
     () =>
       properties.filter((property) =>
@@ -57,6 +60,29 @@ export default function PropertySearchPage() {
     () => getPropertySearchSuggestions(properties, searchTerm),
     [properties, searchTerm]
   );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getAllProperties()
+      .then((savedProperties) => {
+        if (!isMounted) return;
+
+        setAllProperties(savedProperties);
+        setPropertyLoadError("");
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) {
+          setAllProperties([]);
+          setPropertyLoadError("Could not load live properties from Supabase.");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -190,6 +216,12 @@ export default function PropertySearchPage() {
               </div>
             )}
           </form>
+
+          {propertyLoadError && (
+            <div className="mt-3 rounded-2xl bg-[#fde8df] p-4 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
+              {propertyLoadError}
+            </div>
+          )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[#e7f3ee] px-4 py-2 text-sm font-black text-[#1f6f63]">

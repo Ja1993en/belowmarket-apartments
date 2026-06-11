@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -16,19 +16,48 @@ import { deleteStoredProperty, getAllProperties } from "../data/propertyStorage"
 
 
 export default function PropertiesTab() {
-    const [properties, setProperties] = useState(() => getAllProperties());
+    const [properties, setProperties] = useState([]);
     const [notice, setNotice] = useState("");
-    const refreshProperties = () => setProperties(getAllProperties());
-    const deleteProperty = (property) => {
+    const [loadError, setLoadError] = useState("");
+    const [isLoadingProperties, setIsLoadingProperties] = useState(true);
+    const refreshProperties = async () => {
+        try {
+            setIsLoadingProperties(true);
+            const savedProperties = await getAllProperties();
+            setProperties(savedProperties);
+            setLoadError("");
+        } catch (error) {
+            console.error(error);
+            setProperties([]);
+            setLoadError("Could not load properties from Supabase.");
+        } finally {
+            setIsLoadingProperties(false);
+        }
+    };
+
+    useEffect(() => {
+        const loadTimer = window.setTimeout(() => {
+            refreshProperties();
+        }, 0);
+
+        return () => window.clearTimeout(loadTimer);
+    }, []);
+
+    const deleteProperty = async (property) => {
         const confirmed = window.confirm(
             `Delete ${property.name}? This removes it from the admin list and public search.`
         );
 
         if (!confirmed) return;
 
-        deleteStoredProperty(property.id);
-        refreshProperties();
-        setNotice(`${property.name} was deleted.`);
+        try {
+            await deleteStoredProperty(property.id);
+            await refreshProperties();
+            setNotice(`${property.name} was deleted.`);
+        } catch (error) {
+            console.error(error);
+            setNotice(`Could not delete ${property.name}. Check Supabase.`);
+        }
     };
     
     const propertyStats = [
@@ -113,6 +142,12 @@ export default function PropertiesTab() {
                 ))}
             </div>
 
+            {loadError && (
+                <div className="mt-6 rounded-2xl bg-[#fde8df] p-4 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
+                    {loadError}
+                </div>
+            )}
+
             <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
@@ -121,7 +156,9 @@ export default function PropertiesTab() {
                         </h2>
 
                         <p className="mt-1 font-semibold text-[#526260]">
-                            Showing {filteredProperties.length} of {properties.length} properties.
+                            {isLoadingProperties
+                                ? "Loading properties from Supabase..."
+                                : `Showing ${filteredProperties.length} of ${properties.length} properties.`}
                         </p>
                     </div>
 

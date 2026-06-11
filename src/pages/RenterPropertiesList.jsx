@@ -14,7 +14,7 @@ import {
   saveTourRequest,
 } from "../data/leadStorage";
 
-import { getAnyPropertyById } from "../data/propertyStorage";
+import { getAllProperties } from "../data/propertyStorage";
 import { getPropertyPrimaryImage } from "../data/propertySearchData";
 
 export default function RenterPropertiesList() {
@@ -27,6 +27,7 @@ export default function RenterPropertiesList() {
   const [isLoadingLead, setIsLoadingLead] = useState(true);
   const [isLocalFallbackLead, setIsLocalFallbackLead] = useState(false);
   const [existingTourRequests, setExistingTourRequests] = useState([]);
+  const [properties, setProperties] = useState([]);
 
   const [requestedPropertyIds, setRequestedPropertyIds] = useState(
     existingTourRequests.map((request) => request.propertyId)
@@ -45,6 +46,23 @@ export default function RenterPropertiesList() {
     preferredTime: "",
     message: "",
   });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getAllProperties()
+      .then((savedProperties) => {
+        if (isMounted) setProperties(savedProperties);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) setProperties([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const loadLead = async () => {
@@ -101,7 +119,7 @@ export default function RenterPropertiesList() {
     lead?.recommendedPropertyIds || lead?.recommended_property_ids || [];
 
   const allRecommendedProperties = recommendedPropertyIds
-    .map((propertyId) => getAnyPropertyById(propertyId))
+    .map((propertyId) => properties.find((property) => property.id === String(propertyId)))
     .filter(Boolean);
 
   const recommendedProperties = allRecommendedProperties.filter(

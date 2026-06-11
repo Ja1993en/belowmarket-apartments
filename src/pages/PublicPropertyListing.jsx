@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
     getPhotoImageUrl,
     getPropertyAddressLabel,
     getPropertyPrimaryImage,
-    getPublicSearchProperties,
     hasPreciseStreetAddress,
     isReliableGeocodeResult,
 } from "../data/propertySearchData";
 import { getMarketRentBenchmark } from "../data/marketRentBenchmarks";
+import { getAnyPropertyById } from "../data/propertyStorage";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
@@ -263,10 +263,28 @@ function enrichFloorPlanWithMarketBenchmark(property, plan) {
 export default function PublicPropertyListing() {
     {/* Usestate start*/ }
     const { propertyId } = useParams();
-    const publicProperties = useMemo(() => getPublicSearchProperties(), []);
-    const property = publicProperties.find(
-        (listingProperty) => listingProperty.id === String(propertyId)
-    );
+    const [property, setProperty] = useState(null);
+    const [isLoadingProperty, setIsLoadingProperty] = useState(true);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        getAnyPropertyById(propertyId)
+            .then((savedProperty) => {
+                if (isMounted) setProperty(savedProperty);
+            })
+            .catch((error) => {
+                console.error(error);
+                if (isMounted) setProperty(null);
+            })
+            .finally(() => {
+                if (isMounted) setIsLoadingProperty(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [propertyId]);
     const addressLabel = property ? getPropertyAddressLabel(property) : "";
     const startingRentLabel = property?.startingRent || property?.rent || "Contact for pricing";
     const effectiveRentLabel = property?.effectiveRent || "";
@@ -509,7 +527,7 @@ export default function PublicPropertyListing() {
             <main className="min-h-screen bg-[#f5f8f1] p-6 text-[#102426]">
                 <div className="mx-auto max-w-4xl rounded-3xl border border-[#d7e6df] bg-white p-8 shadow-sm">
                     <h1 className="text-3xl font-black text-[#102426]">
-                        Property not found
+                        {isLoadingProperty ? "Loading property..." : "Property not found"}
                     </h1>
 
                     <p className="mt-2 text-[#526260]">

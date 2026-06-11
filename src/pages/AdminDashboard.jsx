@@ -63,7 +63,7 @@ const systemStatus = [
 ];
 
 export default function AdminDashboard() {
-    const properties = getAllProperties();
+    const [properties, setProperties] = useState([]);
     const [dashboardLeads, setDashboardLeads] = useState(
         isLocalFallbackEnabled ? leads : []
     );
@@ -82,12 +82,16 @@ export default function AdminDashboard() {
         }
 
         try {
-            const supabaseLeads = await getSupabaseLeads();
+            const [supabaseLeads, supabaseProperties] = await Promise.all([
+                getSupabaseLeads(),
+                getAllProperties(),
+            ]);
 
             const tourRequestGroups = await Promise.all(
                 supabaseLeads.map((lead) => getSupabaseTourRequestsForLead(lead.id))
             );
 
+            setProperties(supabaseProperties);
             setDashboardLeads(supabaseLeads);
             setDashboardTourRequests(tourRequestGroups.flat());
             setIsUsingFallbackDashboardData(false);
@@ -96,11 +100,13 @@ export default function AdminDashboard() {
             console.error(error);
 
             if (isLocalFallbackEnabled) {
+                setProperties([]);
                 setDashboardLeads(getAllLeads());
                 setDashboardTourRequests(getStoredTourRequests());
                 setIsUsingFallbackDashboardData(true);
                 setDashboardError(localFallbackMessage);
             } else {
+                setProperties([]);
                 setDashboardLeads([]);
                 setDashboardTourRequests([]);
                 setIsUsingFallbackDashboardData(false);

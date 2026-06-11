@@ -1,69 +1,65 @@
-const MANAGEMENT_COMPANIES_KEY = "belowMarketManagementCompanies";
+import { supabase } from "./supabaseClient";
 
 const defaultManagementCompanies = [
-  {
-    id: "greystar",
-    name: "Greystar",
-    contactName: "",
-    phone: "",
-    email: "",
-  },
-  {
-    id: "rpm-living",
-    name: "RPM Living",
-    contactName: "",
-    phone: "",
-    email: "",
-  },
-  {
-    id: "willow-bridge",
-    name: "Willow Bridge",
-    contactName: "",
-    phone: "",
-    email: "",
-  },
+  { id: "greystar", name: "Greystar", contactName: "", phone: "", email: "" },
+  { id: "rpm-living", name: "RPM Living", contactName: "", phone: "", email: "" },
+  { id: "willow-bridge", name: "Willow Bridge", contactName: "", phone: "", email: "" },
 ];
 
-export function getStoredManagementCompanies() {
-  return JSON.parse(localStorage.getItem(MANAGEMENT_COMPANIES_KEY) || "[]");
-}
+export async function getAllManagementCompanies() {
+  const { data, error } = await supabase
+    .from("management_companies")
+    .select("*")
+    .order("name", { ascending: true });
 
-export function getAllManagementCompanies() {
-  const storedCompanies = getStoredManagementCompanies();
+  if (error) throw error;
+
   const companyMap = new Map();
-
-  [...defaultManagementCompanies, ...storedCompanies].forEach((company) => {
-    companyMap.set(company.id, company);
-  });
+  defaultManagementCompanies.forEach((company) => companyMap.set(company.id, company));
+  (data || []).map(mapSupabaseManagementCompany).forEach((company) => companyMap.set(company.id, company));
 
   return [...companyMap.values()].sort((firstCompany, secondCompany) =>
     firstCompany.name.localeCompare(secondCompany.name)
   );
 }
 
-export function getManagementCompanyById(companyId) {
-  return getAllManagementCompanies().find(
+export async function getManagementCompanyById(companyId) {
+  if (!companyId) return null;
+
+  const defaultCompany = defaultManagementCompanies.find(
     (company) => company.id === String(companyId)
   );
+
+  if (defaultCompany) return defaultCompany;
+
+  const { data, error } = await supabase
+    .from("management_companies")
+    .select("*")
+    .eq("id", String(companyId))
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data ? mapSupabaseManagementCompany(data) : null;
 }
 
-export function getManagementCompanyIdByName(companyName) {
+export async function getManagementCompanyIdByName(companyName) {
   const normalizedCompanyName = normalizeCompanyName(companyName);
+  const companies = await getAllManagementCompanies();
 
-  return getAllManagementCompanies().find(
+  return companies.find(
     (company) => normalizeCompanyName(company.name) === normalizedCompanyName
   )?.id || "";
 }
 
-export function createStoredManagementCompany(companyDraft) {
+export async function createStoredManagementCompany(companyDraft) {
   const name = String(companyDraft.name || "").trim();
 
   if (!name) {
     throw new Error("Management company name is required.");
   }
 
-  const storedCompanies = getStoredManagementCompanies();
-  const companyId = createUniqueManagementCompanyId(name);
+  const companyId = await createUniqueManagementCompanyId(name);
   const company = {
     id: companyId,
     name,
@@ -73,16 +69,23 @@ export function createStoredManagementCompany(companyDraft) {
     createdAt: new Date().toISOString(),
   };
 
-  localStorage.setItem(
-    MANAGEMENT_COMPANIES_KEY,
-    JSON.stringify([...storedCompanies, company])
-  );
+  const { error } = await supabase.from("management_companies").insert({
+    id: company.id,
+    name: company.name,
+    contact_name: company.contactName,
+    phone: company.phone,
+    email: company.email,
+    data: company,
+  });
+
+  if (error) throw error;
 
   return company;
 }
 
-function createUniqueManagementCompanyId(name) {
-  const existingIds = new Set(getAllManagementCompanies().map((company) => company.id));
+async function createUniqueManagementCompanyId(name) {
+  const existingCompanies = await getAllManagementCompanies();
+  const existingIds = new Set(existingCompanies.map((company) => company.id));
   const fallbackId = `management-company-${Date.now()}`;
   const baseId = slugify(name) || fallbackId;
   let companyId = baseId;
@@ -94,6 +97,20 @@ function createUniqueManagementCompanyId(name) {
   }
 
   return companyId;
+}
+
+function mapSupabaseManagementCompany(row) {
+  const data = row.data || {};
+
+  return {
+    ...data,
+    id: row.id,
+    name: data.name || row.name || "",
+    contactName: data.contactName || row.contact_name || "",
+    phone: data.phone || row.phone || "",
+    email: data.email || row.email || "",
+    createdAt: data.createdAt || row.created_at || "",
+  };
 }
 
 function normalizeCompanyName(value) {

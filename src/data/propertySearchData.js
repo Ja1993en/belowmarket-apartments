@@ -1,12 +1,8 @@
-import { getAllProperties } from "./propertyStorage";
-
 export const DEFAULT_PROPERTY_IMAGE =
   "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80";
 
-export function getPublicSearchProperties() {
-  return getAllProperties().filter(
-    (property) => property.status === "Live"
-  );
+export function getPublicSearchProperties(properties = []) {
+  return properties.filter((property) => property.status === "Live");
 }
 
 export function getPropertySearchSuggestions(properties, query, limit = 6) {
