@@ -770,7 +770,9 @@ function FallbackSearchMap({ properties }) {
 
 function SearchResultCard({ property }) {
   const addressLabel = getPropertyAddressLabel(property);
-  const hasSpecial = Boolean(property.special && property.special !== "Special not listed");
+  const priceSummary = getPropertySearchPriceSummary(property);
+  const hasSpecial = priceSummary.hasSpecial;
+  const showNetEffectiveRent = priceSummary.hasRentSpecial;
   const cardHref = `/properties/${property.id}`;
 
   return (
@@ -794,13 +796,20 @@ function SearchResultCard({ property }) {
         </p>
 
         <div className="mt-4 flex items-end justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-[11px] font-black uppercase text-[#1f6f63]">
-              {hasSpecial ? "Net Effective" : "Normal Rent"}
+              {showNetEffectiveRent ? "Net Effective" : "Normal Rent"}
             </p>
-            <p className="mt-1 text-2xl font-black text-[#102426]">
-              {hasSpecial ? property.effectiveRent || property.rent : property.rent}
+            <p className="mt-1 truncate text-2xl font-black text-[#102426]">
+              {showNetEffectiveRent
+                ? priceSummary.effectiveRentLabel
+                : priceSummary.normalRentLabel}
             </p>
+            {showNetEffectiveRent && (
+              <p className="mt-1 text-xs font-bold text-[#526260]">
+                Normal rent: {priceSummary.normalRentLabel}
+              </p>
+            )}
           </div>
 
           <p className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
@@ -811,7 +820,7 @@ function SearchResultCard({ property }) {
         {hasSpecial && (
           <p className="mt-3 flex items-center gap-2 rounded-xl bg-[#fff8e6] px-3 py-2 text-sm font-black text-[#102426] ring-1 ring-[#f2d08a]">
             <Tag className="h-4 w-4 shrink-0 text-[#8a5b0a]" />
-            <span className="truncate">{property.special}</span>
+            <span className="truncate">{priceSummary.specialLabel}</span>
           </p>
         )}
       </div>
@@ -1179,6 +1188,205 @@ function getPropertySpecialValues(property) {
   );
 }
 
+function getPropertySearchPriceSummary(property) {
+  const floorPlans = getSearchFloorPlans(property);
+  const normalRentValues = getNormalRentValues(property, floorPlans);
+  const specialDealUnits = getSearchSpecialDealUnits(property, floorPlans);
+  const specialRentValues = specialDealUnits
+    .filter((dealUnit) => dealUnit.hasRentSpecial)
+    .map((dealUnit) => dealUnit.effectiveRentNumber)
+    .filter((value) => value > 0);
+  const specialLabels = [
+    ...new Set(specialDealUnits.map((dealUnit) => dealUnit.specialLabel).filter(Boolean)),
+  ];
+  const normalRentLabel =
+    normalRentValues.length > 0
+      ? formatRentRange(Math.min(...normalRentValues), Math.max(...normalRentValues))
+      : property.rent || "Contact for pricing";
+
+  if (specialRentValues.length === 0) {
+    return {
+      hasSpecial: specialDealUnits.length > 0,
+      hasRentSpecial: false,
+      normalRentLabel,
+      effectiveRentLabel: normalRentLabel,
+      specialLabel: formatSearchSpecialSummary(specialLabels),
+    };
+  }
+
+  return {
+    hasSpecial: true,
+    hasRentSpecial: true,
+    normalRentLabel,
+    effectiveRentLabel: formatRentRange(
+      Math.min(...specialRentValues),
+      Math.max(...specialRentValues)
+    ),
+    specialLabel: formatSearchSpecialSummary(specialLabels),
+  };
+}
+
+function getSearchFloorPlans(property) {
+  if (property?.floorPlans?.length) return property.floorPlans;
+
+  return [
+    {
+      name: property?.name || "Available floor plan",
+      startingRent: property?.startingRent || property?.rent || "",
+      rent: property?.rent || "",
+      totalMonthlyRent: property?.rent || "",
+      requiredMonthlyFees: property?.requiredMonthlyFees || "",
+      effectiveRent: property?.effectiveRent || "",
+      currentSpecial: property?.special || "",
+      freeWeeks: getWeeksFromSpecialText(property?.special) || 0,
+      leaseTermMonths: 12,
+      availableUnits: [],
+    },
+  ];
+}
+
+function getNormalRentValues(property, floorPlans) {
+  const rentValues = floorPlans.flatMap((floorPlan) => {
+    const floorPlanRent = parseCurrency(
+      floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
+    );
+    const unitRents =
+      floorPlan.availableUnits
+        ?.filter((unit) => unit.status !== "leased")
+        .map((unit) =>
+          parseCurrency(
+            unit.rent ||
+              floorPlan.totalMonthlyRent ||
+              floorPlan.rent ||
+              floorPlan.startingRent
+          )
+        )
+        .filter(Boolean) || [];
+
+    return [floorPlanRent, ...unitRents].filter(Boolean);
+  });
+  const propertyRent = parseCurrency(property?.rent);
+
+  return [...rentValues, propertyRent].filter(Boolean);
+}
+
+function getSearchSpecialDealUnits(property, floorPlans) {
+  return floorPlans.flatMap((floorPlan) => {
+    const floorPlanSpecial = getFloorPlanSearchSpecial(floorPlan, property);
+    const availableUnits =
+      floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+
+    if (availableUnits.length === 0) {
+      if (!floorPlanSpecial.hasSpecial) return [];
+
+      return [
+        createSearchSpecialDealUnit({
+          floorPlan,
+          unitRent: floorPlan.startingRent || floorPlan.rent || property?.rent,
+          specialLabel: floorPlanSpecial.label,
+          freeWeeks: floorPlanSpecial.freeWeeks,
+        }),
+      ];
+    }
+
+    return availableUnits.flatMap((unit) => {
+      const unitSpecial = getUnitSearchSpecial(unit, floorPlanSpecial);
+
+      if (!unitSpecial.hasSpecial) return [];
+
+      return createSearchSpecialDealUnit({
+        floorPlan,
+        unitRent: unit.rent || floorPlan.startingRent || floorPlan.rent || property?.rent,
+        specialLabel: unitSpecial.label,
+        freeWeeks: unitSpecial.freeWeeks,
+      });
+    });
+  });
+}
+
+function createSearchSpecialDealUnit({ floorPlan, unitRent, specialLabel, freeWeeks }) {
+  const baseRentNumber = parseCurrency(unitRent);
+  const requiredMonthlyFeesNumber = parseCurrency(floorPlan.requiredMonthlyFees);
+  const enteredTotalMonthlyRentNumber = parseCurrency(floorPlan.totalMonthlyRent || floorPlan.rent);
+  const totalMonthlyRentNumber =
+    enteredTotalMonthlyRentNumber || baseRentNumber + requiredMonthlyFeesNumber;
+  const enteredEffectiveRentNumber = parseCurrency(floorPlan.effectiveRent);
+  const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
+  const freeMonths = Number(freeWeeks || 0) / 4.345;
+  const monthlyConcession =
+    baseRentNumber && freeMonths && leaseTermMonths
+      ? (baseRentNumber * freeMonths) / leaseTermMonths
+      : 0;
+  const calculatedEffectiveRentNumber =
+    totalMonthlyRentNumber && monthlyConcession
+      ? Math.max(totalMonthlyRentNumber - monthlyConcession, 0)
+      : 0;
+
+  return {
+    specialLabel,
+    hasRentSpecial:
+      Number(freeWeeks || 0) > 0 ||
+      (enteredEffectiveRentNumber > 0 &&
+        totalMonthlyRentNumber > 0 &&
+        enteredEffectiveRentNumber < totalMonthlyRentNumber),
+    effectiveRentNumber:
+      calculatedEffectiveRentNumber || enteredEffectiveRentNumber || totalMonthlyRentNumber,
+  };
+}
+
+function getFloorPlanSearchSpecial(floorPlan, property) {
+  const label =
+    floorPlan.currentSpecial ||
+    floorPlan.special?.label ||
+    property?.special ||
+    "";
+  const freeWeeks =
+    Number(floorPlan.freeWeeks || floorPlan.special?.freeWeeks || 0) ||
+    getWeeksFromSpecialText(label);
+
+  return {
+    hasSpecial: freeWeeks > 0 || Boolean(label),
+    freeWeeks,
+    label: label || (freeWeeks > 0 ? `${freeWeeks} weeks free` : ""),
+  };
+}
+
+function getUnitSearchSpecial(unit, floorPlanSpecial) {
+  if (unit.specialMode === "none") {
+    return {
+      hasSpecial: false,
+      freeWeeks: 0,
+      label: "",
+    };
+  }
+
+  const label = unit.currentSpecial || unit.special?.label || "";
+  const freeWeeks =
+    Number(unit.freeWeeks || unit.special?.freeWeeks || 0) ||
+    getWeeksFromSpecialText(label);
+
+  if (unit.specialMode === "custom" || freeWeeks > 0 || label) {
+    return {
+      hasSpecial: freeWeeks > 0 || Boolean(label),
+      freeWeeks,
+      label: label || (freeWeeks > 0 ? `${freeWeeks} weeks free` : ""),
+    };
+  }
+
+  return floorPlanSpecial;
+}
+
+function formatSearchSpecialSummary(specialLabels) {
+  const cleanLabels = specialLabels.filter(
+    (label) => label && label !== "Special not listed"
+  );
+
+  if (cleanLabels.length === 0) return "Special available";
+  if (cleanLabels.length <= 2) return cleanLabels.join(", ");
+
+  return `${cleanLabels.slice(0, 2).join(", ")} +${cleanLabels.length - 2} more`;
+}
+
 function getWeeksFromSpecialText(value) {
   const match = String(value || "").match(/(\d+(?:\.\d+)?)\s*weeks?\s*free/i);
   if (!match) return null;
@@ -1187,8 +1395,32 @@ function getWeeksFromSpecialText(value) {
 }
 
 function getPrimaryRentLabel(property) {
-  const hasSpecial = Boolean(property.special && property.special !== "Special not listed");
-  return hasSpecial ? property.effectiveRent || property.rent : property.rent;
+  const priceSummary = getPropertySearchPriceSummary(property);
+
+  return priceSummary.hasSpecial
+    ? priceSummary.effectiveRentLabel
+    : priceSummary.normalRentLabel;
+}
+
+function parseCurrency(value) {
+  const parsedValue = Number(String(value || "").replace(/[^0-9.]/g, ""));
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function formatCurrency(value) {
+  return `$${Math.round(value).toLocaleString()}`;
+}
+
+function formatRentRange(minRent, maxRent) {
+  if (!minRent && !maxRent) {
+    return "Contact for pricing";
+  }
+
+  if (minRent === maxRent) {
+    return `${formatCurrency(minRent)}+`;
+  }
+
+  return `${formatCurrency(minRent)} - ${formatCurrency(maxRent)}`;
 }
 
 function getBedsLabel(property) {
