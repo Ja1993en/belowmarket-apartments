@@ -70,6 +70,58 @@ export async function deleteStoredProperty(propertyId) {
   if (error) throw error;
 }
 
+export function getLegacyLocalPropertyCount() {
+  return getLegacyLocalProperties().length;
+}
+
+export async function migrateLegacyLocalPropertiesToSupabase() {
+  const legacyProperties = getLegacyLocalProperties();
+  const migratedProperties = [];
+
+  for (const property of legacyProperties) {
+    const propertyId = property.id || slugify(property.name) || `property-${Date.now()}`;
+    const savedProperty = await updateStoredProperty(propertyId, {
+      ...property,
+      id: propertyId,
+      updated: "Migrated from browser storage",
+    });
+
+    migratedProperties.push(savedProperty);
+  }
+
+  if (migratedProperties.length > 0) {
+    localStorage.setItem("belowMarketLegacyPropertiesMigrated", new Date().toISOString());
+  }
+
+  return migratedProperties;
+}
+
+function getLegacyLocalProperties() {
+  if (typeof localStorage === "undefined") return [];
+
+  try {
+    const customProperties = JSON.parse(
+      localStorage.getItem("belowMarketCustomProperties") || "[]"
+    );
+    const propertyUpdates = JSON.parse(
+      localStorage.getItem("belowMarketProperties") || "{}"
+    );
+    const deletedPropertyIds = new Set(
+      JSON.parse(localStorage.getItem("belowMarketDeletedProperties") || "[]")
+    );
+
+    return customProperties
+      .filter((property) => property?.id && !deletedPropertyIds.has(property.id))
+      .map((property) => ({
+        ...property,
+        ...(propertyUpdates[property.id] || {}),
+      }));
+  } catch (error) {
+    console.error("Could not read legacy local properties.", error);
+    return [];
+  }
+}
+
 async function preparePropertyForSupabase(propertyDraft, propertyId) {
   const photos = await uploadPhotoList(propertyDraft.photos || [], {
     propertyId,

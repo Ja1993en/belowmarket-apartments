@@ -10,7 +10,12 @@ import {
     Plus,
 } from "lucide-react";
 
-import { deleteStoredProperty, getAllProperties } from "../data/propertyStorage";
+import {
+    deleteStoredProperty,
+    getAllProperties,
+    getLegacyLocalPropertyCount,
+    migrateLegacyLocalPropertiesToSupabase,
+} from "../data/propertyStorage";
 
 
 
@@ -20,6 +25,10 @@ export default function PropertiesTab() {
     const [notice, setNotice] = useState("");
     const [loadError, setLoadError] = useState("");
     const [isLoadingProperties, setIsLoadingProperties] = useState(true);
+    const [legacyPropertyCount, setLegacyPropertyCount] = useState(() =>
+        getLegacyLocalPropertyCount()
+    );
+    const [isMigratingProperties, setIsMigratingProperties] = useState(false);
     const refreshProperties = async () => {
         try {
             setIsLoadingProperties(true);
@@ -42,6 +51,30 @@ export default function PropertiesTab() {
 
         return () => window.clearTimeout(loadTimer);
     }, []);
+
+    const migrateLegacyProperties = async () => {
+        const confirmed = window.confirm(
+            `Move ${legacyPropertyCount} browser-saved propert${legacyPropertyCount === 1 ? "y" : "ies"} into Supabase? Run this from the laptop/browser where you entered the properties.`
+        );
+
+        if (!confirmed) return;
+
+        try {
+            setIsMigratingProperties(true);
+            setNotice("");
+
+            const migratedProperties = await migrateLegacyLocalPropertiesToSupabase();
+
+            await refreshProperties();
+            setLegacyPropertyCount(getLegacyLocalPropertyCount());
+            setNotice(`${migratedProperties.length} browser-saved propert${migratedProperties.length === 1 ? "y" : "ies"} moved into Supabase.`);
+        } catch (error) {
+            console.error(error);
+            setNotice("Could not migrate browser-saved properties. Confirm the property-photos bucket exists in Supabase.");
+        } finally {
+            setIsMigratingProperties(false);
+        }
+    };
 
     const deleteProperty = async (property) => {
         const confirmed = window.confirm(
@@ -141,6 +174,27 @@ export default function PropertiesTab() {
                     />
                 ))}
             </div>
+
+            {legacyPropertyCount > 0 && (
+                <div className="mt-6 rounded-3xl border border-[#f2d08a] bg-[#fff8e6] p-5 shadow-sm">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h2 className="text-xl font-black text-[#102426]">Move laptop-saved properties to Supabase</h2>
+                            <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                This browser has {legacyPropertyCount} old local propert{legacyPropertyCount === 1 ? "y" : "ies"}. Move them to Supabase so they appear on your phone and every device.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={migrateLegacyProperties}
+                            disabled={isMigratingProperties}
+                            className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
+                        >
+                            {isMigratingProperties ? "Moving..." : "Move to Supabase"}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {loadError && (
                 <div className="mt-6 rounded-2xl bg-[#fde8df] p-4 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
