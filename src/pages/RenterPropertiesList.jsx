@@ -202,13 +202,13 @@ export default function RenterPropertiesList() {
 
   if (isLoadingLead) {
     return (
-      <main className="min-h-screen bg-slate-100 p-6 text-slate-950">
-        <div className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <h1 className="text-3xl font-black text-slate-900">
+      <main className="min-h-screen bg-[#f5f8f1] p-6 text-[#102426]">
+        <div className="mx-auto max-w-4xl rounded-3xl border border-[#d7e6df] bg-white p-8 shadow-sm">
+          <h1 className="text-3xl font-black text-[#102426]">
             Loading recommendations...
           </h1>
 
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-[#526260]">
             Checking your apartment recommendation link.
           </p>
         </div>
@@ -218,13 +218,13 @@ export default function RenterPropertiesList() {
 
   if (!lead) {
     return (
-      <main className="min-h-screen bg-slate-100 p-6 text-slate-950">
-        <div className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <h1 className="text-3xl font-black text-slate-900">
+      <main className="min-h-screen bg-[#f5f8f1] p-6 text-[#102426]">
+        <div className="mx-auto max-w-4xl rounded-3xl border border-[#d7e6df] bg-white p-8 shadow-sm">
+          <h1 className="text-3xl font-black text-[#102426]">
             Recommendation list not found
           </h1>
 
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-[#526260]">
             This link does not match an active renter recommendation list.
           </p>
         </div>
@@ -233,12 +233,12 @@ export default function RenterPropertiesList() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6 text-slate-950">
+    <main className="min-h-screen bg-[#f5f8f1] p-6 text-[#102426]">
       <div className="mx-auto max-w-6xl">
-        <section className="overflow-hidden rounded-3xl bg-slate-950 text-white shadow-sm">
+        <section className="overflow-hidden rounded-3xl bg-[#173f3f] text-white shadow-sm">
           <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
             <div className="p-6 md:p-8">
-              <p className="text-sm font-bold text-slate-300">
+              <p className="text-sm font-bold text-[#f2b84b]">
                 Below Market Apartments
               </p>
 
@@ -246,7 +246,7 @@ export default function RenterPropertiesList() {
                 {lead.name}, your apartment matches are ready.
               </h1>
 
-              <p className="mt-4 max-w-2xl text-slate-300">
+              <p className="mt-4 max-w-2xl text-[#d7e6df]">
                 These properties were selected around your search for {lead.preference}.
               </p>
 
@@ -280,16 +280,16 @@ export default function RenterPropertiesList() {
         <section className="mt-8">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
-              <h2 className="text-3xl font-black text-slate-900">
+              <h2 className="text-3xl font-black text-[#102426]">
                 Recommended Apartments
               </h2>
 
-              <p className="mt-2 text-slate-500">
+              <p className="mt-2 text-[#526260]">
                 Showing {recommendedProperties.length} below-market options selected by your locator.
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm">
+            <div className="rounded-2xl bg-white px-5 py-3 text-sm font-bold text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df]">
               Token: {token}
             </div>
           </div>
@@ -307,12 +307,12 @@ export default function RenterPropertiesList() {
               ))}
             </div>
           ) : (
-            <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
-              <h3 className="text-2xl font-black text-slate-900">
+            <div className="mt-6 rounded-3xl border border-dashed border-[#b8d9d0] bg-white p-10 text-center shadow-sm">
+              <h3 className="text-2xl font-black text-[#102426]">
                 No available properties yet
               </h3>
 
-              <p className="mx-auto mt-2 max-w-xl text-slate-500">
+              <p className="mx-auto mt-2 max-w-xl text-[#526260]">
                 {recommendedPropertyIds.length === 0
                   ? "Your locator has not selected recommended apartments for this link yet."
                   : "Your locator selected properties, but they are not marked Live yet."}
@@ -325,22 +325,22 @@ export default function RenterPropertiesList() {
         {selectedTourProperty && (
           <section
             id="tour-request-form"
-            className="mt-8 rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm"
+            className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm"
           >
-            <p className="text-sm font-bold uppercase tracking-wide text-emerald-700">
+            <p className="text-sm font-bold uppercase tracking-wide text-[#1f6f63]">
               Request Tour
             </p>
 
-            <h2 className="mt-2 text-2xl font-black text-slate-900">
+            <h2 className="mt-2 text-2xl font-black text-[#102426]">
               {selectedTourProperty.name}
             </h2>
 
-            <p className="mt-1 text-sm font-semibold text-slate-500">
+            <p className="mt-1 text-sm font-semibold text-[#526260]">
               Add your preferred tour time and any notes for your locator.
             </p>
 
             <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <label className="text-sm font-bold text-slate-700">
+              <label className="text-sm font-bold text-[#173f3f]">
                 Preferred date
                 <input
                   type="date"
@@ -352,11 +352,11 @@ export default function RenterPropertiesList() {
                       preferredDate: event.target.value,
                     });
                   }}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 font-semibold outline-none focus:border-slate-400"
+                  className="mt-2 w-full rounded-2xl border border-[#d7e6df] px-4 py-3 font-semibold outline-none focus:border-[#2d7dd2]"
                 />
               </label>
 
-              <label className="text-sm font-bold text-slate-700">
+              <label className="text-sm font-bold text-[#173f3f]">
                 Preferred time
                 <select
                   value={tourForm.preferredTime}
@@ -367,7 +367,7 @@ export default function RenterPropertiesList() {
                       preferredTime: event.target.value,
                     });
                   }}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold outline-none focus:border-slate-400"
+                  className="mt-2 w-full rounded-2xl border border-[#d7e6df] bg-white px-4 py-3 font-semibold outline-none focus:border-[#2d7dd2]"
                 >
                   <option value="">Select a time</option>
                   <option>Morning</option>
@@ -377,7 +377,7 @@ export default function RenterPropertiesList() {
               </label>
             </div>
 
-            <label className="mt-4 block text-sm font-bold text-slate-700">
+            <label className="mt-4 block text-sm font-bold text-[#173f3f]">
               Notes for your locator
               <textarea
                 value={tourForm.message}
@@ -389,7 +389,7 @@ export default function RenterPropertiesList() {
                 }
                 rows={4}
                 placeholder="Example: Saturday morning works best for me."
-                className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 font-semibold outline-none focus:border-slate-400"
+                className="mt-2 w-full resize-none rounded-2xl border border-[#d7e6df] px-4 py-3 font-semibold outline-none focus:border-[#2d7dd2]"
               />
             </label>
 
@@ -405,7 +405,7 @@ export default function RenterPropertiesList() {
                 type="button"
                 onClick={submitTourRequest}
                 disabled={isSubmittingTour}
-                className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
               >
                 {isSubmittingTour ? "Submitting..." : "Submit Tour Request"}
               </button>
@@ -413,7 +413,7 @@ export default function RenterPropertiesList() {
               <button
                 type="button"
                 onClick={() => setSelectedTourProperty(null)}
-                className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
               >
                 Cancel
               </button>
@@ -421,26 +421,26 @@ export default function RenterPropertiesList() {
           </section>
         )}
         {tourSuccessMessage && (
-          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-700">
+          <div className="mt-6 rounded-2xl border border-[#d7e6df] bg-[#e7f3ee] px-5 py-4 text-sm font-bold text-[#1f6f63]">
             {tourSuccessMessage}
           </div>
         )}
 
-        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-              <h2 className="text-2xl font-black text-slate-900">
+              <h2 className="text-2xl font-black text-[#102426]">
                 Ready to tour?
               </h2>
 
-              <p className="mt-1 text-slate-500">
+              <p className="mt-1 text-[#526260]">
                 Reply to your locator with the properties you like best.
               </p>
             </div>
 
             <a
               href={`tel:${lead.phone}`}
-              className="rounded-2xl bg-slate-950 px-5 py-3 text-center text-sm font-bold text-white hover:bg-slate-800"
+              className="rounded-2xl bg-[#173f3f] px-5 py-3 text-center text-sm font-bold text-white hover:bg-[#102426]"
             >
               Call Locator
             </a>
@@ -453,9 +453,9 @@ export default function RenterPropertiesList() {
 
 function HeroMetric({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-2xl bg-white/10 p-4">
-      <Icon className="h-5 w-5 text-slate-300" />
-      <p className="mt-3 text-xs font-bold uppercase text-slate-400">
+    <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/10">
+      <Icon className="h-5 w-5 text-[#f2b84b]" />
+      <p className="mt-3 text-xs font-bold uppercase text-[#d7e6df]">
         {label}
       </p>
       <p className="mt-1 font-black text-white">{value}</p>
@@ -489,7 +489,7 @@ function RecommendedPropertyCard({
   const primaryImage = getPropertyPrimaryImage(property);
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <article className="overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm">
       <img
         src={primaryImage}
         alt={property.name}
@@ -499,17 +499,17 @@ function RecommendedPropertyCard({
       <div className="p-6">
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
           <div>
-            <h3 className="text-2xl font-black text-slate-900">
+            <h3 className="text-2xl font-black text-[#102426]">
               {property.name}
             </h3>
 
-            <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-500">
+            <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#526260]">
               <MapPin className="h-4 w-4" />
               {property.area}
             </p>
           </div>
 
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+          <span className="rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
             {property.belowMarketPercent} below market
           </span>
         </div>
@@ -520,14 +520,14 @@ function RecommendedPropertyCard({
           <DealStat label="Savings" value={property.savings} />
         </div>
 
-        <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-          <p className="text-sm font-bold text-slate-500">Current Special</p>
-          <p className="mt-1 font-black text-slate-900">{property.special}</p>
+        <div className="mt-5 rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">
+          <p className="text-sm font-bold text-[#8a5b0a]">Current Special</p>
+          <p className="mt-1 font-black text-[#102426]">{property.special}</p>
         </div>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
           <Link
-            to={`/properties/${property.id}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+            to={`/properties/${property.id}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
           >
             <Building2 className="h-4 w-4" />
             View Property
@@ -537,10 +537,10 @@ function RecommendedPropertyCard({
             onClick={() => onRequestTour(property)}
             disabled={isTourRequested}
             className={`flex-1 rounded-2xl px-5 py-3 text-sm font-bold ${isTourRequested
-              ? "bg-emerald-100 text-emerald-700"
+              ? "bg-[#d8efe6] text-[#1f6f63]"
               : isTourSelected
-                ? "bg-slate-950 text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                ? "bg-[#173f3f] text-white"
+                : "bg-[#e7f3ee] text-[#173f3f] hover:bg-[#d7e6df]"
               }`}
           >
             {isTourRequested
@@ -557,9 +557,9 @@ function RecommendedPropertyCard({
 
 function DealStat({ label, value }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-4">
-      <p className="text-xs font-bold uppercase text-slate-400">{label}</p>
-      <p className="mt-2 text-lg font-black text-slate-900">{value}</p>
+    <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+      <p className="text-xs font-bold uppercase text-[#526260]">{label}</p>
+      <p className="mt-2 text-lg font-black text-[#102426]">{value}</p>
     </div>
   );
 }
