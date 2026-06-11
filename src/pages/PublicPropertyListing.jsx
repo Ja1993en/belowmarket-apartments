@@ -704,17 +704,19 @@ export default function PublicPropertyListing() {
                                         </p>
                                     </div>
 
-                                    <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                        {renterDecisionFacts.map((fact) => (
-                                            <RenterDecisionFactCard
-                                                key={fact.label}
-                                                label={fact.label}
-                                                value={fact.value}
-                                                detail={fact.detail}
-                                                detailLines={fact.detailLines}
-                                                tone={fact.tone}
-                                            />
-                                        ))}
+                                    <div className="-mx-1 mt-5 overflow-x-auto pb-2">
+                                        <div className="flex min-w-max gap-3 px-1 xl:min-w-0">
+                                            {renterDecisionFacts.map((fact) => (
+                                                <RenterDecisionFactCard
+                                                    key={fact.label}
+                                                    label={fact.label}
+                                                    value={fact.value}
+                                                    detail={fact.detail}
+                                                    detailLines={fact.detailLines}
+                                                    tone={fact.tone}
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                                 {/*Floor Plans*/}
@@ -2644,16 +2646,16 @@ function RenterDecisionFactCard({ label, value, detail, detailLines = [], tone =
     }[tone] || "bg-[#f5f8f1] text-[#102426] ring-[#d7e6df]";
 
     return (
-        <div className={`rounded-2xl p-4 ring-1 ${toneClass}`}>
+        <div className={`min-h-[230px] w-[230px] shrink-0 rounded-2xl p-4 ring-1 xl:flex-1 ${toneClass}`}>
             <p className="text-xs font-black uppercase text-[#526260]">
                 {label}
             </p>
 
-            <p className="mt-2 text-xl font-black leading-tight text-[#102426]">
+            <p className="mt-2 text-lg font-black leading-tight text-[#102426]">
                 {value}
             </p>
 
-            <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+            <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
                 {detail}
             </p>
 
