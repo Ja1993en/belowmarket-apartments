@@ -23,6 +23,14 @@ export default function SendPropertiesPage() {
   const [propertySearch, setPropertySearch] = useState("");
   const [properties, setProperties] = useState([]);
   const [propertyLoadError, setPropertyLoadError] = useState("");
+  const [smsPin, setSmsPin] = useState(() =>
+    sessionStorage.getItem("bmaSmsSendPin") || ""
+  );
+  const [smsMessage, setSmsMessage] = useState("");
+  const [isSmsMessageEdited, setIsSmsMessageEdited] = useState(false);
+  const [smsStatusMessage, setSmsStatusMessage] = useState("");
+  const [smsError, setSmsError] = useState("");
+  const [isSendingSms, setIsSendingSms] = useState(false);
   const recommendedPropertyIds = lead?.recommendedPropertyIds || [];
 
   const recommendedProperties = recommendedPropertyIds
@@ -106,6 +114,17 @@ export default function SendPropertiesPage() {
       selectedPropertyIds.includes(property.id)
     );
   }, [properties, selectedPropertyIds]);
+  const defaultSmsMessage = useMemo(() => {
+    if (!lead) return "";
+
+    return buildRecommendationText({
+      lead,
+      recommendationUrl,
+      selectedProperties,
+    });
+  }, [lead, recommendationUrl, selectedProperties]);
+
+  const displayedSmsMessage = isSmsMessageEdited ? smsMessage : defaultSmsMessage;
 
   const normalizedPropertySearch = propertySearch.trim().toLowerCase();
 
@@ -234,6 +253,64 @@ export default function SendPropertiesPage() {
         selectedProperties,
       })
     );
+  };
+
+  const sendRecommendationsSms = async () => {
+    if (!lead) return;
+
+    if (selectedPropertyIds.length === 0) {
+      setSmsError("Select at least one property before sending an SMS.");
+      return;
+    }
+
+    if (!smsPin.trim()) {
+      setSmsError("Enter your SMS send PIN first.");
+      return;
+    }
+
+    if (!displayedSmsMessage.trim()) {
+      setSmsError("Add a message before sending.");
+      return;
+    }
+
+    setSmsError("");
+    setSmsStatusMessage("");
+
+    const wasSaved = await saveSelections({
+      successMessage: "Recommendations saved. Sending SMS now.",
+    });
+
+    if (!wasSaved) return;
+
+    try {
+      setIsSendingSms(true);
+      sessionStorage.setItem("bmaSmsSendPin", smsPin.trim());
+
+      const response = await fetch("/api/send-recommendation-sms", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-bma-sms-pin": smsPin.trim(),
+        },
+        body: JSON.stringify({
+          to: lead.phone,
+          body: displayedSmsMessage.trim(),
+          leadId: lead.id,
+          propertyIds: selectedPropertyIds,
+        }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Could not send SMS.");
+      }
+
+      setSmsStatusMessage(`SMS sent to ${lead.phone}. Twilio status: ${result.status || "queued"}.`);
+    } catch (error) {
+      setSmsError(error?.message || "Could not send SMS. Check Twilio setup and try again.");
+    } finally {
+      setIsSendingSms(false);
+    }
   };
 
   if (isLoadingLead) {
@@ -523,6 +600,82 @@ export default function SendPropertiesPage() {
                 Write Message
               </Link>
             </div>
+          </div>
+
+          <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+            <p className="text-sm font-bold uppercase tracking-wide text-[#1f6f63]">
+              Embedded SMS
+            </p>
+            <h2 className="mt-2 text-2xl font-black text-[#102426]">
+              Send From Twilio
+            </h2>
+            <p className="mt-2 text-sm font-semibold text-[#526260]">
+              Sends directly from your Twilio trial number once Cloudflare secrets are set.
+            </p>
+
+            <label className="mt-5 block text-sm font-bold text-[#173f3f]">
+              Renter phone
+              <input
+                type="text"
+                value={lead.phone || ""}
+                readOnly
+                className="mt-2 w-full rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] px-4 py-3 font-semibold text-[#102426]"
+              />
+            </label>
+
+            <label className="mt-4 block text-sm font-bold text-[#173f3f]">
+              SMS send PIN
+              <input
+                type="password"
+                value={smsPin}
+                onChange={(event) => {
+                  setSmsPin(event.target.value);
+                  setSmsError("");
+                }}
+                placeholder="Enter Cloudflare SMS_SEND_PIN"
+                className="mt-2 w-full rounded-2xl border border-[#d7e6df] px-4 py-3 font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+              />
+            </label>
+
+            <label className="mt-4 block text-sm font-bold text-[#173f3f]">
+              Text message
+              <textarea
+                value={displayedSmsMessage}
+                onChange={(event) => {
+                  setIsSmsMessageEdited(true);
+                  setSmsMessage(event.target.value);
+                  setSmsError("");
+                }}
+                rows={7}
+                className="mt-2 w-full resize-none rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm font-semibold leading-6 text-[#102426] outline-none focus:border-[#2d7dd2]"
+              />
+            </label>
+
+            {smsError && (
+              <p className="mt-4 rounded-2xl bg-[#fde8df] px-4 py-3 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
+                {smsError}
+              </p>
+            )}
+
+            {smsStatusMessage && (
+              <p className="mt-4 rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#1f6f63] ring-1 ring-[#d7e6df]">
+                {smsStatusMessage}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={sendRecommendationsSms}
+              disabled={isSendingSms || isSavingSelections || selectedPropertyIds.length === 0}
+              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
+            >
+              <Send className="h-4 w-4" />
+              {isSendingSms ? "Sending SMS..." : "Send SMS Now"}
+            </button>
+
+            <p className="mt-3 text-xs font-semibold text-[#526260]">
+              Twilio trials can only send to phone numbers verified in Twilio.
+            </p>
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
