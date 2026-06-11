@@ -42,7 +42,7 @@ export async function createStoredProperty(propertyDraft) {
   return property;
 }
 
-export async function updateStoredProperty(propertyId, updates) {
+export async function updateStoredProperty(propertyId, updates, options = {}) {
   const existingProperty = await getAnyPropertyById(propertyId);
   const mergedProperty = {
     ...(existingProperty || {}),
@@ -50,7 +50,7 @@ export async function updateStoredProperty(propertyId, updates) {
     id: String(propertyId),
     updated: "Just now",
   };
-  const property = await preparePropertyForSupabase(mergedProperty, propertyId);
+  const property = await preparePropertyForSupabase(mergedProperty, propertyId, options);
 
   const { error } = await supabase
     .from("properties")
@@ -84,6 +84,8 @@ export async function migrateLegacyLocalPropertiesToSupabase(options = {}) {
       ...property,
       id: propertyId,
       updated: "Migrated from browser storage",
+    }, {
+      uploadPhotos: false,
     });
 
     migratedProperties.push(savedProperty);
@@ -179,18 +181,26 @@ function getMigratedLegacyPropertyIds() {
   }
 }
 
-async function preparePropertyForSupabase(propertyDraft, propertyId) {
-  const photos = await uploadPhotoList(propertyDraft.photos || [], {
-    propertyId,
-    folder: "gallery",
-  });
+async function preparePropertyForSupabase(
+  propertyDraft,
+  propertyId,
+  { uploadPhotos = true } = {}
+) {
+  const photos = uploadPhotos
+    ? await uploadPhotoList(propertyDraft.photos || [], {
+      propertyId,
+      folder: "gallery",
+    })
+    : sanitizeStoredPhotoList(propertyDraft.photos || []);
   const floorPlans = await Promise.all(
     (propertyDraft.floorPlans || []).map(async (floorPlan, index) => {
       const floorPlanId = floorPlan.id || `floor-plan-${index + 1}`;
-      const floorPlanPhotos = await uploadPhotoList(floorPlan.photos || [], {
-        propertyId,
-        folder: `floor-plans/${floorPlanId}`,
-      });
+      const floorPlanPhotos = uploadPhotos
+        ? await uploadPhotoList(floorPlan.photos || [], {
+          propertyId,
+          folder: `floor-plans/${floorPlanId}`,
+        })
+        : sanitizeStoredPhotoList(floorPlan.photos || []);
 
       return {
         ...floorPlan,
@@ -278,6 +288,12 @@ function mapSupabaseProperty(row) {
   };
 }
 
+function sanitizeStoredPhotoList(photos) {
+  return photos
+    .map((photo) => sanitizePhoto(photo, getStoredImageUrl(getPhotoImageUrl(photo))))
+    .filter((photo) => getPhotoImageUrl(photo));
+}
+
 async function uploadPhotoList(photos, options) {
   const uploadedPhotos = await Promise.all(
     photos.map((photo, index) => uploadPhoto(photo, index, options))
@@ -294,41 +310,50 @@ async function uploadPhoto(photo, index, options) {
     return cleanPhoto;
   }
 
-  const response = await fetch(photoUrl);
-  const blob = await response.blob();
-  const extension = getFileExtension(blob.type, photo.name);
-  const fileName = `${String(index + 1).padStart(2, "0")}-${Date.now()}-${slugify(
-    photo.name || "photo"
-  )}.${extension}`;
-  const filePath = `${options.propertyId}/${options.folder}/${fileName}`;
+  try {
+    const response = await fetch(photoUrl);
+    const blob = await response.blob();
+    const extension = getFileExtension(blob.type, photo.name);
+    const fileName = `${String(index + 1).padStart(2, "0")}-${Date.now()}-${slugify(
+      photo.name || "photo"
+    )}.${extension}`;
+    const filePath = `${options.propertyId}/${options.folder}/${fileName}`;
 
-  const { error } = await supabase.storage
-    .from(PROPERTY_PHOTOS_BUCKET)
-    .upload(filePath, blob, {
-      cacheControl: "31536000",
-      contentType: blob.type || "image/jpeg",
-      upsert: true,
-    });
+    const { error } = await supabase.storage
+      .from(PROPERTY_PHOTOS_BUCKET)
+      .upload(filePath, blob, {
+        cacheControl: "31536000",
+        contentType: blob.type || "image/jpeg",
+        upsert: true,
+      });
 
-  if (error) {
+    if (error) {
+      console.warn(
+        "Property photo upload skipped. Create the property-photos bucket to save uploaded images.",
+        error
+      );
+
+      return sanitizePhoto(photo, "");
+    }
+
+    const { data } = supabase.storage
+      .from(PROPERTY_PHOTOS_BUCKET)
+      .getPublicUrl(filePath);
+
+    return {
+      ...cleanPhoto,
+      url: data.publicUrl,
+      storagePath: filePath,
+      storedSize: blob.size,
+    };
+  } catch (error) {
     console.warn(
-      "Property photo upload skipped. Create the property-photos bucket to save uploaded images.",
+      "Property photo upload skipped. The property record will still be saved.",
       error
     );
 
     return sanitizePhoto(photo, "");
   }
-
-  const { data } = supabase.storage
-    .from(PROPERTY_PHOTOS_BUCKET)
-    .getPublicUrl(filePath);
-
-  return {
-    ...cleanPhoto,
-    url: data.publicUrl,
-    storagePath: filePath,
-    storedSize: blob.size,
-  };
 }
 
 function sanitizePhoto(photo, fallbackUrl = "") {
