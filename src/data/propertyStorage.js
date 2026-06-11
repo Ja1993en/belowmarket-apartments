@@ -31,7 +31,9 @@ export async function getAnyPropertyById(propertyId) {
 
 export async function createStoredProperty(propertyDraft) {
   const propertyId = await createUniquePropertyId(propertyDraft.name);
-  const property = await preparePropertyForSupabase(propertyDraft, propertyId);
+  const property = await ensureManagementCompanyForProperty(
+    await preparePropertyForSupabase(propertyDraft, propertyId)
+  );
 
   const { error } = await supabase
     .from("properties")
@@ -50,7 +52,9 @@ export async function updateStoredProperty(propertyId, updates, options = {}) {
     id: String(propertyId),
     updated: "Just now",
   };
-  const property = await preparePropertyForSupabase(mergedProperty, propertyId, options);
+  const property = await ensureManagementCompanyForProperty(
+    await preparePropertyForSupabase(mergedProperty, propertyId, options)
+  );
 
   const { error } = await supabase
     .from("properties")
@@ -288,6 +292,61 @@ function mapSupabaseProperty(row) {
   };
 }
 
+async function ensureManagementCompanyForProperty(property) {
+  const managementCompanyName = String(
+    property.managementCompany || property.manager || ""
+  ).trim();
+  const managementCompanyId =
+    String(property.managementCompanyId || "").trim() ||
+    (managementCompanyName ? slugify(managementCompanyName) : "");
+
+  if (!managementCompanyId) {
+    return {
+      ...property,
+      managementCompanyId: "",
+    };
+  }
+
+  const managementCompany = {
+    id: managementCompanyId,
+    name: managementCompanyName || humanizeSlug(managementCompanyId),
+    contactName: "",
+    phone: "",
+    email: "",
+  };
+
+  const { error } = await supabase.from("management_companies").upsert(
+    {
+      id: managementCompany.id,
+      name: managementCompany.name,
+      contact_name: managementCompany.contactName,
+      phone: managementCompany.phone,
+      email: managementCompany.email,
+      data: managementCompany,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) {
+    console.warn(
+      "Management company could not be linked. The property will still be saved.",
+      error
+    );
+
+    return {
+      ...property,
+      managementCompanyId: "",
+    };
+  }
+
+  return {
+    ...property,
+    managementCompanyId,
+    managementCompany: managementCompany.name,
+  };
+}
+
 function sanitizeStoredPhotoList(photos) {
   return photos
     .map((photo) => sanitizePhoto(photo, getStoredImageUrl(getPhotoImageUrl(photo))))
@@ -426,4 +485,11 @@ function slugify(value) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function humanizeSlug(value) {
+  return String(value || "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    .trim();
 }
