@@ -89,7 +89,7 @@ export async function migrateLegacyLocalPropertiesToSupabase(options = {}) {
       id: propertyId,
       updated: "Migrated from browser storage",
     }, {
-      uploadPhotos: false,
+      uploadPhotos: true,
     });
 
     migratedProperties.push(savedProperty);
