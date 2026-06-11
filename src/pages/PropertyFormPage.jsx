@@ -49,13 +49,13 @@ const emptyPropertyDraft = {
   bedrooms: "",
 };
 
-const MAX_UPLOAD_COUNT = 8;
-const MAX_FLOOR_PLAN_UPLOAD_COUNT = 4;
+const MAX_UPLOAD_COUNT = 6;
+const MAX_FLOOR_PLAN_UPLOAD_COUNT = 3;
 const MAX_UPLOAD_SIZE = 12 * 1024 * 1024;
-const PROPERTY_PHOTO_MAX_DIMENSION = 900;
-const FLOOR_PLAN_PHOTO_MAX_DIMENSION = 700;
-const PROPERTY_PHOTO_TARGET_BYTES = 95 * 1024;
-const FLOOR_PLAN_PHOTO_TARGET_BYTES = 70 * 1024;
+const PROPERTY_PHOTO_MAX_DIMENSION = 760;
+const FLOOR_PLAN_PHOTO_MAX_DIMENSION = 620;
+const PROPERTY_PHOTO_TARGET_BYTES = 45 * 1024;
+const FLOOR_PLAN_PHOTO_TARGET_BYTES = 38 * 1024;
 const LEASING_WEEKS_PER_MONTH = 4;
 const WEEKS_FREE_OPTIONS = Array.from({ length: 25 }, (_, index) => index * 0.5);
 const LEASE_TERM_OPTIONS = ["6", "9", "12", "13", "14", "15", "18"];
@@ -435,7 +435,7 @@ export default function PropertyFormPage() {
     if (savedProperty) {
       navigate(`/admin/properties/${savedProperty.id}`);
     } else {
-      setSaveError("Could not save this property. Try deleting more photos, then save again.");
+      setSaveError("Could not save this property because the browser photo storage is full. Remove a few gallery photos or save the listing without photos first.");
     }
   };
 
@@ -1300,15 +1300,12 @@ function savePropertyWithPhotoFallback({ isEditing, propertyId, propertyPayload 
 }
 
 function createStorageSafePhotoPayload(propertyPayload) {
-  const propertyPhotos = (propertyPayload.photos || []).slice(0, 4);
+  const propertyPhotos = (propertyPayload.photos || []).slice(0, 2);
   const floorPlans = (propertyPayload.floorPlans || []).map((floorPlan) => {
-    const floorPlanPhotos = (floorPlan.photos || []).slice(0, 1);
-    const floorPlanImage = getPhotoImageUrl(floorPlanPhotos[0]) || "";
-
     return {
       ...floorPlan,
-      photos: floorPlanPhotos,
-      image: floorPlanImage,
+      photos: [],
+      image: "",
     };
   });
 

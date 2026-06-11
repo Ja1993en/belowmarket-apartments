@@ -7,6 +7,10 @@ import {
 const STORAGE_KEY = "belowMarketProperties";
 const CUSTOM_PROPERTIES_KEY = "belowMarketCustomProperties";
 const DELETED_PROPERTIES_KEY = "belowMarketDeletedProperties";
+const MAX_QUOTA_SAFE_PROPERTY_PHOTOS = 4;
+const MAX_QUOTA_SAFE_FLOOR_PLAN_PHOTOS = 1;
+const MAX_QUOTA_SAFE_OTHER_PROPERTY_PHOTOS = 1;
+const MAX_QUOTA_SAFE_PHOTO_BYTES = 140 * 1024;
 
 const DEFAULT_PROPERTY_IMAGE =
   "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80";
@@ -59,10 +63,7 @@ export function updateStoredProperty(propertyId, updates) {
         : property
     );
 
-    localStorage.setItem(
-      CUSTOM_PROPERTIES_KEY,
-      JSON.stringify(updatedCustomProperties)
-    );
+    writeCustomProperties(updatedCustomProperties, propertyId);
 
     return getAnyPropertyById(propertyId);
   }
@@ -91,11 +92,8 @@ export function deleteStoredProperty(propertyId) {
   );
 
   if (customProperty) {
-    localStorage.setItem(
-      CUSTOM_PROPERTIES_KEY,
-      JSON.stringify(
-        customProperties.filter((property) => property.id !== normalizedPropertyId)
-      )
+    writeCustomProperties(
+      customProperties.filter((property) => property.id !== normalizedPropertyId)
     );
   }
 
@@ -158,12 +156,162 @@ export function createStoredProperty(propertyDraft) {
     updated: "Just now",
   };
 
-  localStorage.setItem(
-    CUSTOM_PROPERTIES_KEY,
-    JSON.stringify([...customProperties, property])
-  );
+  writeCustomProperties([...customProperties, property], propertyId);
 
   return property;
+}
+
+function writeCustomProperties(properties, preferredPropertyId = "") {
+  const normalizedPreferredPropertyId = String(preferredPropertyId || "");
+
+  try {
+    localStorage.setItem(CUSTOM_PROPERTIES_KEY, JSON.stringify(properties));
+    return;
+  } catch (error) {
+    if (!isQuotaExceededError(error)) {
+      throw error;
+    }
+  }
+
+  const quotaSafeProperties = compactPropertiesForQuota(
+    properties,
+    normalizedPreferredPropertyId
+  );
+
+  try {
+    localStorage.setItem(
+      CUSTOM_PROPERTIES_KEY,
+      JSON.stringify(quotaSafeProperties)
+    );
+    console.warn(
+      "Property photos were compacted because browser storage is almost full."
+    );
+    return;
+  } catch (error) {
+    if (!isQuotaExceededError(error)) {
+      throw error;
+    }
+  }
+
+  localStorage.setItem(
+    CUSTOM_PROPERTIES_KEY,
+    JSON.stringify(
+      quotaSafeProperties.map((property) =>
+        stripPropertyPhotosForQuota(property, normalizedPreferredPropertyId)
+      )
+    )
+  );
+  console.warn(
+    "Property photos were reduced because browser storage quota was exceeded."
+  );
+}
+
+function compactPropertiesForQuota(properties, preferredPropertyId) {
+  return properties.map((property) => {
+    const isPreferredProperty = String(property.id) === preferredPropertyId;
+    const maxPropertyPhotos = isPreferredProperty
+      ? MAX_QUOTA_SAFE_PROPERTY_PHOTOS
+      : MAX_QUOTA_SAFE_OTHER_PROPERTY_PHOTOS;
+
+    const photos = compactPhotoList(property.photos, maxPropertyPhotos);
+    const floorPlans = (property.floorPlans || []).map((floorPlan) => {
+      const floorPlanPhotos = compactPhotoList(
+        floorPlan.photos,
+        isPreferredProperty ? MAX_QUOTA_SAFE_FLOOR_PLAN_PHOTOS : 0
+      );
+
+      return {
+        ...floorPlan,
+        photos: floorPlanPhotos,
+        image: getPhotoImageUrl(floorPlanPhotos[0]) || getExternalImageUrl(floorPlan.image),
+      };
+    });
+
+    return {
+      ...property,
+      photos,
+      image: getPhotoImageUrl(photos[0]) || getExternalImageUrl(property.image),
+      floorPlans,
+    };
+  });
+}
+
+function stripPropertyPhotosForQuota(property, preferredPropertyId) {
+  const isPreferredProperty = String(property.id) === preferredPropertyId;
+  const photos = isPreferredProperty ? compactPhotoList(property.photos, 1) : [];
+
+  return {
+    ...property,
+    photos,
+    image: getPhotoImageUrl(photos[0]) || getExternalImageUrl(property.image),
+    floorPlans: (property.floorPlans || []).map((floorPlan) => ({
+      ...floorPlan,
+      photos: [],
+      image: getExternalImageUrl(floorPlan.image),
+    })),
+  };
+}
+
+function compactPhotoList(photos = [], limit) {
+  if (limit <= 0) return [];
+
+  return photos
+    .map((photo) => sanitizePhotoForQuota(photo))
+    .filter((photo) => getPhotoImageUrl(photo))
+    .filter((photo) => !isOversizedDataUrl(getPhotoImageUrl(photo)))
+    .slice(0, limit);
+}
+
+function sanitizePhotoForQuota(photo) {
+  const photoUrl = getPhotoImageUrl(photo);
+
+  return {
+    id: photo?.id,
+    name: photo?.name,
+    category: photo?.category,
+    url: photoUrl,
+    originalSize: photo?.originalSize,
+    storedSize: photo?.storedSize,
+  };
+}
+
+function getPhotoImageUrl(photo) {
+  return [
+    photo?.url,
+    photo?.src,
+    photo?.dataUrl,
+    photo?.previewUrl,
+    photo?.image,
+  ].find(Boolean) || "";
+}
+
+function getExternalImageUrl(imageUrl) {
+  if (!imageUrl || isDataUrl(imageUrl)) return "";
+
+  return imageUrl;
+}
+
+function isOversizedDataUrl(value) {
+  return isDataUrl(value) && getDataUrlByteSize(value) > MAX_QUOTA_SAFE_PHOTO_BYTES;
+}
+
+function isDataUrl(value) {
+  return String(value || "").startsWith("data:");
+}
+
+function getDataUrlByteSize(dataUrl) {
+  const base64Value = String(dataUrl).split(",")[1] || "";
+
+  return Math.ceil((base64Value.length * 3) / 4);
+}
+
+function isQuotaExceededError(error) {
+  return (
+    error?.name === "QuotaExceededError" ||
+    error?.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+    error?.code === 22 ||
+    error?.code === 1014
+  );
 }
 
 function normalizePropertyCompany(property) {
