@@ -742,7 +742,7 @@ export default function PublicPropertyListing() {
                                                         : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
                                                         }`}
                                                 >
-                                                    {filter}
+                                                    {formatBedroomLabel(filter)}
                                                 </button>
                                             ))}
                                         </div>
@@ -1228,7 +1228,7 @@ export default function PublicPropertyListing() {
                             </h2>
 
                             <p className="mt-2 text-[#526260]">
-                                {selectedFloorPlan.beds} • {selectedFloorPlan.baths} • {selectedFloorPlan.sqft}
+                                {formatBedroomLabel(selectedFloorPlan.beds)} • {selectedFloorPlan.baths} • {selectedFloorPlan.sqft}
                             </p>
 
 
@@ -2514,7 +2514,7 @@ function FloorPlanCard({
                             </p>
 
                             <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                {beds} • {baths} • {sqft}
+                                {formatBedroomLabel(beds)} • {baths} • {sqft}
                             </p>
                         </div>
 
@@ -2601,6 +2601,22 @@ function FloorPlanMetric({ label, value, highlight = false }) {
             <p className="mt-0.5 truncate text-sm font-black">{value}</p>
         </div>
     );
+}
+
+function formatBedroomLabel(value) {
+    const normalizedValue = String(value || "").trim();
+    if (!normalizedValue || normalizedValue === "Not set") return "Beds not listed";
+    if (normalizedValue === "All") return "All";
+    if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
+    if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
+
+    const bedMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)\s*beds?$/i);
+    if (bedMatch) return `${bedMatch[1]} bd`;
+
+    const numberMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)$/);
+    if (numberMatch) return `${numberMatch[1]} bd`;
+
+    return normalizedValue;
 }
 
 function parseCurrency(value) {
@@ -2706,8 +2722,8 @@ function getRenterDecisionFacts({
     ];
     const bedSummary =
         bedLabels.length > 0
-            ? bedLabels.join(", ")
-            : property?.bedrooms?.join(", ") || "Beds not listed";
+            ? bedLabels.map(formatBedroomLabel).join(", ")
+            : (property?.bedrooms || []).map(formatBedroomLabel).join(", ") || "Beds not listed";
     const feeLabel = property?.requiredMonthlyFees || property?.monthlyFees || "";
     const feeQuestions = feeLabel
         ? ["What is included?", "Parking", "Utilities", "Deposit"]

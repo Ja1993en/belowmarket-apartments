@@ -254,7 +254,7 @@ export default function RenterPropertiesList() {
                 <HeroMetric
                   icon={BedDouble}
                   label="Bedrooms"
-                  value={lead.bedrooms}
+                  value={formatBedroomLabel(lead.bedrooms)}
                 />
                 <HeroMetric
                   icon={PiggyBank}
@@ -461,6 +461,21 @@ function HeroMetric({ icon: Icon, label, value }) {
       <p className="mt-1 font-black text-white">{value}</p>
     </div>
   );
+}
+
+function formatBedroomLabel(value) {
+  const normalizedValue = String(value || "").trim();
+  if (!normalizedValue) return "Bedrooms not listed";
+  if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
+  if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
+
+  const bedMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)\s*beds?$/i);
+  if (bedMatch) return `${bedMatch[1]} bd`;
+
+  const numberMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)$/);
+  if (numberMatch) return `${numberMatch[1]} bd`;
+
+  return normalizedValue;
 }
 
 function RecommendedPropertyCard({

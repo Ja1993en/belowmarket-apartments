@@ -871,7 +871,7 @@ function getBedsLabel(property, matchedFloorPlan) {
     }
 
     if (uniqueBeds.length === 1) {
-        return uniqueBeds[0];
+        return formatBedroomLabel(uniqueBeds[0]);
     }
 
     const firstBed = uniqueBeds[0];
@@ -880,18 +880,18 @@ function getBedsLabel(property, matchedFloorPlan) {
     const lastCount = getBedroomCount(lastBed);
 
     if (firstCount === 0 && lastCount === 1) {
-        return "Studio - 1 Bed";
+        return "Studio - 1 bd";
     }
 
     if (firstCount === 0 && lastCount > 1) {
-        return `Studio - ${lastCount} Beds`;
+        return `Studio - ${lastCount} bd`;
     }
 
     if (firstCount > 0 && lastCount > firstCount) {
-        return `${firstCount}-${lastCount} Beds`;
+        return `${firstCount}-${lastCount} bd`;
     }
 
-    return `${firstBed} - ${lastBed}`;
+    return `${formatBedroomLabel(firstBed)} - ${formatBedroomLabel(lastBed)}`;
 }
 
 function getBedroomCount(value) {
@@ -901,6 +901,21 @@ function getBedroomCount(value) {
 
     const match = String(value).match(/\d+/);
     return match ? Number(match[0]) : 99;
+}
+
+function formatBedroomLabel(value) {
+    const normalizedValue = String(value || "").trim();
+    if (!normalizedValue) return "Bedrooms not listed";
+    if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
+    if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
+
+    const bedMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)\s*beds?$/i);
+    if (bedMatch) return `${bedMatch[1]} bd`;
+
+    const numberMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)$/);
+    if (numberMatch) return `${numberMatch[1]} bd`;
+
+    return normalizedValue;
 }
 
 function getAddressLabel(property) {

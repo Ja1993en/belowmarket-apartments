@@ -1190,9 +1190,24 @@ function getPrimaryRentLabel(property) {
 function getBedsLabel(property) {
   const bedrooms = property.bedrooms || [];
   if (bedrooms.length === 0) return "Beds";
-  if (bedrooms.length === 1) return bedrooms[0];
+  if (bedrooms.length === 1) return formatBedroomLabel(bedrooms[0]);
 
-  return `${bedrooms[0]}+`;
+  return `${formatBedroomLabel(bedrooms[0])}+`;
+}
+
+function formatBedroomLabel(value) {
+  const normalizedValue = String(value || "").trim();
+  if (!normalizedValue) return "Beds";
+  if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
+  if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
+
+  const bedMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)\s*beds?$/i);
+  if (bedMatch) return `${bedMatch[1]} bd`;
+
+  const match = normalizedValue.match(/^(\d+(?:\.\d+)?)$/);
+  if (match) return `${match[1]} bd`;
+
+  return normalizedValue;
 }
 
 function getMapPinPosition(index) {
