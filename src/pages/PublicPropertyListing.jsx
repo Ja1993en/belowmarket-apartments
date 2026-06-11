@@ -692,15 +692,15 @@ export default function PublicPropertyListing() {
                                     <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
                                         <div>
                                             <p className="text-sm font-black text-[#1f6f63]">
-                                                Renter decision snapshot
+                                                Quick renter snapshot
                                             </p>
                                             <h2 className="mt-1 text-2xl font-black text-[#102426]">
-                                                What to know before you tour
+                                                Before you tour
                                             </h2>
                                         </div>
 
                                         <p className="max-w-md text-sm font-semibold leading-6 text-[#526260]">
-                                            These facts are pulled from the listing data so renters can compare price, schools, availability, and fees faster.
+                                            Key details to confirm before you tour or apply.
                                         </p>
                                     </div>
 
@@ -711,6 +711,7 @@ export default function PublicPropertyListing() {
                                                 label={fact.label}
                                                 value={fact.value}
                                                 detail={fact.detail}
+                                                detailLines={fact.detailLines}
                                                 tone={fact.tone}
                                             />
                                         ))}
@@ -2634,7 +2635,7 @@ function PriceCompareCard({ label, price, note }) {
     );
 }
 
-function RenterDecisionFactCard({ label, value, detail, tone = "default" }) {
+function RenterDecisionFactCard({ label, value, detail, detailLines = [], tone = "default" }) {
     const toneClass = {
         default: "bg-[#f5f8f1] text-[#102426] ring-[#d7e6df]",
         deal: "bg-[#fff8e6] text-[#102426] ring-[#f2d08a]",
@@ -2655,6 +2656,19 @@ function RenterDecisionFactCard({ label, value, detail, tone = "default" }) {
             <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
                 {detail}
             </p>
+
+            {detailLines.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                    {detailLines.map((line) => (
+                        <span
+                            key={line}
+                            className="rounded-full bg-white/70 px-3 py-1 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]"
+                        >
+                            {line}
+                        </span>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -2674,7 +2688,6 @@ function getRenterDecisionFacts({
     hasPropertySpecial,
     listingFloorPlans,
     managementLabel,
-    marketRentLabel,
     property,
     propertySpecialLabel,
     savingsLabel,
@@ -2694,58 +2707,59 @@ function getRenterDecisionFacts({
             ? bedLabels.join(", ")
             : property?.bedrooms?.join(", ") || "Beds not listed";
     const feeLabel = property?.requiredMonthlyFees || property?.monthlyFees || "";
-    const locationAccuracy =
-        property?.mapAccuracy === "approximate"
-            ? "Approximate until the full street address is added"
-            : "Address and map pin are available";
-    const marketComparison = marketRentLabel && marketRentLabel !== "Not listed"
-        ? `Market comparison listed at ${marketRentLabel}.`
-        : "Market comparison is not listed yet.";
+    const feeQuestions = feeLabel
+        ? ["What is included?", "Parking", "Utilities", "Deposit"]
+        : ["Monthly fees", "Parking", "Utilities", "Deposit", "Admin/app fees"];
+    const schoolLabel = schoolSnapshot.districtGrade
+        ? `${schoolSnapshot.district} (${schoolSnapshot.districtGrade})`
+        : schoolSnapshot.district;
 
     return [
         {
-            label: "Rent renter should compare",
+            label: "Estimated monthly value",
             value: effectiveRentLabel || startingRentLabel,
             detail: effectiveRentLabel
-                ? `Normal listed rent starts at ${startingRentLabel}. Effective rent reflects the listed special, not necessarily the monthly amount due.`
-                : `No effective rent is listed, so renters should compare the normal rent of ${startingRentLabel}.`,
+                ? `Base rent starts at ${startingRentLabel}. Specials may lower the estimated effective rent, but your monthly payment may still be based on base rent plus fees.`
+                : `Base rent starts at ${startingRentLabel}. Ask leasing for required monthly fees before comparing total cost.`,
             tone: hasPropertySpecial ? "deal" : "default",
         },
         {
-            label: "Special and savings",
+            label: "Current special",
             value: hasPropertySpecial ? propertySpecialLabel : "No active special",
             detail: hasPropertySpecial
-                ? `${savingsLabel || "Savings not calculated"} shown from current listing data. Confirm whether the credit is applied upfront or across the lease.`
-                : "This listing is currently shown without a concession, so the rent range is the main comparison point.",
+                ? `${savingsLabel || "Savings not calculated"} estimated from listing data. Ask whether the credit is applied upfront, monthly, or to your resident account.`
+                : "No concession is listed, so compare the regular rent and required fees.",
             tone: hasPropertySpecial ? "deal" : "default",
         },
         {
-            label: "Floor plans available",
+            label: "Availability",
             value: `${floorPlanCount} layout${floorPlanCount === 1 ? "" : "s"}`,
             detail:
                 totalAvailableUnits > 0
-                    ? `${totalAvailableUnits} listed unit${totalAvailableUnits === 1 ? "" : "s"} across ${bedSummary}.`
+                    ? `${totalAvailableUnits} listed unit${totalAvailableUnits === 1 ? "" : "s"} across ${bedSummary}. Confirm the unit is still available before touring.`
                     : `Available bedroom types: ${bedSummary}. Request current unit availability before touring.`,
         },
         {
-            label: "Fees to ask about",
+            label: "Ask before applying",
             value: feeLabel || "Confirm fees",
             detail: feeLabel
-                ? `Listed required monthly fees are ${feeLabel}. Ask what is included, such as amenities, valet trash, pest control, or parking.`
-                : "Ask for required monthly add-ons, one-time fees, deposit, parking, utilities, and whether specials apply to base rent only.",
+                ? `Listed required monthly fees are ${feeLabel}. Confirm what is included before applying.`
+                : "Confirm required monthly add-ons, one-time fees, and whether specials apply to base rent only.",
+            detailLines: feeQuestions,
             tone: feeLabel ? "deal" : "caution",
         },
         {
-            label: "Schools",
-            value: `${schoolSnapshot.district} (${schoolSnapshot.districtGrade})`,
-            detail: "School grades and attendance zones should be verified with the district before applying.",
+            label: "School district",
+            value: schoolLabel,
+            detail: "Verify school zones directly with the district before applying.",
             tone: "school",
         },
         {
-            label: "Property context",
-            value: property?.yearBuilt ? `Built ${property.yearBuilt}` : managementLabel,
-            detail: `${managementLabel}. ${marketComparison} ${locationAccuracy}.`,
-            tone: property?.mapAccuracy === "approximate" ? "caution" : "default",
+            label: "Managed by",
+            value: managementLabel,
+            detail: property?.yearBuilt
+                ? `Property built in ${property.yearBuilt}. Ask about renovations, package fees, parking, and maintenance response times.`
+                : "Ask about maintenance response times, package fees, parking, and resident charges.",
         },
     ];
 }
