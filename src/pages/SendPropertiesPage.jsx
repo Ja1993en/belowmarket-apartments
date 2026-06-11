@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CheckCircle2, Copy, ExternalLink, Search, Send } from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, MessageSquare, Search, Send } from "lucide-react";
 import { getAnyLeadById, updateLocalLead } from "../data/leadStorage";
 import { getAllProperties } from "../data/propertyStorage";
 import { getPropertyPrimaryImage } from "../data/propertySearchData";
@@ -171,8 +171,8 @@ export default function SendPropertiesPage() {
     }
   };
 
-  const saveSelections = async () => {
-    if (!lead) return;
+  const saveSelections = async (options = {}) => {
+    if (!lead) return false;
 
     const updates = {
       recommendedPropertyIds: selectedPropertyIds,
@@ -192,10 +192,14 @@ export default function SendPropertiesPage() {
       }
 
       setLead({ ...lead, ...updates });
-      setSaveMessage("Recommendations saved. You can preview the renter page now.");
+      setSaveMessage(
+        options.successMessage || "Recommendations saved. You can preview the renter page now."
+      );
+      return true;
     } catch (error) {
       console.error(error);
       setSaveError("Could not save recommendations. Please try again.");
+      return false;
     } finally {
       setIsSavingSelections(false);
     }
@@ -206,6 +210,30 @@ export default function SendPropertiesPage() {
 
     await navigator.clipboard.writeText(recommendationUrl);
     alert("Recommendation link copied.");
+  };
+
+  const textRecommendationsToRenter = async () => {
+    if (!lead) return;
+
+    if (selectedPropertyIds.length === 0) {
+      setSaveError("Select at least one property before texting the renter.");
+      return;
+    }
+
+    const wasSaved = await saveSelections({
+      successMessage: "Recommendations saved. Opening your text message now.",
+    });
+
+    if (!wasSaved) return;
+
+    window.location.href = getRecommendationSmsHref(
+      lead.phone,
+      buildRecommendationText({
+        lead,
+        recommendationUrl,
+        selectedProperties,
+      })
+    );
   };
 
   if (isLoadingLead) {
@@ -439,7 +467,7 @@ export default function SendPropertiesPage() {
 
             <button
               type="button"
-              onClick={saveSelections}
+              onClick={() => saveSelections()}
               disabled={isSavingSelections}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
@@ -447,6 +475,16 @@ export default function SendPropertiesPage() {
             </button>
 
             <div className="mt-4 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={textRecommendationsToRenter}
+                disabled={isSavingSelections || selectedPropertyIds.length === 0}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Text Renter
+              </button>
+
               <button
                 onClick={copyRecommendationLink}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
@@ -512,6 +550,24 @@ function PropertyBadge({ label }) {
       {label}
     </span>
   );
+}
+
+function buildRecommendationText({ lead, recommendationUrl, selectedProperties }) {
+  const propertyNames = selectedProperties
+    .map((property) => property.name)
+    .filter(Boolean)
+    .join(", ");
+  const propertyPhrase = propertyNames
+    ? `: ${propertyNames}`
+    : "";
+
+  return `Hi ${lead.name}, I put together ${selectedProperties.length} apartment option${selectedProperties.length === 1 ? "" : "s"} for you${propertyPhrase}. View them here: ${recommendationUrl}. Reply with the ones you like and I can help schedule tours.`;
+}
+
+function getRecommendationSmsHref(phone, message) {
+  const cleanedPhone = String(phone || "").replace(/[^\d+]/g, "");
+
+  return `sms:${cleanedPhone}?&body=${encodeURIComponent(message)}`;
 }
 
 function InfoRow({ label, value }) {
