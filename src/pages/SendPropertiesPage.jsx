@@ -313,6 +313,20 @@ export default function SendPropertiesPage() {
                   {selectedPropertyIds.length} selected
                 </span>
 
+                <button
+                  type="button"
+                  onClick={textRecommendationsToRenter}
+                  disabled={isSavingSelections || selectedPropertyIds.length === 0}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0] md:w-auto"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Text Selected Properties
+                </button>
+
+                <p className="max-w-xs text-xs font-semibold text-slate-500 md:text-right">
+                  Opens your text app with the renter link and selected property names.
+                </p>
+
                 {isSavingSelections && (
                   <p className="text-sm font-bold text-slate-500">
                     Saving recommendations...
