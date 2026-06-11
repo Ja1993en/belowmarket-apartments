@@ -82,7 +82,7 @@ export default function HomePage() {
                             to="/start"
                             className="rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] lg:hidden"
                         >
-                            Start
+                            Locator
                         </Link>
                     </div>
 
