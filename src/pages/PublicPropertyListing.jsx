@@ -1741,35 +1741,35 @@ function getCleanNearbyPlaceLabel(place) {
 
 function SchoolSnapshotCard({ schoolSnapshot }) {
     return (
-        <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-            <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-stretch">
-                <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-                    <div className="flex items-start justify-between gap-4">
-                        <div>
-                            <p className="text-sm font-black text-[#1f6f63]">
-                                School District
-                            </p>
-                            <h2 className="mt-1 text-2xl font-black leading-tight text-[#102426]">
-                                {schoolSnapshot.district}
-                            </h2>
-                        </div>
-
-                        <span className={`shrink-0 rounded-2xl px-3 py-2 text-sm font-black ${getSchoolGradeClass(schoolSnapshot.districtGrade)}`}>
+        <div className="rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                    <p className="text-sm font-black text-[#1f6f63]">
+                        School District
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-3">
+                        <h2 className="text-2xl font-black leading-tight text-[#102426]">
+                            {schoolSnapshot.district}
+                        </h2>
+                        <span className={`rounded-2xl px-3 py-2 text-sm font-black ${getSchoolGradeClass(schoolSnapshot.districtGrade)}`}>
                             {schoolSnapshot.districtGrade}
                         </span>
                     </div>
+                    <p className="mt-2 text-sm font-semibold text-[#526260]">
+                        Location-based school guidance. Verify attendance zones before applying.
+                    </p>
                 </div>
 
-                <div className="grid gap-3 md:grid-cols-3">
-                    {schoolSnapshot.schools.map((school) => (
-                        <SchoolGradeItem key={`${school.level}-${school.name}`} school={school} />
-                    ))}
-                </div>
+                <p className="rounded-2xl bg-[#f5f8f1] px-4 py-3 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df] lg:max-w-sm">
+                    {schoolSnapshot.note}
+                </p>
             </div>
 
-            <p className="mt-4 rounded-2xl bg-[#f5f8f1] p-3 text-xs font-semibold leading-5 text-[#526260]">
-                {schoolSnapshot.note}
-            </p>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+                {schoolSnapshot.schools.map((school) => (
+                    <SchoolGradeItem key={`${school.level}-${school.name}`} school={school} />
+                ))}
+            </div>
         </div>
     );
 }
@@ -1792,11 +1792,9 @@ function SchoolGradeItem({ school }) {
                 </span>
             </div>
 
-            {school.note && (
-                <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
-                    {school.note}
-                </p>
-            )}
+            <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
+                Confirm with district
+            </p>
         </div>
     );
 }
