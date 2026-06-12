@@ -2,6 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Building2, MapPin, Navigation, Search, Tag } from "lucide-react";
 import { getAllProperties } from "../data/propertyStorage";
+import {
+  getComparePropertyIds,
+  getSavedPropertyIds,
+  toggleComparePropertyId,
+  toggleSavedPropertyId,
+} from "../data/renterPreferenceStorage";
 
 import {
   getPropertyAddressLabel,
@@ -34,6 +40,8 @@ export default function PropertySearchPage() {
   const [mappableSearchProperties, setMappableSearchProperties] = useState([]);
   const [allProperties, setAllProperties] = useState([]);
   const [propertyLoadError, setPropertyLoadError] = useState("");
+  const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
+  const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
     () =>
@@ -86,6 +94,15 @@ export default function PropertySearchPage() {
   const suggestions = useMemo(
     () => getPropertySearchSuggestions(properties, searchTerm),
     [properties, searchTerm]
+  );
+  const compareProperties = useMemo(
+    () =>
+      comparePropertyIds
+        .map((propertyId) =>
+          properties.find((property) => property.id === propertyId)
+        )
+        .filter(Boolean),
+    [comparePropertyIds, properties]
   );
 
   useEffect(() => {
@@ -374,9 +391,80 @@ export default function PropertySearchPage() {
           </Link>
         </div>
 
+        {compareProperties.length > 0 && (
+          <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
+            <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+              <div>
+                <p className="text-sm font-black text-[#1f6f63]">
+                  Compare saved options
+                </p>
+                <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                  Side-by-side renter value
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.setItem("bmaComparePropertyIds", "[]");
+                  setComparePropertyIds([]);
+                }}
+                className="w-fit rounded-2xl bg-[#fff0ea] px-4 py-3 text-sm font-black text-[#e4572e] hover:bg-[#fde8df]"
+              >
+                Clear compare
+              </button>
+            </div>
+
+            <div className="mt-4 overflow-x-auto pb-1">
+              <div className="grid min-w-[720px] gap-3 md:grid-cols-4">
+                {compareProperties.map((property) => {
+                  const priceSummary = getPropertySearchPriceSummary(property);
+
+                  return (
+                    <div
+                      key={property.id}
+                      className="rounded-2xl bg-[#f5f8f1] p-4"
+                    >
+                      <p className="truncate text-sm font-black text-[#102426]">
+                        {property.name}
+                      </p>
+                      <CompareMetric
+                        label="Deal score"
+                        value={`${getSearchDealScore(property, priceSummary)}/100`}
+                      />
+                      <CompareMetric
+                        label="Effective"
+                        value={priceSummary.effectiveRentLabel}
+                      />
+                      <CompareMetric
+                        label="Normal"
+                        value={priceSummary.normalRentLabel}
+                      />
+                      <CompareMetric
+                        label="Special"
+                        value={priceSummary.specialLabel || "None listed"}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredProperties.map((property) => (
-            <SearchResultCard key={property.id} property={property} />
+            <SearchResultCard
+              key={property.id}
+              property={property}
+              isSaved={savedPropertyIds.includes(property.id)}
+              isCompared={comparePropertyIds.includes(property.id)}
+              onToggleSaved={() =>
+                setSavedPropertyIds(toggleSavedPropertyId(property.id))
+              }
+              onToggleCompare={() =>
+                setComparePropertyIds(toggleComparePropertyId(property.id))
+              }
+            />
           ))}
         </div>
 
@@ -768,32 +856,50 @@ function FallbackSearchMap({ properties }) {
   );
 }
 
-function SearchResultCard({ property }) {
+function SearchResultCard({
+  property,
+  isSaved,
+  isCompared,
+  onToggleSaved,
+  onToggleCompare,
+}) {
   const addressLabel = getPropertyAddressLabel(property);
   const priceSummary = getPropertySearchPriceSummary(property);
   const hasSpecial = priceSummary.hasSpecial;
   const showNetEffectiveRent = priceSummary.hasRentSpecial;
+  const dealScore = getSearchDealScore(property, priceSummary);
+  const transparencyBadges = getSearchTransparencyBadges(property, priceSummary);
+  const monthlyBreakdown = getSearchMonthlyBreakdown(property, priceSummary);
   const cardHref = `/properties/${property.id}`;
 
   return (
-    <Link
-      to={cardHref}
-      className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md"
-    >
-      <img
-        src={getPropertyPrimaryImage(property)}
-        alt={property.name}
-        className="aspect-[16/10] w-full object-cover"
-      />
+    <article className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md">
+      <Link to={cardHref} className="block">
+        <div className="relative">
+          <img
+            src={getPropertyPrimaryImage(property)}
+            alt={property.name}
+            className="aspect-[16/10] w-full object-cover"
+          />
+          <div className="absolute left-3 top-3 rounded-2xl bg-[#173f3f] px-3 py-2 text-white shadow-lg">
+            <p className="text-[10px] font-black uppercase tracking-[0.08em] text-[#f9d783]">
+              Deal Score
+            </p>
+            <p className="text-xl font-black">{dealScore}/100</p>
+          </div>
+        </div>
+      </Link>
 
       <div className="p-4">
-        <p className="truncate text-lg font-black text-[#102426]">
-          {property.name}
-        </p>
-        <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260]">
-          <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63]" />
-          <span className="truncate">{addressLabel}</span>
-        </p>
+        <Link to={cardHref} className="block">
+          <p className="truncate text-lg font-black text-[#102426]">
+            {property.name}
+          </p>
+          <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260]">
+            <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63]" />
+            <span className="truncate">{addressLabel}</span>
+          </p>
+        </Link>
 
         <div className="mt-4 flex items-end justify-between gap-3">
           <div className="min-w-0">
@@ -817,14 +923,55 @@ function SearchResultCard({ property }) {
           </p>
         </div>
 
+        <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#f5f8f1] p-3">
+          <MiniBreakdown label="Monthly due" value={monthlyBreakdown.monthlyDue} />
+          <MiniBreakdown label="Base rent" value={monthlyBreakdown.baseRent} />
+        </div>
+
         {hasSpecial && (
           <p className="mt-3 flex items-center gap-2 rounded-xl bg-[#fff8e6] px-3 py-2 text-sm font-black text-[#102426] ring-1 ring-[#f2d08a]">
             <Tag className="h-4 w-4 shrink-0 text-[#8a5b0a]" />
             <span className="truncate">{priceSummary.specialLabel}</span>
           </p>
         )}
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {transparencyBadges.map((badge) => (
+            <span
+              key={badge}
+              className="rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black text-[#1f6f63]"
+            >
+              {badge}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onToggleSaved}
+            className={`rounded-xl px-3 py-3 text-sm font-black ${
+              isSaved
+                ? "bg-[#173f3f] text-white"
+                : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
+            }`}
+          >
+            {isSaved ? "Saved" : "Save"}
+          </button>
+          <button
+            type="button"
+            onClick={onToggleCompare}
+            className={`rounded-xl px-3 py-3 text-sm font-black ${
+              isCompared
+                ? "bg-[#f2b84b] text-[#102426]"
+                : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
+            }`}
+          >
+            {isCompared ? "Comparing" : "Compare"}
+          </button>
+        </div>
       </div>
-    </Link>
+    </article>
   );
 }
 
@@ -862,6 +1009,24 @@ function loadMapboxGl() {
     mapboxScript.addEventListener("error", reject, { once: true });
     document.head.appendChild(mapboxScript);
   });
+}
+
+function MiniBreakdown({ label, value }) {
+  return (
+    <div>
+      <p className="text-[10px] font-black uppercase text-[#526260]">{label}</p>
+      <p className="mt-1 truncate text-sm font-black text-[#102426]">{value}</p>
+    </div>
+  );
+}
+
+function CompareMetric({ label, value }) {
+  return (
+    <div className="mt-3 border-t border-[#d7e6df] pt-3">
+      <p className="text-[10px] font-black uppercase text-[#526260]">{label}</p>
+      <p className="mt-1 text-sm font-black text-[#102426]">{value}</p>
+    </div>
+  );
 }
 
 async function resolveMappableProperties(properties) {
@@ -1226,6 +1391,62 @@ function getPropertySearchPriceSummary(property) {
   };
 }
 
+function getSearchDealScore(property, priceSummary) {
+  const normalRent = parseFirstCurrency(priceSummary.normalRentLabel);
+  const effectiveRent = parseFirstCurrency(priceSummary.effectiveRentLabel);
+  const savings = normalRent && effectiveRent ? Math.max(normalRent - effectiveRent, 0) : 0;
+  const savingsPercent = normalRent ? savings / normalRent : 0;
+  const hasPhotos = Boolean(getPropertyPrimaryImage(property));
+  const hasAddress = Boolean(getPropertyAddressLabel(property));
+  const hasFloorPlans = property?.floorPlans?.length > 0;
+  const hasFees = Boolean(property?.requiredMonthlyFees || property?.monthlyFees);
+
+  let score = 58;
+  if (priceSummary.hasRentSpecial) score += 18;
+  if (savingsPercent >= 0.08) score += 10;
+  if (savingsPercent >= 0.14) score += 6;
+  if (hasFees) score += 4;
+  if (hasFloorPlans) score += 4;
+  if (hasPhotos) score += 3;
+  if (hasAddress) score += 3;
+
+  return Math.max(40, Math.min(98, Math.round(score)));
+}
+
+function getSearchTransparencyBadges(property, priceSummary) {
+  const badges = [];
+
+  if (priceSummary.hasRentSpecial) badges.push("Special shown");
+  if (property?.requiredMonthlyFees || property?.monthlyFees) badges.push("Fees listed");
+  if (property?.floorPlans?.length > 0) badges.push("Floor plans");
+  if (property?.yearBuilt) badges.push(`Built ${property.yearBuilt}`);
+
+  return badges.slice(0, 3);
+}
+
+function getSearchMonthlyBreakdown(property, priceSummary) {
+  const firstFloorPlan = getSearchFloorPlans(property)[0] || {};
+  const requiredFees =
+    property?.requiredMonthlyFees ||
+    property?.monthlyFees ||
+    firstFloorPlan.requiredMonthlyFees ||
+    "";
+  const baseRent =
+    firstFloorPlan.startingRent ||
+    firstFloorPlan.rent ||
+    property?.startingRent ||
+    property?.rent ||
+    priceSummary.normalRentLabel;
+  const monthlyDue = priceSummary.hasRentSpecial
+    ? priceSummary.normalRentLabel
+    : priceSummary.effectiveRentLabel;
+
+  return {
+    monthlyDue: requiredFees ? `${monthlyDue} + fees` : monthlyDue,
+    baseRent: baseRent || "Ask property",
+  };
+}
+
 function getSearchFloorPlans(property) {
   if (property?.floorPlans?.length) return property.floorPlans;
 
@@ -1405,6 +1626,13 @@ function getPrimaryRentLabel(property) {
 function parseCurrency(value) {
   const parsedValue = Number(String(value || "").replace(/[^0-9.]/g, ""));
   return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function parseFirstCurrency(value) {
+  const match = String(value || "").match(/\$?\s*([\d,]+(?:\.\d+)?)/);
+  if (!match) return 0;
+
+  return Number(match[1].replace(/,/g, ""));
 }
 
 function formatCurrency(value) {
