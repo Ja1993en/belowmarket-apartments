@@ -2716,6 +2716,19 @@ function formatCurrency(value) {
     return `$${Math.round(value).toLocaleString()}`;
 }
 
+function formatRentRange(values, fallback = "Contact for pricing") {
+    const cleanValues = values.filter((value) => Number(value) > 0);
+
+    if (cleanValues.length === 0) return fallback;
+
+    const minValue = Math.min(...cleanValues);
+    const maxValue = Math.max(...cleanValues);
+
+    if (minValue === maxValue) return formatCurrency(minValue);
+
+    return `${formatCurrency(minValue)} - ${formatCurrency(maxValue)}`;
+}
+
 function AmenityItem({ label }) {
     return (
         <div className="rounded-2xl bg-[#f5f8f1] p-4 font-bold text-[#102426]">
@@ -2743,8 +2756,15 @@ function getRenterValueToolkit({
     savingsLabel,
     startingRentLabel,
 }) {
-    const normalRentNumber = parseCurrency(startingRentLabel);
-    const effectiveRentNumber = parseCurrency(effectiveRentLabel);
+    const propertySummary = getPropertyLevelRentSummary({
+        effectiveRentLabel,
+        hasPropertySpecial,
+        listingFloorPlans,
+        propertySpecialLabel,
+        startingRentLabel,
+    });
+    const normalRentNumber = parseCurrency(propertySummary.normalRentLabel);
+    const effectiveRentNumber = parseCurrency(propertySummary.effectiveRentLabel);
     const savingsNumber =
         parseCurrency(savingsLabel) ||
         (normalRentNumber && effectiveRentNumber
@@ -2755,7 +2775,6 @@ function getRenterValueToolkit({
     const hasFees = Boolean(property?.requiredMonthlyFees || property?.monthlyFees);
     const hasPhotos = Boolean(property?.photos?.length);
     const hasMarketRent = Boolean(marketRentLabel);
-    const floorPlanCount = listingFloorPlans.length;
     const feeLabel = property?.requiredMonthlyFees || property?.monthlyFees || "Confirm";
 
     let dealScore = 58;
@@ -2772,19 +2791,19 @@ function getRenterValueToolkit({
         snapshotMetrics: [
             {
                 label: "Effective value",
-                value: effectiveRentLabel || startingRentLabel,
+                value: propertySummary.effectiveRentLabel,
             },
             {
                 label: "Normal rent",
-                value: startingRentLabel,
+                value: propertySummary.normalRentLabel,
             },
             {
                 label: "Special",
-                value: hasPropertySpecial ? propertySpecialLabel : "No active special",
+                value: propertySummary.specialLabel,
             },
             {
                 label: "Availability",
-                value: `${floorPlanCount} layout${floorPlanCount === 1 ? "" : "s"}`,
+                value: propertySummary.availabilityLabel,
             },
             {
                 label: "Fees",
@@ -2792,4 +2811,111 @@ function getRenterValueToolkit({
             },
         ],
     };
+}
+
+function getPropertyLevelRentSummary({
+    effectiveRentLabel,
+    hasPropertySpecial,
+    listingFloorPlans,
+    propertySpecialLabel,
+    startingRentLabel,
+}) {
+    const activeFloorPlans = listingFloorPlans.filter((floorPlan) => floorPlan.status !== "leased");
+    const summaryRows = activeFloorPlans.flatMap((floorPlan) => {
+        const availableUnits =
+            floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+
+        if (availableUnits.length === 0) {
+            return [
+                createPropertySummaryRow({
+                    floorPlan,
+                    rentLabel: floorPlan.rent || startingRentLabel,
+                    specialFallbackLabel: propertySpecialLabel,
+                }),
+            ];
+        }
+
+        return availableUnits.map((unit) =>
+            createPropertySummaryRow({
+                floorPlan,
+                rentLabel: unit.rent || floorPlan.rent || startingRentLabel,
+                unit,
+                specialFallbackLabel: propertySpecialLabel,
+            })
+        );
+    });
+    const normalRentValues = summaryRows.map((row) => row.normalRent).filter(Boolean);
+    const effectiveRentValues = summaryRows.map((row) => row.effectiveRent).filter(Boolean);
+    const specialLabels = [
+        ...new Set(
+            summaryRows
+                .map((row) => row.specialLabel)
+                .filter((label) => label && label !== "No active special listed")
+        ),
+    ];
+    const availableUnitCount = activeFloorPlans.reduce(
+        (unitCount, floorPlan) =>
+            unitCount +
+            (floorPlan.availableUnits?.filter((unit) => unit.status !== "leased").length || 0),
+        0
+    );
+    const floorPlanCount = activeFloorPlans.length || listingFloorPlans.length;
+
+    return {
+        effectiveRentLabel:
+            formatRentRange(effectiveRentValues, effectiveRentLabel || startingRentLabel),
+        normalRentLabel: formatRentRange(normalRentValues, startingRentLabel),
+        specialLabel:
+            specialLabels.length === 0
+                ? hasPropertySpecial
+                    ? propertySpecialLabel
+                    : "No active special"
+                : formatSpecialSummary(specialLabels),
+        availabilityLabel:
+            availableUnitCount > 0
+                ? `${floorPlanCount} layout${floorPlanCount === 1 ? "" : "s"} / ${availableUnitCount} unit${availableUnitCount === 1 ? "" : "s"}`
+                : `${floorPlanCount} layout${floorPlanCount === 1 ? "" : "s"}`,
+    };
+}
+
+function createPropertySummaryRow({
+    floorPlan,
+    rentLabel,
+    specialFallbackLabel,
+    unit,
+}) {
+    const normalRent = parseCurrency(rentLabel || floorPlan.rent);
+    const specialLabel =
+        unit?.currentSpecial ||
+        unit?.special?.label ||
+        floorPlan.special?.label ||
+        floorPlan.currentSpecial ||
+        specialFallbackLabel ||
+        "";
+    const freeWeeks =
+        Number(unit?.freeWeeks || unit?.special?.freeWeeks || floorPlan.special?.freeWeeks || 0) ||
+        getFreeWeeksFromSpecialLabel(specialLabel);
+    const leaseMonths = Number(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12);
+    const enteredEffectiveRent = parseCurrency(floorPlan.effectiveRent);
+    const effectiveRent =
+        normalRent && freeWeeks && leaseMonths
+            ? Math.max(normalRent - (normalRent * (freeWeeks / 4.345)) / leaseMonths, 0)
+            : enteredEffectiveRent || normalRent;
+
+    return {
+        normalRent,
+        effectiveRent,
+        specialLabel,
+    };
+}
+
+function getFreeWeeksFromSpecialLabel(label) {
+    const match = String(label || "").match(/(\d+(?:\.\d+)?)\s*weeks?\s*free/i);
+    return match ? Number(match[1]) : 0;
+}
+
+function formatSpecialSummary(specialLabels) {
+    if (specialLabels.length <= 2) return specialLabels.join(", ");
+
+    return `${specialLabels.slice(0, 2).join(", ")} +${specialLabels.length - 2} more`;
 }
