@@ -18,6 +18,10 @@ import StartPage from "./pages/StartPage";
 import LeadDetailsPage from "./pages/LeadDetailsPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import PropertySearchPage from "./pages/PropertySearchPage";
+import {
+  PrivacyPolicyPage,
+  TermsAndConditionsPage,
+} from "./pages/LegalPage";
 
 clearLegacyDemoData();
 
@@ -27,6 +31,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/start" element={<StartPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />

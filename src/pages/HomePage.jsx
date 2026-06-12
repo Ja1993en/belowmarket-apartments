@@ -271,6 +271,20 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
+
+            <footer className="border-t border-[#d7e6df] bg-white px-4 py-6">
+                <div className="mx-auto flex max-w-[1500px] flex-col gap-3 text-sm font-bold text-[#526260] md:flex-row md:items-center md:justify-between">
+                    <p>Below Market Apartments</p>
+                    <div className="flex flex-wrap gap-4">
+                        <Link to="/privacy-policy" className="hover:text-[#173f3f]">
+                            Privacy Policy
+                        </Link>
+                        <Link to="/terms-and-conditions" className="hover:text-[#173f3f]">
+                            Terms and Conditions
+                        </Link>
+                    </div>
+                </div>
+            </footer>
         </main>
     );
 }
