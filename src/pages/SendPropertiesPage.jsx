@@ -294,7 +294,7 @@ export default function SendPropertiesPage() {
         },
         body: JSON.stringify({
           to: lead.phone,
-          body: displayedSmsMessage.trim(),
+          body: ensureSmsOptOutLine(displayedSmsMessage),
           leadId: lead.id,
           propertyIds: selectedPropertyIds,
         }),
@@ -813,7 +813,20 @@ function buildRecommendationText({ lead, recommendationUrl, selectedProperties }
     ? `: ${propertyNames}`
     : "";
 
-  return `Hi ${lead.name}, I put together ${selectedProperties.length} apartment option${selectedProperties.length === 1 ? "" : "s"} for you${propertyPhrase}. View them here: ${recommendationUrl}. Reply with the ones you like and I can help schedule tours.`;
+  return ensureSmsOptOutLine(
+    `Hi ${lead.name}, I put together ${selectedProperties.length} apartment option${selectedProperties.length === 1 ? "" : "s"} for you${propertyPhrase}. View them here: ${recommendationUrl}. Reply with the ones you like and I can help schedule tours.`
+  );
+}
+
+function ensureSmsOptOutLine(message) {
+  const trimmedMessage = String(message || "").trim();
+
+  if (!trimmedMessage) return "";
+  if (/reply\s+stop\s+to\s+opt\s+out/i.test(trimmedMessage)) {
+    return trimmedMessage;
+  }
+
+  return `${trimmedMessage} Reply STOP to opt out.`;
 }
 
 function getRecommendationSmsHref(phone, message) {
