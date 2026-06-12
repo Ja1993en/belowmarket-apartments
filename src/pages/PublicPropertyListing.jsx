@@ -707,81 +707,38 @@ export default function PublicPropertyListing() {
                                     </div>
                                 )}
 
-                                <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                                    <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
-                                        <div>
-                                            <p className="text-sm font-black text-[#1f6f63]">
-                                                Renter value snapshot
-                                            </p>
-                                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
-                                                Price, deal score, and tour questions
-                                            </h2>
+                                <div className="mt-6 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
+                                    <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
+                                        <div className="flex shrink-0 items-center justify-between gap-3 rounded-xl bg-[#173f3f] px-4 py-3 text-white lg:w-[150px]">
+                                            <span className="text-xs font-black uppercase text-[#f9d783]">
+                                                Score
+                                            </span>
+                                            <span className="text-xl font-black">
+                                                {renterValueToolkit.dealScore}
+                                            </span>
                                         </div>
 
-                                        <div className="rounded-2xl bg-[#173f3f] px-5 py-3 text-white">
-                                            <p className="text-[10px] font-black uppercase text-[#f9d783]">
-                                                Deal Score
-                                            </p>
-                                            <p className="text-2xl font-black">
-                                                {renterValueToolkit.dealScore}/100
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                                        {renterValueToolkit.snapshotMetrics.map((metric) => (
-                                            <div
-                                                key={metric.label}
-                                                className="rounded-2xl bg-[#f5f8f1] p-4"
-                                            >
-                                                <p className="text-xs font-black uppercase text-[#526260]">
-                                                    {metric.label}
-                                                </p>
-                                                <p className="mt-2 text-lg font-black text-[#102426]">
-                                                    {metric.value}
-                                                </p>
-                                                <p className="mt-1 text-xs font-bold leading-5 text-[#526260]">
-                                                    {metric.note}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1.2fr]">
-                                        <div>
-                                            <p className="text-sm font-black text-[#102426]">
-                                                Before you tour, ask:
-                                            </p>
-                                            <div className="mt-3 grid gap-2">
-                                                {renterValueToolkit.tourQuestions.slice(0, 3).map((question) => (
-                                                    <p
-                                                        key={question}
-                                                        className="rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold leading-6 text-[#102426] ring-1 ring-[#f2d08a]"
-                                                    >
-                                                        {question}
+                                        <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                                            {renterValueToolkit.snapshotMetrics.map((metric) => (
+                                                <div key={metric.label} className="min-w-0">
+                                                    <p className="text-[10px] font-black uppercase text-[#526260]">
+                                                        {metric.label}
                                                     </p>
-                                                ))}
-                                            </div>
+                                                    <p className="mt-1 truncate text-sm font-black text-[#102426]">
+                                                        {metric.value}
+                                                    </p>
+                                                </div>
+                                            ))}
                                         </div>
+                                    </div>
 
-                                        <div className="rounded-2xl bg-[#e7f3ee] p-4">
-                                            <p className="text-sm font-black text-[#102426]">
-                                                Transparency notes
-                                            </p>
-                                            <div className="mt-3 flex flex-wrap gap-2">
-                                                {renterValueToolkit.badges.map((badge) => (
-                                                    <span
-                                                        key={badge}
-                                                        className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1f6f63]"
-                                                    >
-                                                        {badge}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <p className="mt-3 text-sm font-semibold leading-6 text-[#526260]">
-                                                Effective rent is an estimate across the lease. The monthly amount due may still be based on normal rent plus required fees.
-                                            </p>
-                                        </div>
+                                    <div className="border-t border-[#d7e6df] bg-[#f5f8f1] px-4 py-3">
+                                        <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                            Before you tour
+                                        </p>
+                                        <p className="mt-1 text-sm font-semibold leading-6 text-[#526260]">
+                                            Ask if the special applies to base rent, how the credit is applied, and what monthly fees or move-in costs are required.
+                                        </p>
                                     </div>
                                 </div>
                                 {/*Floor Plans*/}
@@ -2799,17 +2756,6 @@ function getRenterValueToolkit({
     const hasPhotos = Boolean(property?.photos?.length);
     const hasMarketRent = Boolean(marketRentLabel);
     const floorPlanCount = listingFloorPlans.length;
-    const totalAvailableUnits = listingFloorPlans.reduce(
-        (unitCount, floorPlan) => unitCount + (floorPlan.availableUnits?.length || 0),
-        0
-    );
-    const bedLabels = [
-        ...new Set(listingFloorPlans.map((floorPlan) => floorPlan.beds).filter(Boolean)),
-    ];
-    const bedSummary =
-        bedLabels.length > 0
-            ? bedLabels.map(formatBedroomLabel).join(", ")
-            : (property?.bedrooms || []).map(formatBedroomLabel).join(", ") || "Beds not listed";
     const feeLabel = property?.requiredMonthlyFees || property?.monthlyFees || "Confirm";
 
     let dealScore = 58;
@@ -2821,57 +2767,29 @@ function getRenterValueToolkit({
     if (hasPhotos) dealScore += 3;
     if (hasMarketRent) dealScore += 3;
 
-    const badges = [
-        hasPropertySpecial ? "Special transparent" : "No special listed",
-        hasFees ? "Fees listed" : "Confirm fees",
-        hasFloorPlans ? "Floor plans available" : "Request floor plans",
-        hasMarketRent ? "Market context" : "Market rent pending",
-    ];
-
     return {
         dealScore: Math.max(40, Math.min(98, Math.round(dealScore))),
-        badges,
         snapshotMetrics: [
             {
                 label: "Effective value",
                 value: effectiveRentLabel || startingRentLabel,
-                note: hasPropertySpecial
-                    ? "Estimated after listed special."
-                    : "No rent special listed.",
             },
             {
                 label: "Normal rent",
                 value: startingRentLabel,
-                note: "Before concessions and specials.",
             },
             {
                 label: "Special",
                 value: hasPropertySpecial ? propertySpecialLabel : "No active special",
-                note: hasPropertySpecial
-                    ? `${savingsLabel || "Savings pending"} estimated.`
-                    : "Compare regular rent plus fees.",
             },
             {
                 label: "Availability",
                 value: `${floorPlanCount} layout${floorPlanCount === 1 ? "" : "s"}`,
-                note:
-                    totalAvailableUnits > 0
-                        ? `${totalAvailableUnits} listed unit${totalAvailableUnits === 1 ? "" : "s"} across ${bedSummary}.`
-                        : `${bedSummary}. Request availability.`,
             },
             {
                 label: "Fees",
                 value: feeLabel,
-                note: hasFees
-                    ? "Confirm what is included."
-                    : "Ask about monthly fees and move-in costs.",
             },
-        ],
-        tourQuestions: [
-            "Does the special apply to base rent only?",
-            "Is the credit upfront, monthly, or resident-account credit?",
-            "What are all required monthly fees and move-in costs?",
-            `Is ${propertySpecialLabel} still active for the unit I want?`,
         ],
     };
 }
