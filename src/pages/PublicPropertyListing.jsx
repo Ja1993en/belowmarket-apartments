@@ -317,10 +317,6 @@ export default function PublicPropertyListing() {
         (plan) => plan.marketRent && plan.marketRentSource
     );
     const marketRentLabel = benchmarkFloorPlan?.marketRent || "";
-    const marketRentSourceLabel =
-        benchmarkFloorPlan?.marketRentConfidence ||
-        benchmarkFloorPlan?.marketRentSource ||
-        "";
     const savingsLabel = property?.savings || benchmarkFloorPlan?.savings || "";
     const renterDecisionFacts = getRenterDecisionFacts({
         effectiveRentLabel,
@@ -722,30 +718,6 @@ export default function PublicPropertyListing() {
                                         </p>
                                     </div>
                                 )}
-
-
-                                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                                    <PriceCompareCard
-                                        label={effectiveRentLabel ? "Estimated Effective" : "Starting Rent"}
-                                        price={effectiveRentLabel || startingRentLabel}
-                                        note={effectiveRentLabel ? "After listed special" : "Before specials and fees"}
-                                    />
-
-                                    <PriceCompareCard
-                                        label="Market Average"
-                                        price={marketRentLabel || "Not listed"}
-                                        note={marketRentSourceLabel || `Similar ${property.area || property.city || "nearby"} units`}
-                                    />
-
-                                    <PriceCompareCard
-                                        label="Estimated Savings"
-                                        price={savingsLabel || "$0/mo"}
-                                        note="Based on available pricing"
-                                    />
-
-                                </div>
-
-
 
                                 <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                                     <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
@@ -2835,24 +2807,6 @@ function AmenityItem({ label }) {
     return (
         <div className="rounded-2xl bg-[#f5f8f1] p-4 font-bold text-[#102426]">
             {label}
-        </div>
-    );
-}
-
-function PriceCompareCard({ label, price, note }) {
-    return (
-        <div className="rounded-2xl bg-[#f5f8f1] p-4">
-            <p className="text-sm font-semibold text-[#526260]">
-                {label}
-            </p>
-
-            <p className="mt-2 text-2xl font-black text-[#102426]">
-                {price}
-            </p>
-
-            <p className="mt-1 text-sm text-[#526260]">
-                {note}
-            </p>
         </div>
     );
 }
