@@ -315,9 +315,9 @@ export default function SendPropertiesPage() {
 
   if (isLoadingLead) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-black text-slate-900">Loading lead...</h1>
-        <p className="mt-2 text-slate-500">
+      <div className="rounded-3xl border border-[#d7e6df] bg-white p-8 shadow-sm">
+        <h1 className="text-3xl font-black text-[#102426]">Loading lead...</h1>
+        <p className="mt-2 text-[#526260]">
           Checking Supabase for this lead.
         </p>
       </div>
@@ -326,15 +326,15 @@ export default function SendPropertiesPage() {
 
   if (!lead) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-black text-slate-900">Lead not found</h1>
-        <p className="mt-2 text-slate-500">
+      <div className="rounded-3xl border border-[#d7e6df] bg-white p-8 shadow-sm">
+        <h1 className="text-3xl font-black text-[#102426]">Lead not found</h1>
+        <p className="mt-2 text-[#526260]">
           This lead ID does not match any lead in your current data.
         </p>
 
         <Link
           to="/admin/leads"
-          className="mt-6 inline-block rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+          className="mt-6 inline-block rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
         >
           Back to Leads
         </Link>
@@ -346,15 +346,15 @@ export default function SendPropertiesPage() {
     <div>
       <Link
         to="/admin/leads"
-        className="inline-block rounded-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+        className="inline-block rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
       >
         Back to Leads
       </Link>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_380px]">
         <section>
-          <div className="rounded-3xl bg-slate-950 p-6 text-white shadow-sm">
-            <p className="text-sm font-bold text-slate-300">
+          <div className="rounded-3xl bg-[#173f3f] p-6 text-white shadow-sm">
+            <p className="text-sm font-bold text-[#d7e6df]">
               Send Properties
             </p>
 
@@ -362,31 +362,116 @@ export default function SendPropertiesPage() {
               {lead.name}
             </h1>
 
-            <p className="mt-2 text-slate-300">
+            <p className="mt-2 text-[#d7e6df]">
               {lead.preference}
             </p>
 
             {lead.sourcePropertyName && (
-              <p className="mt-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-bold text-slate-200">
+              <p className="mt-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-bold text-[#e7f3ee]">
                 Started from {lead.sourcePropertyName}
               </p>
             )}
           </div>
 
-          <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+            <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+              <div>
+                <p className="text-sm font-black uppercase tracking-wide text-[#1f6f63]">
+                  Twilio SMS
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-[#102426]">
+                  Send recommendation text
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm font-semibold text-[#526260]">
+                  This sends the selected properties and renter link directly through Twilio.
+                  Select at least one property, enter your SMS PIN, then click Send SMS Now.
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                {selectedPropertyIds.length} selected
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-[220px_1fr]">
+              <label className="block text-sm font-bold text-[#173f3f]">
+                SMS send PIN
+                <input
+                  type="password"
+                  value={smsPin}
+                  onChange={(event) => {
+                    setSmsPin(event.target.value);
+                    setSmsError("");
+                  }}
+                  placeholder="Enter PIN"
+                  className="mt-2 w-full rounded-2xl border border-[#d7e6df] px-4 py-3 font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                />
+              </label>
+
+              <label className="block text-sm font-bold text-[#173f3f]">
+                Message preview
+                <textarea
+                  value={displayedSmsMessage}
+                  onChange={(event) => {
+                    setIsSmsMessageEdited(true);
+                    setSmsMessage(event.target.value);
+                    setSmsError("");
+                  }}
+                  rows={4}
+                  className="mt-2 w-full resize-none rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm font-semibold leading-6 text-[#102426] outline-none focus:border-[#2d7dd2]"
+                />
+              </label>
+            </div>
+
+            {smsError && (
+              <p className="mt-4 rounded-2xl bg-[#fde8df] px-4 py-3 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
+                {smsError}
+              </p>
+            )}
+
+            {smsStatusMessage && (
+              <p className="mt-4 rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#1f6f63] ring-1 ring-[#d7e6df]">
+                {smsStatusMessage}
+              </p>
+            )}
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={sendRecommendationsSms}
+                disabled={isSendingSms || isSavingSelections || selectedPropertyIds.length === 0}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-6 py-4 text-sm font-black text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
+              >
+                <Send className="h-4 w-4" />
+                {isSendingSms ? "Sending SMS..." : "Send SMS Now"}
+              </button>
+
+              <button
+                type="button"
+                onClick={textRecommendationsToRenter}
+                disabled={isSavingSelections || selectedPropertyIds.length === 0}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#e7f3ee] px-6 py-4 text-sm font-black text-[#173f3f] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:bg-[#f5f8f1] disabled:text-[#78908a]"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Open Phone Text App
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div>
-                <h2 className="text-2xl font-black text-slate-900">
+                <h2 className="text-2xl font-black text-[#102426]">
                   Choose Properties
                 </h2>
 
-                <p className="mt-1 text-slate-500">
+                <p className="mt-1 text-[#526260]">
                   Select the apartments you want this renter to see.
                 </p>
               </div>
 
               <div className="flex flex-col items-start gap-2 md:items-end">
-                <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700">
+                <span className="rounded-full bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f]">
                   {selectedPropertyIds.length} selected
                 </span>
 
@@ -400,18 +485,18 @@ export default function SendPropertiesPage() {
                   Text Selected Properties
                 </button>
 
-                <p className="max-w-xs text-xs font-semibold text-slate-500 md:text-right">
+                <p className="max-w-xs text-xs font-semibold text-[#526260] md:text-right">
                   Opens your text app with the renter link and selected property names.
                 </p>
 
                 {isSavingSelections && (
-                  <p className="text-sm font-bold text-slate-500">
+                  <p className="text-sm font-bold text-[#526260]">
                     Saving recommendations...
                   </p>
                 )}
 
                 {saveMessage && (
-                  <p className="text-sm font-bold text-emerald-700">
+                  <p className="text-sm font-bold text-[#1f6f63]">
                     {saveMessage}
                   </p>
                 )}
@@ -434,17 +519,17 @@ export default function SendPropertiesPage() {
 
             <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center">
               <label className="relative block flex-1">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6c7a77]" />
                 <input
                   type="search"
                   value={propertySearch}
                   onChange={(event) => setPropertySearch(event.target.value)}
                   placeholder="Search property name, ZIP, city, or state"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm font-bold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] py-3 pl-12 pr-4 text-sm font-bold text-[#102426] outline-none transition placeholder:text-[#6c7a77] focus:border-[#2d7dd2] focus:bg-white"
                 />
               </label>
 
-              <p className="text-sm font-bold text-slate-500 md:min-w-36 md:text-right">
+              <p className="text-sm font-bold text-[#526260] md:min-w-36 md:text-right">
                 Showing {filteredProperties.length} of {properties.length}
               </p>
             </div>
@@ -467,8 +552,8 @@ export default function SendPropertiesPage() {
                       key={property.id}
                       onClick={() => toggleProperty(property.id)}
                       className={`w-full rounded-2xl border p-4 text-left transition ${isSelected
-                        ? "border-slate-950 bg-slate-50"
-                        : "border-slate-200 bg-white hover:bg-slate-50"
+                        ? "border-[#173f3f] bg-[#f5f8f1]"
+                        : "border-[#d7e6df] bg-white hover:bg-[#f5f8f1]"
                         }`}
                     >
                       <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -480,23 +565,23 @@ export default function SendPropertiesPage() {
 
                         <div className="flex-1">
                           <div className="flex flex-wrap items-center gap-3">
-                            <h3 className="text-xl font-black text-slate-900">
+                            <h3 className="text-xl font-black text-[#102426]">
                               {property.name}
                             </h3>
 
                             {isSelected && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
                                 <CheckCircle2 className="h-4 w-4" />
                                 Selected
                               </span>
                             )}
                           </div>
 
-                          <p className="mt-1 text-sm font-semibold text-slate-500">
+                          <p className="mt-1 text-sm font-semibold text-[#526260]">
                             {locationLabel || property.area} - Managed by {managerName}
                           </p>
                           {property.yearBuilt && (
-                            <p className="mt-1 text-xs font-bold text-slate-400">
+                            <p className="mt-1 text-xs font-bold text-[#6c7a77]">
                               Built {property.yearBuilt}
                             </p>
                           )}
@@ -513,8 +598,8 @@ export default function SendPropertiesPage() {
                   );
                 })
               ) : (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-                  <p className="text-sm font-bold text-slate-700">
+                <div className="rounded-2xl border border-dashed border-[#b8d9d0] bg-[#f5f8f1] p-6 text-center">
+                  <p className="text-sm font-bold text-[#173f3f]">
                     No properties match "{propertySearch.trim()}".
                   </p>
                 </div>
@@ -524,8 +609,8 @@ export default function SendPropertiesPage() {
         </section>
 
         <aside className="space-y-6">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-black text-slate-900">
+          <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-black text-[#102426]">
               Lead Snapshot
             </h2>
 
@@ -538,21 +623,21 @@ export default function SendPropertiesPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-black text-slate-900">
+          <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-black text-[#102426]">
               Recommendation Link
             </h2>
             {isLocalLead && (
-              <p className="mt-2 rounded-2xl bg-emerald-50 p-3 text-sm font-bold text-emerald-700">
+              <p className="mt-2 rounded-2xl bg-[#e7f3ee] p-3 text-sm font-bold text-[#1f6f63]">
                 Local lead selections save automatically.
               </p>
             )}
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[#526260]">
               This is the renter-facing page for the selected properties.
             </p>
 
-            <div className="mt-4 break-all rounded-2xl bg-slate-100 p-4 text-sm font-bold text-slate-700">
+            <div className="mt-4 break-all rounded-2xl bg-[#e7f3ee] p-4 text-sm font-bold text-[#173f3f]">
               {recommendationUrl}
             </div>
 
@@ -560,7 +645,7 @@ export default function SendPropertiesPage() {
               type="button"
               onClick={() => saveSelections()}
               disabled={isSavingSelections}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
             >
               {isSavingSelections ? "Saving..." : "Save Recommendations"}
             </button>
@@ -578,7 +663,7 @@ export default function SendPropertiesPage() {
 
               <button
                 onClick={copyRecommendationLink}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
               >
                 <Copy className="h-4 w-4" />
                 Copy Link
@@ -586,7 +671,7 @@ export default function SendPropertiesPage() {
 
               <Link
                 to={`/r/${lead.token}`}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
               >
                 <ExternalLink className="h-4 w-4" />
                 Preview Renter Page
@@ -594,7 +679,7 @@ export default function SendPropertiesPage() {
 
               <Link
                 to={`/admin/leads/${lead.id}/message`}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-100 px-5 py-3 text-sm font-bold text-emerald-700 hover:bg-emerald-200"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#d8efe6] px-5 py-3 text-sm font-bold text-[#1f6f63] hover:bg-[#c6e6da]"
               >
                 <Send className="h-4 w-4" />
                 Write Message
@@ -678,8 +763,8 @@ export default function SendPropertiesPage() {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-black text-slate-900">
+          <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-black text-[#102426]">
               Selected Summary
             </h2>
 
@@ -688,18 +773,18 @@ export default function SendPropertiesPage() {
                 selectedProperties.map((property) => (
                   <div
                     key={property.id}
-                    className="rounded-2xl bg-slate-50 p-4"
+                    className="rounded-2xl bg-[#f5f8f1] p-4"
                   >
-                    <p className="font-black text-slate-900">
+                    <p className="font-black text-[#102426]">
                       {property.name}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-[#526260]">
                       {property.effectiveRent}/mo effective - {property.savings} savings
                     </p>
                   </div>
                 ))
               ) : (
-                <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+                <p className="rounded-2xl bg-[#f5f8f1] p-4 text-sm text-[#526260]">
                   Select at least one property to build a recommendation list.
                 </p>
               )}
@@ -713,7 +798,7 @@ export default function SendPropertiesPage() {
 
 function PropertyBadge({ label }) {
   return (
-    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
+    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#173f3f] shadow-sm">
       {label}
     </span>
   );
@@ -739,9 +824,9 @@ function getRecommendationSmsHref(phone, message) {
 
 function InfoRow({ label, value }) {
   return (
-    <div className="flex justify-between gap-4 rounded-2xl bg-slate-50 p-4">
-      <span className="text-sm font-semibold text-slate-500">{label}</span>
-      <span className="text-right text-sm font-black text-slate-900">
+    <div className="flex justify-between gap-4 rounded-2xl bg-[#f5f8f1] p-4">
+      <span className="text-sm font-semibold text-[#526260]">{label}</span>
+      <span className="text-right text-sm font-black text-[#102426]">
         {value}
       </span>
     </div>
