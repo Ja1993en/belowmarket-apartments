@@ -269,6 +269,116 @@ function enrichFloorPlanWithMarketBenchmark(property, plan) {
     };
 }
 
+function getPropertySeoMetadata({ property, listingFloorPlans, propertyGalleryImages }) {
+    const propertyName = property?.name || "Apartment";
+    const city = property?.city || "Dallas";
+    const state = property?.state || "TX";
+    const rentValues = listingFloorPlans
+        .flatMap((plan) => [
+            parseCurrency(plan.effectiveRent),
+            parseCurrency(plan.rent),
+            ...(plan.availableUnits || []).map((unit) => parseCurrency(unit.rent)),
+        ])
+        .filter(Boolean);
+    const lowestRent = rentValues.length > 0 ? Math.min(...rentValues) : 0;
+    const rentLabel =
+        rentValues.length > 0
+            ? `${formatCurrency(lowestRent)}+`
+            : property?.rent || property?.startingRent || "contact for pricing";
+    const specialLabel = getPropertySeoSpecialLabel(property, listingFloorPlans);
+    const bedroomLabel = getPropertySeoBedroomLabel(property, listingFloorPlans);
+    const titleParts = [
+        `${propertyName} Apartments`,
+        city && state ? `${city} ${state}` : "",
+        specialLabel ? "Specials & Effective Rent" : "Pricing & Availability",
+    ].filter(Boolean);
+    const title = `${titleParts.join(" | ")} | Below Market Apartments`;
+    const description = [
+        `${propertyName} in ${city}, ${state} has ${bedroomLabel} with rents from ${rentLabel}.`,
+        specialLabel ? `Current special: ${specialLabel}.` : "",
+        "Compare normal rent, estimated effective rent, floor plans, photos, and nearby map details.",
+    ]
+        .filter(Boolean)
+        .join(" ")
+        .slice(0, 300);
+    const canonicalUrl = `https://belowmarketapartments.com/properties/${encodeURIComponent(
+        property?.id || ""
+    )}`;
+    const imageUrl = getAbsoluteSeoImageUrl(
+        propertyGalleryImages?.[0]?.url || getPropertyPrimaryImage(property)
+    );
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "ApartmentComplex",
+        name: propertyName,
+        description,
+        url: canonicalUrl,
+        image: imageUrl,
+        address: {
+            "@type": "PostalAddress",
+            streetAddress: property?.address || "",
+            addressLocality: city,
+            addressRegion: state,
+            postalCode: property?.zipcode || "",
+            addressCountry: "US",
+        },
+        offers: {
+            "@type": "AggregateOffer",
+            priceCurrency: "USD",
+            lowPrice: lowestRent || undefined,
+            availability: "https://schema.org/InStock",
+            url: canonicalUrl,
+        },
+    };
+
+    return {
+        canonicalUrl,
+        description,
+        imageUrl,
+        structuredData,
+        title,
+    };
+}
+
+function getPropertySeoSpecialLabel(property, listingFloorPlans) {
+    const specialLabel =
+        listingFloorPlans
+            .map((plan) => plan.special?.label || plan.currentSpecial)
+            .find((label) => label && label !== "Special not listed") ||
+        (property?.special && property.special !== "Special not listed"
+            ? property.special
+            : "");
+
+    return specialLabel || "";
+}
+
+function getPropertySeoBedroomLabel(property, listingFloorPlans) {
+    const bedroomValues = [
+        ...listingFloorPlans.map((plan) => plan.beds || plan.bedrooms),
+        ...(property?.bedrooms || []),
+    ].filter(Boolean);
+    const uniqueBedrooms = [...new Set(bedroomValues)];
+
+    if (uniqueBedrooms.length === 0) return "available floor plans";
+    if (uniqueBedrooms.length === 1) return formatBedroomLabel(uniqueBedrooms[0]);
+
+    return `${formatBedroomLabel(uniqueBedrooms[0])} to ${formatBedroomLabel(
+        uniqueBedrooms[uniqueBedrooms.length - 1]
+    )}`;
+}
+
+function getAbsoluteSeoImageUrl(imageUrl) {
+    if (!imageUrl || String(imageUrl).startsWith("data:")) {
+        return "https://belowmarketapartments.com/social-preview-bma.png";
+    }
+
+    if (/^https?:\/\//i.test(imageUrl)) {
+        return imageUrl;
+    }
+
+    return `https://belowmarketapartments.com/${String(imageUrl).replace(/^\/+/, "")}`;
+}
+
 export default function PublicPropertyListing() {
     {/* Usestate start*/ }
     const { propertyId } = useParams();
@@ -314,6 +424,71 @@ export default function PublicPropertyListing() {
             })).filter((photo) => photo.url)
             : galleryImages;
     const listingFloorPlans = normalizeListingFloorPlans(property);
+    useEffect(() => {
+        if (!property || property.status !== "Live") return undefined;
+
+        const propertySeo = getPropertySeoMetadata({
+            listingFloorPlans,
+            property,
+            propertyGalleryImages,
+        });
+        const previousTitle = document.title;
+        const descriptionMeta = document.querySelector("meta[name='description']");
+        const canonicalLink = document.querySelector("link[rel='canonical']");
+        const ogTitleMeta = document.querySelector("meta[property='og:title']");
+        const ogDescriptionMeta = document.querySelector("meta[property='og:description']");
+        const ogUrlMeta = document.querySelector("meta[property='og:url']");
+        const ogImageMeta = document.querySelector("meta[property='og:image']");
+        const twitterTitleMeta = document.querySelector("meta[name='twitter:title']");
+        const twitterDescriptionMeta = document.querySelector(
+            "meta[name='twitter:description']"
+        );
+        const twitterImageMeta = document.querySelector("meta[name='twitter:image']");
+        const previousDescription = descriptionMeta?.getAttribute("content") || "";
+        const previousCanonical = canonicalLink?.getAttribute("href") || "";
+        const previousOgTitle = ogTitleMeta?.getAttribute("content") || "";
+        const previousOgDescription = ogDescriptionMeta?.getAttribute("content") || "";
+        const previousOgUrl = ogUrlMeta?.getAttribute("content") || "";
+        const previousOgImage = ogImageMeta?.getAttribute("content") || "";
+        const previousTwitterTitle = twitterTitleMeta?.getAttribute("content") || "";
+        const previousTwitterDescription =
+            twitterDescriptionMeta?.getAttribute("content") || "";
+        const previousTwitterImage = twitterImageMeta?.getAttribute("content") || "";
+        const structuredDataScript = document.createElement("script");
+
+        structuredDataScript.type = "application/ld+json";
+        structuredDataScript.dataset.bmaPropertySeo = "true";
+        structuredDataScript.textContent = JSON.stringify(propertySeo.structuredData);
+
+        document
+            .querySelector("script[data-bma-property-seo='true']")
+            ?.remove();
+        document.title = propertySeo.title;
+        descriptionMeta?.setAttribute("content", propertySeo.description);
+        canonicalLink?.setAttribute("href", propertySeo.canonicalUrl);
+        ogTitleMeta?.setAttribute("content", propertySeo.title);
+        ogDescriptionMeta?.setAttribute("content", propertySeo.description);
+        ogUrlMeta?.setAttribute("content", propertySeo.canonicalUrl);
+        ogImageMeta?.setAttribute("content", propertySeo.imageUrl);
+        twitterTitleMeta?.setAttribute("content", propertySeo.title);
+        twitterDescriptionMeta?.setAttribute("content", propertySeo.description);
+        twitterImageMeta?.setAttribute("content", propertySeo.imageUrl);
+        document.head.appendChild(structuredDataScript);
+
+        return () => {
+            document.title = previousTitle;
+            descriptionMeta?.setAttribute("content", previousDescription);
+            canonicalLink?.setAttribute("href", previousCanonical);
+            ogTitleMeta?.setAttribute("content", previousOgTitle);
+            ogDescriptionMeta?.setAttribute("content", previousOgDescription);
+            ogUrlMeta?.setAttribute("content", previousOgUrl);
+            ogImageMeta?.setAttribute("content", previousOgImage);
+            twitterTitleMeta?.setAttribute("content", previousTwitterTitle);
+            twitterDescriptionMeta?.setAttribute("content", previousTwitterDescription);
+            twitterImageMeta?.setAttribute("content", previousTwitterImage);
+            structuredDataScript.remove();
+        };
+    }, [listingFloorPlans, property, propertyGalleryImages]);
     const benchmarkFloorPlan = listingFloorPlans.find(
         (plan) => plan.marketRent && plan.marketRentSource
     );
