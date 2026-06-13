@@ -31,6 +31,36 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://belowmarketapartments.com/apartments/dallas-tx/uptown</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belowmarketapartments.com/apartments/dallas-tx/oak-lawn</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belowmarketapartments.com/apartments/dallas-tx/bishop-arts</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belowmarketapartments.com/apartments/dallas-tx/victory-park</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belowmarketapartments.com/apartments/dallas-tx/downtown</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://belowmarketapartments.com/start</loc>
     <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>

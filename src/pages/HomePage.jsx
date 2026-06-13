@@ -300,6 +300,36 @@ export default function HomePage() {
                             >
                                 8 weeks free apartments
                             </Link>
+                            <Link
+                                to="/apartments/dallas-tx/uptown"
+                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+                            >
+                                Uptown Dallas
+                            </Link>
+                            <Link
+                                to="/apartments/dallas-tx/oak-lawn"
+                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+                            >
+                                Oak Lawn
+                            </Link>
+                            <Link
+                                to="/apartments/dallas-tx/bishop-arts"
+                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+                            >
+                                Bishop Arts
+                            </Link>
+                            <Link
+                                to="/apartments/dallas-tx/victory-park"
+                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+                            >
+                                Victory Park
+                            </Link>
+                            <Link
+                                to="/apartments/dallas-tx/downtown"
+                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+                            >
+                                Downtown Dallas
+                            </Link>
                         </div>
                     </div>
                 </div>

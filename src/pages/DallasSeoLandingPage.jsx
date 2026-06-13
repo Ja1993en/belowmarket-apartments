@@ -75,6 +75,136 @@ const DALLAS_LANDING_PAGES = {
       { label: "All Dallas apartments", to: "/apartments/dallas-tx" },
     ],
   },
+  uptown: {
+    title: "Uptown Dallas Apartments With Specials",
+    eyebrow: "Uptown Dallas apartments",
+    description:
+      "Search Uptown Dallas apartments with current specials, effective rent estimates, bedroom filters, and map-based apartment search.",
+    searchLabel: "Search Uptown Dallas",
+    searchUrl: "/properties?search=Uptown%20Dallas",
+    primaryKeyword: "Uptown Dallas apartment specials",
+    highlight:
+      "Compare Uptown Dallas listings by normal rent, estimated effective rent, bedroom type, and current concessions.",
+    sections: [
+      {
+        title: "Find Uptown Dallas apartments with clearer pricing",
+        text: "Uptown renters often compare multiple luxury and mid-rise options. Below Market Apartments keeps specials and effective rent visible so the deal is easier to understand.",
+      },
+      {
+        title: "Narrow by floor plan and budget",
+        text: "Use price and bedroom filters to focus on the Uptown units that match your actual search instead of scanning every floor plan at every property.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Oak Lawn apartments", to: "/apartments/dallas-tx/oak-lawn" },
+      { label: "Downtown Dallas apartments", to: "/apartments/dallas-tx/downtown" },
+      { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
+    ],
+  },
+  "oak-lawn": {
+    title: "Oak Lawn Dallas Apartments With Specials",
+    eyebrow: "Oak Lawn apartment deals",
+    description:
+      "Browse Oak Lawn Dallas apartments with active specials, estimated effective rent, bedroom filters, and transparent deal details.",
+    searchLabel: "Search Oak Lawn",
+    searchUrl: "/properties?search=Oak%20Lawn%20Dallas",
+    primaryKeyword: "Oak Lawn Dallas apartments",
+    highlight:
+      "See Oak Lawn apartment specials beside normal rent so renters can compare the real value before touring.",
+    sections: [
+      {
+        title: "Compare Oak Lawn apartment deals",
+        text: "Use the search page to compare available Oak Lawn properties by rent, specials, beds, and map location.",
+      },
+      {
+        title: "Ask better questions before applying",
+        text: "The listing experience keeps fees, special timing, and normal rent in view so renters know what to confirm with the property.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Uptown Dallas apartments", to: "/apartments/dallas-tx/uptown" },
+      { label: "Victory Park apartments", to: "/apartments/dallas-tx/victory-park" },
+      { label: "8 weeks free apartments", to: "/apartments/dallas-tx/8-weeks-free" },
+    ],
+  },
+  "bishop-arts": {
+    title: "Bishop Arts Dallas Apartments With Specials",
+    eyebrow: "Bishop Arts apartment search",
+    description:
+      "Find Bishop Arts Dallas apartments and nearby rent specials with transparent pricing, bedroom filters, and map search.",
+    searchLabel: "Search Bishop Arts",
+    searchUrl: "/properties?search=Bishop%20Arts%20Dallas",
+    primaryKeyword: "Bishop Arts Dallas apartments",
+    highlight:
+      "Search Bishop Arts and nearby Dallas apartment options by specials, rent range, and available bedroom type.",
+    sections: [
+      {
+        title: "Look beyond the headline rent",
+        text: "Compare normal rent, estimated effective rent, and active specials so you can understand what the listing is really offering.",
+      },
+      {
+        title: "Use the map to stay near the area you want",
+        text: "The property search map helps renters narrow results around Bishop Arts and nearby neighborhoods without losing deal transparency.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Downtown Dallas apartments", to: "/apartments/dallas-tx/downtown" },
+      { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
+      { label: "All Dallas apartments", to: "/apartments/dallas-tx" },
+    ],
+  },
+  "victory-park": {
+    title: "Victory Park Dallas Apartments With Specials",
+    eyebrow: "Victory Park apartment deals",
+    description:
+      "Search Victory Park Dallas apartments with current rent specials, effective rent estimates, and renter-friendly comparison tools.",
+    searchLabel: "Search Victory Park",
+    searchUrl: "/properties?search=Victory%20Park%20Dallas",
+    primaryKeyword: "Victory Park Dallas apartments",
+    highlight:
+      "Compare Victory Park apartments by current specials, effective rent, normal rent, and available bedroom ranges.",
+    sections: [
+      {
+        title: "Compare apartments near Victory Park",
+        text: "Use filtered results to focus on the floor plans and specials that match your budget before scheduling tours.",
+      },
+      {
+        title: "Keep specials transparent",
+        text: "Below Market Apartments highlights specials without hiding the normal rent renters may still owe monthly.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Uptown Dallas apartments", to: "/apartments/dallas-tx/uptown" },
+      { label: "Oak Lawn apartments", to: "/apartments/dallas-tx/oak-lawn" },
+      { label: "Downtown Dallas apartments", to: "/apartments/dallas-tx/downtown" },
+    ],
+  },
+  downtown: {
+    title: "Downtown Dallas Apartments With Specials",
+    eyebrow: "Downtown Dallas apartment search",
+    description:
+      "Browse Downtown Dallas apartments with rent specials, effective rent estimates, map search, and bedroom-based filters.",
+    searchLabel: "Search Downtown Dallas",
+    searchUrl: "/properties?search=Downtown%20Dallas",
+    primaryKeyword: "Downtown Dallas apartments",
+    highlight:
+      "Find Downtown Dallas listings and compare specials with the normal rent, effective rent, and floor-plan details side by side.",
+    sections: [
+      {
+        title: "Search Downtown Dallas by value",
+        text: "Use the search experience to compare available apartment deals by price, beds, specials, and map area.",
+      },
+      {
+        title: "Know what to confirm before touring",
+        text: "Renters can review estimated effective rent, active specials, and fee questions before deciding which properties are worth a tour.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Victory Park apartments", to: "/apartments/dallas-tx/victory-park" },
+      { label: "Uptown Dallas apartments", to: "/apartments/dallas-tx/uptown" },
+      { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
+    ],
+  },
 };
 
 export default function DallasSeoLandingPage() {
