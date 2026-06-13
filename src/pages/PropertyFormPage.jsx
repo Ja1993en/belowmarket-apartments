@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Building2, ImagePlus, Plus, Save, Star, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  ChevronDown,
+  ChevronRight,
+  ImagePlus,
+  Plus,
+  Save,
+  Star,
+  X,
+} from "lucide-react";
 import {
   createStoredProperty,
   getAnyPropertyById,
@@ -74,6 +84,7 @@ export default function PropertyFormPage() {
   const [saveError, setSaveError] = useState("");
   const [managementCompanies, setManagementCompanies] = useState([]);
   const [propertyDraft, setPropertyDraft] = useState(emptyPropertyDraft);
+  const [expandedFloorPlanIds, setExpandedFloorPlanIds] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -388,10 +399,13 @@ export default function PropertyFormPage() {
   };
 
   const addFloorPlan = () => {
+    const newFloorPlan = createBlankFloorPlan();
+
     setPropertyDraft((currentDraft) => ({
       ...currentDraft,
-      floorPlans: [...currentDraft.floorPlans, createBlankFloorPlan()],
+      floorPlans: [...currentDraft.floorPlans, newFloorPlan],
     }));
+    setExpandedFloorPlanIds((currentIds) => [...currentIds, newFloorPlan.id]);
   };
 
   const removeFloorPlan = (floorPlanId) => {
@@ -402,6 +416,25 @@ export default function PropertyFormPage() {
           ? currentDraft.floorPlans.filter((floorPlan) => floorPlan.id !== floorPlanId)
           : currentDraft.floorPlans,
     }));
+    setExpandedFloorPlanIds((currentIds) =>
+      currentIds.filter((expandedFloorPlanId) => expandedFloorPlanId !== floorPlanId)
+    );
+  };
+
+  const toggleFloorPlanExpansion = (floorPlanId) => {
+    setExpandedFloorPlanIds((currentIds) =>
+      currentIds.includes(floorPlanId)
+        ? currentIds.filter((expandedFloorPlanId) => expandedFloorPlanId !== floorPlanId)
+        : [...currentIds, floorPlanId]
+    );
+  };
+
+  const expandAllFloorPlans = () => {
+    setExpandedFloorPlanIds(propertyDraft.floorPlans.map((floorPlan) => floorPlan.id));
+  };
+
+  const collapseAllFloorPlans = () => {
+    setExpandedFloorPlanIds([]);
   };
 
   const saveProperty = async (event) => {
@@ -667,34 +700,73 @@ export default function PropertyFormPage() {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={addFloorPlan}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
-            >
-              <Plus className="h-4 w-4" />
-              Add Floor Plan
-            </button>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={expandAllFloorPlans}
+                className="inline-flex items-center justify-center rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-black text-[#173f3f] hover:bg-[#d7e6df]"
+              >
+                Expand All
+              </button>
+
+              <button
+                type="button"
+                onClick={collapseAllFloorPlans}
+                className="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+              >
+                Collapse All
+              </button>
+
+              <button
+                type="button"
+                onClick={addFloorPlan}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+              >
+                <Plus className="h-4 w-4" />
+                Add Floor Plan
+              </button>
+            </div>
           </div>
 
-          <div className="mt-5 space-y-5">
-            {propertyDraft.floorPlans.map((floorPlan, index) => (
-              <FloorPlanEditor
-                key={floorPlan.id}
-                floorPlan={floorPlan}
-                index={index}
-                canRemove={propertyDraft.floorPlans.length > 1}
-                onChange={updateFloorPlan}
-                onRemove={removeFloorPlan}
-                onAvailabilityChange={updateFloorPlanAvailability}
-                onAvailabilityAdd={addFloorPlanAvailability}
-                onAvailabilityImport={importFloorPlanAvailability}
-                onAvailabilityRemove={removeFloorPlanAvailability}
-                onPhotosUpload={uploadFloorPlanPhotos}
-                onPhotoRemove={removeFloorPlanPhoto}
-                onPrimaryPhotoSet={setPrimaryFloorPlanPhoto}
-              />
-            ))}
+          <div className="mt-5 space-y-3">
+            {propertyDraft.floorPlans.map((floorPlan, index) => {
+              const isExpanded = expandedFloorPlanIds.includes(floorPlan.id);
+
+              return (
+                <div
+                  key={floorPlan.id}
+                  className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-[#f5f8f1]"
+                >
+                  <FloorPlanSummaryCard
+                    floorPlan={floorPlan}
+                    index={index}
+                    isExpanded={isExpanded}
+                    canRemove={propertyDraft.floorPlans.length > 1}
+                    onToggle={() => toggleFloorPlanExpansion(floorPlan.id)}
+                    onRemove={() => removeFloorPlan(floorPlan.id)}
+                  />
+
+                  {isExpanded && (
+                    <div className="border-t border-[#d7e6df] bg-white p-3">
+                      <FloorPlanEditor
+                        floorPlan={floorPlan}
+                        index={index}
+                        canRemove={propertyDraft.floorPlans.length > 1}
+                        onChange={updateFloorPlan}
+                        onRemove={removeFloorPlan}
+                        onAvailabilityChange={updateFloorPlanAvailability}
+                        onAvailabilityAdd={addFloorPlanAvailability}
+                        onAvailabilityImport={importFloorPlanAvailability}
+                        onAvailabilityRemove={removeFloorPlanAvailability}
+                        onPhotosUpload={uploadFloorPlanPhotos}
+                        onPhotoRemove={removeFloorPlanPhoto}
+                        onPrimaryPhotoSet={setPrimaryFloorPlanPhoto}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -799,6 +871,95 @@ export default function PropertyFormPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+function FloorPlanSummaryCard({
+  floorPlan,
+  index,
+  isExpanded,
+  canRemove,
+  onToggle,
+  onRemove,
+}) {
+  const calculatedValues = calculateFloorPlanValues(floorPlan);
+  const planName = floorPlan.name?.trim() || `Floor Plan ${index + 1}`;
+  const bedrooms = floorPlan.bedrooms || floorPlan.beds || "Beds not set";
+  const bathrooms = floorPlan.bathrooms || floorPlan.baths || "Baths not set";
+  const squareFeet = floorPlan.squareFeet || floorPlan.sqft || "Sqft not set";
+  const availableUnitCount =
+    floorPlan.availableUnits?.filter((availableUnit) => availableUnit.status !== "leased")
+      .length || 0;
+  const currentSpecial =
+    getSpecialLabel(
+      Number(floorPlan.freeWeeks || 0),
+      floorPlan.rentCreditSpecial,
+      floorPlan.adminFeeSpecial,
+      floorPlan.adminFeeSpecialType
+    ) ||
+    floorPlan.currentSpecial ||
+    floorPlan.special?.label ||
+    "No special";
+
+  return (
+    <div className="grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex min-w-0 items-start gap-3 rounded-2xl text-left outline-none transition hover:bg-white/70 focus-visible:ring-4 focus-visible:ring-[#f2b84b]/25"
+      >
+        <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#173f3f] text-[#f2b84b]">
+          {isExpanded ? (
+            <ChevronDown className="h-5 w-5" />
+          ) : (
+            <ChevronRight className="h-5 w-5" />
+          )}
+        </span>
+
+        <span className="min-w-0">
+          <span className="block truncate text-lg font-black text-[#102426]">
+            {planName}
+          </span>
+          <span className="mt-1 block text-sm font-bold text-[#526260]">
+            {bedrooms} bd • {bathrooms} ba • {squareFeet} sqft
+          </span>
+        </span>
+      </button>
+
+      <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+        <SummaryChip label="Base" value={floorPlan.startingRent || floorPlan.rent || "Not set"} />
+        <SummaryChip label="Effective" value={calculatedValues.effectiveRent || "Calculated"} />
+        <SummaryChip label="Units" value={String(availableUnitCount)} />
+        <SummaryChip label="Special" value={currentSpecial} />
+
+        <button
+          type="button"
+          onClick={onToggle}
+          className="inline-flex items-center justify-center rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-black text-white hover:bg-[#102426]"
+        >
+          {isExpanded ? "Minimize" : "Edit"}
+        </button>
+
+        <button
+          type="button"
+          onClick={onRemove}
+          disabled={!canRemove}
+          className="inline-flex items-center justify-center rounded-xl bg-[#fde8df] px-3 py-2 text-sm font-bold text-[#b33818] hover:bg-[#f9d4c6] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
+          aria-label={`Remove ${planName}`}
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SummaryChip({ label, value }) {
+  return (
+    <span className="min-w-[92px] rounded-xl bg-white px-3 py-2 text-xs font-black text-[#102426] ring-1 ring-[#d7e6df]">
+      <span className="block text-[10px] uppercase text-[#6b7775]">{label}</span>
+      <span className="block max-w-[160px] truncate">{value}</span>
+    </span>
   );
 }
 
