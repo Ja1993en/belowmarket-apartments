@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import {
+    createStoredProperty,
     deleteStoredProperty,
     getAllProperties,
     getLegacyLocalPropertyCount,
@@ -30,6 +31,8 @@ export default function PropertiesTab() {
     );
     const [isMigratingProperties, setIsMigratingProperties] = useState(false);
     const [autoMigrationAttempted, setAutoMigrationAttempted] = useState(false);
+    const [bulkPropertyText, setBulkPropertyText] = useState("");
+    const [isImportingProperties, setIsImportingProperties] = useState(false);
     const refreshProperties = async () => {
         try {
             setIsLoadingProperties(true);
@@ -119,6 +122,33 @@ export default function PropertiesTab() {
         } catch (error) {
             console.error(error);
             setNotice(`Could not delete ${property.name}. Check Supabase.`);
+        }
+    };
+
+    const importBulkProperties = async () => {
+        const importedDrafts = parseBulkPropertyImportRows(bulkPropertyText);
+
+        if (importedDrafts.length === 0) {
+            setNotice("Paste at least one valid property row before importing.");
+            return;
+        }
+
+        try {
+            setIsImportingProperties(true);
+            setNotice("");
+
+            for (const propertyDraft of importedDrafts) {
+                await createStoredProperty(propertyDraft);
+            }
+
+            setBulkPropertyText("");
+            await refreshProperties();
+            setNotice(`${importedDrafts.length} propert${importedDrafts.length === 1 ? "y" : "ies"} imported to Supabase.`);
+        } catch (error) {
+            console.error(error);
+            setNotice(`Could not import properties. ${error?.message || "Check the CSV rows and Supabase connection."}`);
+        } finally {
+            setIsImportingProperties(false);
         }
     };
     
@@ -230,6 +260,53 @@ export default function PropertiesTab() {
                     {loadError}
                 </div>
             )}
+
+            <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+                    <div>
+                        <p className="text-sm font-black text-[#1f6f63]">
+                            Bulk import
+                        </p>
+                        <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                            Paste properties and floor plans
+                        </h2>
+                        <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[#526260]">
+                            Add multiple Dallas properties from a spreadsheet. Each row creates one floor plan; repeated property names are grouped into the same property. Use photos only when you have permission to publish them.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => setBulkPropertyText(BULK_PROPERTY_IMPORT_SAMPLE)}
+                        className="w-fit rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-black text-[#173f3f] hover:bg-[#d7e6df]"
+                    >
+                        Use Sample CSV
+                    </button>
+                </div>
+
+                <textarea
+                    value={bulkPropertyText}
+                    onChange={(event) => setBulkPropertyText(event.target.value)}
+                    rows={7}
+                    placeholder="Property Name,Management Company,Address,City,State,ZIP,Year Built,Status,Floor Plan,Bedrooms,Bathrooms,Sqft,Starting Rent,Monthly Fees,Special,Free Weeks,Available Units,Available Date,Photo URLs"
+                    className="mt-5 w-full rounded-2xl border border-[#b8d9d0] bg-[#f5f8f1] px-4 py-3 text-sm font-bold leading-6 text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
+                />
+
+                <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <p className="text-xs font-bold leading-5 text-[#526260]">
+                        Columns: Property Name, Management Company, Address, City, State, ZIP, Year Built, Status, Floor Plan, Bedrooms, Bathrooms, Sqft, Starting Rent, Monthly Fees, Special, Free Weeks, Available Units, Available Date, Photo URLs.
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={importBulkProperties}
+                        disabled={isImportingProperties}
+                        className="inline-flex items-center justify-center rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-black text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
+                    >
+                        {isImportingProperties ? "Importing..." : "Import Properties"}
+                    </button>
+                </div>
+            </div>
 
             <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -422,6 +499,213 @@ function getSpecialClasses(special) {
 
 function hasVisibleSpecial(special) {
     return Boolean(special && special !== "Special not listed");
+}
+
+const BULK_PROPERTY_IMPORT_SAMPLE = `Property Name,Management Company,Address,City,State,ZIP,Year Built,Status,Floor Plan,Bedrooms,Bathrooms,Sqft,Starting Rent,Monthly Fees,Special,Free Weeks,Available Units,Available Date,Photo URLs
+Example Dallas Apartments,Example Management,123 Main St,Dallas,TX,75201,2020,Live,A1,1,1,720,1795,158,8 weeks free,8,6,07/15/2026,https://example.com/photo-1.jpg|https://example.com/photo-2.jpg
+Example Dallas Apartments,Example Management,123 Main St,Dallas,TX,75201,2020,Live,B2,2,2,1040,2295,188,6 weeks free,6,3,08/01/2026,`;
+
+function parseBulkPropertyImportRows(value) {
+    const rows = String(value || "")
+        .split(/\r?\n/)
+        .map((row) => row.trim())
+        .filter(Boolean);
+    const dataRows = rows.filter((row, index) => !isBulkPropertyHeaderRow(row, index));
+    const propertyMap = new Map();
+
+    dataRows.forEach((row) => {
+        const columns = splitCsvColumns(row);
+        const propertyName = columns[0]?.trim();
+
+        if (!propertyName) return;
+
+        const propertyKey = propertyName.toLowerCase();
+        const existingProperty =
+            propertyMap.get(propertyKey) || createBulkPropertyDraft(columns);
+        const floorPlan = createBulkFloorPlanDraft(columns, existingProperty.floorPlans.length);
+
+        existingProperty.floorPlans.push(floorPlan);
+        propertyMap.set(propertyKey, existingProperty);
+    });
+
+    return [...propertyMap.values()].map((property) => {
+        const primaryFloorPlan = property.floorPlans[0] || {};
+
+        return {
+            ...property,
+            rent: primaryFloorPlan.startingRent || "",
+            requiredMonthlyFees: primaryFloorPlan.requiredMonthlyFees || "",
+            special: primaryFloorPlan.currentSpecial || "",
+            bedrooms: [
+                ...new Set(property.floorPlans.map((floorPlan) => floorPlan.bedrooms).filter(Boolean)),
+            ],
+        };
+    });
+}
+
+function createBulkPropertyDraft(columns) {
+    const [
+        name,
+        managementCompany,
+        address,
+        city,
+        state,
+        zipcode,
+        yearBuilt,
+        status,
+    ] = columns;
+
+    return {
+        name: name?.trim() || "",
+        managementCompany: managementCompany?.trim() || "",
+        manager: managementCompany?.trim() || "",
+        address: address?.trim() || "",
+        city: city?.trim() || "Dallas",
+        state: state?.trim() || "TX",
+        zipcode: zipcode?.trim() || "",
+        yearBuilt: yearBuilt?.trim() || "",
+        status: normalizeBulkPropertyStatus(status),
+        photos: createBulkPhotoList(columns[18]),
+        floorPlans: [],
+    };
+}
+
+function createBulkFloorPlanDraft(columns, index) {
+    const [
+        ,
+        ,
+        ,
+        ,
+        ,
+        ,
+        ,
+        ,
+        floorPlanName,
+        bedrooms,
+        bathrooms,
+        squareFeet,
+        startingRent,
+        monthlyFees,
+        special,
+        freeWeeks,
+        availableUnits,
+        availableDate,
+        photoUrls,
+    ] = columns;
+    const cleanStartingRent = formatBulkCurrency(startingRent);
+    const unitCount = Math.max(Number(String(availableUnits || "").replace(/[^0-9]/g, "")) || 1, 1);
+    const cleanFreeWeeks = String(freeWeeks || "").trim() || getWeeksFromSpecialLabel(special);
+
+    return {
+        id: `bulk-floor-plan-${Date.now()}-${index}`,
+        name: floorPlanName?.trim() || `Floor Plan ${index + 1}`,
+        bedrooms: bedrooms?.trim() || "",
+        beds: bedrooms?.trim() || "",
+        bathrooms: bathrooms?.trim() || "",
+        baths: bathrooms?.trim() || "",
+        squareFeet: squareFeet?.trim() || "",
+        sqft: squareFeet?.trim() || "",
+        startingRent: cleanStartingRent,
+        rent: cleanStartingRent,
+        requiredMonthlyFees: formatBulkCurrency(monthlyFees),
+        totalMonthlyRent: cleanStartingRent,
+        currentSpecial: special?.trim() || "",
+        freeWeeks: cleanFreeWeeks,
+        leaseTermMonths: "12",
+        photos: createBulkPhotoList(photoUrls, "Floor Plan"),
+        availableUnits: Array.from({ length: unitCount }, (_, unitIndex) => ({
+            id: `bulk-availability-${Date.now()}-${index}-${unitIndex}`,
+            unit: unitCount === 1 ? "" : `Option ${unitIndex + 1}`,
+            availableDate: normalizeBulkDate(availableDate),
+            rent: cleanStartingRent,
+            status: "available",
+            specialMode: cleanFreeWeeks ? "custom" : "floorPlan",
+            freeWeeks: cleanFreeWeeks,
+            adminFeeSpecial: "",
+            adminFeeSpecialType: "admin",
+            notes: "",
+        })),
+        status: "available",
+    };
+}
+
+function isBulkPropertyHeaderRow(row, index) {
+    if (index !== 0) return false;
+
+    return /property\s*name/i.test(row) && /floor\s*plan/i.test(row);
+}
+
+function splitCsvColumns(row) {
+    const columns = [];
+    let currentColumn = "";
+    let isQuoted = false;
+
+    for (const character of row) {
+        if (character === '"') {
+            isQuoted = !isQuoted;
+            continue;
+        }
+
+        if (character === "," && !isQuoted) {
+            columns.push(currentColumn.trim());
+            currentColumn = "";
+            continue;
+        }
+
+        currentColumn += character;
+    }
+
+    columns.push(currentColumn.trim());
+    return columns;
+}
+
+function createBulkPhotoList(value, category = "Property") {
+    return String(value || "")
+        .split("|")
+        .map((url) => url.trim())
+        .filter(Boolean)
+        .map((url, index) => ({
+            id: `bulk-photo-${Date.now()}-${index}`,
+            name: `${category} photo ${index + 1}`,
+            category,
+            url,
+        }));
+}
+
+function normalizeBulkPropertyStatus(value) {
+    const status = String(value || "").trim();
+
+    if (["Live", "Draft", "Pending Review"].includes(status)) return status;
+
+    return "Draft";
+}
+
+function formatBulkCurrency(value) {
+    const amount = Number(String(value || "").replace(/[^0-9.]/g, ""));
+
+    if (!amount) return "";
+
+    return `$${Math.round(amount).toLocaleString()}`;
+}
+
+function normalizeBulkDate(value) {
+    const dateValue = String(value || "").trim();
+    if (!dateValue) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return dateValue;
+
+    const match = dateValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if (!match) return dateValue;
+
+    const [, month, day, year] = match;
+    const fullYear = year.length === 2 ? `20${year}` : year;
+
+    return `${fullYear}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+function getWeeksFromSpecialLabel(value) {
+    const match = String(value || "").match(/(\d+(?:\.\d+)?)\s*weeks?\s*free/i);
+
+    return match ? String(match[1]) : "";
 }
 
 function PropertyRow({
