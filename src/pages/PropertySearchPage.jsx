@@ -23,10 +23,6 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = [-96.797, 32.7767];
 const DEFAULT_AREA_RADIUS_MILES = 2;
 const AREA_RADIUS_OPTIONS = [1, 2, 3, 5];
-const SEARCH_PROPERTIES_SOURCE_ID = "search-properties";
-const SEARCH_PROPERTY_CLUSTERS_LAYER_ID = "search-property-clusters";
-const SEARCH_PROPERTY_CLUSTER_COUNT_LAYER_ID = "search-property-cluster-count";
-const SEARCH_PROPERTY_PINS_LAYER_ID = "search-property-pins";
 const SPECIAL_FILTER_OPTIONS = [
   { label: "4 weeks free", weeks: 4 },
   { label: "6 weeks free", weeks: 6 },
@@ -688,6 +684,7 @@ function SearchMap({ properties, mappableProperties, selectedArea, onAreaChange 
 function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaChange }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const markersRef = useRef([]);
   const isChoosingAreaRef = useRef(false);
   const [mapboxGl, setMapboxGl] = useState(null);
   const [mapError, setMapError] = useState("");
@@ -765,11 +762,11 @@ function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaC
         });
       }
 
-      ensureSearchPropertyLayers(mapRef.current);
-      bindSearchPropertyLayerEvents(mapRef.current, mapboxGl);
     });
 
     return () => {
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -827,24 +824,43 @@ function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaC
     if (!mapboxGl || !mapRef.current) return;
 
     const map = mapRef.current;
-    const propertyPinsGeoJson = createSearchPropertyPinsGeoJson(mappableProperties);
-
     const bounds = new mapboxGl.LngLatBounds();
-
-    const updatePins = () => {
-      ensureSearchPropertyLayers(map);
-      map.getSource(SEARCH_PROPERTIES_SOURCE_ID)?.setData(propertyPinsGeoJson);
-    };
-
-    if (map.getSource(SEARCH_PROPERTIES_SOURCE_ID)) {
-      updatePins();
-    } else if (map.loaded()) {
-      updatePins();
-    } else {
-      map.once("load", updatePins);
-    }
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = [];
 
     mappableProperties.forEach((property) => {
+      const markerElement = createSearchPriceMarkerElement(property);
+      const popup = new mapboxGl.Popup({
+        offset: 18,
+        closeButton: true,
+        className: "bma-search-property-popup",
+      }).setHTML(createSearchPropertyPopupHtml(property));
+
+      markerElement.addEventListener("click", (event) => {
+        if (!isChoosingAreaRef.current) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        onAreaChange({
+          center: {
+            latitude: property.latitude,
+            longitude: property.longitude,
+          },
+          radiusMiles: areaRadiusMiles,
+        });
+        setIsChoosingArea(false);
+      });
+
+      const marker = new mapboxGl.Marker({
+        element: markerElement,
+        anchor: "bottom",
+      })
+        .setLngLat([property.longitude, property.latitude])
+        .setPopup(popup)
+        .addTo(map);
+
+      markersRef.current.push(marker);
       bounds.extend([property.longitude, property.latitude]);
     });
 
@@ -1366,174 +1382,39 @@ function getPointerMapPoint(map, event) {
   return { latitude, longitude };
 }
 
-function ensureSearchPropertyLayers(map) {
-  if (!map.getSource(SEARCH_PROPERTIES_SOURCE_ID)) {
-    map.addSource(SEARCH_PROPERTIES_SOURCE_ID, {
-      type: "geojson",
-      data: createSearchPropertyPinsGeoJson([]),
-      cluster: true,
-      clusterMaxZoom: 13,
-      clusterRadius: 42,
-    });
-  }
-
-  if (!map.getLayer(SEARCH_PROPERTY_CLUSTERS_LAYER_ID)) {
-    map.addLayer({
-      id: SEARCH_PROPERTY_CLUSTERS_LAYER_ID,
-      type: "circle",
-      source: SEARCH_PROPERTIES_SOURCE_ID,
-      filter: ["has", "point_count"],
-      paint: {
-        "circle-color": [
-          "step",
-          ["get", "point_count"],
-          "#173f3f",
-          8,
-          "#2d7dd2",
-          20,
-          "#8a5b0a",
-        ],
-        "circle-radius": [
-          "step",
-          ["get", "point_count"],
-          16,
-          8,
-          20,
-          20,
-          25,
-        ],
-        "circle-stroke-color": "#ffffff",
-        "circle-stroke-width": 2,
-        "circle-opacity": 0.94,
-      },
-    });
-  }
-
-  if (!map.getLayer(SEARCH_PROPERTY_CLUSTER_COUNT_LAYER_ID)) {
-    map.addLayer({
-      id: SEARCH_PROPERTY_CLUSTER_COUNT_LAYER_ID,
-      type: "symbol",
-      source: SEARCH_PROPERTIES_SOURCE_ID,
-      filter: ["has", "point_count"],
-      layout: {
-        "text-field": ["get", "point_count_abbreviated"],
-        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
-        "text-size": 12,
-      },
-      paint: {
-        "text-color": "#ffffff",
-      },
-    });
-  }
-
-  if (!map.getLayer(SEARCH_PROPERTY_PINS_LAYER_ID)) {
-    map.addLayer({
-      id: SEARCH_PROPERTY_PINS_LAYER_ID,
-      type: "circle",
-      source: SEARCH_PROPERTIES_SOURCE_ID,
-      filter: ["!", ["has", "point_count"]],
-      paint: {
-        "circle-color": [
-          "case",
-          ["==", ["get", "mapAccuracy"], "approximate"],
-          "#8a5b0a",
-          "#f2b84b",
-        ],
-        "circle-radius": [
-          "case",
-          ["boolean", ["feature-state", "hover"], false],
-          8,
-          6,
-        ],
-        "circle-stroke-color": "#102426",
-        "circle-stroke-width": 2,
-        "circle-opacity": 0.96,
-      },
-    });
-  }
-}
-
-function bindSearchPropertyLayerEvents(map, mapboxGl) {
-  if (map.__belowMarketSearchPropertyEventsBound) return;
-  map.__belowMarketSearchPropertyEventsBound = true;
-
-  map.on("click", SEARCH_PROPERTY_CLUSTERS_LAYER_ID, (event) => {
-    const clusterFeature = map.queryRenderedFeatures(event.point, {
-      layers: [SEARCH_PROPERTY_CLUSTERS_LAYER_ID],
-    })[0];
-    const clusterId = clusterFeature?.properties?.cluster_id;
-    const source = map.getSource(SEARCH_PROPERTIES_SOURCE_ID);
-
-    if (!source || clusterId === undefined) return;
-
-    source.getClusterExpansionZoom(clusterId, (error, zoom) => {
-      if (error) return;
-
-      map.easeTo({
-        center: clusterFeature.geometry.coordinates,
-        zoom,
-        duration: 450,
-      });
-    });
-  });
-
-  map.on("click", SEARCH_PROPERTY_PINS_LAYER_ID, (event) => {
-    const propertyFeature = event.features?.[0];
-    if (!propertyFeature) return;
-
-    const coordinates = [...propertyFeature.geometry.coordinates];
-
-    while (Math.abs(event.lngLat.lng - coordinates[0]) > 180) {
-      coordinates[0] += event.lngLat.lng > coordinates[0] ? 360 : -360;
-    }
-
-    new mapboxGl.Popup({ offset: 16, closeButton: true })
-      .setLngLat(coordinates)
-      .setHTML(createSearchPropertyPopupHtml(propertyFeature.properties || {}))
-      .addTo(map);
-  });
-
-  [SEARCH_PROPERTY_CLUSTERS_LAYER_ID, SEARCH_PROPERTY_PINS_LAYER_ID].forEach(
-    (layerId) => {
-      map.on("mouseenter", layerId, () => {
-        map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", layerId, () => {
-        map.getCanvas().style.cursor = "";
-      });
-    }
+function createSearchPriceMarkerElement(property) {
+  const isApproximatePin = property.mapAccuracy === "approximate";
+  const markerElement = document.createElement("button");
+  markerElement.type = "button";
+  markerElement.className = [
+    "relative flex min-w-[54px] items-center justify-center rounded-full border px-2.5 py-1 text-[12px] font-black leading-none",
+    "shadow-[0_3px_10px_rgba(16,36,38,0.22)] transition hover:-translate-y-0.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#f2b84b] focus:ring-offset-2",
+    isApproximatePin
+      ? "border-[#8a5b0a] bg-[#fff7e6] text-[#684307] hover:bg-[#8a5b0a] hover:text-white"
+      : "border-[#d7e6df] bg-white text-[#102426] hover:border-[#173f3f] hover:bg-[#173f3f] hover:text-white",
+  ].join(" ");
+  markerElement.textContent = getPrimaryRentLabel(property);
+  markerElement.setAttribute(
+    "aria-label",
+    `${property.name || "Property"} ${getPrimaryRentLabel(property)}`
   );
-}
 
-function createSearchPropertyPinsGeoJson(properties) {
-  return {
-    type: "FeatureCollection",
-    features: properties.map((property) => ({
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: [property.longitude, property.latitude],
-      },
-      properties: {
-        propertyId: property.id,
-        propertyName: property.name || "Property",
-        address: getPropertyAddressLabel(property),
-        rentLabel: getPrimaryRentLabel(property),
-        mapAccuracy: property.mapAccuracy || "exact",
-      },
-    })),
-  };
+  return markerElement;
 }
 
 function createSearchPropertyPopupHtml(property) {
   const isApproximatePin = property.mapAccuracy === "approximate";
-  const propertyUrl = `/properties/${escapeMapAttribute(property.propertyId)}`;
+  const propertyUrl = `/properties/${escapeMapAttribute(property.id)}`;
 
   return `
     <div style="min-width:180px;max-width:230px">
-      <strong>${escapeMapText(property.propertyName)}</strong>
-      <div style="margin-top:4px;color:#526260;font-size:12px">${escapeMapText(property.address)}</div>
-      <div style="margin-top:8px;font-weight:800;color:#102426">${escapeMapText(property.rentLabel)}</div>
+      <strong>${escapeMapText(property.name || "Property")}</strong>
+      <div style="margin-top:4px;color:#526260;font-size:12px">${escapeMapText(
+        getPropertyAddressLabel(property)
+      )}</div>
+      <div style="margin-top:8px;font-weight:800;color:#102426">${escapeMapText(
+        getPrimaryRentLabel(property)
+      )}</div>
       ${
         isApproximatePin
           ? '<div style="margin-top:6px;color:#8a5b0a;font-size:12px">Approximate location</div>'
