@@ -90,7 +90,11 @@ export default function PropertySearchPage() {
   const filterMatchedProperties = useMemo(() => {
     return specialMatchedProperties.filter((property) => {
       return (
-        propertyMatchesPriceFilter(property, selectedPriceRange) &&
+        propertyMatchesPriceFilter(
+          property,
+          selectedPriceRange,
+          selectedBedroomFilter
+        ) &&
         propertyMatchesBedroomFilter(property, selectedBedroomFilter)
       );
     });
@@ -568,6 +572,8 @@ export default function PropertySearchPage() {
             properties={filteredProperties}
             mappableProperties={mappableFilteredProperties}
             selectedArea={selectedArea}
+            selectedBedroomFilter={selectedBedroomFilter}
+            selectedPriceRange={selectedPriceRange}
             onAreaChange={setSelectedArea}
             onPropertyHover={setHoveredMapPropertyId}
             onPropertySelect={handleMapPropertySelect}
@@ -665,6 +671,8 @@ export default function PropertySearchPage() {
               isSaved={savedPropertyIds.includes(property.id)}
               isCompared={comparePropertyIds.includes(property.id)}
               isMapHighlighted={highlightedMapPropertyId === property.id}
+              selectedBedroomFilter={selectedBedroomFilter}
+              selectedPriceRange={selectedPriceRange}
               cardRef={(node) => {
                 if (node) {
                   resultCardRefs.current.set(property.id, node);
@@ -701,6 +709,8 @@ function SearchMap({
   properties,
   mappableProperties,
   selectedArea,
+  selectedBedroomFilter,
+  selectedPriceRange,
   onAreaChange,
   onPropertyHover,
   onPropertySelect,
@@ -715,6 +725,8 @@ function SearchMap({
       properties={properties}
       mappableProperties={mappableProperties}
       selectedArea={selectedArea}
+      selectedBedroomFilter={selectedBedroomFilter}
+      selectedPriceRange={selectedPriceRange}
       onAreaChange={onAreaChange}
       onPropertyHover={onPropertyHover}
       onPropertySelect={onPropertySelect}
@@ -727,6 +739,8 @@ function MapboxSearchMap({
   properties,
   mappableProperties,
   selectedArea,
+  selectedBedroomFilter,
+  selectedPriceRange,
   onAreaChange,
   onPropertyHover,
   onPropertySelect,
@@ -1029,6 +1043,8 @@ function MapboxSearchMap({
       {hoveredProperty && !isChoosingArea && (
         <MapPropertyHoverPreview
           property={hoveredProperty}
+          selectedBedroomFilter={selectedBedroomFilter}
+          selectedPriceRange={selectedPriceRange}
           onMouseEnter={keepHoveredPropertyPreview}
           onMouseLeave={hideHoveredPropertyPreview}
         />
@@ -1055,8 +1071,19 @@ function MapboxSearchMap({
   );
 }
 
-function MapPropertyHoverPreview({ property, onMouseEnter, onMouseLeave }) {
-  const priceSummary = getPropertySearchPriceSummary(property);
+function MapPropertyHoverPreview({
+  property,
+  selectedBedroomFilter,
+  selectedPriceRange,
+  onMouseEnter,
+  onMouseLeave,
+}) {
+  const displayFloorPlans = getSearchDisplayFloorPlans(
+    property,
+    selectedBedroomFilter,
+    selectedPriceRange
+  );
+  const priceSummary = getPropertySearchPriceSummary(property, displayFloorPlans);
   const hasGoldBar = propertyHasStrongMapDeal(property);
   const rentLabel = priceSummary.hasRentSpecial
     ? priceSummary.effectiveRentLabel
@@ -1088,7 +1115,7 @@ function MapPropertyHoverPreview({ property, onMouseEnter, onMouseLeave }) {
             </p>
           </div>
           <span className="shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
-            {getBedsLabel(property)}
+            {getBedsLabel(property, displayFloorPlans)}
           </span>
         </div>
 
@@ -1167,17 +1194,28 @@ function SearchResultCard({
   isSaved,
   isCompared,
   isMapHighlighted,
+  selectedBedroomFilter,
+  selectedPriceRange,
   cardRef,
   onToggleSaved,
   onToggleCompare,
 }) {
   const addressLabel = getPropertyAddressLabel(property);
-  const priceSummary = getPropertySearchPriceSummary(property);
+  const displayFloorPlans = getSearchDisplayFloorPlans(
+    property,
+    selectedBedroomFilter,
+    selectedPriceRange
+  );
+  const priceSummary = getPropertySearchPriceSummary(property, displayFloorPlans);
   const hasSpecial = priceSummary.hasSpecial;
   const showNetEffectiveRent = priceSummary.hasRentSpecial;
   const dealScore = getSearchDealScore(property, priceSummary);
   const transparencyBadges = getSearchTransparencyBadges(property, priceSummary);
-  const monthlyBreakdown = getSearchMonthlyBreakdown(property, priceSummary);
+  const monthlyBreakdown = getSearchMonthlyBreakdown(
+    property,
+    priceSummary,
+    displayFloorPlans
+  );
   const cardHref = `/properties/${property.id}`;
   const showGoldHoverBar = isMapHighlighted && propertyHasStrongMapDeal(property);
 
@@ -1234,7 +1272,7 @@ function SearchResultCard({
           </div>
 
           <p className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
-            {getBedsLabel(property)}
+            {getBedsLabel(property, displayFloorPlans)}
           </p>
         </div>
 
@@ -1667,7 +1705,11 @@ function propertyHasWeeksFreeSpecial(property, targetWeeks) {
   });
 }
 
-function propertyMatchesPriceFilter(property, selectedPriceRange) {
+function propertyMatchesPriceFilter(
+  property,
+  selectedPriceRange,
+  selectedBedroomFilter = ""
+) {
   if (!selectedPriceRange) return true;
 
   const priceOption = PRICE_FILTER_OPTIONS.find(
@@ -1675,7 +1717,14 @@ function propertyMatchesPriceFilter(property, selectedPriceRange) {
   );
   if (!priceOption) return true;
 
-  const rentValues = getPropertyFilterRentValues(property);
+  const bedroomFilteredFloorPlans = getBedroomFilteredSearchFloorPlans(
+    property,
+    selectedBedroomFilter
+  );
+  const rentValues = getPropertyFilterRentValues(
+    property,
+    bedroomFilteredFloorPlans
+  );
   if (rentValues.length === 0) return false;
 
   return rentValues.some((rentValue) => {
@@ -1715,9 +1764,86 @@ function getSelectedBedroomLabel(selectedBedroomFilter) {
   );
 }
 
-function getPropertyFilterRentValues(property) {
+function getSearchDisplayFloorPlans(
+  property,
+  selectedBedroomFilter = "",
+  selectedPriceRange = ""
+) {
+  const bedroomFilteredFloorPlans = getBedroomFilteredSearchFloorPlans(
+    property,
+    selectedBedroomFilter
+  );
+  const priceOption = PRICE_FILTER_OPTIONS.find(
+    (option) => option.label === selectedPriceRange
+  );
+
+  if (!priceOption) return bedroomFilteredFloorPlans;
+
+  const priceFilteredFloorPlans = bedroomFilteredFloorPlans
+    .map((floorPlan) =>
+      getPriceFilteredSearchFloorPlan(property, floorPlan, priceOption)
+    )
+    .filter(Boolean);
+
+  return priceFilteredFloorPlans.length > 0
+    ? priceFilteredFloorPlans
+    : bedroomFilteredFloorPlans;
+}
+
+function getBedroomFilteredSearchFloorPlans(property, selectedBedroomFilter = "") {
   const floorPlans = getSearchFloorPlans(property);
-  const priceSummary = getPropertySearchPriceSummary(property);
+
+  if (!selectedBedroomFilter) return floorPlans;
+
+  const filteredFloorPlans = floorPlans.filter((floorPlan) =>
+    floorPlanMatchesBedroomFilter(floorPlan, selectedBedroomFilter)
+  );
+
+  return filteredFloorPlans.length > 0 ? filteredFloorPlans : floorPlans;
+}
+
+function floorPlanMatchesBedroomFilter(floorPlan, selectedBedroomFilter) {
+  const bedroomCount = getBedroomCount(floorPlan.bedrooms || floorPlan.beds);
+
+  if (!Number.isFinite(bedroomCount) || bedroomCount >= 99) return false;
+  if (selectedBedroomFilter === "studio") return bedroomCount === 0;
+  if (selectedBedroomFilter === "3plus") return bedroomCount >= 3;
+
+  return bedroomCount === Number(selectedBedroomFilter);
+}
+
+function rentValueMatchesPriceOption(rentValue, priceOption) {
+  const meetsMinimum = rentValue >= priceOption.min;
+  const meetsMaximum = !priceOption.max || rentValue <= priceOption.max;
+
+  return meetsMinimum && meetsMaximum;
+}
+
+function getPriceFilteredSearchFloorPlan(property, floorPlan, priceOption) {
+  const availableUnits =
+    floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+
+  if (availableUnits.length > 0) {
+    const priceMatchedUnits = availableUnits.filter((unit) =>
+      getUnitFilterRentValues(property, floorPlan, unit).some((rentValue) =>
+        rentValueMatchesPriceOption(rentValue, priceOption)
+      )
+    );
+
+    return priceMatchedUnits.length > 0
+      ? { ...floorPlan, availableUnits: priceMatchedUnits }
+      : null;
+  }
+
+  return getFloorPlanFilterRentValues(property, floorPlan).some((rentValue) =>
+    rentValueMatchesPriceOption(rentValue, priceOption)
+  )
+    ? floorPlan
+    : null;
+}
+
+function getPropertyFilterRentValues(property, floorPlans = getSearchFloorPlans(property)) {
+  const priceSummary = getPropertySearchPriceSummary(property, floorPlans);
   const specialDealUnits = getSearchSpecialDealUnits(property, floorPlans);
   const specialRentValues = specialDealUnits
     .filter((dealUnit) => dealUnit.hasRentSpecial)
@@ -1731,6 +1857,57 @@ function getPropertyFilterRentValues(property) {
     parseFirstCurrency(priceSummary.effectiveRentLabel),
     parseFirstCurrency(priceSummary.normalRentLabel),
   ].filter(Boolean);
+}
+
+function getFloorPlanFilterRentValues(property, floorPlan) {
+  const floorPlanSpecial = getFloorPlanSearchSpecial(floorPlan, property);
+  const availableUnits =
+    floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+
+  if (availableUnits.length > 0) {
+    return availableUnits
+      .flatMap((unit) => getUnitFilterRentValues(property, floorPlan, unit))
+      .filter(Boolean);
+  }
+
+  if (floorPlanSpecial.hasSpecial) {
+    const specialDealUnit = createSearchSpecialDealUnit({
+      floorPlan,
+      unitRent: floorPlan.startingRent || floorPlan.rent || property?.rent,
+      specialLabel: floorPlanSpecial.label,
+      freeWeeks: floorPlanSpecial.freeWeeks,
+      rentCreditSpecial: floorPlanSpecial.rentCreditSpecial,
+    });
+
+    if (specialDealUnit.hasRentSpecial) return [specialDealUnit.effectiveRentNumber];
+  }
+
+  return [
+    parseCurrency(floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent),
+  ].filter(Boolean);
+}
+
+function getUnitFilterRentValues(property, floorPlan, unit) {
+  const floorPlanSpecial = getFloorPlanSearchSpecial(floorPlan, property);
+  const unitSpecial = getUnitSearchSpecial(unit, floorPlanSpecial);
+  const unitRent =
+    unit.rent || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent;
+
+  if (unitSpecial.hasSpecial) {
+    const specialDealUnit = createSearchSpecialDealUnit({
+      floorPlan,
+      unitRent,
+      specialLabel: unitSpecial.label,
+      freeWeeks: unitSpecial.freeWeeks,
+      rentCreditSpecial: unitSpecial.rentCreditSpecial,
+    });
+
+    return specialDealUnit.hasRentSpecial
+      ? [specialDealUnit.effectiveRentNumber]
+      : [parseCurrency(unitRent)];
+  }
+
+  return [parseCurrency(unitRent)].filter(Boolean);
 }
 
 function getPropertyBedroomCounts(property) {
@@ -1781,8 +1958,7 @@ function getPropertySpecialValues(property) {
   );
 }
 
-function getPropertySearchPriceSummary(property) {
-  const floorPlans = getSearchFloorPlans(property);
+function getPropertySearchPriceSummary(property, floorPlans = getSearchFloorPlans(property)) {
   const normalRentValues = getNormalRentValues(property, floorPlans);
   const specialDealUnits = getSearchSpecialDealUnits(property, floorPlans);
   const specialRentValues = specialDealUnits
@@ -1852,8 +2028,12 @@ function getSearchTransparencyBadges(property, priceSummary) {
   return badges.slice(0, 3);
 }
 
-function getSearchMonthlyBreakdown(property, priceSummary) {
-  const firstFloorPlan = getSearchFloorPlans(property)[0] || {};
+function getSearchMonthlyBreakdown(
+  property,
+  priceSummary,
+  floorPlans = getSearchFloorPlans(property)
+) {
+  const firstFloorPlan = floorPlans[0] || {};
   const requiredFees =
     property?.requiredMonthlyFees ||
     property?.monthlyFees ||
@@ -1912,11 +2092,11 @@ function getNormalRentValues(property, floorPlans) {
         )
         .filter(Boolean) || [];
 
-    return [floorPlanRent, ...unitRents].filter(Boolean);
+    return unitRents.length > 0 ? unitRents : [floorPlanRent].filter(Boolean);
   });
   const propertyRent = parseCurrency(property?.rent);
 
-  return [...rentValues, propertyRent].filter(Boolean);
+  return rentValues.length > 0 ? rentValues : [propertyRent].filter(Boolean);
 }
 
 function getSearchSpecialDealUnits(property, floorPlans) {
@@ -2128,8 +2308,15 @@ function formatRentRange(minRent, maxRent) {
   return `${formatCurrency(minRent)} - ${formatCurrency(maxRent)}`;
 }
 
-function getBedsLabel(property) {
-  const bedrooms = [...new Set(property.bedrooms || [])].sort(
+function getBedsLabel(property, floorPlans = null) {
+  const bedroomsFromFloorPlans =
+    floorPlans
+      ?.map((floorPlan) => floorPlan.bedrooms || floorPlan.beds)
+      .filter((bedroomValue) => bedroomValue !== undefined && bedroomValue !== null) ||
+    [];
+  const bedrooms = [
+    ...new Set(bedroomsFromFloorPlans.length > 0 ? bedroomsFromFloorPlans : property.bedrooms || []),
+  ].sort(
     (firstBedroom, secondBedroom) =>
       getBedroomCount(firstBedroom) - getBedroomCount(secondBedroom)
   );
