@@ -273,14 +273,9 @@ function getPropertySeoMetadata({ property, listingFloorPlans, propertyGalleryIm
     const propertyName = property?.name || "Apartment";
     const city = property?.city || "Dallas";
     const state = property?.state || "TX";
-    const rentValues = listingFloorPlans
-        .flatMap((plan) => [
-            parseCurrency(plan.effectiveRent),
-            parseCurrency(plan.rent),
-            ...(plan.availableUnits || []).map((unit) => parseCurrency(unit.rent)),
-        ])
-        .filter(Boolean);
+    const rentValues = getPropertySeoRentValues(listingFloorPlans);
     const lowestRent = rentValues.length > 0 ? Math.min(...rentValues) : 0;
+    const highestRent = rentValues.length > 0 ? Math.max(...rentValues) : 0;
     const rentLabel =
         rentValues.length > 0
             ? `${formatCurrency(lowestRent)}+`
@@ -307,29 +302,20 @@ function getPropertySeoMetadata({ property, listingFloorPlans, propertyGalleryIm
     const imageUrl = getAbsoluteSeoImageUrl(
         propertyGalleryImages?.[0]?.url || getPropertyPrimaryImage(property)
     );
-    const structuredData = {
-        "@context": "https://schema.org",
-        "@type": "ApartmentComplex",
-        name: propertyName,
+    const structuredData = getPropertySeoStructuredData({
+        canonicalUrl,
+        city,
         description,
-        url: canonicalUrl,
-        image: imageUrl,
-        address: {
-            "@type": "PostalAddress",
-            streetAddress: property?.address || "",
-            addressLocality: city,
-            addressRegion: state,
-            postalCode: property?.zipcode || "",
-            addressCountry: "US",
-        },
-        offers: {
-            "@type": "AggregateOffer",
-            priceCurrency: "USD",
-            lowPrice: lowestRent || undefined,
-            availability: "https://schema.org/InStock",
-            url: canonicalUrl,
-        },
-    };
+        highestRent,
+        imageUrl,
+        listingFloorPlans,
+        lowestRent,
+        property,
+        propertyGalleryImages,
+        propertyName,
+        specialLabel,
+        state,
+    });
 
     return {
         canonicalUrl,
@@ -338,6 +324,402 @@ function getPropertySeoMetadata({ property, listingFloorPlans, propertyGalleryIm
         structuredData,
         title,
     };
+}
+
+function getPropertySeoRentValues(listingFloorPlans) {
+    return listingFloorPlans
+        .flatMap((plan) => [
+            parseCurrency(plan.effectiveRent),
+            parseCurrency(plan.rent),
+            ...(plan.availableUnits || []).map((unit) => parseCurrency(unit.rent)),
+        ])
+        .filter(Boolean);
+}
+
+function getPropertySeoStructuredData({
+    canonicalUrl,
+    city,
+    description,
+    highestRent,
+    imageUrl,
+    listingFloorPlans,
+    lowestRent,
+    property,
+    propertyGalleryImages,
+    propertyName,
+    specialLabel,
+    state,
+}) {
+    const propertyNodeId = `${canonicalUrl}#property`;
+    const webPageNodeId = `${canonicalUrl}#webpage`;
+    const breadcrumbNodeId = `${canonicalUrl}#breadcrumb`;
+    const listingNodeId = `${canonicalUrl}#listing`;
+    const offerCatalogNodeId = `${canonicalUrl}#floor-plan-offers`;
+    const faqNodeId = `${canonicalUrl}#property-faq`;
+    const organizationNodeId = "https://belowmarketapartments.com/#organization";
+    const absoluteGalleryImages = [
+        ...new Set(
+            propertyGalleryImages
+                .map((image) => getAbsoluteSeoImageUrl(image.url))
+                .filter(Boolean)
+        ),
+    ];
+    const propertyCoordinates = getPropertyCoordinates(property);
+    const floorPlanOffers = getPropertySeoFloorPlanOffers({
+        canonicalUrl,
+        listingFloorPlans,
+        propertyName,
+    });
+    const propertyFaqs = getPropertySeoFaqs({
+        listingFloorPlans,
+        property,
+        propertyName,
+        specialLabel,
+    });
+    const aggregateOffer = {
+        "@type": "AggregateOffer",
+        priceCurrency: "USD",
+        lowPrice: lowestRent || undefined,
+        highPrice: highestRent || undefined,
+        offerCount: floorPlanOffers.length || undefined,
+        availability: "https://schema.org/InStock",
+        url: canonicalUrl,
+    };
+    const apartmentNode = {
+        "@type": "ApartmentComplex",
+        "@id": propertyNodeId,
+        name: propertyName,
+        description,
+        url: canonicalUrl,
+        image: absoluteGalleryImages.length > 0 ? absoluteGalleryImages : imageUrl,
+        photo: absoluteGalleryImages.slice(0, 12).map((url, index) => ({
+            "@type": "ImageObject",
+            "@id": `${canonicalUrl}#photo-${index + 1}`,
+            contentUrl: url,
+            name: `${propertyName} photo ${index + 1}`,
+        })),
+        address: {
+            "@type": "PostalAddress",
+            streetAddress: property?.address || "",
+            addressLocality: city,
+            addressRegion: state,
+            postalCode: property?.zipcode || "",
+            addressCountry: "US",
+        },
+        geo: propertyCoordinates
+            ? {
+                "@type": "GeoCoordinates",
+                latitude: propertyCoordinates.latitude,
+                longitude: propertyCoordinates.longitude,
+            }
+            : undefined,
+        amenityFeature: amenities.map((amenity) => ({
+            "@type": "LocationFeatureSpecification",
+            name: amenity,
+            value: true,
+        })),
+        additionalProperty: getPropertySeoAdditionalProperties({
+            listingFloorPlans,
+            property,
+            specialLabel,
+        }),
+        mainEntityOfPage: { "@id": webPageNodeId },
+        offers: aggregateOffer,
+        subjectOf: [{ "@id": offerCatalogNodeId }, { "@id": faqNodeId }],
+        containedInPlace: city && state
+            ? {
+                "@type": "City",
+                name: `${city}, ${state}`,
+            }
+            : undefined,
+        petsAllowed: property?.petPolicy || property?.petsAllowed || undefined,
+    };
+    const webPageNode = {
+        "@type": "WebPage",
+        "@id": webPageNodeId,
+        url: canonicalUrl,
+        name: `${propertyName} | Below Market Apartments`,
+        description,
+        isPartOf: {
+            "@type": "WebSite",
+            "@id": "https://belowmarketapartments.com/#website",
+            name: "Below Market Apartments",
+            url: "https://belowmarketapartments.com/",
+            publisher: { "@id": organizationNodeId },
+        },
+        breadcrumb: { "@id": breadcrumbNodeId },
+        primaryImageOfPage: absoluteGalleryImages[0]
+            ? {
+                "@type": "ImageObject",
+                contentUrl: absoluteGalleryImages[0],
+                name: `${propertyName} primary photo`,
+            }
+            : undefined,
+        mainEntity: { "@id": propertyNodeId },
+        about: [{ "@id": propertyNodeId }, { "@id": listingNodeId }, { "@id": offerCatalogNodeId }],
+    };
+    const listingNode = {
+        "@type": "RealEstateListing",
+        "@id": listingNodeId,
+        name: `${propertyName} apartment listing`,
+        url: canonicalUrl,
+        description,
+        image: absoluteGalleryImages.length > 0 ? absoluteGalleryImages : imageUrl,
+        datePosted: property?.createdAt || property?.created_at || undefined,
+        dateModified:
+            property?.updatedAt ||
+            property?.updated_at ||
+            property?.lastUpdated ||
+            undefined,
+        mainEntityOfPage: { "@id": webPageNodeId },
+        about: { "@id": propertyNodeId },
+        offers: aggregateOffer,
+        additionalProperty: getPropertySeoAdditionalProperties({
+            listingFloorPlans,
+            property,
+            specialLabel,
+        }),
+    };
+    const organizationNode = {
+        "@type": "Organization",
+        "@id": organizationNodeId,
+        name: "Below Market Apartments",
+        url: "https://belowmarketapartments.com/",
+        logo: "https://belowmarketapartments.com/favicon-512.png",
+    };
+    const breadcrumbNode = {
+        "@type": "BreadcrumbList",
+        "@id": breadcrumbNodeId,
+        itemListElement: [
+            {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://belowmarketapartments.com/",
+            },
+            {
+                "@type": "ListItem",
+                position: 2,
+                name: "Dallas Apartments",
+                item: "https://belowmarketapartments.com/properties",
+            },
+            {
+                "@type": "ListItem",
+                position: 3,
+                name: propertyName,
+                item: canonicalUrl,
+            },
+        ],
+    };
+    const offerCatalogNode = {
+        "@type": "OfferCatalog",
+        "@id": offerCatalogNodeId,
+        name: `${propertyName} floor plans and rent specials`,
+        url: canonicalUrl,
+        itemListElement: floorPlanOffers,
+    };
+    const faqNode = {
+        "@type": "FAQPage",
+        "@id": faqNodeId,
+        mainEntity: propertyFaqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.answer,
+            },
+        })),
+    };
+
+    return {
+        "@context": "https://schema.org",
+        "@graph": [
+            organizationNode,
+            webPageNode,
+            breadcrumbNode,
+            listingNode,
+            apartmentNode,
+            offerCatalogNode,
+            faqNode,
+        ],
+    };
+}
+
+function getPropertySeoFloorPlanOffers({
+    canonicalUrl,
+    listingFloorPlans,
+    propertyName,
+}) {
+    return listingFloorPlans
+        .filter((plan) => isFloorPlanAvailable(plan))
+        .slice(0, 20)
+        .map((plan, index) => {
+            const rent = parseCurrency(plan.rent);
+            const effectiveRent = parseCurrency(plan.effectiveRent);
+            const bestPrice = effectiveRent || rent;
+            const specialLabel = plan.special?.label || plan.currentSpecial || "";
+            const availableUnitCount = getFloorPlanAvailableUnitCount(plan);
+            const planImage = plan.image ? getAbsoluteSeoImageUrl(plan.image) : "";
+
+            return {
+                "@type": "Offer",
+                "@id": `${canonicalUrl}#floor-plan-offer-${index + 1}`,
+                name: `${propertyName} ${plan.name || `Floor Plan ${index + 1}`}`,
+                url: canonicalUrl,
+                price: bestPrice || undefined,
+                priceCurrency: "USD",
+                availability: "https://schema.org/InStock",
+                description: getFloorPlanSeoDescription(plan, specialLabel),
+                image: planImage || undefined,
+                priceSpecification: getFloorPlanSeoPriceSpecifications({
+                    effectiveRent,
+                    rent,
+                }),
+                additionalProperty: getFloorPlanSeoAdditionalProperties({
+                    plan,
+                    specialLabel,
+                }),
+                itemOffered: {
+                    "@type": "Apartment",
+                    name: plan.name || `Floor Plan ${index + 1}`,
+                    numberOfBedrooms: formatBedroomLabel(plan.beds),
+                    numberOfBathroomsTotal: plan.baths || undefined,
+                    floorSize:
+                        parseCurrency(plan.sqft) > 0
+                            ? {
+                                "@type": "QuantitativeValue",
+                                value: parseCurrency(plan.sqft),
+                                unitText: "square feet",
+                            }
+                            : undefined,
+                },
+                eligibleQuantity:
+                    availableUnitCount > 0
+                        ? {
+                            "@type": "QuantitativeValue",
+                            value: availableUnitCount,
+                            unitText: "available units",
+                        }
+                        : undefined,
+            };
+        });
+}
+
+function getFloorPlanSeoPriceSpecifications({ effectiveRent, rent }) {
+    return [
+        rent
+            ? {
+                "@type": "UnitPriceSpecification",
+                name: "Normal monthly rent",
+                price: rent,
+                priceCurrency: "USD",
+                unitText: "month",
+            }
+            : null,
+        effectiveRent && effectiveRent !== rent
+            ? {
+                "@type": "UnitPriceSpecification",
+                name: "Estimated effective rent",
+                price: effectiveRent,
+                priceCurrency: "USD",
+                unitText: "month",
+            }
+            : null,
+    ].filter(Boolean);
+}
+
+function getFloorPlanSeoAdditionalProperties({ plan, specialLabel }) {
+    return [
+        { name: "Bedrooms", value: formatBedroomLabel(plan.beds) },
+        { name: "Bathrooms", value: plan.baths },
+        { name: "Square feet", value: plan.sqft },
+        { name: "Current special", value: specialLabel },
+        { name: "Market rent comparison", value: plan.marketRent },
+        { name: "Estimated savings", value: plan.savings },
+        { name: "Below market percent", value: plan.belowMarketPercent },
+        { name: "Availability", value: plan.available || plan.availability },
+    ]
+        .filter((item) => item.value)
+        .map((item) => ({
+            "@type": "PropertyValue",
+            name: item.name,
+            value: item.value,
+        }));
+}
+
+function getFloorPlanSeoDescription(plan, specialLabel) {
+    return [
+        `${plan.name || "Floor plan"}: ${formatBedroomLabel(plan.beds)}, ${plan.baths || "bath not listed"}, ${plan.sqft || "square footage not listed"}.`,
+        plan.rent ? `Normal rent starts at ${plan.rent}.` : "",
+        plan.effectiveRent ? `Estimated effective rent is ${plan.effectiveRent}.` : "",
+        specialLabel ? `Current special: ${specialLabel}.` : "",
+    ]
+        .filter(Boolean)
+        .join(" ");
+}
+
+function getPropertySeoAdditionalProperties({
+    listingFloorPlans,
+    property,
+    specialLabel,
+}) {
+    const rentSummary = getPropertyLevelRentSummary({
+        effectiveRentLabel: property?.effectiveRent || "",
+        hasPropertySpecial: Boolean(specialLabel),
+        listingFloorPlans,
+        propertySpecialLabel: specialLabel || "No active special",
+        startingRentLabel: property?.startingRent || property?.rent || "Contact for pricing",
+    });
+    const values = [
+        { name: "Active special", value: specialLabel || "No active special listed" },
+        { name: "Normal rent range", value: rentSummary.normalRentLabel },
+        { name: "Estimated effective rent range", value: rentSummary.effectiveRentLabel },
+        { name: "Availability", value: rentSummary.availabilityLabel },
+        { name: "Property manager", value: property?.managementCompany || property?.manager || "" },
+    ].filter((item) => item.value);
+
+    return values.map((item) => ({
+        "@type": "PropertyValue",
+        name: item.name,
+        value: item.value,
+    }));
+}
+
+function getPropertySeoFaqs({
+    listingFloorPlans,
+    property,
+    propertyName,
+    specialLabel,
+}) {
+    const rentSummary = getPropertyLevelRentSummary({
+        effectiveRentLabel: property?.effectiveRent || "",
+        hasPropertySpecial: Boolean(specialLabel),
+        listingFloorPlans,
+        propertySpecialLabel: specialLabel || "No active special",
+        startingRentLabel: property?.startingRent || property?.rent || "Contact for pricing",
+    });
+
+    return [
+        {
+            question: `Does ${propertyName} have an active apartment special?`,
+            answer: specialLabel
+                ? `${propertyName} is listed with this current special: ${specialLabel}. Renters should confirm the special is still active for the exact floor plan and move-in date before applying.`
+                : `${propertyName} does not currently show an active special on Below Market Apartments. Renters should still confirm current concessions before applying.`,
+        },
+        {
+            question: `What rent should renters compare at ${propertyName}?`,
+            answer: `${propertyName} shows normal rent around ${rentSummary.normalRentLabel} and estimated effective value around ${rentSummary.effectiveRentLabel}. Effective rent is an estimate of deal value, not always the monthly amount due.`,
+        },
+        {
+            question: `What floor plans are listed for ${propertyName}?`,
+            answer: `${propertyName} currently shows ${rentSummary.availabilityLabel}. Availability can change quickly, so renters should confirm the exact unit before touring.`,
+        },
+        {
+            question: `What fees should renters ask about at ${propertyName}?`,
+            answer:
+                "Renters should ask about required monthly add-ons, parking, utilities, trash, package fees, deposits, application fees, admin fees, and whether the special applies to base rent only.",
+        },
+    ];
 }
 
 function getPropertySeoSpecialLabel(property, listingFloorPlans) {
