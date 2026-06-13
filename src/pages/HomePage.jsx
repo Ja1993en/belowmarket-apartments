@@ -97,6 +97,18 @@ export default function HomePage() {
         () => getPropertySearchSuggestions(searchableProperties, searchTerm),
         [searchableProperties, searchTerm]
     );
+    const homepageFaqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: HOME_RENTER_FAQS.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.answer,
+            },
+        })),
+    };
 
     const submitSearch = (event) => {
         event.preventDefault();
@@ -107,6 +119,10 @@ export default function HomePage() {
 
     return (
         <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageFaqSchema) }}
+            />
             <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
                 <div className="mx-auto flex max-w-[1500px] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex items-center justify-between gap-4">
