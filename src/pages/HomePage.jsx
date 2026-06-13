@@ -356,6 +356,10 @@ function getSearchFloorPlans(property) {
         const freeWeeks = Number(
             floorPlan.freeWeeks ?? floorPlan.special?.freeWeeks ?? getWeeksFromSpecialLabel(specialLabel)
         );
+        const rentCreditSpecial =
+            floorPlan.rentCreditSpecial ||
+            floorPlan.special?.rentCreditSpecial ||
+            getRentCreditSpecialFromLabel(specialLabel);
         const leaseTermMonths = Number(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12);
         const startingRent = floorPlan.startingRent || floorPlan.rent || property.rent || "";
         const requiredMonthlyFees = floorPlan.requiredMonthlyFees || property.requiredMonthlyFees || "";
@@ -375,6 +379,7 @@ function getSearchFloorPlans(property) {
             savings: floorPlan.savings || property.savings || "",
             belowMarketPercent: floorPlan.belowMarketPercent || property.belowMarketPercent || "",
             freeWeeks,
+            rentCreditSpecial,
             leaseTermMonths,
         });
 
@@ -388,6 +393,7 @@ function getSearchFloorPlans(property) {
             ...pricing,
             currentSpecial: specialLabel,
             freeWeeks,
+            rentCreditSpecial,
             leaseTermMonths,
             availableUnits: floorPlan.availableUnits || [],
         };
@@ -402,9 +408,10 @@ function calculateFloorPlanPricing(floorPlan) {
         enteredTotalMonthlyRentNumber || startingRentNumber + requiredMonthlyFeesNumber;
     const marketRentNumber = parseCurrency(floorPlan.marketRent);
     const freeWeeks = Number(floorPlan.freeWeeks || 0);
+    const rentCreditSpecialNumber = parseCurrency(floorPlan.rentCreditSpecial);
     const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
 
-    if (!startingRentNumber || !freeWeeks || !leaseTermMonths) {
+    if (!startingRentNumber || (!freeWeeks && !rentCreditSpecialNumber) || !leaseTermMonths) {
         return {
             totalMonthlyRent: totalMonthlyRentNumber ? formatCurrency(totalMonthlyRentNumber) : "",
             effectiveRent: floorPlan.effectiveRent || (totalMonthlyRentNumber ? formatCurrency(totalMonthlyRentNumber) : floorPlan.startingRent || ""),
@@ -415,7 +422,8 @@ function calculateFloorPlanPricing(floorPlan) {
     }
 
     const freeMonths = freeWeeks / LEASING_WEEKS_PER_MONTH;
-    const monthlyConcession = (startingRentNumber * freeMonths) / leaseTermMonths;
+    const monthlyConcession =
+        (startingRentNumber * freeMonths + rentCreditSpecialNumber) / leaseTermMonths;
     const effectiveRentNumber = Math.max(totalMonthlyRentNumber - monthlyConcession, 0);
     const savingsNumber = Math.max(totalMonthlyRentNumber - effectiveRentNumber, 0);
     const comparisonRent = marketRentNumber || totalMonthlyRentNumber;
@@ -581,6 +589,7 @@ function getSpecialDealUnits(floorPlans) {
                     unitRent: floorPlan.startingRent,
                     specialLabel: floorPlanSpecial.label,
                     freeWeeks: floorPlanSpecial.freeWeeks,
+                    rentCreditSpecial: floorPlanSpecial.rentCreditSpecial,
                 }),
             ];
         }
@@ -595,12 +604,19 @@ function getSpecialDealUnits(floorPlans) {
                 unitRent: unit.rent || floorPlan.startingRent,
                 specialLabel: unitSpecial.label,
                 freeWeeks: unitSpecial.freeWeeks,
+                rentCreditSpecial: unitSpecial.rentCreditSpecial,
             });
         });
     });
 }
 
-function createSpecialDealUnit({ floorPlan, unitRent, specialLabel, freeWeeks }) {
+function createSpecialDealUnit({
+    floorPlan,
+    unitRent,
+    specialLabel,
+    freeWeeks,
+    rentCreditSpecial,
+}) {
     const pricing = calculateFloorPlanPricing({
         startingRent: unitRent,
         requiredMonthlyFees: floorPlan.requiredMonthlyFees,
@@ -609,6 +625,7 @@ function createSpecialDealUnit({ floorPlan, unitRent, specialLabel, freeWeeks })
         savings: floorPlan.savings,
         belowMarketPercent: floorPlan.belowMarketPercent,
         freeWeeks,
+        rentCreditSpecial,
         leaseTermMonths: floorPlan.leaseTermMonths,
     });
     const effectiveRentNumber =
@@ -670,13 +687,23 @@ function getNormalRentRangeLabel(property, floorPlans) {
 }
 
 function getFloorPlanSpecial(floorPlan) {
-    const freeWeeks = Number(floorPlan.freeWeeks || floorPlan.special?.freeWeeks || 0);
     const label = floorPlan.currentSpecial || floorPlan.special?.label || "";
+    const freeWeeks =
+        Number(floorPlan.freeWeeks || floorPlan.special?.freeWeeks || 0) ||
+        getWeeksFromSpecialLabel(label);
+    const rentCreditSpecial =
+        floorPlan.rentCreditSpecial ||
+        floorPlan.special?.rentCreditSpecial ||
+        getRentCreditSpecialFromLabel(label);
 
     return {
-        hasSpecial: freeWeeks > 0 || Boolean(label),
+        hasSpecial: freeWeeks > 0 || Boolean(rentCreditSpecial) || Boolean(label),
         freeWeeks,
-        label: label || (freeWeeks > 0 ? `${freeWeeks} weeks free` : ""),
+        rentCreditSpecial,
+        label:
+            label ||
+            getSpecialLabel(freeWeeks, rentCreditSpecial) ||
+            (freeWeeks > 0 ? `${freeWeeks} weeks free` : ""),
     };
 }
 
@@ -694,23 +721,34 @@ function getUnitSpecial(unit, floorPlanSpecial) {
         return {
             hasSpecial: false,
             freeWeeks: 0,
+            rentCreditSpecial: "",
             label: "",
         };
     }
 
     const unitFreeWeeks = Number(unit.freeWeeks || unit.special?.freeWeeks || 0);
     const unitLabel = unit.currentSpecial || unit.special?.label || "";
+    const unitRentCreditSpecial =
+        unit.rentCreditSpecial ||
+        unit.special?.rentCreditSpecial ||
+        getRentCreditSpecialFromLabel(unitLabel);
 
-    if (unit.specialMode === "custom" || unitFreeWeeks > 0 || unitLabel) {
+    if (unit.specialMode === "custom" || unitFreeWeeks > 0 || unitRentCreditSpecial || unitLabel) {
         const label = getSpecialLabel(
             unitFreeWeeks,
+            unitRentCreditSpecial,
             adminFeeSpecial || getAdminFeeSpecialFromLabel(unitLabel),
             adminFeeSpecialType
         );
 
         return {
-            hasSpecial: unitFreeWeeks > 0 || Boolean(unitLabel) || Boolean(adminFeeSpecial),
+            hasSpecial:
+                unitFreeWeeks > 0 ||
+                Boolean(unitRentCreditSpecial) ||
+                Boolean(unitLabel) ||
+                Boolean(adminFeeSpecial),
             freeWeeks: unitFreeWeeks,
+            rentCreditSpecial: unitRentCreditSpecial,
             label: label || unitLabel || (unitFreeWeeks > 0 ? `${unitFreeWeeks} weeks free` : ""),
         };
     }
@@ -719,8 +757,10 @@ function getUnitSpecial(unit, floorPlanSpecial) {
         return {
             hasSpecial: floorPlanSpecial.hasSpecial || Boolean(adminFeeSpecial),
             freeWeeks: floorPlanSpecial.freeWeeks,
+            rentCreditSpecial: floorPlanSpecial.rentCreditSpecial,
             label: getSpecialLabel(
                 floorPlanSpecial.freeWeeks,
+                floorPlanSpecial.rentCreditSpecial,
                 adminFeeSpecial,
                 adminFeeSpecialType
             ) || floorPlanSpecial.label,
@@ -802,11 +842,21 @@ function getWeeksFromSpecialLabel(label) {
     return match ? Number(match[1]) : 0;
 }
 
-function getSpecialLabel(freeWeeks, adminFeeSpecial = "", adminFeeSpecialType = "admin") {
+function getSpecialLabel(
+    freeWeeks,
+    rentCreditSpecial = "",
+    adminFeeSpecial = "",
+    adminFeeSpecialType = "admin"
+) {
     const specialParts = [];
 
     if (freeWeeks) {
         specialParts.push(`${freeWeeks} ${freeWeeks === 1 ? "week" : "weeks"} free`);
+    }
+
+    const rentCreditLabel = getRentCreditSpecialLabel(rentCreditSpecial);
+    if (rentCreditLabel) {
+        specialParts.push(rentCreditLabel);
     }
 
     const feeSpecialLabel = getFeeSpecialLabel(adminFeeSpecial, adminFeeSpecialType);
@@ -823,7 +873,7 @@ function getAdminFeeSpecialFromLabel(label) {
         .map((part) => part.trim())
         .filter(Boolean);
 
-    return parts.find((part) => !/weeks?\s+free/i.test(part)) || "";
+    return parts.find((part) => !/weeks?\s+free/i.test(part) && !/(\$?\s*[\d,]+(?:\.\d+)?)\s*(?:off|rent credit|credit)/i.test(part)) || "";
 }
 
 function getAdminFeeSpecialTypeFromLabel(label) {
@@ -840,6 +890,18 @@ function getFeeSpecialLabel(adminFeeSpecial, adminFeeSpecialType) {
 
     const feeLabel = adminFeeSpecialType === "application" ? "application fee" : "admin fee";
     return `${trimmedSpecial} ${feeLabel}`;
+}
+
+function getRentCreditSpecialFromLabel(label) {
+    const match = String(label || "").match(/\$?\s*([\d,]+(?:\.\d+)?)\s*(?:off|rent credit|credit)/i);
+    return match ? formatCurrency(Number(match[1].replace(/,/g, ""))) : "";
+}
+
+function getRentCreditSpecialLabel(rentCreditSpecial) {
+    const rentCreditNumber = parseCurrency(rentCreditSpecial);
+    if (!rentCreditNumber) return "";
+
+    return `${formatCurrency(rentCreditNumber)} off base rent`;
 }
 
 function getRentalPriceLabel(property, matchedFloorPlan) {

@@ -823,12 +823,14 @@ function FloorPlanEditor({
     if (value === "floorPlan") {
       onAvailabilityChange(floorPlan.id, availableUnitId, "specialMode", "floorPlan");
       onAvailabilityChange(floorPlan.id, availableUnitId, "freeWeeks", "");
+      onAvailabilityChange(floorPlan.id, availableUnitId, "rentCreditSpecial", "");
       return;
     }
 
     if (value === "none") {
       onAvailabilityChange(floorPlan.id, availableUnitId, "specialMode", "none");
       onAvailabilityChange(floorPlan.id, availableUnitId, "freeWeeks", "");
+      onAvailabilityChange(floorPlan.id, availableUnitId, "rentCreditSpecial", "");
       onAvailabilityChange(floorPlan.id, availableUnitId, "adminFeeSpecial", "");
       return;
     }
@@ -925,6 +927,23 @@ function FloorPlanEditor({
               </option>
             ))}
           </select>
+        </label>
+        <label className="rounded-2xl bg-white p-4">
+          <span className="text-sm font-semibold text-[#526260]">
+            Rent Credit Special
+          </span>
+          <input
+            type="text"
+            value={floorPlan.rentCreditSpecial}
+            onChange={(event) =>
+              onChange(floorPlan.id, "rentCreditSpecial", event.target.value)
+            }
+            placeholder="$1,500"
+            className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
+          />
+          <span className="mt-2 block text-xs font-bold text-[#6b7775]">
+            Shown as off base rent and spread across the lease for net effective rent.
+          </span>
         </label>
         <div className="rounded-2xl bg-white p-4">
           <span className="text-sm font-semibold text-[#526260]">
@@ -1259,12 +1278,32 @@ function FloorPlanEditor({
                   >
                     <option value="floorPlan">Use floor plan special</option>
                     <option value="none">No special</option>
+                    <option value="0">Rent credit only</option>
                     {WEEKS_FREE_OPTIONS.filter((weeks) => weeks > 0).map((weeks) => (
                       <option key={weeks} value={String(weeks)}>
                         {weeks} weeks free
                       </option>
                     ))}
                   </select>
+                </label>
+                <label className="rounded-2xl bg-white p-4">
+                  <span className="text-sm font-semibold text-[#526260]">
+                    Unit Rent Credit
+                  </span>
+                  <input
+                    type="text"
+                    value={availableUnit.rentCreditSpecial}
+                    onChange={(event) =>
+                      onAvailabilityChange(
+                        floorPlan.id,
+                        availableUnit.id,
+                        "rentCreditSpecial",
+                        event.target.value
+                      )
+                    }
+                    placeholder="$1,500"
+                    className="mt-2 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 font-black text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
+                  />
                 </label>
                 <div className="rounded-2xl bg-white p-4 md:col-span-2 xl:col-span-2">
                   <span className="text-sm font-semibold text-[#526260]">
@@ -1516,6 +1555,7 @@ function createBlankFloorPlan() {
     belowMarketPercent: "",
     currentSpecial: "",
     freeWeeks: "0",
+    rentCreditSpecial: "",
     adminFeeSpecial: "",
     adminFeeSpecialType: "admin",
     leaseTermMonths: "12",
@@ -1535,6 +1575,7 @@ function createBlankAvailableUnit() {
     status: "available",
     specialMode: "floorPlan",
     freeWeeks: "",
+    rentCreditSpecial: "",
     adminFeeSpecial: "",
     adminFeeSpecialType: "admin",
     notes: "",
@@ -1649,6 +1690,7 @@ function normalizeFloorPlansForDraft(property) {
           effectiveRent: property.effectiveRent || "",
           marketRent: property.marketRent || "",
           freeWeeks: "0",
+          rentCreditSpecial: "",
           adminFeeSpecial: "",
           adminFeeSpecialType: "admin",
           leaseTermMonths: "12",
@@ -1664,6 +1706,10 @@ function normalizeFloorPlansForDraft(property) {
         floorPlan.adminFeeSpecial ||
         floorPlan.special?.adminFeeSpecial ||
         getAdminFeeSpecialFromLabel(currentSpecialLabel);
+      const rentCreditSpecial =
+        floorPlan.rentCreditSpecial ||
+        floorPlan.special?.rentCreditSpecial ||
+        getRentCreditSpecialFromLabel(currentSpecialLabel);
       const adminFeeSpecialType =
         floorPlan.adminFeeSpecialType ||
         floorPlan.special?.adminFeeSpecialType ||
@@ -1681,6 +1727,7 @@ function normalizeFloorPlansForDraft(property) {
         totalMonthlyRent: floorPlan.totalMonthlyRent || floorPlan.rent || "",
         marketRent: floorPlan.marketRent || "",
         freeWeeks: String(parsedFreeWeeks || 0),
+        rentCreditSpecial,
         adminFeeSpecial,
         adminFeeSpecialType,
         leaseTermMonths: String(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12),
@@ -1714,9 +1761,15 @@ function normalizeFloorPlanForStorage(floorPlan) {
   const calculatedValues = calculateFloorPlanValues(floorPlanForCalculation);
   const freeWeeks = Number(floorPlan.freeWeeks || 0);
   const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
+  const rentCreditSpecial = floorPlan.rentCreditSpecial.trim();
   const adminFeeSpecial = floorPlan.adminFeeSpecial.trim();
   const adminFeeSpecialType = floorPlan.adminFeeSpecialType || "admin";
-  const currentSpecial = getSpecialLabel(freeWeeks, adminFeeSpecial, adminFeeSpecialType);
+  const currentSpecial = getSpecialLabel(
+    freeWeeks,
+    rentCreditSpecial,
+    adminFeeSpecial,
+    adminFeeSpecialType
+  );
   const availableUnits = floorPlan.availableUnits
     .map((availableUnit, index) =>
       normalizeAvailableUnitForStorage(
@@ -1755,6 +1808,7 @@ function normalizeFloorPlanForStorage(floorPlan) {
     belowMarketPercent: calculatedValues.belowMarketPercent,
     currentSpecial,
     freeWeeks,
+    rentCreditSpecial,
     adminFeeSpecial,
     adminFeeSpecialType,
     leaseTermMonths,
@@ -1762,6 +1816,7 @@ function normalizeFloorPlanForStorage(floorPlan) {
       ? {
           type: "weeks_free",
           freeWeeks,
+          rentCreditSpecial,
           adminFeeSpecial,
           adminFeeSpecialType,
           leaseTermMonths,
@@ -1797,6 +1852,10 @@ function normalizeAvailableUnitsForDraft(availableUnits = [], defaultRent = "") 
       availableUnit.adminFeeSpecial ||
       availableUnit.special?.adminFeeSpecial ||
       getAdminFeeSpecialFromLabel(specialLabel);
+    const rentCreditSpecial =
+      availableUnit.rentCreditSpecial ||
+      availableUnit.special?.rentCreditSpecial ||
+      getRentCreditSpecialFromLabel(specialLabel);
     const adminFeeSpecialType =
       availableUnit.adminFeeSpecialType ||
       availableUnit.special?.adminFeeSpecialType ||
@@ -1810,8 +1869,10 @@ function normalizeAvailableUnitsForDraft(availableUnits = [], defaultRent = "") 
       rent: availableUnit.rent || defaultRent,
       status: availableUnit.status || "available",
       specialMode:
-        availableUnit.specialMode || (Number(parsedFreeWeeks || 0) > 0 ? "custom" : "floorPlan"),
+        availableUnit.specialMode ||
+        (Number(parsedFreeWeeks || 0) > 0 || rentCreditSpecial ? "custom" : "floorPlan"),
       freeWeeks: Number(parsedFreeWeeks || 0) > 0 ? String(parsedFreeWeeks) : "",
+      rentCreditSpecial,
       adminFeeSpecial,
       adminFeeSpecialType,
       notes: availableUnit.notes || "",
@@ -1824,11 +1885,18 @@ function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
   const availableDate = availableUnit.availableDate;
   const specialMode = availableUnit.specialMode || "floorPlan";
   const freeWeeks = specialMode === "custom" ? Number(availableUnit.freeWeeks || 0) : 0;
+  const rentCreditSpecial =
+    specialMode === "none" ? "" : availableUnit.rentCreditSpecial.trim();
   const adminFeeSpecial = specialMode === "none" ? "" : availableUnit.adminFeeSpecial.trim();
   const adminFeeSpecialType = availableUnit.adminFeeSpecialType || "admin";
   const currentSpecial = specialMode === "none"
     ? ""
-    : getSpecialLabel(freeWeeks, adminFeeSpecial, adminFeeSpecialType);
+    : getSpecialLabel(
+        freeWeeks,
+        rentCreditSpecial,
+        adminFeeSpecial,
+        adminFeeSpecialType
+      );
 
   return {
     id: availableUnit.id,
@@ -1839,6 +1907,7 @@ function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
     status: availableUnit.status,
     specialMode,
     freeWeeks,
+    rentCreditSpecial,
     adminFeeSpecial,
     adminFeeSpecialType,
     currentSpecial,
@@ -1846,6 +1915,7 @@ function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
       ? {
           type: "weeks_free",
           freeWeeks,
+          rentCreditSpecial,
           adminFeeSpecial,
           adminFeeSpecialType,
           label: currentSpecial,
@@ -1858,7 +1928,9 @@ function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
 
 function getUnitSpecialSelectValue(availableUnit) {
   if (availableUnit.specialMode === "none") return "none";
-  if (availableUnit.specialMode === "custom") return String(availableUnit.freeWeeks || "0.5");
+  if (availableUnit.specialMode === "custom") {
+    return String(availableUnit.freeWeeks || (availableUnit.rentCreditSpecial ? "0" : "0.5"));
+  }
 
   return "floorPlan";
 }
@@ -1902,6 +1974,7 @@ function calculateFloorPlanValues(floorPlan) {
   const totalMonthlyRentNumber = startingRentNumber + requiredMonthlyFeesNumber;
   const marketRentNumber = parseCurrency(floorPlan.marketRent);
   const freeWeeks = Number(floorPlan.freeWeeks || 0);
+  const rentCreditSpecialNumber = parseCurrency(floorPlan.rentCreditSpecial);
   const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
 
   if (!startingRentNumber || !leaseTermMonths) {
@@ -1915,7 +1988,8 @@ function calculateFloorPlanValues(floorPlan) {
   }
 
   const freeMonths = freeWeeks / LEASING_WEEKS_PER_MONTH;
-  const monthlyConcession = (startingRentNumber * freeMonths) / leaseTermMonths;
+  const monthlyConcession =
+    (startingRentNumber * freeMonths + rentCreditSpecialNumber) / leaseTermMonths;
   const effectiveRentNumber = Math.max(totalMonthlyRentNumber - monthlyConcession, 0);
   const savingsNumber = Math.max(totalMonthlyRentNumber - effectiveRentNumber, 0);
   const comparisonRent = marketRentNumber || totalMonthlyRentNumber;
@@ -1942,11 +2016,21 @@ function formatCurrency(value) {
   return `$${Math.round(value).toLocaleString()}`;
 }
 
-function getSpecialLabel(freeWeeks, adminFeeSpecial = "", adminFeeSpecialType = "admin") {
+function getSpecialLabel(
+  freeWeeks,
+  rentCreditSpecial = "",
+  adminFeeSpecial = "",
+  adminFeeSpecialType = "admin"
+) {
   const specialParts = [];
 
   if (freeWeeks) {
     specialParts.push(`${freeWeeks} ${freeWeeks === 1 ? "week" : "weeks"} free`);
+  }
+
+  const rentCreditLabel = getRentCreditSpecialLabel(rentCreditSpecial);
+  if (rentCreditLabel) {
+    specialParts.push(rentCreditLabel);
   }
 
   const feeSpecialLabel = getFeeSpecialLabel(adminFeeSpecial, adminFeeSpecialType);
@@ -1962,13 +2046,18 @@ function getWeeksFromSpecialLabel(label) {
   return match ? Number(match[1]) : 0;
 }
 
+function getRentCreditSpecialFromLabel(label) {
+  const match = String(label || "").match(/\$?\s*([\d,]+(?:\.\d+)?)\s*(?:off|rent credit|credit)/i);
+  return match ? formatCurrency(Number(match[1].replace(/,/g, ""))) : "";
+}
+
 function getAdminFeeSpecialFromLabel(label) {
   const parts = String(label || "")
     .split("+")
     .map((part) => part.trim())
     .filter(Boolean);
 
-  return parts.find((part) => !/weeks?\s+free/i.test(part)) || "";
+  return parts.find((part) => !/weeks?\s+free/i.test(part) && !/(\$?\s*[\d,]+(?:\.\d+)?)\s*(?:off|rent credit|credit)/i.test(part)) || "";
 }
 
 function getAdminFeeSpecialTypeFromLabel(label) {
@@ -1985,6 +2074,13 @@ function getFeeSpecialLabel(adminFeeSpecial, adminFeeSpecialType) {
 
   const feeLabel = adminFeeSpecialType === "application" ? "application fee" : "admin fee";
   return `${trimmedSpecial} ${feeLabel}`;
+}
+
+function getRentCreditSpecialLabel(rentCreditSpecial) {
+  const rentCreditNumber = parseCurrency(rentCreditSpecial);
+  if (!rentCreditNumber) return "";
+
+  return `${formatCurrency(rentCreditNumber)} off base rent`;
 }
 
 function normalizePropertyPhotos(property) {

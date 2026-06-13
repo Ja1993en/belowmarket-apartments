@@ -592,21 +592,30 @@ export default function PublicPropertyListing() {
         : 0;
 
     const freeWeeks =
-        selectedFloorPlan?.special?.freeWeeks || 0;
+        selectedFloorPlan?.special?.freeWeeks ||
+        getFreeWeeksFromSpecialLabel(selectedFloorPlan?.special?.label) ||
+        0;
+    const rentCreditSpecialNumber =
+        parseCurrency(
+            selectedFloorPlan?.rentCreditSpecial ||
+            selectedFloorPlan?.special?.rentCreditSpecial ||
+            getRentCreditSpecialFromLabel(selectedFloorPlan?.special?.label)
+        );
     const hasSelectedFloorPlanSpecial = Boolean(selectedFloorPlan?.special);
-    const hasCalculableSelectedSpecial = freeWeeks > 0 && rentNumber > 0;
+    const hasCalculableSelectedSpecial =
+        rentNumber > 0 && (freeWeeks > 0 || rentCreditSpecialNumber > 0);
 
     const leaseMonths =
         selectedFloorPlan?.leaseTermMonths || 12;
 
     const effectiveRent =
         rentNumber -
-        (rentNumber * (freeWeeks / 4)) / leaseMonths;
+        (rentNumber * (freeWeeks / 4) + rentCreditSpecialNumber) / leaseMonths;
 
     const monthlySavings =
         rentNumber - effectiveRent;
 
-    const concessionValue = rentNumber * (freeWeeks / 4);
+    const concessionValue = rentNumber * (freeWeeks / 4) + rentCreditSpecialNumber;
 
     const getLowestUnitRent = (units = []) => {
         if (!units.length) return null;
@@ -1627,7 +1636,7 @@ export default function PublicPropertyListing() {
                                                     Estimated concession value: ${Math.round(concessionValue).toLocaleString()}
                                                 </p>
                                                 <p className="mt-1 text-xs leading-5 text-[#7a432e]">
-                                                    Based on {selectedFloorPlan.special.freeWeeks} free weeks applied across a {leaseMonths}-month lease.
+                                                    Based on listed rent specials spread across a {leaseMonths}-month lease.
                                                 </p>
                                             </>
                                         ) : (
@@ -3099,11 +3108,23 @@ function createPropertySummaryRow({
     const freeWeeks =
         Number(unit?.freeWeeks || unit?.special?.freeWeeks || floorPlan.special?.freeWeeks || 0) ||
         getFreeWeeksFromSpecialLabel(specialLabel);
+    const rentCreditSpecialNumber =
+        parseCurrency(
+            unit?.rentCreditSpecial ||
+            unit?.special?.rentCreditSpecial ||
+            floorPlan.rentCreditSpecial ||
+            floorPlan.special?.rentCreditSpecial ||
+            getRentCreditSpecialFromLabel(specialLabel)
+        );
     const leaseMonths = Number(floorPlan.leaseTermMonths || floorPlan.special?.leaseTermMonths || 12);
     const enteredEffectiveRent = parseCurrency(floorPlan.effectiveRent);
     const effectiveRent =
-        normalRent && freeWeeks && leaseMonths
-            ? Math.max(normalRent - (normalRent * (freeWeeks / 4.345)) / leaseMonths, 0)
+        normalRent && (freeWeeks || rentCreditSpecialNumber) && leaseMonths
+            ? Math.max(
+                normalRent -
+                    (normalRent * (freeWeeks / 4.345) + rentCreditSpecialNumber) / leaseMonths,
+                0
+            )
             : enteredEffectiveRent || normalRent;
 
     return {
@@ -3116,6 +3137,11 @@ function createPropertySummaryRow({
 function getFreeWeeksFromSpecialLabel(label) {
     const match = String(label || "").match(/(\d+(?:\.\d+)?)\s*weeks?\s*free/i);
     return match ? Number(match[1]) : 0;
+}
+
+function getRentCreditSpecialFromLabel(label) {
+    const match = String(label || "").match(/\$?\s*([\d,]+(?:\.\d+)?)\s*(?:off|rent credit|credit)/i);
+    return match ? formatCurrency(Number(match[1].replace(/,/g, ""))) : "";
 }
 
 function formatSpecialSummary(specialLabels) {
