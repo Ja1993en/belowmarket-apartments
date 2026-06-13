@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Building2, MapPin, Navigation, Search, Tag } from "lucide-react";
 import { getAllProperties } from "../data/propertyStorage";
@@ -70,6 +70,8 @@ export default function PropertySearchPage() {
   const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
   const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
   const [hoveredMapPropertyId, setHoveredMapPropertyId] = useState("");
+  const [selectedMapPropertyId, setSelectedMapPropertyId] = useState("");
+  const resultCardRefs = useRef(new Map());
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
     () =>
@@ -142,6 +144,23 @@ export default function PropertySearchPage() {
         .filter(Boolean),
     [comparePropertyIds, properties]
   );
+  const selectedMapPropertyIsVisible =
+    selectedMapPropertyId &&
+    filteredProperties.some((property) => property.id === selectedMapPropertyId);
+  const highlightedMapPropertyId =
+    hoveredMapPropertyId || (selectedMapPropertyIsVisible ? selectedMapPropertyId : "");
+
+  const handleMapPropertySelect = useCallback((propertyId) => {
+    setSelectedMapPropertyId(propertyId);
+    setHoveredMapPropertyId(propertyId);
+
+    window.setTimeout(() => {
+      resultCardRefs.current.get(propertyId)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 0);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -551,6 +570,8 @@ export default function PropertySearchPage() {
             selectedArea={selectedArea}
             onAreaChange={setSelectedArea}
             onPropertyHover={setHoveredMapPropertyId}
+            onPropertySelect={handleMapPropertySelect}
+            hoveredPropertyId={hoveredMapPropertyId}
           />
         </div>
       </section>
@@ -643,7 +664,14 @@ export default function PropertySearchPage() {
               property={property}
               isSaved={savedPropertyIds.includes(property.id)}
               isCompared={comparePropertyIds.includes(property.id)}
-              isMapHovered={hoveredMapPropertyId === property.id}
+              isMapHighlighted={highlightedMapPropertyId === property.id}
+              cardRef={(node) => {
+                if (node) {
+                  resultCardRefs.current.set(property.id, node);
+                } else {
+                  resultCardRefs.current.delete(property.id);
+                }
+              }}
               onToggleSaved={() =>
                 setSavedPropertyIds(toggleSavedPropertyId(property.id))
               }
@@ -675,6 +703,8 @@ function SearchMap({
   selectedArea,
   onAreaChange,
   onPropertyHover,
+  onPropertySelect,
+  hoveredPropertyId,
 }) {
   if (!MAPBOX_TOKEN) {
     return <FallbackSearchMap properties={properties} />;
@@ -687,6 +717,8 @@ function SearchMap({
       selectedArea={selectedArea}
       onAreaChange={onAreaChange}
       onPropertyHover={onPropertyHover}
+      onPropertySelect={onPropertySelect}
+      hoveredPropertyId={hoveredPropertyId}
     />
   );
 }
@@ -697,15 +729,24 @@ function MapboxSearchMap({
   selectedArea,
   onAreaChange,
   onPropertyHover,
+  onPropertySelect,
+  hoveredPropertyId,
 }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const isChoosingAreaRef = useRef(false);
+  const hoverClearTimerRef = useRef(null);
   const [mapboxGl, setMapboxGl] = useState(null);
   const [mapError, setMapError] = useState("");
   const [isChoosingArea, setIsChoosingArea] = useState(false);
   const [areaRadiusMiles, setAreaRadiusMiles] = useState(DEFAULT_AREA_RADIUS_MILES);
+  const hoveredProperty = useMemo(
+    () =>
+      properties.find((property) => property.id === hoveredPropertyId) ||
+      mappableProperties.find((property) => property.id === hoveredPropertyId),
+    [hoveredPropertyId, mappableProperties, properties]
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -781,6 +822,7 @@ function MapboxSearchMap({
     });
 
     return () => {
+      window.clearTimeout(hoverClearTimerRef.current);
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
       mapRef.current?.remove();
@@ -865,13 +907,16 @@ function MapboxSearchMap({
           return;
         }
 
-        window.location.href = `/properties/${property.id}`;
+        onPropertySelect?.(property.id);
       });
       markerElement.addEventListener("mouseenter", () => {
+        window.clearTimeout(hoverClearTimerRef.current);
         onPropertyHover?.(property.id);
       });
       markerElement.addEventListener("mouseleave", () => {
-        onPropertyHover?.("");
+        hoverClearTimerRef.current = window.setTimeout(() => {
+          onPropertyHover?.("");
+        }, 180);
       });
 
       const marker = new mapboxGl.Marker({
@@ -898,7 +943,27 @@ function MapboxSearchMap({
         duration: 500,
       });
     }
-  }, [areaRadiusMiles, mapboxGl, mappableProperties, onAreaChange, onPropertyHover]);
+  }, [
+    areaRadiusMiles,
+    mapboxGl,
+    mappableProperties,
+    onAreaChange,
+    onPropertyHover,
+    onPropertySelect,
+  ]);
+
+  const keepHoveredPropertyPreview = () => {
+    if (!hoveredProperty) return;
+
+    window.clearTimeout(hoverClearTimerRef.current);
+    onPropertyHover?.(hoveredProperty.id);
+  };
+
+  const hideHoveredPropertyPreview = () => {
+    hoverClearTimerRef.current = window.setTimeout(() => {
+      onPropertyHover?.("");
+    }, 180);
+  };
 
   if (mapError) {
     return <FallbackSearchMap properties={properties} />;
@@ -961,6 +1026,13 @@ function MapboxSearchMap({
         <Navigation className="h-4 w-4 text-[#2d7dd2]" />
         Live map
       </div>
+      {hoveredProperty && !isChoosingArea && (
+        <MapPropertyHoverPreview
+          property={hoveredProperty}
+          onMouseEnter={keepHoveredPropertyPreview}
+          onMouseLeave={hideHoveredPropertyPreview}
+        />
+      )}
       {isChoosingArea && (
         <p className="pointer-events-none absolute bottom-4 left-4 z-10 rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#174a7c] shadow-lg ring-1 ring-[#b8d9f0]">
           Tap the map to search within {areaRadiusMiles} miles
@@ -979,6 +1051,60 @@ function MapboxSearchMap({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MapPropertyHoverPreview({ property, onMouseEnter, onMouseLeave }) {
+  const priceSummary = getPropertySearchPriceSummary(property);
+  const hasGoldBar = propertyHasStrongMapDeal(property);
+  const rentLabel = priceSummary.hasRentSpecial
+    ? priceSummary.effectiveRentLabel
+    : priceSummary.normalRentLabel;
+  const rentEyebrow = priceSummary.hasRentSpecial ? "Net effective" : "Normal rent";
+
+  return (
+    <div
+      className="pointer-events-auto absolute bottom-4 left-4 z-20 w-[min(20rem,calc(100%-2rem))] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-[#d7e6df]"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {hasGoldBar && <div className="h-1.5 bg-[#f2b84b]" />}
+      <div className="p-4">
+        <p className="truncate text-base font-black text-[#102426]">
+          {property.name || "Property"}
+        </p>
+        <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+          {getPropertyAddressLabel(property)}
+        </p>
+
+        <div className="mt-3 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
+              {rentEyebrow}
+            </p>
+            <p className="mt-1 truncate text-lg font-black text-[#102426]">
+              {rentLabel}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+            {getBedsLabel(property)}
+          </span>
+        </div>
+
+        {priceSummary.hasSpecial && (
+          <p className="mt-3 truncate rounded-xl bg-[#fff8e6] px-3 py-2 text-sm font-black text-[#684307] ring-1 ring-[#f2d08a]">
+            {priceSummary.specialLabel}
+          </p>
+        )}
+
+        <Link
+          to={`/properties/${property.id}`}
+          className="mt-3 inline-flex rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-black text-white hover:bg-[#102426]"
+        >
+          View property
+        </Link>
+      </div>
     </div>
   );
 }
@@ -1040,7 +1166,8 @@ function SearchResultCard({
   property,
   isSaved,
   isCompared,
-  isMapHovered,
+  isMapHighlighted,
+  cardRef,
   onToggleSaved,
   onToggleCompare,
 }) {
@@ -1052,12 +1179,13 @@ function SearchResultCard({
   const transparencyBadges = getSearchTransparencyBadges(property, priceSummary);
   const monthlyBreakdown = getSearchMonthlyBreakdown(property, priceSummary);
   const cardHref = `/properties/${property.id}`;
-  const showGoldHoverBar = isMapHovered && propertyHasStrongMapDeal(property);
+  const showGoldHoverBar = isMapHighlighted && propertyHasStrongMapDeal(property);
 
   return (
     <article
+      ref={cardRef}
       className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md ${
-        isMapHovered ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
+        isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
       {showGoldHoverBar && <div className="h-1.5 bg-[#f2b84b]" />}
@@ -1428,10 +1556,10 @@ function createSearchMapPinElement(property) {
       ? "ring-2 ring-[#f2b84b] ring-offset-1 ring-offset-white group-hover:ring-4"
       : "",
   ].join(" ");
-  markerElement.title = property.name || "View property";
+  markerElement.title = property.name || "Preview property";
   markerElement.setAttribute(
     "aria-label",
-    `${property.name || "Property"} map pin. Open listing.`
+    `${property.name || "Property"} map pin. Preview property and show result card.`
   );
   markerElement.appendChild(pinDotElement);
 
