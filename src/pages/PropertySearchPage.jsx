@@ -834,7 +834,7 @@ function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaC
       const markerElement = document.createElement("a");
       markerElement.href = `/properties/${property.id}`;
       markerElement.className =
-        `rounded-full px-3 py-2 text-xs font-black text-white shadow-xl ring-2 ring-white transition hover:scale-105 ${
+        `min-w-[46px] whitespace-nowrap rounded-full px-2 py-1 text-center text-[11px] font-black leading-none text-white shadow-md ring-1 ring-white transition hover:scale-105 hover:shadow-lg ${
           isApproximatePin
             ? "bg-[#8a5b0a] hover:bg-[#684307]"
             : "bg-[#173f3f] hover:bg-[#102426]"

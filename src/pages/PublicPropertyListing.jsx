@@ -2676,16 +2676,15 @@ function degreesToRadians(degrees) {
 function createPropertyMapMarker(propertyName, isApproximatePin = false) {
     const markerElement = document.createElement("div");
     markerElement.className =
-        "flex -translate-y-1 flex-col items-center gap-1";
+        "flex -translate-y-1 flex-col items-center";
     markerElement.title = `${propertyName}${
         isApproximatePin ? " - approximate location" : ""
     }`;
     const markerBackground = isApproximatePin ? "bg-[#8a5b0a]" : "bg-[#f2b84b]";
     const markerText = isApproximatePin ? "text-white" : "text-[#102426]";
     markerElement.innerHTML = `
-        <div class="max-w-[150px] truncate rounded-full bg-[#102426] px-3 py-1 text-xs font-black text-white shadow-lg">${escapeMapText(propertyName)}</div>
-        <div class="flex h-11 w-11 items-center justify-center rounded-full border-4 border-white ${markerBackground} text-xs font-black ${markerText} shadow-xl ring-2 ring-[#8a5b0a]/25">BMA</div>
-        <div class="-mt-2 h-4 w-4 rotate-45 border-b-4 border-r-4 border-white ${markerBackground} shadow-md"></div>
+        <div class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white ${markerBackground} text-[10px] font-black ${markerText} shadow-lg ring-1 ring-[#8a5b0a]/25">BMA</div>
+        <div class="-mt-1.5 h-3 w-3 rotate-45 border-b-2 border-r-2 border-white ${markerBackground} shadow-sm"></div>
     `;
 
     return markerElement;
@@ -2708,10 +2707,9 @@ function createNearbyMapMarker(place) {
         kroger: "K",
     };
 
-    markerElement.className = "flex flex-col items-center gap-1";
+    markerElement.className = "flex flex-col items-center";
     markerElement.innerHTML = `
-        <div class="rounded-full bg-white/95 px-2 py-1 text-[11px] font-black text-[#102426] shadow-sm">${escapeMapText(getCleanNearbyPlaceLabel(place))}</div>
-        <div class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white ${colors[place.type]} text-[11px] font-black text-white shadow-lg">${abbreviations[place.type]}</div>
+        <div class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white ${colors[place.type]} text-[10px] font-black text-white shadow-md">${abbreviations[place.type]}</div>
     `;
 
     return markerElement;
