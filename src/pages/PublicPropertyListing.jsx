@@ -842,7 +842,7 @@ export default function PublicPropertyListing() {
                                         {filteredFloorPlans.length === 1 ? "" : "s"}
                                     </p>
 
-                                    <div className="mt-5 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white">
+                                    <div className="mt-5 grid gap-3 lg:grid-cols-2">
                                         {visibleFloorPlans.map((plan) => (<FloorPlanCard
                                             key={plan.name}
                                             propertyId={propertyId}
@@ -2614,48 +2614,47 @@ function FloorPlanCard({
     onViewDetails,
 }) {
     return (
-        <div className="border-b border-[#d7e6df] bg-white p-3 last:border-b-0 sm:p-4">
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(330px,0.95fr)_auto] lg:items-center">
-                <div className="flex min-w-0 gap-3">
+        <div className="flex min-h-[250px] flex-col justify-between rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+            <div className="flex min-w-0 gap-3">
                 {image && (
                     <img
                         src={image}
                         alt={`${name} floor plan`}
-                            className="h-16 w-16 shrink-0 rounded-xl object-cover sm:h-20 sm:w-20"
+                        className="h-16 w-16 shrink-0 rounded-xl object-cover sm:h-20 sm:w-20"
                     />
                 )}
 
                 <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                            {special && (
-                                <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                                    <span className="truncate">{special.label}</span>
-                                </span>
-                            )}
-
-                            <span
-                                className={`rounded-full px-2.5 py-1 text-[11px] font-black ${status === "available"
-                                    ? "bg-[#d8efe6] text-[#1f6f63]"
-                                    : status === "limited"
-                                        ? "bg-[#fff8e6] text-[#8a5b0a]"
-                                        : "bg-[#fff0ea] text-[#e4572e]"
-                                    }`}
-                            >
-                                {available}
+                    <div className="flex flex-wrap items-center gap-2">
+                        {special && (
+                            <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                <span className="truncate">{special.label}</span>
                             </span>
-                        </div>
+                        )}
 
-                            <p className="truncate text-lg font-black text-[#102426]">
-                                {name}
-                            </p>
-
-                            <p className="mt-1 text-sm font-semibold text-[#526260]">
-                            {formatBedroomLabel(beds)} • {baths} ba • {sqft} sq ft
-                            </p>
-                        </div>
+                        <span
+                            className={`rounded-full px-2.5 py-1 text-[11px] font-black ${status === "available"
+                                ? "bg-[#d8efe6] text-[#1f6f63]"
+                                : status === "limited"
+                                    ? "bg-[#fff8e6] text-[#8a5b0a]"
+                                    : "bg-[#fff0ea] text-[#e4572e]"
+                                }`}
+                        >
+                            {available}
+                        </span>
                     </div>
 
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                    <p className="mt-2 truncate text-lg font-black text-[#102426]">
+                        {name}
+                    </p>
+
+                    <p className="mt-1 text-sm font-semibold text-[#526260]">
+                        {formatBedroomLabel(beds)} • {baths} ba • {sqft} sq ft
+                    </p>
+                </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                 <FloorPlanMetric label="Starting" value={rent} />
 
                 {effectiveRent && (
@@ -2671,22 +2670,23 @@ function FloorPlanCard({
                 )}
             </div>
 
-                <div className="flex items-center justify-between gap-2 lg:justify-end">
+            <div className="mt-4 flex items-center justify-between gap-3">
+                <div className="min-w-0">
                     {belowMarketPercent ? (
                         <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
                             {belowMarketPercent} below
                         </span>
                     ) : (
-                        <span className="hidden lg:block" />
+                        <span className="text-xs font-bold text-[#526260]">Compare fees before applying</span>
                     )}
-
-                    <button
-                        onClick={onViewDetails}
-                        className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
-                    >
-                        Details
-                    </button>
                 </div>
+
+                <button
+                    onClick={onViewDetails}
+                    className="shrink-0 rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
+                >
+                    Details
+                </button>
             </div>
 
             {marketRentSource && (
