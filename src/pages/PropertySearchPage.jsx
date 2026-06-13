@@ -28,13 +28,7 @@ const SPECIAL_FILTER_OPTIONS = [
   { label: "6 weeks free", weeks: 6 },
   { label: "8 weeks free", weeks: 8 },
 ];
-const PRICE_FILTER_OPTIONS = [
-  { label: "Under $1,000", min: 0, max: 1000 },
-  { label: "$1,000 - $1,500", min: 1000, max: 1500 },
-  { label: "$1,500 - $2,000", min: 1500, max: 2000 },
-  { label: "$2,000 - $2,500", min: 2000, max: 2500 },
-  { label: "$2,500+", min: 2500, max: null },
-];
+const PRICE_FILTER_OPTIONS = createPriceFilterOptions();
 const BED_FILTER_OPTIONS = [
   { label: "Studio", value: "studio" },
   { label: "1 bd", value: "1" },
@@ -42,6 +36,22 @@ const BED_FILTER_OPTIONS = [
   { label: "3+ bd", value: "3plus" },
 ];
 const mapboxGeocodeRequests = new Map();
+
+function createPriceFilterOptions() {
+  const ranges = [{ label: "Under $800", min: 0, max: 800 }];
+
+  for (let min = 800; min < 3000; min += 100) {
+    ranges.push({
+      label: `${formatCurrency(min)} - ${formatCurrency(min + 100)}`,
+      min,
+      max: min + 100,
+    });
+  }
+
+  ranges.push({ label: "$3,000+", min: 3000, max: null });
+
+  return ranges;
+}
 
 export default function PropertySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -250,7 +260,16 @@ export default function PropertySearchPage() {
                   </button>
 
                   {isPriceFilterOpen && (
-                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-56 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl">
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-64 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl">
+                      <div className="border-b border-[#edf4ef] px-4 py-3">
+                        <p className="text-xs font-black uppercase text-[#526260]">
+                          Monthly budget
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-[#526260]">
+                          Scroll to choose the range that fits.
+                        </p>
+                      </div>
+                      <div className="max-h-72 overflow-y-auto">
                       {PRICE_FILTER_OPTIONS.map((option) => (
                         <button
                           key={option.label}
@@ -272,6 +291,7 @@ export default function PropertySearchPage() {
                           )}
                         </button>
                       ))}
+                      </div>
                       <button
                         type="button"
                         onClick={() => {
