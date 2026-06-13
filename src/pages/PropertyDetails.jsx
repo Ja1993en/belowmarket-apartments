@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Pencil, Save, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ExternalLink, Pencil, Save, X } from "lucide-react";
 import { getAllLeads } from "../data/leadStorage";
 import { getPhotoImageUrl } from "../data/propertySearchData";
 import { getAnyPropertyById, updateStoredProperty } from "../data/propertyStorage";
@@ -114,6 +114,32 @@ export default function PropertyDetails() {
         }
     };
 
+    const makePropertyLive = async () => {
+        if (!property || property.status === "Live") return;
+
+        try {
+            setIsSavingProperty(true);
+            setSaveError("");
+            const updatedProperty = await updateStoredProperty(property.id, { status: "Live" });
+
+            setProperty(updatedProperty);
+            setPropertyDraft({
+                name: updatedProperty.name || "",
+                area: updatedProperty.area || "",
+                rent: updatedProperty.rent || "",
+                status: updatedProperty.status || "Live",
+            });
+            setSaveMessage(`${updatedProperty.name || "Property"} is now visible to renters.`);
+            setIsEditing(false);
+            setSearchParams({}, { replace: true });
+        } catch (error) {
+            console.error(error);
+            setSaveError("Could not make this property live. Check Supabase.");
+        } finally {
+            setIsSavingProperty(false);
+        }
+    };
+
     if (isLoadingProperty) {
         return (
             <div className="rounded-3xl border border-[#d7e6df] bg-white p-8 text-left shadow-sm">
@@ -166,6 +192,18 @@ export default function PropertyDetails() {
                 </Link>
 
                 <div className="flex flex-col gap-2 sm:flex-row">
+                    {property.status !== "Live" && (
+                        <button
+                            type="button"
+                            onClick={makePropertyLive}
+                            disabled={isSavingProperty}
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] disabled:cursor-not-allowed disabled:bg-[#d7c186]"
+                        >
+                            <CheckCircle2 className="h-4 w-4" />
+                            {isSavingProperty ? "Publishing..." : "Make Live"}
+                        </button>
+                    )}
+
                     <Link
                         to={`/properties/${property.id}`}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"

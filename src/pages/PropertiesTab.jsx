@@ -16,6 +16,7 @@ import {
     getAllProperties,
     getLegacyLocalPropertyCount,
     migrateLegacyLocalPropertiesToSupabase,
+    updateStoredProperty,
 } from "../data/propertyStorage";
 
 
@@ -122,6 +123,18 @@ export default function PropertiesTab() {
         } catch (error) {
             console.error(error);
             setNotice(`Could not delete ${property.name}. Check Supabase.`);
+        }
+    };
+
+    const makePropertyLive = async (property) => {
+        try {
+            setNotice("");
+            await updateStoredProperty(property.id, { status: "Live" });
+            await refreshProperties();
+            setNotice(`${property.name} is now visible to renters.`);
+        } catch (error) {
+            console.error(error);
+            setNotice(`Could not make ${property.name} live. Check Supabase.`);
         }
     };
 
@@ -409,6 +422,7 @@ export default function PropertiesTab() {
                                             status={property.status}
                                             special={property.special}
                                             updated={property.updated}
+                                            onMakeLive={() => makePropertyLive(property)}
                                             onDelete={() => deleteProperty(property)}
                                         />
                                     </motion.div>
@@ -722,6 +736,7 @@ function PropertyRow({
     status,
     special,
     updated,
+    onMakeLive,
     onDelete,
 }) {
     const initials = name
@@ -785,6 +800,16 @@ function PropertyRow({
                 </span>
 
                 <div className="flex gap-2">
+                    {status !== "Live" && (
+                        <button
+                            type="button"
+                            onClick={onMakeLive}
+                            className="rounded-xl bg-[#f2b84b] px-4 py-2 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                        >
+                            Make Live
+                        </button>
+                    )}
+
                     <Link
                         to={`/admin/properties/${id}`}
                         className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
