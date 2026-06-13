@@ -1382,6 +1382,7 @@ function getPointerMapPoint(map, event) {
 
 function createSearchMapPinElement(property) {
   const isApproximatePin = property.mapAccuracy === "approximate";
+  const hasStrongDeal = propertyHasStrongMapDeal(property);
   const markerElement = document.createElement("button");
   markerElement.type = "button";
   markerElement.className = [
@@ -1389,6 +1390,7 @@ function createSearchMapPinElement(property) {
     isApproximatePin
       ? "border-white bg-[#8a5b0a]"
       : "border-white bg-[#173f3f]",
+    hasStrongDeal ? "ring-2 ring-[#f2b84b] ring-offset-1 ring-offset-white" : "",
   ].join(" ");
   markerElement.title = property.name || "View property";
   markerElement.setAttribute(
@@ -1397,6 +1399,29 @@ function createSearchMapPinElement(property) {
   );
 
   return markerElement;
+}
+
+function propertyHasStrongMapDeal(property) {
+  const priceSummary = getPropertySearchPriceSummary(property);
+  if (!priceSummary.hasRentSpecial) return false;
+
+  const normalRent = parseFirstCurrency(priceSummary.normalRentLabel);
+  const effectiveRent = parseFirstCurrency(priceSummary.effectiveRentLabel);
+  const savings = normalRent && effectiveRent ? Math.max(normalRent - effectiveRent, 0) : 0;
+  const savingsPercent = normalRent ? savings / normalRent : 0;
+  const maxFreeWeeks = Math.max(
+    0,
+    ...getPropertySpecialValues(property)
+      .map((specialValue) => getWeeksFromSpecialText(specialValue))
+      .filter((weeksFree) => Number.isFinite(weeksFree))
+  );
+
+  return (
+    savings >= 150 ||
+    savingsPercent >= 0.08 ||
+    maxFreeWeeks >= 6 ||
+    getSearchDealScore(property, priceSummary) >= 88
+  );
 }
 
 function createAreaGeoJson(area) {
