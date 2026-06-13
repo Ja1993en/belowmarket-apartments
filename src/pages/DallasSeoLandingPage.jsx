@@ -398,46 +398,40 @@ export default function DallasSeoLandingPage() {
           </div>
         </div>
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-          <div>
-            <p className="text-sm font-black text-[#1f6f63]">
-              Renter questions
-            </p>
-            <h2 className="mt-2 text-3xl font-black text-[#102426]">
-              What to know before comparing {page.primaryKeyword}.
-            </h2>
-            <p className="mt-3 text-sm font-semibold leading-6 text-[#526260]">
-              Specials can make an apartment look cheaper, but the rent renters pay is usually tied to the normal rent, fees, and how the property applies the concession. These answers keep the comparison clear before a renter requests a tour.
-            </p>
+        <section className="mt-8 border-t border-[#d7e6df] pt-8">
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+            <div className="max-w-2xl">
+              <p className="text-sm font-black text-[#1f6f63]">
+                Renter deal guide
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-[#102426]">
+                What to know before comparing {page.primaryKeyword}.
+              </h2>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+                Quick answers about specials, normal rent, effective value, and fees before a renter chooses which properties are worth touring.
+              </p>
+            </div>
+
+            <div className="flex max-w-3xl flex-wrap gap-2">
+              {DALLAS_INTERNAL_LINKS.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="rounded-full bg-white px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#edf4ef]"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {pageFaqs.map((faq) => (
               <SeoFaqCard
                 key={faq.question}
                 question={faq.question}
                 answer={faq.answer}
               />
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-          <p className="text-sm font-black text-[#1f6f63]">
-            Explore Dallas apartment searches
-          </p>
-          <h2 className="mt-2 text-2xl font-black text-[#102426]">
-            Compare specials by city page, deal type, and neighborhood.
-          </h2>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {DALLAS_INTERNAL_LINKS.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="rounded-full bg-[#f5f8f1] px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#edf4ef]"
-              >
-                {link.label}
-              </Link>
             ))}
           </div>
         </section>
@@ -497,9 +491,9 @@ function getPageFaqs(page) {
 
 function SeoFaqCard({ question, answer }) {
   return (
-    <article className="rounded-2xl border border-[#d7e6df] bg-white p-5 shadow-sm">
-      <h3 className="text-base font-black text-[#102426]">{question}</h3>
-      <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+    <article className="rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
+      <h3 className="text-sm font-black leading-5 text-[#102426]">{question}</h3>
+      <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
         {answer}
       </p>
     </article>

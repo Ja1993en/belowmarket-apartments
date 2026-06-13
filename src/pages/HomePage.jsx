@@ -366,23 +366,26 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-                    <div>
-                        <p className="text-sm font-black text-[#1f6f63]">
-                            Apartment deal guide
-                        </p>
-                        <h2 className="mt-2 text-3xl font-black text-[#102426]">
-                            Clear answers before renters schedule a tour.
-                        </h2>
-                        <p className="mt-3 text-sm font-semibold leading-6 text-[#526260]">
-                            Below Market Apartments is focused on showing the special, the normal rent, and the estimated effective value together so Dallas renters can compare deals without losing sight of the real monthly cost.
-                        </p>
-                        <div className="mt-5 flex flex-wrap gap-2">
+                <section className="mt-8 border-t border-[#d7e6df] pt-8">
+                    <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+                        <div className="max-w-2xl">
+                            <p className="text-sm font-black text-[#1f6f63]">
+                                Apartment deal guide
+                            </p>
+                            <h2 className="mt-2 text-2xl font-black text-[#102426]">
+                                Clear answers before renters tour.
+                            </h2>
+                            <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+                                Helpful context for comparing specials, normal rent, effective value, and fees without adding friction to the search.
+                            </p>
+                        </div>
+
+                        <div className="flex max-w-3xl flex-wrap gap-2">
                             {HOME_SEO_LINKS.map((link) => (
                                 <Link
                                     key={link.to}
                                     to={link.to}
-                                    className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#edf4ef]"
+                                    className="rounded-full bg-white px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#edf4ef]"
                                 >
                                     {link.label}
                                 </Link>
@@ -390,7 +393,7 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                         {HOME_RENTER_FAQS.map((faq) => (
                             <SeoFaqCard
                                 key={faq.question}
@@ -1239,9 +1242,9 @@ function MissionBenefit({ title, text }) {
 
 function SeoFaqCard({ question, answer }) {
     return (
-        <article className="rounded-2xl border border-[#d7e6df] bg-white p-5 shadow-sm">
-            <h3 className="text-base font-black text-[#102426]">{question}</h3>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+        <article className="rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
+            <h3 className="text-sm font-black leading-5 text-[#102426]">{question}</h3>
+            <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
                 {answer}
             </p>
         </article>
