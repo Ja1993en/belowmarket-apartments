@@ -206,6 +206,16 @@ const DALLAS_LANDING_PAGES = {
     ],
   },
 };
+const DALLAS_INTERNAL_LINKS = [
+  { label: "Dallas apartments", to: "/apartments/dallas-tx" },
+  { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
+  { label: "8 weeks free apartments", to: "/apartments/dallas-tx/8-weeks-free" },
+  { label: "Uptown Dallas", to: "/apartments/dallas-tx/uptown" },
+  { label: "Oak Lawn", to: "/apartments/dallas-tx/oak-lawn" },
+  { label: "Bishop Arts", to: "/apartments/dallas-tx/bishop-arts" },
+  { label: "Victory Park", to: "/apartments/dallas-tx/victory-park" },
+  { label: "Downtown Dallas", to: "/apartments/dallas-tx/downtown" },
+];
 
 export default function DallasSeoLandingPage() {
   const { pageType = "dallas-tx" } = useParams();
@@ -260,8 +270,26 @@ export default function DallasSeoLandingPage() {
     return <Navigate to="/apartments/dallas-tx" replace />;
   }
 
+  const pageFaqs = getPageFaqs(page);
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: pageFaqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <header className="border-b border-[#d7e6df] bg-white px-4 py-4 shadow-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-3">
@@ -370,6 +398,50 @@ export default function DallasSeoLandingPage() {
           </div>
         </div>
 
+        <section className="mt-8 grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+          <div>
+            <p className="text-sm font-black text-[#1f6f63]">
+              Renter questions
+            </p>
+            <h2 className="mt-2 text-3xl font-black text-[#102426]">
+              What to know before comparing {page.primaryKeyword}.
+            </h2>
+            <p className="mt-3 text-sm font-semibold leading-6 text-[#526260]">
+              Specials can make an apartment look cheaper, but the rent renters pay is usually tied to the normal rent, fees, and how the property applies the concession. These answers keep the comparison clear before a renter requests a tour.
+            </p>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {pageFaqs.map((faq) => (
+              <SeoFaqCard
+                key={faq.question}
+                question={faq.question}
+                answer={faq.answer}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+          <p className="text-sm font-black text-[#1f6f63]">
+            Explore Dallas apartment searches
+          </p>
+          <h2 className="mt-2 text-2xl font-black text-[#102426]">
+            Compare specials by city page, deal type, and neighborhood.
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {DALLAS_INTERNAL_LINKS.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="rounded-full bg-[#f5f8f1] px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#edf4ef]"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </section>
+
         <div className="mt-8 flex flex-col justify-between gap-4 rounded-3xl bg-[#173f3f] p-6 text-white md:flex-row md:items-center">
           <div>
             <p className="text-sm font-black text-[#f2b84b]">Related searches</p>
@@ -395,6 +467,42 @@ export default function DallasSeoLandingPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function getPageFaqs(page) {
+  return [
+    {
+      question: `How should renters compare ${page.primaryKeyword}?`,
+      answer:
+        "Compare normal rent, estimated effective rent, bedroom type, active special, and required fees together. A lower effective value is helpful, but renters should confirm the actual monthly amount due before applying.",
+    },
+    {
+      question: "Do weeks-free specials lower the monthly payment?",
+      answer:
+        "Not always. Many properties apply the special as an account credit, upfront credit, or concession across the lease. The renter may still owe normal rent plus required monthly fees each month.",
+    },
+    {
+      question: "Why does the listing show both normal rent and effective rent?",
+      answer:
+        "Normal rent shows the rent basis before the special. Effective rent estimates the value of the special across the lease so renters can compare deals without confusing it with the actual monthly bill.",
+    },
+    {
+      question: "What should renters ask before touring?",
+      answer:
+        "Ask if the special is active for the exact unit, whether it applies to base rent only, how the credit is applied, what fees are required, and whether the unit is still available.",
+    },
+  ];
+}
+
+function SeoFaqCard({ question, answer }) {
+  return (
+    <article className="rounded-2xl border border-[#d7e6df] bg-white p-5 shadow-sm">
+      <h3 className="text-base font-black text-[#102426]">{question}</h3>
+      <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+        {answer}
+      </p>
+    </article>
   );
 }
 

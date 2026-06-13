@@ -11,6 +11,38 @@ import {
 
 const LEASING_WEEKS_PER_MONTH = 4;
 const FEATURED_DALLAS_DEAL_LIMIT = 4;
+const HOME_RENTER_FAQS = [
+    {
+        question: "What does net effective rent mean?",
+        answer:
+            "Net effective rent estimates the value of a special across the lease term. Your actual monthly payment may still be based on normal rent plus required monthly fees.",
+    },
+    {
+        question: "Why does Below Market Apartments show normal rent too?",
+        answer:
+            "Normal rent helps renters understand the likely payment basis before concessions. Showing both normal rent and effective value keeps the deal transparent.",
+    },
+    {
+        question: "Do apartment specials apply to every floor plan?",
+        answer:
+            "Not always. Some properties run a special on every available unit, while others only apply it to certain floor plans, lease terms, or move-in dates.",
+    },
+    {
+        question: "What should renters confirm before touring?",
+        answer:
+            "Confirm the special is still active, how the credit is applied, required monthly add-ons, parking, utilities, deposits, admin fees, and the exact unit availability.",
+    },
+];
+const HOME_SEO_LINKS = [
+    { label: "Dallas apartments", to: "/apartments/dallas-tx" },
+    { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
+    { label: "8 weeks free apartments", to: "/apartments/dallas-tx/8-weeks-free" },
+    { label: "Uptown Dallas apartment specials", to: "/apartments/dallas-tx/uptown" },
+    { label: "Oak Lawn apartment deals", to: "/apartments/dallas-tx/oak-lawn" },
+    { label: "Bishop Arts apartments", to: "/apartments/dallas-tx/bishop-arts" },
+    { label: "Victory Park apartments", to: "/apartments/dallas-tx/victory-park" },
+    { label: "Downtown Dallas apartments", to: "/apartments/dallas-tx/downtown" },
+];
 
 export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -333,6 +365,41 @@ export default function HomePage() {
                         </div>
                     </div>
                 </div>
+
+                <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+                    <div>
+                        <p className="text-sm font-black text-[#1f6f63]">
+                            Apartment deal guide
+                        </p>
+                        <h2 className="mt-2 text-3xl font-black text-[#102426]">
+                            Clear answers before renters schedule a tour.
+                        </h2>
+                        <p className="mt-3 text-sm font-semibold leading-6 text-[#526260]">
+                            Below Market Apartments is focused on showing the special, the normal rent, and the estimated effective value together so Dallas renters can compare deals without losing sight of the real monthly cost.
+                        </p>
+                        <div className="mt-5 flex flex-wrap gap-2">
+                            {HOME_SEO_LINKS.map((link) => (
+                                <Link
+                                    key={link.to}
+                                    to={link.to}
+                                    className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#edf4ef]"
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                        {HOME_RENTER_FAQS.map((faq) => (
+                            <SeoFaqCard
+                                key={faq.question}
+                                question={faq.question}
+                                answer={faq.answer}
+                            />
+                        ))}
+                    </div>
+                </section>
             </section>
 
             <footer className="border-t border-[#d7e6df] bg-white px-4 py-6">
@@ -1167,5 +1234,16 @@ function MissionBenefit({ title, text }) {
                 {text}
             </p>
         </div>
+    );
+}
+
+function SeoFaqCard({ question, answer }) {
+    return (
+        <article className="rounded-2xl border border-[#d7e6df] bg-white p-5 shadow-sm">
+            <h3 className="text-base font-black text-[#102426]">{question}</h3>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+                {answer}
+            </p>
+        </article>
     );
 }
