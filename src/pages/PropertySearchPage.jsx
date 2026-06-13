@@ -1402,13 +1402,6 @@ function createSearchMapPinElement(property) {
 }
 
 function propertyHasStrongMapDeal(property) {
-  const priceSummary = getPropertySearchPriceSummary(property);
-  if (!priceSummary.hasRentSpecial) return false;
-
-  const normalRent = parseFirstCurrency(priceSummary.normalRentLabel);
-  const effectiveRent = parseFirstCurrency(priceSummary.effectiveRentLabel);
-  const savings = normalRent && effectiveRent ? Math.max(normalRent - effectiveRent, 0) : 0;
-  const savingsPercent = normalRent ? savings / normalRent : 0;
   const maxFreeWeeks = Math.max(
     0,
     ...getPropertySpecialValues(property)
@@ -1416,12 +1409,7 @@ function propertyHasStrongMapDeal(property) {
       .filter((weeksFree) => Number.isFinite(weeksFree))
   );
 
-  return (
-    savings >= 150 ||
-    savingsPercent >= 0.08 ||
-    maxFreeWeeks >= 6 ||
-    getSearchDealScore(property, priceSummary) >= 88
-  );
+  return maxFreeWeeks >= 8;
 }
 
 function createAreaGeoJson(area) {
