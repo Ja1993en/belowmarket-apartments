@@ -451,7 +451,7 @@ export default function PropertySearchPage() {
           </div>
         )}
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filteredProperties.map((property) => (
             <SearchResultCard
               key={property.id}
@@ -879,20 +879,20 @@ function SearchResultCard({
           <img
             src={getPropertyPrimaryImage(property)}
             alt={property.name}
-            className="aspect-[16/10] w-full object-cover"
+            className="aspect-[16/9] w-full object-cover"
           />
-          <div className="absolute left-3 top-3 rounded-2xl bg-[#173f3f] px-3 py-2 text-white shadow-lg">
+          <div className="absolute left-3 top-3 rounded-xl bg-[#173f3f] px-2.5 py-2 text-white shadow-lg">
             <p className="text-[10px] font-black uppercase tracking-[0.08em] text-[#f9d783]">
               Deal Score
             </p>
-            <p className="text-xl font-black">{dealScore}/100</p>
+            <p className="text-lg font-black">{dealScore}/100</p>
           </div>
         </div>
       </Link>
 
-      <div className="p-4">
+      <div className="p-3">
         <Link to={cardHref} className="block">
-          <p className="truncate text-lg font-black text-[#102426]">
+          <p className="truncate text-base font-black text-[#102426]">
             {property.name}
           </p>
           <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260]">
@@ -901,12 +901,12 @@ function SearchResultCard({
           </p>
         </Link>
 
-        <div className="mt-4 flex items-end justify-between gap-3">
+        <div className="mt-3 flex items-end justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[11px] font-black uppercase text-[#1f6f63]">
               {showNetEffectiveRent ? "Net Effective" : "Normal Rent"}
             </p>
-            <p className="mt-1 truncate text-2xl font-black text-[#102426]">
+            <p className="mt-1 truncate text-xl font-black text-[#102426]">
               {showNetEffectiveRent
                 ? priceSummary.effectiveRentLabel
                 : priceSummary.normalRentLabel}
@@ -946,11 +946,11 @@ function SearchResultCard({
           ))}
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={onToggleSaved}
-            className={`rounded-xl px-3 py-3 text-sm font-black ${
+            className={`rounded-xl px-3 py-2.5 text-sm font-black ${
               isSaved
                 ? "bg-[#173f3f] text-white"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
@@ -961,7 +961,7 @@ function SearchResultCard({
           <button
             type="button"
             onClick={onToggleCompare}
-            className={`rounded-xl px-3 py-3 text-sm font-black ${
+            className={`rounded-xl px-3 py-2.5 text-sm font-black ${
               isCompared
                 ? "bg-[#f2b84b] text-[#102426]"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
