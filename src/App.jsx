@@ -18,6 +18,7 @@ import StartPage from "./pages/StartPage";
 import LeadDetailsPage from "./pages/LeadDetailsPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import PropertySearchPage from "./pages/PropertySearchPage";
+import DallasSeoLandingPage from "./pages/DallasSeoLandingPage";
 import {
   PrivacyPolicyPage,
   TermsAndConditionsPage,
@@ -54,6 +55,14 @@ export default function App() {
 
         <Route path="/r/:token" element={<RenterPropertiesList />} />
         <Route path="/properties" element={<PropertySearchPage />} />
+        <Route
+          path="/apartments/:pageType"
+          element={<DallasSeoLandingPage />}
+        />
+        <Route
+          path="/apartments/dallas-tx/:pageType"
+          element={<DallasSeoLandingPage />}
+        />
 
         <Route
           path="/properties/:propertyId"

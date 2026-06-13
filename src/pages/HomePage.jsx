@@ -270,6 +270,39 @@ export default function HomePage() {
                         </div>
                     </div>
                 </div>
+
+                <div className="mt-8 rounded-3xl bg-[#173f3f] p-6 text-white shadow-sm">
+                    <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                        <div>
+                            <p className="text-sm font-black text-[#f2b84b]">
+                                Popular Dallas searches
+                            </p>
+                            <h2 className="mt-2 text-2xl font-black text-[#fff7df]">
+                                Start with the searches renters use most.
+                            </h2>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <Link
+                                to="/apartments/dallas-tx"
+                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+                            >
+                                Dallas apartments
+                            </Link>
+                            <Link
+                                to="/apartments/dallas-tx/specials"
+                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+                            >
+                                Dallas apartment specials
+                            </Link>
+                            <Link
+                                to="/apartments/dallas-tx/8-weeks-free"
+                                className="rounded-full bg-[#f2b84b] px-4 py-2 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                            >
+                                8 weeks free apartments
+                            </Link>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <footer className="border-t border-[#d7e6df] bg-white px-4 py-6">
