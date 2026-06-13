@@ -19,7 +19,7 @@ import {
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
 const NEARBY_PLACE_RADIUS_MILES = 10;
-const FLOOR_PLAN_INITIAL_VISIBLE_COUNT = 6;
+const FLOOR_PLAN_PAGE_SIZE = 6;
 const NEARBY_PLACE_QUERIES = [
     {
         query: "Walmart",
@@ -338,7 +338,8 @@ export default function PublicPropertyListing() {
     const [selectedPhoto, setSelectedPhoto] = useState(propertyGalleryImages[0]);
     const [floorPlanSort, setFloorPlanSort] = useState("recommended");
     const [activeFloorPlanFilter, setActiveFloorPlanFilter] = useState("All");
-    const [showAllFloorPlans, setShowAllFloorPlans] = useState(false);
+    const [floorPlanPage, setFloorPlanPage] = useState(1);
+    const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(false);
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
     const [showSidebarError, setShowSidebarError] = useState(false);
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
@@ -386,12 +387,29 @@ export default function PublicPropertyListing() {
 
         return 0;
     });
-    const visibleFloorPlans = showAllFloorPlans
+    const availableFloorPlans = sortedFloorPlans.filter(isFloorPlanAvailable);
+    const unavailableFloorPlans = sortedFloorPlans.filter(
+        (plan) => !isFloorPlanAvailable(plan)
+    );
+    const paginatedFloorPlans = showUnavailableFloorPlans
         ? sortedFloorPlans
-        : sortedFloorPlans.slice(0, FLOOR_PLAN_INITIAL_VISIBLE_COUNT);
-    const hiddenFloorPlanCount = Math.max(
-        sortedFloorPlans.length - visibleFloorPlans.length,
-        0
+        : availableFloorPlans;
+    const totalFloorPlanPages = Math.max(
+        Math.ceil(paginatedFloorPlans.length / FLOOR_PLAN_PAGE_SIZE),
+        1
+    );
+    const currentFloorPlanPage = Math.min(floorPlanPage, totalFloorPlanPages);
+    const visibleFloorPlans = paginatedFloorPlans.slice(
+        (currentFloorPlanPage - 1) * FLOOR_PLAN_PAGE_SIZE,
+        currentFloorPlanPage * FLOOR_PLAN_PAGE_SIZE
+    );
+    const floorPlanPageStart =
+        paginatedFloorPlans.length > 0
+            ? (currentFloorPlanPage - 1) * FLOOR_PLAN_PAGE_SIZE + 1
+            : 0;
+    const floorPlanPageEnd = Math.min(
+        currentFloorPlanPage * FLOOR_PLAN_PAGE_SIZE,
+        paginatedFloorPlans.length
     );
 
     const [leadForm, setLeadForm] = useState({
@@ -778,7 +796,7 @@ export default function PublicPropertyListing() {
                                                     key={filter}
                                                     onClick={() => {
                                                         setActiveFloorPlanFilter(filter);
-                                                        setShowAllFloorPlans(false);
+                                                        setFloorPlanPage(1);
                                                     }}
                                                     className={`rounded-full px-4 py-2 text-sm font-bold ${activeFloorPlanFilter === filter
                                                         ? "bg-[#173f3f] text-white"
@@ -794,7 +812,7 @@ export default function PublicPropertyListing() {
                                             value={floorPlanSort}
                                             onChange={(event) => {
                                                 setFloorPlanSort(event.target.value);
-                                                setShowAllFloorPlans(false);
+                                                setFloorPlanPage(1);
                                             }}
                                             className="rounded-full border border-[#d7e6df] bg-white px-4 py-2 text-sm font-bold text-[#173f3f]"
                                         >
@@ -820,27 +838,72 @@ export default function PublicPropertyListing() {
                                         </select>
                                     </div>
 
+                                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#f5f8f1] px-4 py-3">
+                                        <div>
+                                            <p className="text-sm font-black text-[#102426]">
+                                                {availableFloorPlans.length} available floor plan
+                                                {availableFloorPlans.length === 1 ? "" : "s"}
+                                            </p>
+
+                                            {unavailableFloorPlans.length > 0 && (
+                                                <p className="mt-1 text-xs font-bold text-[#526260]">
+                                                    {unavailableFloorPlans.length} unavailable layout
+                                                    {unavailableFloorPlans.length === 1 ? "" : "s"} hidden by default.
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {unavailableFloorPlans.length > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowUnavailableFloorPlans(
+                                                        (currentValue) => !currentValue
+                                                    );
+                                                    setFloorPlanPage(1);
+                                                }}
+                                                className={`rounded-full px-4 py-2 text-sm font-black ${
+                                                    showUnavailableFloorPlans
+                                                        ? "bg-[#173f3f] text-white"
+                                                        : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
+                                                }`}
+                                            >
+                                                {showUnavailableFloorPlans
+                                                    ? "Hide unavailable"
+                                                    : "View unavailable"}
+                                            </button>
+                                        )}
+                                    </div>
 
 
 
-                                    {filteredFloorPlans.length === 0 && (
+
+                                    {paginatedFloorPlans.length === 0 && (
                                         <div className="mt-6 rounded-2xl bg-[#f5f8f1] p-5 text-center">
                                             <p className="font-bold text-[#102426]">
-                                                No floor plans found
+                                                {filteredFloorPlans.length === 0
+                                                    ? "No floor plans found"
+                                                    : "No available floor plans right now"}
                                             </p>
 
 
                                             <p className="mt-2 text-sm text-[#526260]">
-                                                Try selecting a different bedroom type.
+                                                {filteredFloorPlans.length === 0
+                                                    ? "Try selecting a different bedroom type."
+                                                    : "Use View unavailable to see every layout for this bedroom type."}
                                             </p>
                                         </div>
                                     )}
 
 
-                                    <p className="mt-3 text-sm font-semibold text-[#526260]">
-                                        Showing {visibleFloorPlans.length} of {filteredFloorPlans.length} floor plan
-                                        {filteredFloorPlans.length === 1 ? "" : "s"}
-                                    </p>
+                                    {paginatedFloorPlans.length > 0 && (
+                                        <p className="mt-3 text-sm font-semibold text-[#526260]">
+                                            Showing {floorPlanPageStart}-{floorPlanPageEnd} of{" "}
+                                            {paginatedFloorPlans.length}{" "}
+                                            {showUnavailableFloorPlans ? "total" : "available"} floor plan
+                                            {paginatedFloorPlans.length === 1 ? "" : "s"}
+                                        </p>
+                                    )}
 
                                     <div className="mt-5 grid gap-3 lg:grid-cols-2">
                                         {visibleFloorPlans.map((plan) => (<FloorPlanCard
@@ -881,15 +944,79 @@ export default function PublicPropertyListing() {
                                         ))}
                                     </div>
 
-                                    {hiddenFloorPlanCount > 0 && (
-                                        <div className="mt-4 flex justify-center">
+                                    {paginatedFloorPlans.length > FLOOR_PLAN_PAGE_SIZE && (
+                                        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
                                             <button
                                                 type="button"
-                                                onClick={() => setShowAllFloorPlans(true)}
-                                                className="rounded-full bg-[#173f3f] px-5 py-3 text-sm font-black text-white hover:bg-[#102426]"
+                                                onClick={() =>
+                                                    setFloorPlanPage((currentPage) =>
+                                                        Math.max(currentPage - 1, 1)
+                                                    )
+                                                }
+                                                disabled={currentFloorPlanPage === 1}
+                                                className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:opacity-40"
                                             >
-                                                Show {hiddenFloorPlanCount} more floor plan
-                                                {hiddenFloorPlanCount === 1 ? "" : "s"}
+                                                &lt;
+                                            </button>
+
+                                            {Array.from(
+                                                { length: totalFloorPlanPages },
+                                                (_, index) => index + 1
+                                            )
+                                                .filter((pageNumber) => {
+                                                    if (totalFloorPlanPages <= 7) return true;
+                                                    if (
+                                                        pageNumber === 1 ||
+                                                        pageNumber === totalFloorPlanPages
+                                                    ) {
+                                                        return true;
+                                                    }
+
+                                                    return Math.abs(pageNumber - currentFloorPlanPage) <= 1;
+                                                })
+                                                .map((pageNumber, index, pages) => {
+                                                    const previousPageNumber = pages[index - 1];
+                                                    const shouldShowGap =
+                                                        previousPageNumber &&
+                                                        pageNumber - previousPageNumber > 1;
+
+                                                    return (
+                                                        <span
+                                                            key={pageNumber}
+                                                            className="flex items-center gap-2"
+                                                        >
+                                                            {shouldShowGap && (
+                                                                <span className="px-1 text-sm font-black text-[#526260]">
+                                                                    ...
+                                                                </span>
+                                                            )}
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setFloorPlanPage(pageNumber)}
+                                                                className={`h-10 min-w-10 rounded-full px-3 text-sm font-black ${
+                                                                    currentFloorPlanPage === pageNumber
+                                                                        ? "bg-[#173f3f] text-white"
+                                                                        : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
+                                                                }`}
+                                                            >
+                                                                {pageNumber}
+                                                            </button>
+                                                        </span>
+                                                    );
+                                                })}
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setFloorPlanPage((currentPage) =>
+                                                        Math.min(currentPage + 1, totalFloorPlanPages)
+                                                    )
+                                                }
+                                                disabled={currentFloorPlanPage === totalFloorPlanPages}
+                                                className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                                &gt;
                                             </button>
                                         </div>
                                     )}
@@ -2718,15 +2845,53 @@ function FloorPlanMetric({ label, value, highlight = false }) {
 }
 
 function getAvailabilitySortValue(plan) {
+    if (!isFloorPlanAvailable(plan)) return 0;
     if (plan?.status === "available") return 2;
     if (plan?.status === "limited") return 1;
 
-    const availabilityText = String(plan?.available || plan?.availability || "").toLowerCase();
-    if (availabilityText.includes("available") && !availabilityText.includes("not currently")) {
-        return 2;
+    return 2;
+}
+
+function isFloorPlanAvailable(plan) {
+    const status = String(plan?.status || "").toLowerCase();
+    if (status === "available" || status === "limited") return true;
+    if (
+        status === "unavailable" ||
+        status === "not available" ||
+        status === "not currently available"
+    ) {
+        return false;
     }
 
-    return 0;
+    const availableUnitCount = getFloorPlanAvailableUnitCount(plan);
+    if (availableUnitCount > 0) return true;
+    if (availableUnitCount === 0) return false;
+
+    const availabilityText = String(plan?.available || plan?.availability || "").toLowerCase();
+    if (
+        availabilityText.includes("not currently") ||
+        availabilityText.includes("unavailable") ||
+        availabilityText.includes("0 available")
+    ) {
+        return false;
+    }
+
+    return availabilityText.includes("available");
+}
+
+function getFloorPlanAvailableUnitCount(plan) {
+    if (Array.isArray(plan?.availableUnits) && plan.availableUnits.length > 0) {
+        return plan.availableUnits.filter((unit) => {
+            const unitStatus = String(unit?.status || "available").toLowerCase();
+            return unitStatus === "available" || unitStatus === "";
+        }).length;
+    }
+
+    const availabilityText = String(plan?.available || plan?.availability || "");
+    const match = availabilityText.match(/(\d+)\s+available/i);
+    if (match) return Number(match[1]);
+
+    return null;
 }
 
 function formatBedroomLabel(value) {
