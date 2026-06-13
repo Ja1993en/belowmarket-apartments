@@ -14,6 +14,12 @@ const DEFAULT_META = {
 };
 
 export async function onRequest({ request, env }) {
+  const url = new URL(request.url);
+
+  if (url.pathname === "/property-sitemap.xml") {
+    return buildPropertySitemapResponse(env);
+  }
+
   const response = await env.ASSETS.fetch(request);
   const contentType = response.headers.get("content-type") || "";
 
@@ -21,7 +27,6 @@ export async function onRequest({ request, env }) {
     return response;
   }
 
-  const url = new URL(request.url);
   const meta = await getMetaForUrl(url, env);
   const html = injectMeta(await response.text(), meta);
   const headers = new Headers(response.headers);
@@ -34,6 +39,82 @@ export async function onRequest({ request, env }) {
     statusText: response.statusText,
     headers,
   });
+}
+
+async function buildPropertySitemapResponse(env) {
+  const properties = await fetchLivePropertiesForSitemap(env);
+  const urls = properties.map((property) => {
+    const lastmod = getPropertyLastModified(property);
+
+    return [
+      "  <url>",
+      `    <loc>${escapeXml(`${SITE_URL}/properties/${encodeURIComponent(property.id)}`)}</loc>`,
+      lastmod ? `    <lastmod>${escapeXml(lastmod)}</lastmod>` : "",
+      "    <changefreq>weekly</changefreq>",
+      "    <priority>0.75</priority>",
+      "  </url>",
+    ].filter(Boolean).join("\n");
+  });
+  const sitemap = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...urls,
+    '</urlset>',
+  ].join("\n");
+
+  return new Response(sitemap, {
+    headers: {
+      "content-type": "application/xml; charset=UTF-8",
+      "cache-control": "public, max-age=3600, s-maxage=3600",
+    },
+  });
+}
+
+async function fetchLivePropertiesForSitemap(env) {
+  const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL;
+  const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) return [];
+
+  try {
+    const query = new URL(`${supabaseUrl}/rest/v1/properties`);
+
+    query.searchParams.set("select", "id,status,updated_at,data");
+    query.searchParams.set("status", "eq.Live");
+    query.searchParams.set("order", "updated_at.desc");
+    query.searchParams.set("limit", "1000");
+
+    const response = await fetch(query, {
+      headers: {
+        apikey: supabaseAnonKey,
+        authorization: `Bearer ${supabaseAnonKey}`,
+      },
+    });
+
+    if (!response.ok) return [];
+
+    const rows = await response.json();
+
+    return (rows || [])
+      .map((row) => ({
+        ...row.data,
+        id: row.id,
+        status: row.data?.status || row.status || "",
+        updatedAt: row.updated_at || row.data?.updatedAt || "",
+      }))
+      .filter((property) => property.id && property.status === "Live");
+  } catch {
+    return [];
+  }
+}
+
+function getPropertyLastModified(property) {
+  const dateValue = property.updatedAt || property.updated_at || property.updated;
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toISOString().slice(0, 10);
 }
 
 async function getMetaForUrl(url, env) {
@@ -279,6 +360,10 @@ function escapeText(value) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+function escapeXml(value) {
+  return escapeText(value).replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
 function escapeAttribute(value) {

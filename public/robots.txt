@@ -4,3 +4,4 @@ Disallow: /admin
 Disallow: /admin-login
 
 Sitemap: https://belowmarketapartments.com/sitemap.xml
+Sitemap: https://belowmarketapartments.com/property-sitemap.xml
