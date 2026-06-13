@@ -344,6 +344,30 @@ export default function PropertyFormPage() {
     }));
   };
 
+  const importFloorPlanAvailability = (floorPlanId, pastedRows) => {
+    const importedUnits = parseAvailabilityImportRows(pastedRows);
+
+    if (importedUnits.length === 0) {
+      setSaveError("Paste at least one unit row with a unit, rent, or available date.");
+      return 0;
+    }
+
+    setPropertyDraft((currentDraft) => ({
+      ...currentDraft,
+      floorPlans: currentDraft.floorPlans.map((floorPlan) =>
+        floorPlan.id === floorPlanId
+          ? {
+              ...floorPlan,
+              availableUnits: importedUnits,
+            }
+          : floorPlan
+      ),
+    }));
+    setSaveError("");
+
+    return importedUnits.length;
+  };
+
   const removeFloorPlanAvailability = (floorPlanId, availabilityId) => {
     setPropertyDraft((currentDraft) => ({
       ...currentDraft,
@@ -664,6 +688,7 @@ export default function PropertyFormPage() {
                 onRemove={removeFloorPlan}
                 onAvailabilityChange={updateFloorPlanAvailability}
                 onAvailabilityAdd={addFloorPlanAvailability}
+                onAvailabilityImport={importFloorPlanAvailability}
                 onAvailabilityRemove={removeFloorPlanAvailability}
                 onPhotosUpload={uploadFloorPlanPhotos}
                 onPhotoRemove={removeFloorPlanPhoto}
@@ -785,12 +810,15 @@ function FloorPlanEditor({
   onRemove,
   onAvailabilityChange,
   onAvailabilityAdd,
+  onAvailabilityImport,
   onAvailabilityRemove,
   onPhotosUpload,
   onPhotoRemove,
   onPrimaryPhotoSet,
 }) {
   const calculatedValues = calculateFloorPlanValues(floorPlan);
+  const [bulkAvailabilityText, setBulkAvailabilityText] = useState("");
+  const [bulkAvailabilityMessage, setBulkAvailabilityMessage] = useState("");
   const updateUnitSpecial = (availableUnitId, value) => {
     if (value === "floorPlan") {
       onAvailabilityChange(floorPlan.id, availableUnitId, "specialMode", "floorPlan");
@@ -807,6 +835,19 @@ function FloorPlanEditor({
 
     onAvailabilityChange(floorPlan.id, availableUnitId, "specialMode", "custom");
     onAvailabilityChange(floorPlan.id, availableUnitId, "freeWeeks", value);
+  };
+  const importBulkAvailability = () => {
+    const importedCount = onAvailabilityImport(floorPlan.id, bulkAvailabilityText);
+
+    if (!importedCount) {
+      setBulkAvailabilityMessage("No valid rows found.");
+      return;
+    }
+
+    setBulkAvailabilityText("");
+    setBulkAvailabilityMessage(
+      `${importedCount} availability row${importedCount === 1 ? "" : "s"} imported.`
+    );
   };
 
   return (
@@ -1075,6 +1116,62 @@ function FloorPlanEditor({
             <Plus className="h-4 w-4" />
             Add Date
           </button>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] p-4">
+          <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
+            <div>
+              <h5 className="text-sm font-black text-[#102426]">
+                Bulk Import Availability
+              </h5>
+              <p className="mt-1 text-xs font-bold leading-5 text-[#526260]">
+                Paste rows from a spreadsheet. Format: Unit, Rent, Available Date, Status, Free Weeks, Notes.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setBulkAvailabilityText(
+                  "Unit,Rent,Available Date,Status,Free Weeks,Notes\n1204,1795,07/15/2026,available,8,Top floor\n1308,1845,07/20/2026,available,8,\n1402,1945,08/01/2026,limited,6,"
+                )
+              }
+              className="w-fit rounded-xl bg-white px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+            >
+              Use Sample
+            </button>
+          </div>
+
+          <textarea
+            value={bulkAvailabilityText}
+            onChange={(event) => {
+              setBulkAvailabilityText(event.target.value);
+              setBulkAvailabilityMessage("");
+            }}
+            rows={4}
+            placeholder="Unit,Rent,Available Date,Status,Free Weeks,Notes&#10;1204,1795,07/15/2026,available,8,Top floor&#10;1308,1845,07/20/2026,available,8,"
+            className="mt-3 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 text-sm font-bold text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
+          />
+
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs font-bold text-[#526260]">
+              Importing replaces the availability rows for this floor plan only.
+            </p>
+
+            <button
+              type="button"
+              onClick={importBulkAvailability}
+              className="inline-flex items-center justify-center rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-black text-white hover:bg-[#102426]"
+            >
+              Import Rows
+            </button>
+          </div>
+
+          {bulkAvailabilityMessage && (
+            <p className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-[#1f6f63] ring-1 ring-[#d7e6df]">
+              {bulkAvailabilityMessage}
+            </p>
+          )}
         </div>
 
         <div className="mt-4 space-y-3">
@@ -1442,6 +1539,99 @@ function createBlankAvailableUnit() {
     adminFeeSpecialType: "admin",
     notes: "",
   };
+}
+
+function parseAvailabilityImportRows(value) {
+  const rows = String(value || "")
+    .split(/\r?\n/)
+    .map((row) => row.trim())
+    .filter(Boolean);
+
+  return rows
+    .filter((row, index) => !isAvailabilityHeaderRow(row, index))
+    .map(parseAvailabilityImportRow)
+    .filter((availableUnit) =>
+      [availableUnit.unit, availableUnit.availableDate, availableUnit.rent, availableUnit.notes]
+        .some(Boolean)
+    );
+}
+
+function isAvailabilityHeaderRow(row, index) {
+  if (index !== 0) return false;
+
+  return /unit/i.test(row) && /(rent|available|date|status)/i.test(row);
+}
+
+function parseAvailabilityImportRow(row) {
+  const columns = splitAvailabilityImportColumns(row);
+  const [unit = "", rent = "", availableDate = "", status = "", freeWeeks = "", notes = ""] = columns;
+
+  return {
+    ...createBlankAvailableUnit(),
+    unit: unit.trim(),
+    rent: formatImportedRent(rent),
+    availableDate: normalizeImportedDate(availableDate),
+    status: normalizeImportedStatus(status),
+    specialMode: freeWeeks.trim() ? "custom" : "floorPlan",
+    freeWeeks: freeWeeks.trim(),
+    notes: notes.trim(),
+  };
+}
+
+function splitAvailabilityImportColumns(row) {
+  const delimiter = row.includes("\t") ? "\t" : ",";
+  const columns = [];
+  let currentColumn = "";
+  let isQuoted = false;
+
+  for (const character of row) {
+    if (character === '"') {
+      isQuoted = !isQuoted;
+      continue;
+    }
+
+    if (character === delimiter && !isQuoted) {
+      columns.push(currentColumn.trim());
+      currentColumn = "";
+      continue;
+    }
+
+    currentColumn += character;
+  }
+
+  columns.push(currentColumn.trim());
+  return columns;
+}
+
+function formatImportedRent(value) {
+  const rentNumber = Number(String(value || "").replace(/[^0-9.]/g, ""));
+
+  if (!rentNumber) return "";
+
+  return `$${Math.round(rentNumber).toLocaleString()}`;
+}
+
+function normalizeImportedDate(value) {
+  const dateValue = String(value || "").trim();
+  if (!dateValue) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return dateValue;
+
+  const match = dateValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (!match) return dateValue;
+
+  const [, month, day, year] = match;
+  const fullYear = year.length === 2 ? `20${year}` : year;
+
+  return `${fullYear}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+function normalizeImportedStatus(value) {
+  const status = String(value || "").trim().toLowerCase();
+
+  if (["leased", "unavailable"].includes(status)) return "leased";
+  if (["limited", "hold", "pending"].includes(status)) return "limited";
+
+  return "available";
 }
 
 function normalizeFloorPlansForDraft(property) {
