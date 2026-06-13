@@ -1652,11 +1652,30 @@ function formatRentRange(minRent, maxRent) {
 }
 
 function getBedsLabel(property) {
-  const bedrooms = property.bedrooms || [];
+  const bedrooms = [...new Set(property.bedrooms || [])].sort(
+    (firstBedroom, secondBedroom) =>
+      getBedroomCount(firstBedroom) - getBedroomCount(secondBedroom)
+  );
+
   if (bedrooms.length === 0) return "Beds";
   if (bedrooms.length === 1) return formatBedroomLabel(bedrooms[0]);
 
-  return `${formatBedroomLabel(bedrooms[0])}+`;
+  const firstBedroom = bedrooms[0];
+  const lastBedroom = bedrooms[bedrooms.length - 1];
+  const firstCount = getBedroomCount(firstBedroom);
+  const lastCount = getBedroomCount(lastBedroom);
+
+  if (firstCount === 0 && lastCount > 0) return `Studio - ${lastCount} bd`;
+  if (firstCount > 0 && lastCount > firstCount) return `${firstCount}-${lastCount} bd`;
+
+  return `${formatBedroomLabel(firstBedroom)} - ${formatBedroomLabel(lastBedroom)}`;
+}
+
+function getBedroomCount(value) {
+  if (String(value).toLowerCase().includes("studio")) return 0;
+
+  const match = String(value).match(/\d+/);
+  return match ? Number(match[0]) : 99;
 }
 
 function formatBedroomLabel(value) {
