@@ -185,7 +185,7 @@ export default function PropertySearchPage() {
         </div>
       </header>
 
-      <section className="border-b border-[#d7e6df] bg-white px-4 py-4">
+      <section className="sticky top-[73px] z-30 border-b border-[#d7e6df] bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
         <div className="mx-auto max-w-6xl">
           <form
             onSubmit={submitSearch}
