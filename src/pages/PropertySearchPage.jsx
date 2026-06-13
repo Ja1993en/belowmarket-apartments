@@ -69,6 +69,7 @@ export default function PropertySearchPage() {
   const [propertyLoadError, setPropertyLoadError] = useState("");
   const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
   const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
+  const [hoveredMapPropertyId, setHoveredMapPropertyId] = useState("");
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
     () =>
@@ -549,6 +550,7 @@ export default function PropertySearchPage() {
             mappableProperties={mappableFilteredProperties}
             selectedArea={selectedArea}
             onAreaChange={setSelectedArea}
+            onPropertyHover={setHoveredMapPropertyId}
           />
         </div>
       </section>
@@ -641,6 +643,7 @@ export default function PropertySearchPage() {
               property={property}
               isSaved={savedPropertyIds.includes(property.id)}
               isCompared={comparePropertyIds.includes(property.id)}
+              isMapHovered={hoveredMapPropertyId === property.id}
               onToggleSaved={() =>
                 setSavedPropertyIds(toggleSavedPropertyId(property.id))
               }
@@ -666,7 +669,13 @@ export default function PropertySearchPage() {
   );
 }
 
-function SearchMap({ properties, mappableProperties, selectedArea, onAreaChange }) {
+function SearchMap({
+  properties,
+  mappableProperties,
+  selectedArea,
+  onAreaChange,
+  onPropertyHover,
+}) {
   if (!MAPBOX_TOKEN) {
     return <FallbackSearchMap properties={properties} />;
   }
@@ -677,11 +686,18 @@ function SearchMap({ properties, mappableProperties, selectedArea, onAreaChange 
       mappableProperties={mappableProperties}
       selectedArea={selectedArea}
       onAreaChange={onAreaChange}
+      onPropertyHover={onPropertyHover}
     />
   );
 }
 
-function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaChange }) {
+function MapboxSearchMap({
+  properties,
+  mappableProperties,
+  selectedArea,
+  onAreaChange,
+  onPropertyHover,
+}) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -827,6 +843,7 @@ function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaC
     const bounds = new mapboxGl.LngLatBounds();
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
+    onPropertyHover?.("");
 
     mappableProperties.forEach((property) => {
       const markerElement = createSearchMapPinElement(property);
@@ -849,6 +866,12 @@ function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaC
         }
 
         window.location.href = `/properties/${property.id}`;
+      });
+      markerElement.addEventListener("mouseenter", () => {
+        onPropertyHover?.(property.id);
+      });
+      markerElement.addEventListener("mouseleave", () => {
+        onPropertyHover?.("");
       });
 
       const marker = new mapboxGl.Marker({
@@ -875,7 +898,7 @@ function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaC
         duration: 500,
       });
     }
-  }, [areaRadiusMiles, mapboxGl, mappableProperties, onAreaChange]);
+  }, [areaRadiusMiles, mapboxGl, mappableProperties, onAreaChange, onPropertyHover]);
 
   if (mapError) {
     return <FallbackSearchMap properties={properties} />;
@@ -1017,6 +1040,7 @@ function SearchResultCard({
   property,
   isSaved,
   isCompared,
+  isMapHovered,
   onToggleSaved,
   onToggleCompare,
 }) {
@@ -1028,9 +1052,15 @@ function SearchResultCard({
   const transparencyBadges = getSearchTransparencyBadges(property, priceSummary);
   const monthlyBreakdown = getSearchMonthlyBreakdown(property, priceSummary);
   const cardHref = `/properties/${property.id}`;
+  const showGoldHoverBar = isMapHovered && propertyHasStrongMapDeal(property);
 
   return (
-    <article className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md">
+    <article
+      className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md ${
+        isMapHovered ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
+      }`}
+    >
+      {showGoldHoverBar && <div className="h-1.5 bg-[#f2b84b]" />}
       <Link to={cardHref} className="block">
         <div className="relative">
           <img
@@ -1384,19 +1414,26 @@ function createSearchMapPinElement(property) {
   const isApproximatePin = property.mapAccuracy === "approximate";
   const hasStrongDeal = propertyHasStrongMapDeal(property);
   const markerElement = document.createElement("button");
+  const pinDotElement = document.createElement("span");
   markerElement.type = "button";
   markerElement.className = [
-    "h-3.5 w-3.5 rounded-full border-2 shadow-[0_2px_7px_rgba(16,36,38,0.28)] transition hover:scale-125 focus:outline-none focus:ring-2 focus:ring-[#f2b84b] focus:ring-offset-2",
+    "group flex h-7 w-7 items-center justify-center rounded-full focus:outline-none",
+  ].join(" ");
+  pinDotElement.className = [
+    "block h-3.5 w-3.5 rounded-full border-2 shadow-[0_2px_7px_rgba(16,36,38,0.28)] transition group-hover:scale-125 group-focus:scale-125",
     isApproximatePin
       ? "border-white bg-[#8a5b0a]"
       : "border-white bg-[#173f3f]",
-    hasStrongDeal ? "ring-2 ring-[#f2b84b] ring-offset-1 ring-offset-white" : "",
+    hasStrongDeal
+      ? "ring-2 ring-[#f2b84b] ring-offset-1 ring-offset-white group-hover:ring-4"
+      : "",
   ].join(" ");
   markerElement.title = property.name || "View property";
   markerElement.setAttribute(
     "aria-label",
     `${property.name || "Property"} map pin. Open listing.`
   );
+  markerElement.appendChild(pinDotElement);
 
   return markerElement;
 }
