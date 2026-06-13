@@ -35,13 +35,27 @@ const HOME_RENTER_FAQS = [
 ];
 const HOME_SEO_LINKS = [
     { label: "Dallas apartments", to: "/apartments/dallas-tx" },
-    { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
-    { label: "8 weeks free apartments", to: "/apartments/dallas-tx/8-weeks-free" },
-    { label: "Uptown Dallas apartment specials", to: "/apartments/dallas-tx/uptown" },
-    { label: "Oak Lawn apartment deals", to: "/apartments/dallas-tx/oak-lawn" },
-    { label: "Bishop Arts apartments", to: "/apartments/dallas-tx/bishop-arts" },
-    { label: "Victory Park apartments", to: "/apartments/dallas-tx/victory-park" },
-    { label: "Downtown Dallas apartments", to: "/apartments/dallas-tx/downtown" },
+    { label: "Specials", to: "/apartments/dallas-tx/specials" },
+    { label: "8 weeks free", to: "/apartments/dallas-tx/8-weeks-free" },
+    { label: "Uptown", to: "/apartments/dallas-tx/uptown" },
+    { label: "Oak Lawn", to: "/apartments/dallas-tx/oak-lawn" },
+    { label: "Bishop Arts", to: "/apartments/dallas-tx/bishop-arts" },
+    { label: "Victory Park", to: "/apartments/dallas-tx/victory-park" },
+    { label: "Downtown", to: "/apartments/dallas-tx/downtown" },
+];
+const HOME_MISSION_POINTS = [
+    {
+        title: "Renters",
+        text: "Compare specials, normal rent, effective value, and local context before requesting help.",
+    },
+    {
+        title: "Locators",
+        text: "Use cleaner property data to send better recommendations faster.",
+    },
+    {
+        title: "Managers",
+        text: "Put active floor plans and specials in front of renters already looking for value.",
+    },
 ];
 
 export default function HomePage() {
@@ -272,135 +286,71 @@ export default function HomePage() {
                     </div>
                 )}
 
-                <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                    <div className="grid gap-6 lg:grid-cols-[1.1fr_1.4fr] lg:items-start">
-                        <div>
-                            <p className="text-sm font-black text-[#1f6f63]">
+                <section className="mt-8 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm">
+                    <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
+                        <div className="bg-[#173f3f] p-6 text-white md:p-8">
+                            <p className="text-sm font-black text-[#f2b84b]">
                                 Our mission
                             </p>
-                            <h2 className="mt-2 text-3xl font-black text-[#102426]">
-                                Bringing renters, apartment locators, and property managers together.
+                            <h2 className="mt-2 max-w-xl text-3xl font-black leading-tight text-[#fff7df]">
+                                Make apartment deals easier to trust.
                             </h2>
-                            <p className="mt-3 text-sm font-semibold leading-6 text-[#526260]">
-                                Below Market Apartments is built to make the rental process more transparent, more useful, and more connected. Our goal is to help renters find real value, help apartment locators match people with better options, and help property managers fill available homes with qualified renters.
+                            <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#d7ece6]">
+                                Below Market Apartments brings renters, locators, and property managers into one clearer search experience built around transparent specials, real pricing context, and better recommendations.
                             </p>
+                            <div className="mt-5 flex flex-wrap gap-2">
+                                {HOME_SEO_LINKS.map((link) => (
+                                    <Link
+                                        key={link.to}
+                                        to={link.to}
+                                        className="rounded-full bg-white/10 px-3 py-2 text-xs font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
 
-                        <div className="grid gap-3 md:grid-cols-3">
-                            <MissionBenefit
-                                title="Renters"
-                                text="See specials, effective rent, normal rent, and local context in one place before requesting help."
-                            />
-                            <MissionBenefit
-                                title="Locators"
-                                text="Work from cleaner property data so recommendations are faster, more accurate, and easier to explain."
-                            />
-                            <MissionBenefit
-                                title="Managers"
-                                text="Put active availability, specials, and floor plans in front of renters who are already looking for value."
-                            />
-                        </div>
-                    </div>
-                </div>
+                        <div className="grid content-start gap-4 p-6 md:p-8">
+                            <div className="grid gap-3 md:grid-cols-3">
+                                {HOME_MISSION_POINTS.map((point) => (
+                                    <MissionBenefit
+                                        key={point.title}
+                                        title={point.title}
+                                        text={point.text}
+                                    />
+                                ))}
+                            </div>
 
-                <div className="mt-8 rounded-3xl bg-[#173f3f] p-6 text-white shadow-sm">
-                    <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                        <div>
-                            <p className="text-sm font-black text-[#f2b84b]">
-                                Popular Dallas searches
-                            </p>
-                            <h2 className="mt-2 text-2xl font-black text-[#fff7df]">
-                                Start with the searches renters use most.
-                            </h2>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            <Link
-                                to="/apartments/dallas-tx"
-                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
-                            >
-                                Dallas apartments
-                            </Link>
-                            <Link
-                                to="/apartments/dallas-tx/specials"
-                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
-                            >
-                                Dallas apartment specials
-                            </Link>
-                            <Link
-                                to="/apartments/dallas-tx/8-weeks-free"
-                                className="rounded-full bg-[#f2b84b] px-4 py-2 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
-                            >
-                                8 weeks free apartments
-                            </Link>
-                            <Link
-                                to="/apartments/dallas-tx/uptown"
-                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
-                            >
-                                Uptown Dallas
-                            </Link>
-                            <Link
-                                to="/apartments/dallas-tx/oak-lawn"
-                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
-                            >
-                                Oak Lawn
-                            </Link>
-                            <Link
-                                to="/apartments/dallas-tx/bishop-arts"
-                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
-                            >
-                                Bishop Arts
-                            </Link>
-                            <Link
-                                to="/apartments/dallas-tx/victory-park"
-                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
-                            >
-                                Victory Park
-                            </Link>
-                            <Link
-                                to="/apartments/dallas-tx/downtown"
-                                className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/15 hover:bg-white/15"
-                            >
-                                Downtown Dallas
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+                            <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                                    <div>
+                                        <p className="text-sm font-black text-[#1f6f63]">
+                                            Renter deal guide
+                                        </p>
+                                        <h3 className="text-xl font-black text-[#102426]">
+                                            Quick answers before touring
+                                        </h3>
+                                    </div>
+                                    <Link
+                                        to="/start"
+                                        className="w-fit rounded-2xl bg-[#f2b84b] px-4 py-2 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                                    >
+                                        Get matched
+                                    </Link>
+                                </div>
 
-                <section className="mt-8 border-t border-[#d7e6df] pt-8">
-                    <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-                        <div className="max-w-2xl">
-                            <p className="text-sm font-black text-[#1f6f63]">
-                                Apartment deal guide
-                            </p>
-                            <h2 className="mt-2 text-2xl font-black text-[#102426]">
-                                Clear answers before renters tour.
-                            </h2>
-                            <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
-                                Helpful context for comparing specials, normal rent, effective value, and fees without adding friction to the search.
-                            </p>
+                                <div className="mt-4 grid gap-2 md:grid-cols-2">
+                                    {HOME_RENTER_FAQS.map((faq) => (
+                                        <SeoFaqCard
+                                            key={faq.question}
+                                            question={faq.question}
+                                            answer={faq.answer}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-
-                        <div className="flex max-w-3xl flex-wrap gap-2">
-                            {HOME_SEO_LINKS.map((link) => (
-                                <Link
-                                    key={link.to}
-                                    to={link.to}
-                                    className="rounded-full bg-white px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#edf4ef]"
-                                >
-                                    {link.label}
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                        {HOME_RENTER_FAQS.map((faq) => (
-                            <SeoFaqCard
-                                key={faq.question}
-                                question={faq.question}
-                                answer={faq.answer}
-                            />
-                        ))}
                     </div>
                 </section>
             </section>
@@ -1231,9 +1181,9 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
 
 function MissionBenefit({ title, text }) {
     return (
-        <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-            <p className="font-black text-[#102426]">{title}</p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+        <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
+            <p className="text-sm font-black text-[#102426]">{title}</p>
+            <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
                 {text}
             </p>
         </div>
@@ -1242,11 +1192,18 @@ function MissionBenefit({ title, text }) {
 
 function SeoFaqCard({ question, answer }) {
     return (
-        <article className="rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
-            <h3 className="text-sm font-black leading-5 text-[#102426]">{question}</h3>
+        <details className="group rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df] open:ring-[#f2b84b]">
+            <summary className="cursor-pointer list-none text-sm font-black leading-5 text-[#102426]">
+                <span className="inline-flex w-full items-start justify-between gap-3">
+                    {question}
+                    <span className="text-[#1f6f63] transition group-open:rotate-45">
+                        +
+                    </span>
+                </span>
+            </summary>
             <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
                 {answer}
             </p>
-        </article>
+        </details>
     );
 }
