@@ -19,6 +19,7 @@ import {
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
 const NEARBY_PLACE_RADIUS_MILES = 10;
+const FLOOR_PLAN_INITIAL_VISIBLE_COUNT = 6;
 const NEARBY_PLACE_QUERIES = [
     {
         query: "Walmart",
@@ -337,6 +338,7 @@ export default function PublicPropertyListing() {
     const [selectedPhoto, setSelectedPhoto] = useState(propertyGalleryImages[0]);
     const [floorPlanSort, setFloorPlanSort] = useState("recommended");
     const [activeFloorPlanFilter, setActiveFloorPlanFilter] = useState("All");
+    const [showAllFloorPlans, setShowAllFloorPlans] = useState(false);
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
     const [showSidebarError, setShowSidebarError] = useState(false);
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
@@ -369,13 +371,29 @@ export default function PublicPropertyListing() {
 
         const sqftA = Number(String(a.sqft || "").replace(/[^0-9]/g, ""));
         const sqftB = Number(String(b.sqft || "").replace(/[^0-9]/g, ""));
+        const availableA = getAvailabilitySortValue(a);
+        const availableB = getAvailabilitySortValue(b);
 
         if (floorPlanSort === "price-low") return rentA - rentB;
         if (floorPlanSort === "price-high") return rentB - rentA;
         if (floorPlanSort === "sqft") return sqftB - sqftA;
+        if (floorPlanSort === "availability") return availableB - availableA;
+
+        if (availableA !== availableB) return availableB - availableA;
+        if (a.effectiveRent && !b.effectiveRent) return -1;
+        if (!a.effectiveRent && b.effectiveRent) return 1;
+        if (rentA && rentB) return rentA - rentB;
 
         return 0;
     });
+    const visibleFloorPlans = showAllFloorPlans
+        ? sortedFloorPlans
+        : sortedFloorPlans.slice(0, FLOOR_PLAN_INITIAL_VISIBLE_COUNT);
+    const hiddenFloorPlanCount = Math.max(
+        sortedFloorPlans.length - visibleFloorPlans.length,
+        0
+    );
+
     const [leadForm, setLeadForm] = useState({
         name: "",
         phone: "",
@@ -758,7 +776,10 @@ export default function PublicPropertyListing() {
                                             {floorPlanFilters.map((filter) => (
                                                 <button
                                                     key={filter}
-                                                    onClick={() => setActiveFloorPlanFilter(filter)}
+                                                    onClick={() => {
+                                                        setActiveFloorPlanFilter(filter);
+                                                        setShowAllFloorPlans(false);
+                                                    }}
                                                     className={`rounded-full px-4 py-2 text-sm font-bold ${activeFloorPlanFilter === filter
                                                         ? "bg-[#173f3f] text-white"
                                                         : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
@@ -771,7 +792,10 @@ export default function PublicPropertyListing() {
 
                                         <select
                                             value={floorPlanSort}
-                                            onChange={(event) => setFloorPlanSort(event.target.value)}
+                                            onChange={(event) => {
+                                                setFloorPlanSort(event.target.value);
+                                                setShowAllFloorPlans(false);
+                                            }}
                                             className="rounded-full border border-[#d7e6df] bg-white px-4 py-2 text-sm font-bold text-[#173f3f]"
                                         >
                                             <option value="recommended">
@@ -814,12 +838,12 @@ export default function PublicPropertyListing() {
 
 
                                     <p className="mt-3 text-sm font-semibold text-[#526260]">
-                                        Showing {filteredFloorPlans.length} floor plan
+                                        Showing {visibleFloorPlans.length} of {filteredFloorPlans.length} floor plan
                                         {filteredFloorPlans.length === 1 ? "" : "s"}
                                     </p>
 
-                                    <div className="mt-6 space-y-3">
-                                        {sortedFloorPlans.map((plan) => (<FloorPlanCard
+                                    <div className="mt-5 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white">
+                                        {visibleFloorPlans.map((plan) => (<FloorPlanCard
                                             key={plan.name}
                                             propertyId={propertyId}
                                             name={plan.name}
@@ -856,6 +880,19 @@ export default function PublicPropertyListing() {
                                             }} />
                                         ))}
                                     </div>
+
+                                    {hiddenFloorPlanCount > 0 && (
+                                        <div className="mt-4 flex justify-center">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowAllFloorPlans(true)}
+                                                className="rounded-full bg-[#173f3f] px-5 py-3 text-sm font-black text-white hover:bg-[#102426]"
+                                            >
+                                                Show {hiddenFloorPlanCount} more floor plan
+                                                {hiddenFloorPlanCount === 1 ? "" : "s"}
+                                            </button>
+                                        </div>
+                                    )}
 
                                 </div>
 
@@ -2577,49 +2614,48 @@ function FloorPlanCard({
     onViewDetails,
 }) {
     return (
-        <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-            <div className="flex gap-4">
+        <div className="border-b border-[#d7e6df] bg-white p-3 last:border-b-0 sm:p-4">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(330px,0.95fr)_auto] lg:items-center">
+                <div className="flex min-w-0 gap-3">
                 {image && (
                     <img
                         src={image}
                         alt={`${name} floor plan`}
-                        className="h-20 w-20 shrink-0 rounded-xl object-cover sm:h-24 sm:w-24"
+                            className="h-16 w-16 shrink-0 rounded-xl object-cover sm:h-20 sm:w-20"
                     />
                 )}
 
                 <div className="min-w-0 flex-1">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                             {special && (
-                                <span className="mb-2 inline-flex max-w-full rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
                                     <span className="truncate">{special.label}</span>
                                 </span>
                             )}
+
+                            <span
+                                className={`rounded-full px-2.5 py-1 text-[11px] font-black ${status === "available"
+                                    ? "bg-[#d8efe6] text-[#1f6f63]"
+                                    : status === "limited"
+                                        ? "bg-[#fff8e6] text-[#8a5b0a]"
+                                        : "bg-[#fff0ea] text-[#e4572e]"
+                                    }`}
+                            >
+                                {available}
+                            </span>
+                        </div>
 
                             <p className="truncate text-lg font-black text-[#102426]">
                                 {name}
                             </p>
 
                             <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                {formatBedroomLabel(beds)} • {baths} • {sqft}
+                            {formatBedroomLabel(beds)} • {baths} ba • {sqft} sq ft
                             </p>
                         </div>
-
-                        <span
-                            className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${status === "available"
-                                ? "bg-[#d8efe6] text-[#1f6f63]"
-                                : status === "limited"
-                                    ? "bg-[#fff8e6] text-[#8a5b0a]"
-                                    : "bg-[#fff0ea] text-[#e4572e]"
-                                }`}
-                        >
-                            {available}
-                        </span>
                     </div>
-                </div>
-            </div>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                 <FloorPlanMetric label="Starting" value={rent} />
 
                 {effectiveRent && (
@@ -2635,6 +2671,24 @@ function FloorPlanCard({
                 )}
             </div>
 
+                <div className="flex items-center justify-between gap-2 lg:justify-end">
+                    {belowMarketPercent ? (
+                        <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
+                            {belowMarketPercent} below
+                        </span>
+                    ) : (
+                        <span className="hidden lg:block" />
+                    )}
+
+                    <button
+                        onClick={onViewDetails}
+                        className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
+                    >
+                        Details
+                    </button>
+                </div>
+            </div>
+
             {marketRentSource && (
                 <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
                     Market comparison: {marketRentConfidence || marketRentSource}
@@ -2644,33 +2698,6 @@ function FloorPlanCard({
                     {marketRentLastUpdated ? ` • Updated ${marketRentLastUpdated}` : ""}
                 </p>
             )}
-
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-h-7">
-                    {belowMarketPercent && (
-                        <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
-                            {belowMarketPercent} below
-                        </span>
-                    )}
-                </div>
-
-                <div className="grid gap-2 sm:flex sm:justify-end">
-                    <button
-                        onClick={onViewDetails}
-                        className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
-                    >
-                        View Details
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={onViewDetails}
-                        className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
-                    >
-                        Request Info
-                    </button>
-                </div>
-            </div>
         </div>
     );
 }
@@ -2681,13 +2708,25 @@ function FloorPlanMetric({ label, value, highlight = false }) {
             className={`rounded-xl px-3 py-2 ${
                 highlight
                     ? "bg-[#e7f3ee] text-[#1f6f63]"
-                    : "bg-white text-[#173f3f]"
+                    : "bg-[#f5f8f1] text-[#173f3f]"
             }`}
         >
             <p className="text-[11px] font-black uppercase">{label}</p>
             <p className="mt-0.5 truncate text-sm font-black">{value}</p>
         </div>
     );
+}
+
+function getAvailabilitySortValue(plan) {
+    if (plan?.status === "available") return 2;
+    if (plan?.status === "limited") return 1;
+
+    const availabilityText = String(plan?.available || plan?.availability || "").toLowerCase();
+    if (availabilityText.includes("available") && !availabilityText.includes("not currently")) {
+        return 2;
+    }
+
+    return 0;
 }
 
 function formatBedroomLabel(value) {
