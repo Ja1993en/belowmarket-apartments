@@ -829,35 +829,33 @@ function MapboxSearchMap({ properties, mappableProperties, selectedArea, onAreaC
     markersRef.current = [];
 
     mappableProperties.forEach((property) => {
-      const markerElement = createSearchPriceMarkerElement(property);
-      const popup = new mapboxGl.Popup({
-        offset: 18,
-        closeButton: true,
-        className: "bma-search-property-popup",
-      }).setHTML(createSearchPropertyPopupHtml(property));
+      const markerElement = createSearchMapPinElement(property);
 
       markerElement.addEventListener("click", (event) => {
-        if (!isChoosingAreaRef.current) return;
-
         event.preventDefault();
-        event.stopPropagation();
 
-        onAreaChange({
-          center: {
-            latitude: property.latitude,
-            longitude: property.longitude,
-          },
-          radiusMiles: areaRadiusMiles,
-        });
-        setIsChoosingArea(false);
+        if (isChoosingAreaRef.current) {
+          event.stopPropagation();
+
+          onAreaChange({
+            center: {
+              latitude: property.latitude,
+              longitude: property.longitude,
+            },
+            radiusMiles: areaRadiusMiles,
+          });
+          setIsChoosingArea(false);
+          return;
+        }
+
+        window.location.href = `/properties/${property.id}`;
       });
 
       const marker = new mapboxGl.Marker({
         element: markerElement,
-        anchor: "bottom",
+        anchor: "center",
       })
         .setLngLat([property.longitude, property.latitude])
-        .setPopup(popup)
         .addTo(map);
 
       markersRef.current.push(marker);
@@ -1382,47 +1380,23 @@ function getPointerMapPoint(map, event) {
   return { latitude, longitude };
 }
 
-function createSearchPriceMarkerElement(property) {
+function createSearchMapPinElement(property) {
   const isApproximatePin = property.mapAccuracy === "approximate";
   const markerElement = document.createElement("button");
   markerElement.type = "button";
   markerElement.className = [
-    "relative flex min-w-[54px] items-center justify-center rounded-full border px-2.5 py-1 text-[12px] font-black leading-none",
-    "shadow-[0_3px_10px_rgba(16,36,38,0.22)] transition hover:-translate-y-0.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#f2b84b] focus:ring-offset-2",
+    "h-3.5 w-3.5 rounded-full border-2 shadow-[0_2px_7px_rgba(16,36,38,0.28)] transition hover:scale-125 focus:outline-none focus:ring-2 focus:ring-[#f2b84b] focus:ring-offset-2",
     isApproximatePin
-      ? "border-[#8a5b0a] bg-[#fff7e6] text-[#684307] hover:bg-[#8a5b0a] hover:text-white"
-      : "border-[#d7e6df] bg-white text-[#102426] hover:border-[#173f3f] hover:bg-[#173f3f] hover:text-white",
+      ? "border-white bg-[#8a5b0a]"
+      : "border-white bg-[#173f3f]",
   ].join(" ");
-  markerElement.textContent = getPrimaryRentLabel(property);
+  markerElement.title = property.name || "View property";
   markerElement.setAttribute(
     "aria-label",
-    `${property.name || "Property"} ${getPrimaryRentLabel(property)}`
+    `${property.name || "Property"} map pin. Open listing.`
   );
 
   return markerElement;
-}
-
-function createSearchPropertyPopupHtml(property) {
-  const isApproximatePin = property.mapAccuracy === "approximate";
-  const propertyUrl = `/properties/${escapeMapAttribute(property.id)}`;
-
-  return `
-    <div style="min-width:180px;max-width:230px">
-      <strong>${escapeMapText(property.name || "Property")}</strong>
-      <div style="margin-top:4px;color:#526260;font-size:12px">${escapeMapText(
-        getPropertyAddressLabel(property)
-      )}</div>
-      <div style="margin-top:8px;font-weight:800;color:#102426">${escapeMapText(
-        getPrimaryRentLabel(property)
-      )}</div>
-      ${
-        isApproximatePin
-          ? '<div style="margin-top:6px;color:#8a5b0a;font-size:12px">Approximate location</div>'
-          : ""
-      }
-      <a href="${propertyUrl}" style="display:inline-block;margin-top:10px;border-radius:999px;background:#173f3f;color:white;padding:7px 10px;font-size:12px;font-weight:800;text-decoration:none">View listing</a>
-    </div>
-  `;
 }
 
 function createAreaGeoJson(area) {
@@ -2031,17 +2005,4 @@ function getMapPinPosition(index) {
   ];
 
   return positions[index % positions.length];
-}
-
-function escapeMapText(value) {
-  return String(value || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function escapeMapAttribute(value) {
-  return encodeURIComponent(String(value || ""));
 }
