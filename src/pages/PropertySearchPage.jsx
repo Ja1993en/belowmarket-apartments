@@ -28,6 +28,19 @@ const SPECIAL_FILTER_OPTIONS = [
   { label: "6 weeks free", weeks: 6 },
   { label: "8 weeks free", weeks: 8 },
 ];
+const PRICE_FILTER_OPTIONS = [
+  { label: "Under $1,000", min: 0, max: 1000 },
+  { label: "$1,000 - $1,500", min: 1000, max: 1500 },
+  { label: "$1,500 - $2,000", min: 1500, max: 2000 },
+  { label: "$2,000 - $2,500", min: 2000, max: 2500 },
+  { label: "$2,500+", min: 2500, max: null },
+];
+const BED_FILTER_OPTIONS = [
+  { label: "Studio", value: "studio" },
+  { label: "1 bd", value: "1" },
+  { label: "2 bd", value: "2" },
+  { label: "3+ bd", value: "3plus" },
+];
 const mapboxGeocodeRequests = new Map();
 
 export default function PropertySearchPage() {
@@ -35,7 +48,11 @@ export default function PropertySearchPage() {
   const searchFromUrl = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(searchFromUrl);
   const [selectedArea, setSelectedArea] = useState(null);
+  const [selectedPriceRange, setSelectedPriceRange] = useState("");
+  const [selectedBedroomFilter, setSelectedBedroomFilter] = useState("");
   const [selectedSpecialWeeks, setSelectedSpecialWeeks] = useState("");
+  const [isPriceFilterOpen, setIsPriceFilterOpen] = useState(false);
+  const [isBedsFilterOpen, setIsBedsFilterOpen] = useState(false);
   const [isSpecialFilterOpen, setIsSpecialFilterOpen] = useState(false);
   const [mappableSearchProperties, setMappableSearchProperties] = useState([]);
   const [allProperties, setAllProperties] = useState([]);
@@ -57,14 +74,22 @@ export default function PropertySearchPage() {
       propertyHasWeeksFreeSpecial(property, Number(selectedSpecialWeeks))
     );
   }, [searchMatchedProperties, selectedSpecialWeeks]);
+  const filterMatchedProperties = useMemo(() => {
+    return specialMatchedProperties.filter((property) => {
+      return (
+        propertyMatchesPriceFilter(property, selectedPriceRange) &&
+        propertyMatchesBedroomFilter(property, selectedBedroomFilter)
+      );
+    });
+  }, [selectedBedroomFilter, selectedPriceRange, specialMatchedProperties]);
   const filteredProperties = useMemo(() => {
-    if (!selectedArea) return specialMatchedProperties;
+    if (!selectedArea) return filterMatchedProperties;
 
     const mappablePropertiesById = new Map(
       mappableSearchProperties.map((property) => [property.id, property])
     );
 
-    return specialMatchedProperties.filter((property) => {
+    return filterMatchedProperties.filter((property) => {
       const mappableProperty = mappablePropertiesById.get(property.id);
       if (!mappableProperty) return false;
 
@@ -78,7 +103,7 @@ export default function PropertySearchPage() {
 
       return distanceFromCenter <= selectedArea.radiusMiles;
     });
-  }, [mappableSearchProperties, selectedArea, specialMatchedProperties]);
+  }, [filterMatchedProperties, mappableSearchProperties, selectedArea]);
   const mappableFilteredProperties = useMemo(() => {
     const filteredPropertyIds = new Set(
       filteredProperties.map((property) => property.id)
@@ -91,6 +116,8 @@ export default function PropertySearchPage() {
   const selectedSpecialLabel = selectedSpecialWeeks
     ? `${selectedSpecialWeeks} weeks free`
     : "";
+  const selectedPriceLabel = getSelectedPriceLabel(selectedPriceRange);
+  const selectedBedroomLabel = getSelectedBedroomLabel(selectedBedroomFilter);
   const suggestions = useMemo(
     () => getPropertySearchSuggestions(properties, searchTerm),
     [properties, searchTerm]
@@ -131,7 +158,7 @@ export default function PropertySearchPage() {
   useEffect(() => {
     let isMounted = true;
 
-    resolveMappableProperties(specialMatchedProperties)
+    resolveMappableProperties(filterMatchedProperties)
       .then((resolvedProperties) => {
         if (isMounted) {
           setMappableSearchProperties(resolvedProperties);
@@ -147,7 +174,7 @@ export default function PropertySearchPage() {
     return () => {
       isMounted = false;
     };
-  }, [specialMatchedProperties]);
+  }, [filterMatchedProperties]);
 
   const submitSearch = (event) => {
     event.preventDefault();
@@ -205,22 +232,124 @@ export default function PropertySearchPage() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  className="h-11 rounded-xl border border-[#d7e6df] bg-white px-4 text-sm font-black text-[#102426] hover:bg-[#f5f8f1]"
-                >
-                  Price
-                </button>
-                <button
-                  type="button"
-                  className="h-11 rounded-xl border border-[#d7e6df] bg-white px-4 text-sm font-black text-[#102426] hover:bg-[#f5f8f1]"
-                >
-                  Beds
-                </button>
                 <div className="relative">
                   <button
                     type="button"
-                    onClick={() => setIsSpecialFilterOpen((currentValue) => !currentValue)}
+                    onClick={() => {
+                      setIsPriceFilterOpen((currentValue) => !currentValue);
+                      setIsBedsFilterOpen(false);
+                      setIsSpecialFilterOpen(false);
+                    }}
+                    className={`h-11 rounded-xl border px-4 text-sm font-black ${
+                      selectedPriceRange
+                        ? "border-[#2d7dd2] bg-[#eef5ff] text-[#174a7c]"
+                        : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
+                    }`}
+                  >
+                    {selectedPriceLabel || "Price"}
+                  </button>
+
+                  {isPriceFilterOpen && (
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-56 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl">
+                      {PRICE_FILTER_OPTIONS.map((option) => (
+                        <button
+                          key={option.label}
+                          type="button"
+                          onClick={() => {
+                            setSelectedPriceRange(option.label);
+                            setIsPriceFilterOpen(false);
+                            setSelectedArea(null);
+                          }}
+                          className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-black hover:bg-[#f5f8f1] ${
+                            selectedPriceRange === option.label
+                              ? "bg-[#eef5ff] text-[#174a7c]"
+                              : "text-[#102426]"
+                          }`}
+                        >
+                          {option.label}
+                          {selectedPriceRange === option.label && (
+                            <span className="text-xs uppercase text-[#1f6f63]">Active</span>
+                          )}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPriceRange("");
+                          setIsPriceFilterOpen(false);
+                          setSelectedArea(null);
+                        }}
+                        className="w-full border-t border-[#edf4ef] px-4 py-3 text-left text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                      >
+                        Clear price filter
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsBedsFilterOpen((currentValue) => !currentValue);
+                      setIsPriceFilterOpen(false);
+                      setIsSpecialFilterOpen(false);
+                    }}
+                    className={`h-11 rounded-xl border px-4 text-sm font-black ${
+                      selectedBedroomFilter
+                        ? "border-[#1f6f63] bg-[#e7f3ee] text-[#1f6f63]"
+                        : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
+                    }`}
+                  >
+                    {selectedBedroomLabel || "Beds"}
+                  </button>
+
+                  {isBedsFilterOpen && (
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-44 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl">
+                      {BED_FILTER_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => {
+                            setSelectedBedroomFilter(option.value);
+                            setIsBedsFilterOpen(false);
+                            setSelectedArea(null);
+                          }}
+                          className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-black hover:bg-[#f5f8f1] ${
+                            selectedBedroomFilter === option.value
+                              ? "bg-[#e7f3ee] text-[#1f6f63]"
+                              : "text-[#102426]"
+                          }`}
+                        >
+                          {option.label}
+                          {selectedBedroomFilter === option.value && (
+                            <span className="text-xs uppercase text-[#1f6f63]">Active</span>
+                          )}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedBedroomFilter("");
+                          setIsBedsFilterOpen(false);
+                          setSelectedArea(null);
+                        }}
+                        className="w-full border-t border-[#edf4ef] px-4 py-3 text-left text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                      >
+                        Clear beds filter
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSpecialFilterOpen((currentValue) => !currentValue);
+                      setIsPriceFilterOpen(false);
+                      setIsBedsFilterOpen(false);
+                    }}
                     className={`h-11 rounded-xl border px-4 text-sm font-black ${
                       selectedSpecialWeeks
                         ? "border-[#f2b84b] bg-[#fff8e6] text-[#8a5b0a]"
@@ -330,6 +459,40 @@ export default function PropertySearchPage() {
                   className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
                 >
                   Clear
+                </button>
+              </>
+            )}
+            {selectedPriceRange && (
+              <>
+                <span className="rounded-full bg-[#eef5ff] px-4 py-2 text-sm font-bold text-[#174a7c] ring-1 ring-[#b8d9f0]">
+                  Price: {selectedPriceLabel}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPriceRange("");
+                    setSelectedArea(null);
+                  }}
+                  className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                >
+                  Clear price
+                </button>
+              </>
+            )}
+            {selectedBedroomFilter && (
+              <>
+                <span className="rounded-full bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#1f6f63] ring-1 ring-[#d7e6df]">
+                  Beds: {selectedBedroomLabel}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedBedroomFilter("");
+                    setSelectedArea(null);
+                  }}
+                  className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                >
+                  Clear beds
                 </button>
               </>
             )}
@@ -1320,6 +1483,89 @@ function propertyHasWeeksFreeSpecial(property, targetWeeks) {
 
     return getWeeksFromSpecialText(value) === targetWeeks;
   });
+}
+
+function propertyMatchesPriceFilter(property, selectedPriceRange) {
+  if (!selectedPriceRange) return true;
+
+  const priceOption = PRICE_FILTER_OPTIONS.find(
+    (option) => option.label === selectedPriceRange
+  );
+  if (!priceOption) return true;
+
+  const rentValues = getPropertyFilterRentValues(property);
+  if (rentValues.length === 0) return false;
+
+  return rentValues.some((rentValue) => {
+    const meetsMinimum = rentValue >= priceOption.min;
+    const meetsMaximum = !priceOption.max || rentValue <= priceOption.max;
+
+    return meetsMinimum && meetsMaximum;
+  });
+}
+
+function propertyMatchesBedroomFilter(property, selectedBedroomFilter) {
+  if (!selectedBedroomFilter) return true;
+
+  const bedroomCounts = getPropertyBedroomCounts(property);
+  if (bedroomCounts.length === 0) return false;
+
+  if (selectedBedroomFilter === "studio") {
+    return bedroomCounts.includes(0);
+  }
+
+  if (selectedBedroomFilter === "3plus") {
+    return bedroomCounts.some((bedroomCount) => bedroomCount >= 3);
+  }
+
+  return bedroomCounts.includes(Number(selectedBedroomFilter));
+}
+
+function getSelectedPriceLabel(selectedPriceRange) {
+  return (
+    PRICE_FILTER_OPTIONS.find((option) => option.label === selectedPriceRange)?.label || ""
+  );
+}
+
+function getSelectedBedroomLabel(selectedBedroomFilter) {
+  return (
+    BED_FILTER_OPTIONS.find((option) => option.value === selectedBedroomFilter)?.label || ""
+  );
+}
+
+function getPropertyFilterRentValues(property) {
+  const floorPlans = getSearchFloorPlans(property);
+  const priceSummary = getPropertySearchPriceSummary(property);
+  const specialDealUnits = getSearchSpecialDealUnits(property, floorPlans);
+  const specialRentValues = specialDealUnits
+    .filter((dealUnit) => dealUnit.hasRentSpecial)
+    .map((dealUnit) => dealUnit.effectiveRentNumber)
+    .filter((value) => value > 0);
+
+  if (specialRentValues.length > 0) return specialRentValues;
+
+  return [
+    ...getNormalRentValues(property, floorPlans),
+    parseFirstCurrency(priceSummary.effectiveRentLabel),
+    parseFirstCurrency(priceSummary.normalRentLabel),
+  ].filter(Boolean);
+}
+
+function getPropertyBedroomCounts(property) {
+  const bedroomValues = [
+    ...(property?.bedrooms || []),
+    ...getSearchFloorPlans(property).map(
+      (floorPlan) => floorPlan.bedrooms || floorPlan.beds
+    ),
+  ];
+
+  return [
+    ...new Set(
+      bedroomValues
+        .map((bedroomValue) => getBedroomCount(bedroomValue))
+        .filter((bedroomCount) => Number.isFinite(bedroomCount) && bedroomCount < 99)
+    ),
+  ];
 }
 
 function getPropertySpecialValues(property) {
