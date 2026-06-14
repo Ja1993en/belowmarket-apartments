@@ -593,8 +593,12 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
     const effectiveRentValues = specialDealUnits
         .map((dealUnit) => dealUnit.effectiveRentNumber)
         .filter((value) => value > 0);
+    const propertyEffectiveRentValues = parseCurrencyValues(property.effectiveRent);
+    const displayEffectiveRentValues = propertyEffectiveRentValues.length > 0
+        ? propertyEffectiveRentValues
+        : effectiveRentValues;
 
-    if (effectiveRentValues.length === 0) {
+    if (displayEffectiveRentValues.length === 0) {
         return {
             hasSpecial: true,
             specialLabel: allSpecialLabels[0] || "Special available",
@@ -610,19 +614,23 @@ function getPropertyDealSummary(property, floorPlans = getSearchFloorPlans(prope
     const normalRentValues = specialDealUnits
         .map((dealUnit) => dealUnit.startingRentNumber)
         .filter((value) => value > 0);
+    const propertyNormalRentValues = parseCurrencyValues(property.rent || property.marketRent);
+    const displayNormalRentValues = propertyNormalRentValues.length > 0
+        ? propertyNormalRentValues
+        : normalRentValues;
     const baseRentValues = specialDealUnits
         .map((dealUnit) => dealUnit.baseRentNumber)
         .filter((value) => value > 0);
     const requiredMonthlyFeeValues = specialDealUnits
         .map((dealUnit) => dealUnit.requiredMonthlyFeesNumber)
         .filter((value) => value > 0);
-    const minEffectiveRent = Math.min(...effectiveRentValues);
-    const maxEffectiveRent = Math.max(...effectiveRentValues);
+    const minEffectiveRent = Math.min(...displayEffectiveRentValues);
+    const maxEffectiveRent = Math.max(...displayEffectiveRentValues);
     const concessionValueValues = specialDealUnits
         .map((dealUnit) => dealUnit.monthlyConcessionNumber)
         .filter((value) => value > 0);
-    const normalRentLabel = normalRentValues.length > 0
-        ? formatRentRange(Math.min(...normalRentValues), Math.max(...normalRentValues))
+    const normalRentLabel = displayNormalRentValues.length > 0
+        ? formatRentRange(Math.min(...displayNormalRentValues), Math.max(...displayNormalRentValues))
         : getRentalPriceLabel(property, getBestFloorPlanDeal(floorPlans));
     const maxFreeWeeks = Math.max(
         ...specialDealUnits.map((dealUnit) => Number(dealUnit.freeWeeks || 0))
@@ -767,15 +775,15 @@ function getNormalRentRangeLabel(property, floorPlans) {
 
     const rentValues = floorPlans
         .flatMap((floorPlan) => {
-            const floorPlanRent = parseCurrency(
+            const floorPlanRentValues = parseCurrencyValues(
                 floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
             );
             const unitRents = floorPlan.availableUnits
                 ?.filter((unit) => unit.status !== "leased")
-                .map((unit) => parseCurrency(unit.rent || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent))
+                .flatMap((unit) => parseCurrencyValues(unit.rent || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent))
                 .filter(Boolean) || [];
 
-            return [floorPlanRent, ...unitRents].filter(Boolean);
+            return [...floorPlanRentValues, ...unitRents].filter(Boolean);
         });
 
     if (rentValues.length > 0) {
@@ -907,8 +915,17 @@ function sortPropertiesByDeal(properties, sortOption) {
 }
 
 function parseCurrency(value) {
-    const parsedValue = Number(String(value || "").replace(/[^0-9.]/g, ""));
+    const match = String(value || "").match(/\$?\s*([\d,]+(?:\.\d+)?)/);
+    if (!match) return 0;
+
+    const parsedValue = Number(match[1].replace(/,/g, ""));
     return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function parseCurrencyValues(value) {
+    return [...String(value || "").matchAll(/\$?\s*([\d,]+(?:\.\d+)?)/g)]
+        .map((match) => Number(match[1].replace(/,/g, "")))
+        .filter((parsedValue) => Number.isFinite(parsedValue) && parsedValue > 0);
 }
 
 function formatCurrency(value) {
@@ -1015,7 +1032,7 @@ function getRentalPriceLabel(property, matchedFloorPlan) {
         property.rent,
     ].filter(Boolean);
 
-    const numericRentValues = rentValues.map(parseCurrency).filter(Boolean);
+    const numericRentValues = rentValues.flatMap(parseCurrencyValues).filter(Boolean);
 
     if (numericRentValues.length === 0) {
         return "Contact for pricing";
