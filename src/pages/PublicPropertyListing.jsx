@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
+    DEFAULT_PROPERTY_IMAGE,
     getPhotoImageUrl,
     getPropertyAddressLabel,
     getPropertyPrimaryImage,
@@ -117,25 +118,6 @@ const amenities = [
     "Package lockers",
     "In-unit washer/dryer",
     "Smart home features",
-];
-
-const galleryImages = [
-    {
-        category: "Exterior",
-        url: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        category: "Pool",
-        url: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        category: "Kitchen",
-        url: "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        category: "Bedroom",
-        url: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-    },
 ];
 
 function normalizeListingFloorPlans(property) {
@@ -805,11 +787,16 @@ export default function PublicPropertyListing() {
         }))
         .filter((photo) => photo.url);
     const propertyPrimaryImage = property ? getPropertyPrimaryImage(property) : "";
+    const hasRealPrimaryImage =
+        Boolean(propertyPrimaryImage) &&
+        propertyPrimaryImage !== DEFAULT_PROPERTY_IMAGE &&
+        !propertyPrimaryImage.includes("images.unsplash.com/photo-1564013799919");
     const propertyGalleryImages = propertyPhotoImages.length > 0
         ? propertyPhotoImages
-        : propertyPrimaryImage
+        : hasRealPrimaryImage
             ? [{ category: "Property", url: propertyPrimaryImage }]
-            : galleryImages;
+            : [];
+    const hasPropertyGalleryImages = propertyGalleryImages.length > 0;
     const listingFloorPlans = normalizeListingFloorPlans(property);
     useEffect(() => {
         if (!property || property.status !== "Live") return undefined;
@@ -919,8 +906,21 @@ export default function PublicPropertyListing() {
         "All",
         ...new Set(propertyGalleryImages.map((image) => image.category)),
     ];
+    const selectedGalleryPhoto = selectedPhoto || propertyGalleryImages[0];
     const isPropertySaved = property ? savedPropertyIds.includes(property.id) : false;
     const isPropertyCompared = property ? comparePropertyIds.includes(property.id) : false;
+
+    useEffect(() => {
+        if (!propertyGalleryImages.length) return;
+
+        setSelectedPhoto((currentPhoto) => {
+            const selectedPhotoStillExists = propertyGalleryImages.some(
+                (image) => image.url === currentPhoto?.url
+            );
+
+            return selectedPhotoStillExists ? currentPhoto : propertyGalleryImages[0];
+        });
+    }, [property?.id, propertyGalleryImages.length, propertyGalleryImages[0]?.url]);
 
 
     const filteredFloorPlans =
@@ -1208,18 +1208,33 @@ export default function PublicPropertyListing() {
                 </Link>
                 <div className="rounded-3xl bg-white shadow-sm ring-1 ring-[#d7e6df]">                    <div className="grid gap-3 p-3 lg:grid-cols-[2fr_1fr]">
                     <div className="relative h-[280px] overflow-hidden rounded-2xl md:h-[340px]">
-                        <img
-                            src={propertyGalleryImages[0].url}
-                            alt={property.name}
-                            className="h-full w-full object-cover"
-                        />
+                        {hasPropertyGalleryImages ? (
+                            <>
+                                <img
+                                    src={propertyGalleryImages[0].url}
+                                    alt={property.name}
+                                    className="h-full w-full object-cover"
+                                />
 
-                        <button
-                            onClick={() => setShowGallery(true)}
-                            className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-sm font-black text-[#102426] shadow-md"
-                        >
-                            View {propertyGalleryImages.length} Photos
-                        </button>
+                                <button
+                                    onClick={() => setShowGallery(true)}
+                                    className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-sm font-black text-[#102426] shadow-md"
+                                >
+                                    View {propertyGalleryImages.length} Photos
+                                </button>
+                            </>
+                        ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-[#e8efe9] p-8 text-center">
+                                <div>
+                                    <p className="text-lg font-black text-[#102426]">
+                                        Photos coming soon
+                                    </p>
+                                    <p className="mt-2 text-sm font-semibold text-[#526260]">
+                                        This property does not have verified listing photos yet.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="hidden h-[340px] grid-rows-3 gap-3 lg:grid">
@@ -1892,7 +1907,7 @@ export default function PublicPropertyListing() {
                     </div>
                 </div>
             </div>
-            {showGallery && (
+            {showGallery && hasPropertyGalleryImages && (
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-4 md:p-6">
                     <div className="mx-auto my-6 max-w-6xl rounded-3xl bg-white p-4 md:p-6">
                         <div className="flex items-center justify-between">
@@ -1930,14 +1945,14 @@ export default function PublicPropertyListing() {
 
                         <div className="mt-6 overflow-hidden rounded-3xl bg-[#f5f8f1]">
                             <img
-                                src={selectedPhoto.url}
-                                alt={`${selectedPhoto.category} selected`}
+                                src={selectedGalleryPhoto.url}
+                                alt={`${selectedGalleryPhoto.category} selected`}
                                 className="h-[420px] w-full object-cover"
                             />
 
                             <div className="p-4">
                                 <p className="font-bold text-[#102426]">
-                                    {selectedPhoto.category}
+                                    {selectedGalleryPhoto.category}
                                 </p>
                             </div>
                         </div>
