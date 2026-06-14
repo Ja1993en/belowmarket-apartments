@@ -393,6 +393,7 @@ export default function PropertyDetails() {
                                         belowMarketPercent={plan.belowMarketPercent}
                                         currentSpecial={plan.currentSpecial}
                                         available={plan.available}
+                                        image={plan.image}
                                     />
                                 ))}
                             </div>
@@ -582,19 +583,30 @@ function FloorPlanRow({
     belowMarketPercent,
     currentSpecial,
     available,
+    image,
 }) {
     return (
         <div className="flex flex-col justify-between gap-4 rounded-2xl bg-[#f5f8f1] p-4 md:flex-row md:items-center">
-            <div>
-                <p className="text-lg font-black text-[#102426]">{name}</p>
-                <p className="mt-1 text-sm text-[#526260]">
-                    {beds} • {baths} • {sqft}
-                </p>
-                {currentSpecial && (
-                    <p className="mt-2 text-sm font-bold text-[#1f6f63]">
-                        {currentSpecial}
-                    </p>
+            <div className="flex min-w-0 gap-3">
+                {image && (
+                    <img
+                        src={image}
+                        alt={`${name} floor plan`}
+                        className="h-16 w-16 shrink-0 rounded-xl object-cover ring-1 ring-[#d7e6df]"
+                    />
                 )}
+
+                <div className="min-w-0">
+                    <p className="text-lg font-black text-[#102426]">{name}</p>
+                    <p className="mt-1 text-sm text-[#526260]">
+                        {beds} • {baths} • {sqft}
+                    </p>
+                    {currentSpecial && (
+                        <p className="mt-2 text-sm font-bold text-[#1f6f63]">
+                            {currentSpecial}
+                        </p>
+                    )}
+                </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -661,6 +673,7 @@ function normalizePropertyFloorPlans(property) {
                 belowMarketPercent: property.belowMarketPercent || "",
                 currentSpecial: property.special || "",
                 available: "Not set",
+                image: property.image || "",
             };
         }
 
@@ -676,6 +689,7 @@ function normalizePropertyFloorPlans(property) {
             belowMarketPercent: plan.belowMarketPercent || "",
             currentSpecial: plan.currentSpecial || plan.special?.label || "",
             available: plan.availability || plan.available || "Not set",
+            image: plan.image || (plan.photos || []).map(getPhotoImageUrl).find(Boolean) || "",
         };
     });
 }

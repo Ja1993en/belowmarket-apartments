@@ -983,7 +983,7 @@ function getFeeSpecialLabel(adminFeeSpecial, adminFeeSpecialType) {
     const trimmedSpecial = adminFeeSpecial.trim();
     if (!trimmedSpecial) return "";
 
-    if (/(admin|application)\s+fees?/i.test(trimmedSpecial)) {
+    if (/(admin|application)\s+fees?|deposit|fee waived|waived fee/i.test(trimmedSpecial)) {
         return trimmedSpecial;
     }
 

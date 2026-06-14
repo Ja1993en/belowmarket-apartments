@@ -896,7 +896,7 @@ export default function PublicPropertyListing() {
     const [floorPlanSort, setFloorPlanSort] = useState("recommended");
     const [activeFloorPlanFilter, setActiveFloorPlanFilter] = useState("All");
     const [floorPlanPage, setFloorPlanPage] = useState(1);
-    const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(false);
+    const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(true);
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
     const [showSidebarError, setShowSidebarError] = useState(false);
     const [nearbyPlaces, setNearbyPlaces] = useState([]);

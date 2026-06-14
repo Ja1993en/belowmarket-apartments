@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="650" viewBox="0 0 900 650" role="img" aria-labelledby="title desc">
+  <title id="title">Floor plan image coming soon</title>
+  <desc id="desc">A neutral apartment floor plan placeholder for listings where the original floor plan image has not been added yet.</desc>
+  <rect width="900" height="650" fill="#f5f8f1"/>
+  <rect x="60" y="55" width="780" height="540" rx="18" fill="#ffffff" stroke="#173f3f" stroke-width="10"/>
+  <path d="M120 130h260v165H120zM435 130h285v165H435zM120 350h235v165H120zM410 350h310v165H410z" fill="#eef5ff" stroke="#173f3f" stroke-width="6"/>
+  <path d="M380 215h55M355 432h55M565 295v55M610 515v-55" stroke="#f2b84b" stroke-width="12" stroke-linecap="round"/>
+  <path d="M190 130v165M250 350v165M535 130v165M520 350v165" stroke="#b8d9d0" stroke-width="5" stroke-dasharray="14 12"/>
+  <circle cx="755" cy="108" r="24" fill="#f2b84b"/>
+  <text x="450" y="585" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="800" fill="#102426">Floor plan image coming soon</text>
+</svg>
