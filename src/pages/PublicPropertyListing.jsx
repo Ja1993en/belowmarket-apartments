@@ -798,12 +798,17 @@ export default function PublicPropertyListing() {
     const managementLabel =
         property?.managementCompany || property?.manager || "Property management not listed";
     const schoolSnapshot = getPropertySchoolSnapshot(property);
-    const propertyGalleryImages =
-        property?.photos?.length > 0
-            ? property.photos.map((photo, index) => ({
-                category: photo.category || `Photo ${index + 1}`,
-                url: getPhotoImageUrl(photo),
-            })).filter((photo) => photo.url)
+    const propertyPhotoImages = (property?.photos || [])
+        .map((photo, index) => ({
+            category: photo.category || `Photo ${index + 1}`,
+            url: getPhotoImageUrl(photo),
+        }))
+        .filter((photo) => photo.url);
+    const propertyPrimaryImage = property ? getPropertyPrimaryImage(property) : "";
+    const propertyGalleryImages = propertyPhotoImages.length > 0
+        ? propertyPhotoImages
+        : propertyPrimaryImage
+            ? [{ category: "Property", url: propertyPrimaryImage }]
             : galleryImages;
     const listingFloorPlans = normalizeListingFloorPlans(property);
     useEffect(() => {
