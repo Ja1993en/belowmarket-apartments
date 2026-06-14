@@ -1883,7 +1883,9 @@ function getFloorPlanFilterRentValues(property, floorPlan) {
   }
 
   return [
-    parseCurrency(floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent),
+    ...parseCurrencyValues(
+      floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
+    ),
   ].filter(Boolean);
 }
 
@@ -1904,10 +1906,10 @@ function getUnitFilterRentValues(property, floorPlan, unit) {
 
     return specialDealUnit.hasRentSpecial
       ? [specialDealUnit.effectiveRentNumber]
-      : [parseCurrency(unitRent)];
+      : parseCurrencyValues(unitRent);
   }
 
-  return [parseCurrency(unitRent)].filter(Boolean);
+  return parseCurrencyValues(unitRent);
 }
 
 function getPropertyBedroomCounts(property) {
@@ -1963,7 +1965,7 @@ function getPropertySearchPriceSummary(property, floorPlans = getSearchFloorPlan
   const specialDealUnits = getSearchSpecialDealUnits(property, floorPlans);
   const specialRentValues = specialDealUnits
     .filter((dealUnit) => dealUnit.hasRentSpecial)
-    .map((dealUnit) => dealUnit.effectiveRentNumber)
+    .flatMap((dealUnit) => dealUnit.effectiveRentNumbers || [dealUnit.effectiveRentNumber])
     .filter((value) => value > 0);
   const specialLabels = [
     ...new Set(specialDealUnits.map((dealUnit) => dealUnit.specialLabel).filter(Boolean)),
@@ -2033,15 +2035,15 @@ function getSearchMonthlyBreakdown(
   priceSummary,
   floorPlans = getSearchFloorPlans(property)
 ) {
-  const firstFloorPlan = floorPlans[0] || {};
+  const pricedFloorPlan = getFirstPricedSearchFloorPlan(floorPlans) || floorPlans[0] || {};
   const requiredFees =
     property?.requiredMonthlyFees ||
     property?.monthlyFees ||
-    firstFloorPlan.requiredMonthlyFees ||
+    pricedFloorPlan.requiredMonthlyFees ||
     "";
   const baseRent =
-    firstFloorPlan.startingRent ||
-    firstFloorPlan.rent ||
+    pricedFloorPlan.startingRent ||
+    pricedFloorPlan.rent ||
     property?.startingRent ||
     property?.rent ||
     priceSummary.normalRentLabel;
@@ -2053,6 +2055,35 @@ function getSearchMonthlyBreakdown(
     monthlyDue: requiredFees ? `${monthlyDue} + fees` : monthlyDue,
     baseRent: baseRent || "Ask property",
   };
+}
+
+function getFirstPricedSearchFloorPlan(floorPlans) {
+  return [...floorPlans]
+    .sort((firstFloorPlan, secondFloorPlan) => {
+      const firstAvailable = isAvailableSearchFloorPlan(firstFloorPlan) ? 0 : 1;
+      const secondAvailable = isAvailableSearchFloorPlan(secondFloorPlan) ? 0 : 1;
+
+      return firstAvailable - secondAvailable;
+    })
+    .find((floorPlan) =>
+      parseCurrency(
+        floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
+      )
+    );
+}
+
+function isAvailableSearchFloorPlan(floorPlan) {
+  const status = String(floorPlan.status || "").toLowerCase();
+  const availability = String(
+    floorPlan.available || floorPlan.availability || ""
+  ).toLowerCase();
+
+  if (/not[-\s]?available|unavailable|leased|sold/.test(status)) return false;
+  if (/not currently available|unavailable|sold out|0\s+available/.test(availability)) {
+    return false;
+  }
+
+  return true;
 }
 
 function getSearchFloorPlans(property) {
@@ -2075,15 +2106,15 @@ function getSearchFloorPlans(property) {
 }
 
 function getNormalRentValues(property, floorPlans) {
-  const rentValues = floorPlans.flatMap((floorPlan) => {
-    const floorPlanRent = parseCurrency(
+  const floorPlanRentGroups = floorPlans.map((floorPlan) => {
+    const floorPlanRentValues = parseCurrencyValues(
       floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
     );
     const unitRents =
       floorPlan.availableUnits
         ?.filter((unit) => unit.status !== "leased")
-        .map((unit) =>
-          parseCurrency(
+        .flatMap((unit) =>
+          parseCurrencyValues(
             unit.rent ||
               floorPlan.totalMonthlyRent ||
               floorPlan.rent ||
@@ -2092,15 +2123,30 @@ function getNormalRentValues(property, floorPlans) {
         )
         .filter(Boolean) || [];
 
-    return unitRents.length > 0 ? unitRents : [floorPlanRent].filter(Boolean);
+    return {
+      isAvailable: isAvailableSearchFloorPlan(floorPlan),
+      values: unitRents.length > 0 ? unitRents : floorPlanRentValues,
+    };
   });
-  const propertyRent = parseCurrency(property?.rent);
+  const availableRentValues = floorPlanRentGroups
+    .filter((rentGroup) => rentGroup.isAvailable)
+    .flatMap((rentGroup) => rentGroup.values)
+    .filter(Boolean);
+  const rentValues =
+    availableRentValues.length > 0
+      ? availableRentValues
+      : floorPlanRentGroups.flatMap((rentGroup) => rentGroup.values).filter(Boolean);
+  const propertyRentValues = parseCurrencyValues(property?.rent);
 
-  return rentValues.length > 0 ? rentValues : [propertyRent].filter(Boolean);
+  return rentValues.length > 0 ? rentValues : propertyRentValues;
 }
 
 function getSearchSpecialDealUnits(property, floorPlans) {
-  return floorPlans.flatMap((floorPlan) => {
+  const availableFloorPlans = floorPlans.filter(isAvailableSearchFloorPlan);
+  const searchableFloorPlans =
+    availableFloorPlans.length > 0 ? availableFloorPlans : floorPlans;
+
+  return searchableFloorPlans.flatMap((floorPlan) => {
     const floorPlanSpecial = getFloorPlanSearchSpecial(floorPlan, property);
     const availableUnits =
       floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
@@ -2142,34 +2188,60 @@ function createSearchSpecialDealUnit({
   freeWeeks,
   rentCreditSpecial,
 }) {
-  const baseRentNumber = parseCurrency(unitRent);
+  const baseRentValues = parseCurrencyValues(unitRent);
+  const baseRentNumber = baseRentValues[0] || 0;
   const requiredMonthlyFeesNumber = parseCurrency(floorPlan.requiredMonthlyFees);
-  const enteredTotalMonthlyRentNumber = parseCurrency(floorPlan.totalMonthlyRent || floorPlan.rent);
-  const totalMonthlyRentNumber =
-    enteredTotalMonthlyRentNumber || baseRentNumber + requiredMonthlyFeesNumber;
-  const enteredEffectiveRentNumber = parseCurrency(floorPlan.effectiveRent);
+  const enteredTotalMonthlyRentValues = parseCurrencyValues(
+    floorPlan.totalMonthlyRent || floorPlan.rent
+  );
+  const enteredEffectiveRentValues = parseCurrencyValues(floorPlan.effectiveRent);
   const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
   const freeMonths = Number(freeWeeks || 0) / 4;
   const rentCreditSpecialNumber = parseCurrency(rentCreditSpecial);
-  const monthlyConcession =
-    baseRentNumber && leaseTermMonths
-      ? (baseRentNumber * freeMonths + rentCreditSpecialNumber) / leaseTermMonths
-      : 0;
-  const calculatedEffectiveRentNumber =
-    totalMonthlyRentNumber && monthlyConcession
-      ? Math.max(totalMonthlyRentNumber - monthlyConcession, 0)
-      : 0;
+  const rentValues = baseRentValues.length > 0 ? baseRentValues : enteredTotalMonthlyRentValues;
+  const effectiveRentNumbers = rentValues
+    .map((baseRentValue, index) => {
+      const totalMonthlyRentNumber =
+        enteredTotalMonthlyRentValues[index] ||
+        enteredTotalMonthlyRentValues[0] ||
+        baseRentValue + requiredMonthlyFeesNumber;
+      const enteredEffectiveRentNumber =
+        enteredEffectiveRentValues[index] || enteredEffectiveRentValues[0] || 0;
+      const monthlyConcession =
+        baseRentValue && leaseTermMonths
+          ? (baseRentValue * freeMonths + rentCreditSpecialNumber) / leaseTermMonths
+          : 0;
+      const calculatedEffectiveRentNumber =
+        totalMonthlyRentNumber && monthlyConcession
+          ? Math.max(totalMonthlyRentNumber - monthlyConcession, 0)
+          : 0;
+
+      return calculatedEffectiveRentNumber || enteredEffectiveRentNumber || totalMonthlyRentNumber;
+    })
+    .filter((value) => value > 0);
+  const totalMonthlyRentNumber =
+    enteredTotalMonthlyRentValues[0] ||
+    (baseRentNumber ? baseRentNumber + requiredMonthlyFeesNumber : 0);
+  const enteredEffectiveRentNumber = enteredEffectiveRentValues[0] || 0;
 
   return {
     specialLabel,
     hasRentSpecial:
       Number(freeWeeks || 0) > 0 ||
       rentCreditSpecialNumber > 0 ||
-      (enteredEffectiveRentNumber > 0 &&
-        totalMonthlyRentNumber > 0 &&
-        enteredEffectiveRentNumber < totalMonthlyRentNumber),
-    effectiveRentNumber:
-      calculatedEffectiveRentNumber || enteredEffectiveRentNumber || totalMonthlyRentNumber,
+      enteredEffectiveRentValues.some(
+        (effectiveRentValue, index) =>
+          effectiveRentValue > 0 &&
+          (enteredTotalMonthlyRentValues[index] ||
+            enteredTotalMonthlyRentValues[0] ||
+            totalMonthlyRentNumber) > 0 &&
+          effectiveRentValue <
+            (enteredTotalMonthlyRentValues[index] ||
+              enteredTotalMonthlyRentValues[0] ||
+              totalMonthlyRentNumber)
+      ),
+    effectiveRentNumber: effectiveRentNumbers[0] || enteredEffectiveRentNumber || totalMonthlyRentNumber,
+    effectiveRentNumbers,
   };
 }
 
@@ -2281,8 +2353,17 @@ function getPrimaryRentLabel(property) {
 }
 
 function parseCurrency(value) {
-  const parsedValue = Number(String(value || "").replace(/[^0-9.]/g, ""));
+  const match = String(value || "").match(/\$?\s*([\d,]+(?:\.\d+)?)/);
+  if (!match) return 0;
+
+  const parsedValue = Number(match[1].replace(/,/g, ""));
   return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function parseCurrencyValues(value) {
+  return [...String(value || "").matchAll(/\$?\s*([\d,]+(?:\.\d+)?)/g)]
+    .map((match) => Number(match[1].replace(/,/g, "")))
+    .filter((parsedValue) => Number.isFinite(parsedValue) && parsedValue > 0);
 }
 
 function parseFirstCurrency(value) {
