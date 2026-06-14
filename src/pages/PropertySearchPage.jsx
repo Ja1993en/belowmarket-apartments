@@ -2149,7 +2149,7 @@ function createSearchSpecialDealUnit({
     enteredTotalMonthlyRentNumber || baseRentNumber + requiredMonthlyFeesNumber;
   const enteredEffectiveRentNumber = parseCurrency(floorPlan.effectiveRent);
   const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
-  const freeMonths = Number(freeWeeks || 0) / 4.345;
+  const freeMonths = Number(freeWeeks || 0) / 4;
   const rentCreditSpecialNumber = parseCurrency(rentCreditSpecial);
   const monthlyConcession =
     baseRentNumber && leaseTermMonths

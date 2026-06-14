@@ -3682,7 +3682,7 @@ function createPropertySummaryRow({
         normalRent && (freeWeeks || rentCreditSpecialNumber) && leaseMonths
             ? Math.max(
                 normalRent -
-                    (normalRent * (freeWeeks / 4.345) + rentCreditSpecialNumber) / leaseMonths,
+                    (normalRent * (freeWeeks / 4) + rentCreditSpecialNumber) / leaseMonths,
                 0
             )
             : enteredEffectiveRent || normalRent;
