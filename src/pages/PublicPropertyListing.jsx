@@ -2367,6 +2367,12 @@ export default function PublicPropertyListing() {
                                                                     {unit.status}
                                                                 </span>
                                                             )}
+
+                                                            {unit.currentSpecial && (
+                                                                <span className="rounded-full bg-[#fff8e6] px-2 py-1 text-xs font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                                                    {cleanUnitSpecialLabel(unit.currentSpecial)}
+                                                                </span>
+                                                            )}
                                                         </div>
 
                                                         {unit.available !== "Available Now" && (
@@ -3682,11 +3688,14 @@ function FloorPlanCard({
 }
 
 function isRenovatedUnit(unit = {}) {
-    if (unit.isRenovated || unit.renovated) return true;
+    return Boolean(unit.isRenovated || unit.renovated || unit.renovationStatus === "renovated");
+}
 
-    return /renovated|updated|upgraded/i.test(
-        [unit.notes, unit.description, unit.finish, unit.unitType].filter(Boolean).join(" ")
-    );
+function cleanUnitSpecialLabel(label = "") {
+    return String(label)
+        .replace(/Certain exclusions may apply\.?/gi, "")
+        .replace(/\s+/g, " ")
+        .trim();
 }
 
 function FloorPlanMetric({ label, value, highlight = false }) {

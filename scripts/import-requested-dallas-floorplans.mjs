@@ -92,18 +92,7 @@ function buildMaaCathedralArts() {
     ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-leasing-office.jpg?h=2467&iar=0&w=3840", "Leasing office at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
   ]);
 
-  const floorPlans = [
-    maaFloorPlan("S1", "S1", 0, 1, 507, 1218, 1288, 2, 0, "", "06/10/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S1A Light.png"),
-    maaFloorPlan("S2", "S2", 0, 1, 542, 1338, 1338, 1, 0, "", "08/05/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S2 Light.png"),
-    maaFloorPlan("A2", "A2", 1, 1, 674, 1653, 1848, 7, 4, "Lease Now for 4 weeks free", "06/15/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A2 Light.png"),
-    maaFloorPlan("A3", "A3", 1, 1, 701, 1683, 1783, 7, 4, "Lease Now for 4 weeks free", "06/23/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A3 Light.png"),
-    maaFloorPlan("A5", "A5", 1, 1, 801, 1838, 1923, 3, 6, "Lease Now for 6 weeks free", "06/12/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A5 Light.png"),
-    maaFloorPlan("A6", "A6", 1, 1, 902, 2063, 2063, 1, 4, "Lease Now for 4 weeks free", "08/26/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A6 Light.png"),
-    maaFloorPlan("A8", "A8", 1, 1, 1046, 2178, 2178, 1, 4, "Lease Now for 4 weeks free", "07/15/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A8 Light.png"),
-    maaFloorPlan("B1", "B1", 2, 2, 1011, 2158, 2273, 5, 6, "Lease Now for 6 weeks free", "05/21/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B1 Light.png"),
-    maaFloorPlan("B3", "B3", 2, 2, 1209, 2293, 2598, 5, 6, "Lease Now for 6 weeks free", "03/24/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B3 Light.png"),
-    maaFloorPlan("B4", "B4", 2, 2, 1388, 2608, 2608, 1, 8, "Lease Now for 8 weeks free", "06/26/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B4 Light.png"),
-  ];
+  const floorPlans = createMaaCathedralArtsFloorPlans();
 
   return propertyRecord({
     id: "maa-cathedral-arts",
@@ -167,6 +156,159 @@ function getMaaPhotoCategory(url, alt = "") {
   if (text.includes("lounge")) return "Lounge";
 
   return "Property";
+}
+
+function createMaaCathedralArtsFloorPlans() {
+  const floorPlanImages = {
+    S1: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S1A Light.png",
+    S2: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S2 Light.png",
+    A2: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A2 Light.png",
+    A3: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A3 Light.png",
+    A5: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A5 Light.png",
+    A6: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A6 Light.png",
+    A8: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A8 Light.png",
+    B1: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B1 Light.png",
+    B3: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B3 Light.png",
+    B4: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B4 Light.png",
+  };
+
+  return groupUnitsByFloorPlan([
+    maaUnit("1163", "S1", 0, 1, 507, 1218, "06/15 - 06/18", 0, "", "", "Light"),
+    maaUnit("1117", "S1", 0, 1, 507, 1288, "08/12 - 08/15", 0, "", "Built In Bluetooth Speakers", "Light"),
+    maaUnit("1105", "S2", 0, 1, 542, 1338, "08/05 - 08/08", 0, "", "Mud Room Entry Direct Entry", "Light"),
+    maaUnit("1367", "A2", 1, 1, 674, 1653, "06/15 - 06/18", 6, "Lease Now for six weeks free! Certain exclusions may apply.", "", "Light"),
+    maaUnit("2108", "A2", 1, 1, 674, 1698, "07/10 - 07/13", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Pool View Balcony Built In Bluetooth Speakers", "Light"),
+    maaUnit("2115", "A2", 1, 1, 674, 1708, "07/17 - 07/20", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Large Balcony", "Light"),
+    maaUnit("1559", "A2", 1, 1, 674, 1813, "08/04 - 08/07", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Balcony City View", "Light"),
+    maaUnit("2531", "A2", 1, 1, 674, 1753, "08/14 - 08/17", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Balcony", "Light"),
+    maaUnit("1467", "A2", 1, 1, 674, 1783, "08/26 - 08/29", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Balcony City View", "Dark"),
+    maaUnit("1169", "A2", 1, 1, 674, 1848, "09/11 - 09/14", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Balcony Direct Entry", "Light"),
+    maaUnit("1473", "A3", 1, 1, 701, 1783, "06/23 - 06/26", 6, "Lease Now for six weeks free! Certain exclusions may apply.", "Balcony City View", "Dark"),
+    maaUnit("1273", "A3", 1, 1, 701, 1683, "07/10 - 07/13", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "", "Dark"),
+    maaUnit("2521", "A3", 1, 1, 701, 1753, "07/15 - 07/18", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Balcony", "Dark"),
+    maaUnit("1527", "A3", 1, 1, 701, 1723, "07/17 - 07/20", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "", "Dark"),
+    maaUnit("1433", "A3", 1, 1, 701, 1728, "07/31 - 08/03", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "", "Dark"),
+    maaUnit("1231", "A3", 1, 1, 701, 1718, "07/31 - 08/03", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "", "Dark"),
+    maaUnit("2223", "A3", 1, 1, 701, 1748, "08/05 - 08/08", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Balcony", "Dark"),
+    maaUnit("1537", "A5", 1, 1, 801, 1878, "06/15 - 06/18", 6, "Lease Now for six weeks free! Certain exclusions may apply.", "Mud Room Entry Kitchen Island", "Light"),
+    maaUnit("1249", "A5", 1, 1, 801, 1838, "07/17 - 07/20", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Mud Room Entry Kitchen Island", "Dark"),
+    maaUnit("1449", "A5", 1, 1, 801, 1923, "08/14 - 08/17", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Mud Room Entry Kitchen Island City View", "Dark"),
+    maaUnit("1276", "A6", 1, 1, 902, 2063, "08/26 - 08/29", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Pool View Kitchen Island Dual Vanities Medium Balcony", "Dark"),
+    maaUnit("1511", "A8", 1, 1, 1046, 2178, "07/15 - 07/18", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Mud Room Entry Dual Vanities Den/Study", "Light"),
+    maaUnit("1570", "B1", 2, 2, 1011, 2203, "06/15 - 06/18", 8, "Lease Now for 8 weeks free! Certain exclusions may apply.", "Pool View Kitchen Island Dual Vanities Balcony", "Light"),
+    maaUnit("1135", "B1", 2, 2, 1011, 2158, "07/01 - 07/04", 4, "Lease Now for 4 weeks free! Certain exclusions may apply.", "Kitchen Island Dual Vanities Balcony", "Light"),
+    maaUnit("2502", "B1", 2, 2, 1011, 2273, "07/13 - 07/16", 8, "Lease Now for 8 weeks free! Certain exclusions may apply.", "Pool View Kitchen Island Dual Vanities Balcony Built In Bluetooth Speakers", "Light"),
+    maaUnit("1529", "B1", 2, 2, 1011, 2258, "08/03 - 08/06", 6, "Lease Now for six weeks free! Certain exclusions may apply.", "Kitchen Island Dual Vanities", "Light"),
+    maaUnit("1223", "B1", 2, 2, 1011, 2218, "08/12 - 08/15", 6, "Lease Now for six weeks free! Certain exclusions may apply.", "Kitchen Island Dual Vanities", "Dark"),
+    maaUnit("1168", "B3", 2, 2, 1209, 2293, "06/15 - 06/18", 8, "Lease Now for 8 weeks free! Certain exclusions may apply.", "Pool View Mud Room Entry Kitchen Island Dual Vanities Medium Balcony Built In Bluetooth Speakers", "Light"),
+    maaUnit("1406", "B3", 2, 2, 1209, 2478, "06/15 - 06/18", 8, "Lease Now for 8 weeks free! Certain exclusions may apply.", "Pool View Mud Room Entry Kitchen Island Dual Vanities Medium Balcony", "Dark"),
+    maaUnit("1506", "B3", 2, 2, 1209, 2543, "07/03 - 07/06", 6, "Lease Now for six weeks free! Certain exclusions may apply.", "Pool View Mud Room Entry Kitchen Island Dual Vanities Medium Balcony", "Light"),
+    maaUnit("1368", "B3", 2, 2, 1209, 2598, "08/05 - 08/08", 6, "Lease Now for six weeks free! Certain exclusions may apply.", "Pool View Mud Room Entry Kitchen Island Dual Vanities Medium Balcony", "Light"),
+    maaUnit("1206", "B3", 2, 2, 1209, 2593, "08/14 - 08/17", 6, "Lease Now for six weeks free! Certain exclusions may apply.", "Pool View Mud Room Entry Kitchen Island Dual Vanities Medium Balcony", "Dark"),
+    maaUnit("2505", "B4", 2, 2, 1388, 2608, "06/26 - 06/29", 8, "Lease Now for 8 weeks free! Certain exclusions may apply.", "Mud Room Entry Kitchen Island Dual Vanities Built In Bluetooth Speakers", "Light"),
+  ], floorPlanImages);
+}
+
+function maaUnit(unit, planId, bedrooms, bathrooms, sqft, rent, available, freeWeeks, special, amenities, finishPackage) {
+  const imageFinish = finishPackage || "Light";
+
+  return {
+    unit,
+    planId,
+    bedrooms,
+    bathrooms,
+    sqft,
+    rent,
+    available,
+    freeWeeks,
+    special,
+    amenities,
+    finishPackage,
+    image: `https://cdn.rentcafe.com/dmslivecafe/3/1839724/p1807538_unit${unit}_${planId}_${imageFinish}_3D_unitimage.png`,
+    isRenovated: false,
+  };
+}
+
+function groupUnitsByFloorPlan(units, floorPlanImages) {
+  const groups = new Map();
+
+  units.forEach((unit) => {
+    if (!groups.has(unit.planId)) groups.set(unit.planId, []);
+    groups.get(unit.planId).push(unit);
+  });
+
+  return [...groups.entries()].map(([planId, planUnits]) => {
+    const [firstUnit] = planUnits;
+    const rents = planUnits.map((unit) => unit.rent);
+    const freeWeeksValues = planUnits.map((unit) => unit.freeWeeks || 0);
+    const minRent = Math.min(...rents);
+    const maxRent = Math.max(...rents);
+    const maxFreeWeeks = Math.max(...freeWeeksValues);
+
+    return floorPlanRecord({
+      id: planId.toLowerCase(),
+      name: planId,
+      bedrooms: firstUnit.bedrooms,
+      bathrooms: firstUnit.bathrooms,
+      sqft: firstUnit.sqft,
+      startingRent: minRent,
+      maxRent,
+      availableCount: planUnits.length,
+      freeWeeks: maxFreeWeeks,
+      specialLabel: summarizeUnitSpecials(freeWeeksValues),
+      availableDate: getEarliestAvailability(planUnits),
+      image: floorPlanImages[planId] || firstUnit.image,
+      units: planUnits.map(createMaaAvailableUnit),
+    });
+  });
+}
+
+function createMaaAvailableUnit(unit) {
+  const deal = calculateDeal(unit.rent, unit.freeWeeks);
+
+  return {
+    id: `${unit.planId.toLowerCase()}-unit-${unit.unit}`,
+    unit: unit.unit,
+    rent: formatCurrency(unit.rent),
+    available: unit.available,
+    status: "available",
+    currentSpecial: unit.special,
+    special: unit.special
+      ? {
+          label: unit.special,
+          freeWeeks: unit.freeWeeks,
+          leaseTermMonths: LEASE_TERM_MONTHS,
+        }
+      : null,
+    freeWeeks: unit.freeWeeks,
+    leaseTermMonths: LEASE_TERM_MONTHS,
+    effectiveRent: deal.effectiveRent,
+    effectiveRentNumber: deal.effectiveRentNumber,
+    monthlyConcession: deal.monthlyConcession,
+    savings: deal.savings,
+    amenities: unit.amenities,
+    finishPackage: unit.finishPackage,
+    image: unit.image,
+    isRenovated: Boolean(unit.isRenovated),
+  };
+}
+
+function summarizeUnitSpecials(freeWeeksValues) {
+  const uniqueWeeks = [...new Set(freeWeeksValues.filter(Boolean))].sort((a, b) => a - b);
+  if (uniqueWeeks.length === 0) return "";
+
+  const [minWeeks] = uniqueWeeks;
+  const maxWeeks = uniqueWeeks[uniqueWeeks.length - 1];
+
+  if (minWeeks === maxWeeks) return `Lease Now for ${maxWeeks} weeks free`;
+  return `Up to ${maxWeeks} weeks free`;
+}
+
+function getEarliestAvailability(units) {
+  return units
+    .map((unit) => unit.available)
+    .filter(Boolean)
+    .sort()[0] || "";
 }
 
 function buildCortlandOnMckinney() {
@@ -391,7 +533,7 @@ function floorPlanRecord({
   units,
   status = "available",
 }) {
-  const deal = calculateDeal(startingRent, freeWeeks);
+  const deal = getBestUnitDeal(units) || calculateDeal(startingRent, freeWeeks);
 
   return {
     id,
@@ -433,6 +575,27 @@ function floorPlanRecord({
     photos: image ? [{ id: `${id}-image`, name: `${name} floor plan`, category: "Floor plan", url: image }] : [],
     availableUnits: units,
   };
+}
+
+function getBestUnitDeal(units = []) {
+  const unitDeals = units
+    .map((unit) => {
+      const rent = parseCurrency(unit.rent);
+      if (!rent) return null;
+
+      return {
+        ...calculateDeal(rent, unit.freeWeeks || 0),
+        normalRentNumber: rent,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.effectiveRentNumber - b.effectiveRentNumber);
+
+  return unitDeals[0] || null;
+}
+
+function parseCurrency(value) {
+  return Number(String(value || "").replace(/[^0-9.]/g, "")) || 0;
 }
 
 function calculateDeal(startingRent, freeWeeks) {
