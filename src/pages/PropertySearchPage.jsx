@@ -5,6 +5,7 @@ import { getAllProperties } from "../data/propertyStorage";
 import {
   getComparePropertyIds,
   getSavedPropertyIds,
+  removeComparePropertyId,
   toggleComparePropertyId,
   toggleSavedPropertyId,
 } from "../data/renterPreferenceStorage";
@@ -636,9 +637,20 @@ export default function PropertySearchPage() {
                       key={property.id}
                       className="rounded-2xl bg-[#f5f8f1] p-4"
                     >
-                      <p className="truncate text-sm font-black text-[#102426]">
-                        {property.name}
-                      </p>
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="min-w-0 truncate text-sm font-black text-[#102426]">
+                          {property.name}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setComparePropertyIds(removeComparePropertyId(property.id))
+                          }
+                          className="shrink-0 rounded-full bg-[#fff0ea] px-3 py-1 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                        >
+                          Remove
+                        </button>
+                      </div>
                       <CompareMetric
                         label="Deal score"
                         value={`${getSearchDealScore(property, priceSummary)}/100`}

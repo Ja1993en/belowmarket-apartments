@@ -15,6 +15,7 @@ import {
     getCompareFloorPlanItems,
     getComparePropertyIds,
     getSavedPropertyIds,
+    removeComparePropertyId,
     toggleCompareFloorPlanItem,
     toggleComparePropertyId,
     toggleSavedPropertyId,
@@ -1425,34 +1426,48 @@ export default function PublicPropertyListing() {
                                                 const isCurrentCompareProperty = compareProperty.id === property?.id;
 
                                                 return (
-                                                <Link
-                                                    key={compareProperty.id}
-                                                    to={`/properties/${compareProperty.id}`}
-                                                    className="flex min-w-0 gap-3 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
-                                                >
-                                                    <img
-                                                        src={getPropertyPrimaryImage(compareProperty)}
-                                                        alt={compareProperty.name}
-                                                        className="h-14 w-14 shrink-0 rounded-xl object-cover"
-                                                    />
+                                                    <div
+                                                        key={compareProperty.id}
+                                                        className="rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]"
+                                                    >
+                                                        <Link
+                                                            to={`/properties/${compareProperty.id}`}
+                                                            className="flex min-w-0 gap-3 hover:opacity-90"
+                                                        >
+                                                            <img
+                                                                src={getPropertyPrimaryImage(compareProperty)}
+                                                                alt={compareProperty.name}
+                                                                className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                                                            />
 
-                                                    <span className="min-w-0">
-                                                        <span className="block truncate text-sm font-black text-[#102426]">
-                                                            {compareProperty.name}
-                                                        </span>
-                                                        {isCurrentCompareProperty && (
-                                                            <span className="mt-1 inline-flex rounded-full bg-[#f2b84b] px-2 py-0.5 text-[10px] font-black uppercase text-[#102426]">
-                                                                Current page
+                                                            <span className="min-w-0">
+                                                                <span className="block truncate text-sm font-black text-[#102426]">
+                                                                    {compareProperty.name}
+                                                                </span>
+                                                                {isCurrentCompareProperty && (
+                                                                    <span className="mt-1 inline-flex rounded-full bg-[#f2b84b] px-2 py-0.5 text-[10px] font-black uppercase text-[#102426]">
+                                                                        Current page
+                                                                    </span>
+                                                                )}
+                                                                <span className="mt-1 block truncate text-xs font-semibold text-[#526260]">
+                                                                    {compareProperty.area || compareProperty.city || "Dallas area"}
+                                                                </span>
+                                                                <span className="mt-1 block truncate text-xs font-bold text-[#8a5b0a]">
+                                                                    {compareProperty.special || "View deal details"}
+                                                                </span>
                                                             </span>
-                                                        )}
-                                                        <span className="mt-1 block truncate text-xs font-semibold text-[#526260]">
-                                                            {compareProperty.area || compareProperty.city || "Dallas area"}
-                                                        </span>
-                                                        <span className="mt-1 block truncate text-xs font-bold text-[#8a5b0a]">
-                                                            {compareProperty.special || "View deal details"}
-                                                        </span>
-                                                    </span>
-                                                </Link>
+                                                        </Link>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                setComparePropertyIds(removeComparePropertyId(compareProperty.id))
+                                                            }
+                                                            className="mt-3 w-full rounded-xl bg-[#fff0ea] px-3 py-2 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                                                        >
+                                                            Remove from compare
+                                                        </button>
+                                                    </div>
                                                 );
                                             })}
                                         </div>

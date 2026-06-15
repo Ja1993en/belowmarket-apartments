@@ -26,6 +26,12 @@ export function toggleComparePropertyId(propertyId) {
   return toggleStoredId(COMPARE_PROPERTIES_KEY, propertyId, MAX_COMPARE_PROPERTIES);
 }
 
+export function removeComparePropertyId(propertyId) {
+  const nextIds = getComparePropertyIds().filter((id) => id !== propertyId);
+  writeStoredIds(COMPARE_PROPERTIES_KEY, nextIds);
+  return nextIds;
+}
+
 export function toggleCompareFloorPlanItem(floorPlanItem) {
   const nextItem = normalizeFloorPlanCompareItem(floorPlanItem);
   if (!nextItem) return getCompareFloorPlanItems();
