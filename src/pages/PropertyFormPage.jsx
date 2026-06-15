@@ -921,7 +921,7 @@ function FloorPlanSummaryCard({
             {planName}
           </span>
           <span className="mt-1 block text-sm font-bold text-[#526260]">
-            {bedrooms} bd • {bathrooms} ba • {squareFeet} sqft
+            {formatFloorPlanBedroomSummary(bedrooms)} • {bathrooms} ba • {squareFeet} sqft
           </span>
         </span>
       </button>
@@ -961,6 +961,16 @@ function SummaryChip({ label, value }) {
       <span className="block max-w-[160px] truncate">{value}</span>
     </span>
   );
+}
+
+function formatFloorPlanBedroomSummary(value) {
+  const normalizedValue = String(value ?? "").trim();
+
+  if (!normalizedValue) return "Beds not set";
+  if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
+  if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
+
+  return `${normalizedValue} bd`;
 }
 
 function FloorPlanEditor({
@@ -1880,7 +1890,7 @@ function normalizeFloorPlansForDraft(property) {
         ...createBlankFloorPlan(),
         id: floorPlan.id || `${property.id}-floor-plan-${index}`,
         name: floorPlan.name || "",
-        bedrooms: floorPlan.bedrooms || floorPlan.beds || "",
+        bedrooms: floorPlan.bedrooms ?? floorPlan.beds ?? "",
         bathrooms: floorPlan.bathrooms || floorPlan.baths || "",
         squareFeet: floorPlan.squareFeet || floorPlan.sqft || "",
         startingRent: floorPlan.startingRent || floorPlan.rent || "",

@@ -194,10 +194,12 @@ function propertyRecord({
     .filter((floorPlan) => Number(floorPlan.effectiveRentNumber || floorPlan.startingRent || 0))
     .sort(
       (first, second) =>
-        Number(first.effectiveRentNumber || first.startingRent || 0) -
-        Number(second.effectiveRentNumber || second.startingRent || 0)
+      Number(first.effectiveRentNumber || first.startingRent || 0) -
+      Number(second.effectiveRentNumber || second.startingRent || 0)
     )[0];
-  const maxBedrooms = Math.max(...floorPlans.map((floorPlan) => Number(floorPlan.bedrooms || 0)), 0);
+  const bedroomCounts = floorPlans.map((floorPlan) => Number(floorPlan.bedrooms || 0));
+  const hasStudio = bedroomCounts.includes(0) && floorPlans.length > 0;
+  const maxBedrooms = bedroomCounts.length ? Math.max(...bedroomCounts, 0) : 0;
 
   return {
     id,
@@ -218,7 +220,7 @@ function propertyRecord({
     monthlyConcession: bestFloorPlan?.monthlyConcession || "",
     savings: bestFloorPlan?.savings || "",
     belowMarketPercent: bestFloorPlan?.belowMarketPercent || "",
-    bedrooms: maxBedrooms ? bedroomRange(maxBedrooms, floorPlans.some((floorPlan) => floorPlan.bedrooms === 0)) : [],
+    bedrooms: maxBedrooms || hasStudio ? bedroomRange(maxBedrooms, hasStudio) : [],
     status,
     special,
     image: photos[0]?.url || bestFloorPlan?.image || "",
@@ -283,7 +285,18 @@ function cortlandFloorPlan(id, name, bedrooms, bathrooms, sqft, startingRent, av
     image,
     status: isUnavailable ? "unavailable" : "available",
     units: isUnavailable
-      ? []
+      ? [
+          {
+            id: `${slugify(name)}-unavailable-unit`,
+            unit: "Unavailable unit",
+            rent: "Contact for pricing",
+            available: "Currently Unavailable",
+            status: "unavailable",
+            currentSpecial: "",
+            freeWeeks: 0,
+            leaseTermMonths: LEASE_TERM_MONTHS,
+          },
+        ]
       : [
           {
             id: `${slugify(name)}-available-unit`,
@@ -322,6 +335,7 @@ function floorPlanRecord({
     name,
     bedrooms,
     beds: bedrooms,
+    bedroomLabel: bedrooms === 0 ? "Studio" : `${bedrooms} bd`,
     bathrooms,
     baths: bathrooms,
     squareFeet: sqft,
