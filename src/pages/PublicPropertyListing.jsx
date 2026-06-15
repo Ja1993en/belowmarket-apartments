@@ -11,8 +11,11 @@ import {
 import { getMarketRentBenchmark } from "../data/marketRentBenchmarks";
 import { getAllProperties, getAnyPropertyById } from "../data/propertyStorage";
 import {
+    getCompareFloorPlanItemKey,
+    getCompareFloorPlanItems,
     getComparePropertyIds,
     getSavedPropertyIds,
+    toggleCompareFloorPlanItem,
     toggleComparePropertyId,
     toggleSavedPropertyId,
 } from "../data/renterPreferenceStorage";
@@ -968,6 +971,7 @@ export default function PublicPropertyListing() {
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
     const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
     const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
+    const [compareFloorPlanItems, setCompareFloorPlanItems] = useState(getCompareFloorPlanItems);
     {/* Usestate end*/ }
 
     const filteredGalleryImages =
@@ -988,6 +992,9 @@ export default function PublicPropertyListing() {
             compareProperties.find((compareProperty) => compareProperty.id === comparePropertyId)
         )
         .filter(Boolean);
+    const compareFloorPlanKeys = new Set(
+        compareFloorPlanItems.map((item) => getCompareFloorPlanItemKey(item))
+    );
 
     useEffect(() => {
         if (!propertyGalleryImages.length) return;
@@ -1562,6 +1569,13 @@ export default function PublicPropertyListing() {
                                         View available layouts, pricing, and unit availability.
                                     </p>
 
+                                    {compareFloorPlanItems.length > 0 && (
+                                        <p className="mt-3 w-fit rounded-2xl bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f]">
+                                            Comparing {compareFloorPlanItems.length} floor plan
+                                            {compareFloorPlanItems.length === 1 ? "" : "s"}
+                                        </p>
+                                    )}
+
                                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                                         <div className="flex flex-wrap gap-2">
                                             {floorPlanFilters.map((filter) => (
@@ -1680,42 +1694,54 @@ export default function PublicPropertyListing() {
                                     )}
 
                                     <div className="mt-5 grid gap-3 lg:grid-cols-2">
-                                        {visibleFloorPlans.map((plan) => (<FloorPlanCard
-                                            key={plan.name}
-                                            propertyId={propertyId}
-                                            name={plan.name}
-                                            beds={plan.beds}
-                                            baths={plan.baths}
-                                            sqft={plan.sqft}
-                                            rent={plan.rent}
-                                            effectiveRent={plan.effectiveRent}
-                                            marketRent={plan.marketRent}
-                                            marketRentSource={plan.marketRentSource}
-                                            marketRentConfidence={plan.marketRentConfidence}
-                                            marketRentAreaName={plan.marketRentAreaName}
-                                            marketRentLastUpdated={plan.marketRentLastUpdated}
-                                            marketRentPropertyClass={plan.marketRentPropertyClass}
-                                            marketRentClassConfidence={plan.marketRentClassConfidence}
-                                            savings={plan.savings}
-                                            belowMarketPercent={plan.belowMarketPercent}
-                                            available={plan.available}
-                                            image={plan.image}
-                                            status={plan.status}
-                                            special={plan.special}
+                                        {visibleFloorPlans.map((plan) => {
+                                            const compareFloorPlanItem = getFloorPlanCompareItem(property, plan);
+                                            const isFloorPlanCompared = compareFloorPlanKeys.has(
+                                                getCompareFloorPlanItemKey(compareFloorPlanItem)
+                                            );
 
-                                            onViewDetails={() => {
-                                                setSelectedFloorPlan(plan);
-                                                setLeadSubmitted(false);
-                                                setLeadForm({
-                                                    name: "",
-                                                    phone: "",
-                                                    email: "",
-                                                    moveInDate: "",
-                                                    contactMethod: "",
-                                                    selectedUnit: "",
-                                                });
-                                            }} />
-                                        ))}
+                                            return (
+                                                <FloorPlanCard
+                                                    key={plan.name}
+                                                    propertyId={propertyId}
+                                                    name={plan.name}
+                                                    beds={plan.beds}
+                                                    baths={plan.baths}
+                                                    sqft={plan.sqft}
+                                                    rent={plan.rent}
+                                                    effectiveRent={plan.effectiveRent}
+                                                    marketRent={plan.marketRent}
+                                                    marketRentSource={plan.marketRentSource}
+                                                    marketRentConfidence={plan.marketRentConfidence}
+                                                    marketRentAreaName={plan.marketRentAreaName}
+                                                    marketRentLastUpdated={plan.marketRentLastUpdated}
+                                                    marketRentPropertyClass={plan.marketRentPropertyClass}
+                                                    marketRentClassConfidence={plan.marketRentClassConfidence}
+                                                    savings={plan.savings}
+                                                    belowMarketPercent={plan.belowMarketPercent}
+                                                    available={plan.available}
+                                                    image={plan.image}
+                                                    status={plan.status}
+                                                    special={plan.special}
+                                                    isCompared={isFloorPlanCompared}
+                                                    onToggleCompare={() =>
+                                                        setCompareFloorPlanItems(toggleCompareFloorPlanItem(compareFloorPlanItem))
+                                                    }
+                                                    onViewDetails={() => {
+                                                        setSelectedFloorPlan(plan);
+                                                        setLeadSubmitted(false);
+                                                        setLeadForm({
+                                                            name: "",
+                                                            phone: "",
+                                                            email: "",
+                                                            moveInDate: "",
+                                                            contactMethod: "",
+                                                            selectedUnit: "",
+                                                        });
+                                                    }}
+                                                />
+                                            );
+                                        })}
                                     </div>
 
                                     {paginatedFloorPlans.length > FLOOR_PLAN_PAGE_SIZE && (
@@ -3489,6 +3515,33 @@ function escapeMapText(value) {
         .replace(/'/g, "&#039;");
 }
 
+function getFloorPlanCompareItem(property, plan) {
+    const floorPlanId = plan.id || getFloorPlanCompareId(plan.name);
+    const specialLabel = plan.special?.label || plan.currentSpecial || "";
+
+    return {
+        propertyId: property?.id || "",
+        propertyName: property?.name || "Apartment",
+        floorPlanId,
+        floorPlanName: plan.name || "Floor plan",
+        beds: plan.beds,
+        baths: plan.baths,
+        sqft: plan.sqft,
+        rent: plan.rent,
+        effectiveRent: plan.effectiveRent,
+        special: specialLabel,
+        available: plan.available,
+        image: plan.image || getPropertyPrimaryImage(property),
+    };
+}
+
+function getFloorPlanCompareId(name) {
+    return String(name || "floor-plan")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
 
 function FloorPlanCard({
     name,
@@ -3507,6 +3560,8 @@ function FloorPlanCard({
     image,
     status,
     special,
+    isCompared,
+    onToggleCompare,
     onViewDetails,
 }) {
     const marketRentCopy = marketRent
@@ -3575,7 +3630,7 @@ function FloorPlanCard({
                 )}
             </div>
 
-            <div className="mt-4 flex items-center justify-between gap-3">
+            <div className="mt-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                 <div className="min-w-0">
                     {belowMarketPercent ? (
                         <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
@@ -3586,12 +3641,27 @@ function FloorPlanCard({
                     )}
                 </div>
 
-                <button
-                    onClick={onViewDetails}
-                    className="shrink-0 rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
-                >
-                    Details
-                </button>
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        type="button"
+                        onClick={onToggleCompare}
+                        className={`shrink-0 rounded-xl px-4 py-2 text-sm font-bold ${
+                            isCompared
+                                ? "bg-[#f2b84b] text-[#102426]"
+                                : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
+                        }`}
+                    >
+                        {isCompared ? "Comparing" : "Compare Floor Plan"}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onViewDetails}
+                        className="shrink-0 rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
+                    >
+                        Details
+                    </button>
+                </div>
             </div>
 
             {marketRentSource && (
