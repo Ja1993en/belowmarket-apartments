@@ -464,7 +464,7 @@ function HeroMetric({ icon: Icon, label, value }) {
 }
 
 function formatBedroomLabel(value) {
-  const normalizedValue = String(value || "").trim();
+  const normalizedValue = String(value ?? "").trim();
   if (!normalizedValue) return "Bedrooms not listed";
   if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
   if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;

@@ -2424,7 +2424,7 @@ function getBedroomCount(value) {
 }
 
 function formatBedroomLabel(value) {
-  const normalizedValue = String(value || "").trim();
+  const normalizedValue = String(value ?? "").trim();
   if (!normalizedValue) return "Beds";
   if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
   if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;

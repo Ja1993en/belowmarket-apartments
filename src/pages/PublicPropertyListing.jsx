@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
     DEFAULT_PROPERTY_IMAGE,
@@ -171,7 +171,7 @@ function normalizeListingFloorPlans(property) {
         return addMarketBenchmark({
             ...plan,
             name: plan.name || `Floor Plan ${index + 1}`,
-            beds: plan.bedrooms || plan.beds || "Not set",
+            beds: plan.bedrooms ?? plan.beds ?? "Not set",
             baths: plan.bathrooms || plan.baths || "Not set",
             sqft: plan.squareFeet || plan.sqft || "Not set",
             rent: plan.startingRent || plan.rent || "Contact for pricing",
@@ -784,24 +784,35 @@ export default function PublicPropertyListing() {
     const managementLabel =
         property?.managementCompany || property?.manager || "Property management not listed";
     const schoolSnapshot = getPropertySchoolSnapshot(property);
-    const propertyPhotoImages = (property?.photos || [])
-        .map((photo, index) => ({
-            category: photo.category || `Photo ${index + 1}`,
-            url: getPhotoImageUrl(photo),
-        }))
-        .filter((photo) => photo.url);
+    const propertyPhotoImages = useMemo(
+        () =>
+            (property?.photos || [])
+                .map((photo, index) => ({
+                    category: photo.category || `Photo ${index + 1}`,
+                    url: getPhotoImageUrl(photo),
+                }))
+                .filter((photo) => photo.url),
+        [property?.photos]
+    );
     const propertyPrimaryImage = property ? getPropertyPrimaryImage(property) : "";
     const hasRealPrimaryImage =
         Boolean(propertyPrimaryImage) &&
         propertyPrimaryImage !== DEFAULT_PROPERTY_IMAGE &&
         !propertyPrimaryImage.includes("images.unsplash.com/photo-1564013799919");
-    const propertyGalleryImages = propertyPhotoImages.length > 0
-        ? propertyPhotoImages
-        : hasRealPrimaryImage
-            ? [{ category: "Property", url: propertyPrimaryImage }]
-            : [];
+    const propertyGalleryImages = useMemo(
+        () =>
+            propertyPhotoImages.length > 0
+                ? propertyPhotoImages
+                : hasRealPrimaryImage
+                    ? [{ category: "Property", url: propertyPrimaryImage }]
+                    : [],
+        [hasRealPrimaryImage, propertyPhotoImages, propertyPrimaryImage]
+    );
     const hasPropertyGalleryImages = propertyGalleryImages.length > 0;
-    const listingFloorPlans = normalizeListingFloorPlans(property);
+    const listingFloorPlans = useMemo(
+        () => normalizeListingFloorPlans(property),
+        [property]
+    );
     useEffect(() => {
         if (!property || property.status !== "Live") return undefined;
 
@@ -925,14 +936,16 @@ export default function PublicPropertyListing() {
     useEffect(() => {
         if (!propertyGalleryImages.length) return;
 
-        setSelectedPhoto((currentPhoto) => {
+        const resetSelectedPhoto = window.setTimeout(() => setSelectedPhoto((currentPhoto) => {
             const selectedPhotoStillExists = propertyGalleryImages.some(
                 (image) => image.url === currentPhoto?.url
             );
 
             return selectedPhotoStillExists ? currentPhoto : propertyGalleryImages[0];
-        });
-    }, [property?.id, propertyGalleryImages.length, propertyGalleryImages[0]?.url]);
+        }), 0);
+
+        return () => window.clearTimeout(resetSelectedPhoto);
+    }, [propertyGalleryImages]);
 
 
     const filteredFloorPlans =
@@ -1487,7 +1500,8 @@ export default function PublicPropertyListing() {
                                             {unavailableFloorPlans.length > 0 && (
                                                 <p className="mt-1 text-xs font-bold text-[#526260]">
                                                     {unavailableFloorPlans.length} unavailable layout
-                                                    {unavailableFloorPlans.length === 1 ? "" : "s"} hidden by default.
+                                                    {unavailableFloorPlans.length === 1 ? "" : "s"}{" "}
+                                                    {showUnavailableFloorPlans ? "shown below." : "hidden by default."}
                                                 </p>
                                             )}
                                         </div>
@@ -3532,7 +3546,7 @@ function getFloorPlanAvailableUnitCount(plan) {
 }
 
 function formatBedroomLabel(value) {
-    const normalizedValue = String(value || "").trim();
+    const normalizedValue = String(value ?? "").trim();
     if (!normalizedValue || normalizedValue === "Not set") return "Beds not listed";
     if (normalizedValue === "All") return "All";
     if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
