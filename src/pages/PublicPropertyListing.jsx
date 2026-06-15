@@ -15,6 +15,7 @@ import {
     getCompareFloorPlanItems,
     getComparePropertyIds,
     getSavedPropertyIds,
+    removeCompareFloorPlanItem,
     removeComparePropertyId,
     toggleCompareFloorPlanItem,
     toggleComparePropertyId,
@@ -1589,10 +1590,97 @@ export default function PublicPropertyListing() {
                                     </p>
 
                                     {compareFloorPlanItems.length > 0 && (
-                                        <p className="mt-3 w-fit rounded-2xl bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f]">
-                                            Comparing {compareFloorPlanItems.length} floor plan
-                                            {compareFloorPlanItems.length === 1 ? "" : "s"}
-                                        </p>
+                                        <div className="mt-5 rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-4">
+                                            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                                                <div>
+                                                    <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                                        Floor plan compare
+                                                    </p>
+                                                    <h3 className="mt-1 text-lg font-black text-[#102426]">
+                                                        {compareFloorPlanItems.length} selected floor plan
+                                                        {compareFloorPlanItems.length === 1 ? "" : "s"}
+                                                    </h3>
+                                                    <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                                        Compare rents, specials, size, and availability before choosing what to tour.
+                                                    </p>
+                                                </div>
+
+                                                <Link
+                                                    to="/properties"
+                                                    className="w-fit rounded-2xl bg-white px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+                                                >
+                                                    Add more options
+                                                </Link>
+                                            </div>
+
+                                            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                                {compareFloorPlanItems.map((item) => (
+                                                    <div
+                                                        key={getCompareFloorPlanItemKey(item)}
+                                                        className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]"
+                                                    >
+                                                        <div className="flex gap-3">
+                                                            <img
+                                                                src={item.image || propertyPrimaryImage || DEFAULT_PROPERTY_IMAGE}
+                                                                alt={`${item.floorPlanName} floor plan`}
+                                                                className="h-20 w-24 shrink-0 rounded-xl object-cover"
+                                                            />
+
+                                                            <div className="min-w-0">
+                                                                <p className="truncate text-sm font-black text-[#102426]">
+                                                                    {item.floorPlanName}
+                                                                </p>
+                                                                <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+                                                                    at {item.propertyName}
+                                                                </p>
+                                                                <p className="mt-2 text-xs font-semibold text-[#526260]">
+                                                                    {formatBedroomLabel(item.beds)} • {item.baths || "Baths not listed"} ba •{" "}
+                                                                    {item.sqft || "Sq ft not listed"} sq ft
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-3 grid grid-cols-2 gap-2">
+                                                            <FloorPlanMetric
+                                                                label="Starting"
+                                                                value={item.rent || "Contact"}
+                                                            />
+                                                            <FloorPlanMetric
+                                                                label="Effective"
+                                                                value={item.effectiveRent || item.rent || "Contact"}
+                                                                highlight
+                                                            />
+                                                        </div>
+
+                                                        <p className="mt-3 truncate text-xs font-black text-[#8a5b0a]">
+                                                            {item.special || "No special listed"}
+                                                        </p>
+                                                        <p className="mt-1 text-xs font-semibold text-[#526260]">
+                                                            {item.available || "Availability not listed"}
+                                                        </p>
+
+                                                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                                            <Link
+                                                                to={`/properties/${item.propertyId}`}
+                                                                className="rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black text-white hover:bg-[#102426]"
+                                                            >
+                                                                View property
+                                                            </Link>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setCompareFloorPlanItems(removeCompareFloorPlanItem(item))
+                                                                }
+                                                                className="rounded-xl bg-[#fff0ea] px-3 py-2 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     )}
 
                                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
