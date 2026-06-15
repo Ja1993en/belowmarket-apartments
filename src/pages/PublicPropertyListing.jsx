@@ -974,6 +974,7 @@ export default function PublicPropertyListing() {
     const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
     const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
     const [compareFloorPlanItems, setCompareFloorPlanItems] = useState(getCompareFloorPlanItems);
+    const compareListRef = useRef(null);
     {/* Usestate end*/ }
 
     const filteredGalleryImages =
@@ -994,6 +995,16 @@ export default function PublicPropertyListing() {
             compareProperties.find((compareProperty) => compareProperty.id === comparePropertyId)
         )
         .filter(Boolean);
+    const selectedComparePropertyIds = new Set(selectedCompareProperties.map((compareProperty) => compareProperty.id));
+    const selectedFloorPlanCompareItems = [
+        ...compareFloorPlanItems.filter((item) => selectedComparePropertyIds.has(item.propertyId)),
+        ...compareFloorPlanItems.filter((item) => !selectedComparePropertyIds.has(item.propertyId)),
+    ];
+    const floorPlanCompareItemsWithoutProperty = compareFloorPlanItems.filter(
+        (item) => !selectedComparePropertyIds.has(item.propertyId)
+    );
+    const shouldShowCompareList =
+        selectedCompareProperties.length > 0 || selectedFloorPlanCompareItems.length > 0;
     const compareFloorPlanKeys = new Set(
         compareFloorPlanItems.map((item) => getCompareFloorPlanItemKey(item))
     );
@@ -1406,15 +1417,18 @@ export default function PublicPropertyListing() {
                                     </a>
                                 </div>
 
-                                {selectedCompareProperties.length > 0 && (
-                                    <div className="mt-4 rounded-3xl border border-[#d7e6df] bg-white p-4 shadow-sm">
+                                {shouldShowCompareList && (
+                                    <div
+                                        ref={compareListRef}
+                                        className="mt-4 rounded-3xl border border-[#d7e6df] bg-white p-4 shadow-sm"
+                                    >
                                         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
                                             <div>
                                                 <p className="text-xs font-black uppercase text-[#1f6f63]">
                                                     Your compare list
                                                 </p>
                                                 <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                                    Jump between the properties you selected to compare.
+                                                    Jump between properties and floor plans you selected to compare.
                                                 </p>
                                             </div>
 
@@ -1429,6 +1443,25 @@ export default function PublicPropertyListing() {
                                         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                                             {selectedCompareProperties.map((compareProperty) => {
                                                 const isCurrentCompareProperty = compareProperty.id === property?.id;
+                                                const comparedFloorPlanForProperty = compareFloorPlanItems.find(
+                                                    (item) => item.propertyId === compareProperty.id
+                                                );
+
+                                                if (comparedFloorPlanForProperty) {
+                                                    return (
+                                                        <ComparedFloorPlanCard
+                                                            key={getCompareFloorPlanItemKey(comparedFloorPlanForProperty)}
+                                                            item={comparedFloorPlanForProperty}
+                                                            currentPropertyId={property?.id}
+                                                            fallbackImage={getPropertyPrimaryImage(compareProperty)}
+                                                            onRemove={() =>
+                                                                setCompareFloorPlanItems(
+                                                                    removeCompareFloorPlanItem(comparedFloorPlanForProperty)
+                                                                )
+                                                            }
+                                                        />
+                                                    );
+                                                }
 
                                                 return (
                                                     <div
@@ -1475,6 +1508,18 @@ export default function PublicPropertyListing() {
                                                     </div>
                                                 );
                                             })}
+
+                                            {floorPlanCompareItemsWithoutProperty.map((item) => (
+                                                <ComparedFloorPlanCard
+                                                    key={getCompareFloorPlanItemKey(item)}
+                                                    item={item}
+                                                    currentPropertyId={property?.id}
+                                                    fallbackImage={propertyPrimaryImage}
+                                                    onRemove={() =>
+                                                        setCompareFloorPlanItems(removeCompareFloorPlanItem(item))
+                                                    }
+                                                />
+                                            ))}
                                         </div>
 
                                         {selectedCompareProperties.length === 1 && isPropertyCompared && (
@@ -1837,9 +1882,20 @@ export default function PublicPropertyListing() {
                                                     status={plan.status}
                                                     special={plan.special}
                                                     isCompared={isFloorPlanCompared}
-                                                    onToggleCompare={() =>
-                                                        setCompareFloorPlanItems(toggleCompareFloorPlanItem(compareFloorPlanItem))
-                                                    }
+                                                    onToggleCompare={() => {
+                                                        setCompareFloorPlanItems(toggleCompareFloorPlanItem(compareFloorPlanItem));
+
+                                                        if (property?.id && !comparePropertyIds.includes(property.id)) {
+                                                            setComparePropertyIds(toggleComparePropertyId(property.id));
+                                                        }
+
+                                                        window.setTimeout(() => {
+                                                            compareListRef.current?.scrollIntoView({
+                                                                behavior: "smooth",
+                                                                block: "start",
+                                                            });
+                                                        }, 50);
+                                                    }}
                                                     onViewDetails={() => {
                                                         setSelectedFloorPlan(plan);
                                                         setLeadSubmitted(false);
@@ -3668,6 +3724,84 @@ function getFloorPlanCompareId(name) {
         .trim()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
+}
+
+function ComparedFloorPlanCard({
+    item,
+    currentPropertyId,
+    fallbackImage,
+    onRemove,
+}) {
+    const isCurrentProperty = item.propertyId === currentPropertyId;
+
+    return (
+        <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]">
+            <div className="flex gap-3">
+                <img
+                    src={item.image || fallbackImage || DEFAULT_PROPERTY_IMAGE}
+                    alt={`${item.floorPlanName} floor plan`}
+                    className="h-20 w-24 shrink-0 rounded-xl bg-[#f5f8f1] object-cover"
+                />
+
+                <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[10px] font-black uppercase text-[#173f3f]">
+                            Floor plan
+                        </span>
+                        {isCurrentProperty && (
+                            <span className="rounded-full bg-[#f2b84b] px-2 py-0.5 text-[10px] font-black uppercase text-[#102426]">
+                                Current page
+                            </span>
+                        )}
+                    </div>
+
+                    <p className="mt-2 truncate text-sm font-black text-[#102426]">
+                        {item.floorPlanName}
+                    </p>
+                    <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+                        at {item.propertyName}
+                    </p>
+                    <p className="mt-2 text-xs font-semibold text-[#526260]">
+                        {formatBedroomLabel(item.beds)} • {item.baths || "Baths not listed"} ba •{" "}
+                        {item.sqft || "Sq ft not listed"} sq ft
+                    </p>
+                </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+                <FloorPlanMetric label="Starting" value={item.rent || "Contact"} />
+                <FloorPlanMetric
+                    label="Effective"
+                    value={item.effectiveRent || item.rent || "Contact"}
+                    highlight
+                />
+            </div>
+
+            <p className="mt-3 truncate text-xs font-black text-[#8a5b0a]">
+                {item.special || "No special listed"}
+            </p>
+            <p className="mt-1 text-xs font-semibold text-[#526260]">
+                {item.available || "Availability not listed"}
+            </p>
+
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <Link
+                    to={`/properties/${item.propertyId}`}
+                    className="rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black text-white hover:bg-[#102426]"
+                >
+                    View property
+                </Link>
+
+                <button
+                    type="button"
+                    onClick={onRemove}
+                    className="rounded-xl bg-[#fff0ea] px-3 py-2 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                >
+                    Remove
+                </button>
+            </div>
+        </div>
+    );
 }
 
 function FloorPlanCard({
