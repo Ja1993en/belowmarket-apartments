@@ -877,18 +877,18 @@ export default function LeadDetailsPage() {
                             </Link>
 
                             <Link
+                                to={`/r/${lead.token}`}
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-bold text-[#102426] hover:bg-[#f9d783]"
+                            >
+                                View Renter Page
+                            </Link>
+
+                            <Link
                                 to={`/admin/leads/${lead.id}/message`}
                                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d8efe6]"
                             >
                                 <MessageSquare className="h-4 w-4" />
                                 Message Lead
-                            </Link>
-
-                            <Link
-                                to={`/r/${lead.token}`}
-                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-bold text-[#102426] hover:bg-[#f9d783]"
-                            >
-                                Preview Renter Link
                             </Link>
                             {isLocalLead && (
                                 <button
