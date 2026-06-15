@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { saveLocalLead } from "../data/leadStorage";
 import { saveSupabaseLead } from "../data/supabaseLeadStorage";
@@ -19,6 +19,7 @@ const emptyForm = {
 
 export default function StartPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const propertyId = searchParams.get("property");
   const [sourceProperty, setSourceProperty] = useState(null);
   const [submitted, setSubmitted] = useState(false);
@@ -101,6 +102,7 @@ export default function StartPage() {
 
       setCreatedLeadId(savedLead.id);
       setSubmitted(true);
+      navigate("/thank-you");
     } catch (error) {
       console.error(error);
 
@@ -108,6 +110,7 @@ export default function StartPage() {
         saveLocalLead(leadPayload);
         setCreatedLeadId(leadPayload.id);
         setSubmitted(true);
+        navigate("/thank-you");
         return;
       }
 

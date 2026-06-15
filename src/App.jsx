@@ -15,6 +15,7 @@ import PropertyFormPage from "./pages/PropertyFormPage";
 import PublicPropertyListing from "./pages/PublicPropertyListing";
 import HomePage from "./pages/HomePage";
 import StartPage from "./pages/StartPage";
+import ThankYouPage from "./pages/ThankYouPage";
 import LeadDetailsPage from "./pages/LeadDetailsPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import PropertySearchPage from "./pages/PropertySearchPage";
@@ -37,6 +38,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/start" element={<StartPage />} />
+        <Route path="/thank-you" element={<ThankYouPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/methodology" element={<MethodologyPage />} />
