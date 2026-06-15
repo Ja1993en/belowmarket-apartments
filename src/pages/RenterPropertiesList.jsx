@@ -301,7 +301,7 @@ export default function RenterPropertiesList() {
               </h2>
 
               <p className="mt-2 text-[#526260]">
-                Showing {recommendedProperties.length} below-market options selected by your locator.
+                Showing {recommendedProperties.length} deal-focused options selected by your locator.
               </p>
             </div>
 
@@ -546,15 +546,17 @@ function RecommendedPropertyCard({
             </p>
           </div>
 
-          <span className="rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
-            {property.belowMarketPercent} below market
-          </span>
+          {property.belowMarketPercent && (
+            <span className="rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
+              {property.belowMarketPercent} special value
+            </span>
+          )}
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <DealStat label="Effective Rent" value={property.effectiveRent} />
-          <DealStat label="Market Rent" value={property.marketRent} />
-          <DealStat label="Savings" value={property.savings} />
+          <DealStat label="Normal Rent" value={property.rent || property.startingRent} />
+          <DealStat label="Special Value" value={property.savings} />
         </div>
 
         <div className="mt-5 rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">

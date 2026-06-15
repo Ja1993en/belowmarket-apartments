@@ -653,8 +653,12 @@ export default function SendPropertiesPage() {
                           <div className="mt-4 flex flex-wrap gap-2">
                             <PropertyBadge label={property.rent} />
                             <PropertyBadge label={property.special} />
-                            <PropertyBadge label={`${property.belowMarketPercent} below market`} />
-                            <PropertyBadge label={`Save ${property.savings}`} />
+                            {property.belowMarketPercent && (
+                              <PropertyBadge label={`${property.belowMarketPercent} special value`} />
+                            )}
+                            {property.savings && (
+                              <PropertyBadge label={`Special value ${property.savings}`} />
+                            )}
                           </div>
                         </div>
                       </div>

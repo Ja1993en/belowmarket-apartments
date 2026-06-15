@@ -628,13 +628,13 @@ function FloorPlanRow({
 
                 {savings && (
                     <span className="rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
-                        Save {savings}
+                        Special value {savings}
                     </span>
                 )}
 
                 {belowMarketPercent && (
                     <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
-                        {belowMarketPercent} below
+                        {belowMarketPercent} special value
                     </span>
                 )}
 

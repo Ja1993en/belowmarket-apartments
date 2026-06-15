@@ -243,9 +243,9 @@ function getMarketRentCopy({
     }
 
     return {
-        metricLabel: "Nearby Avg",
-        title: "Nearby rent estimate",
-        cardNote: `Similar ${bedroomLabel} apartments${areaLabel} average around this price.${updatedLabel}`,
+        metricLabel: "Rent Context",
+        title: "Rent estimate",
+        cardNote: `Estimated ${bedroomLabel} rent context${areaLabel}.${updatedLabel}`,
         detailNote:
             `This estimate compares similar ${bedroomLabel} apartments${areaLabel}. It helps show whether the special creates real value, but it is not a quote from the property.${updatedLabel}`,
     };
@@ -617,8 +617,8 @@ function getFloorPlanSeoAdditionalProperties({ plan, specialLabel }) {
         { name: "Square feet", value: plan.sqft },
         { name: "Current special", value: specialLabel },
         { name: "Market rent comparison", value: plan.marketRent },
-        { name: "Estimated savings", value: plan.savings },
-        { name: "Below market percent", value: plan.belowMarketPercent },
+        { name: "Estimated special value", value: plan.savings },
+        { name: "Special value percent", value: plan.belowMarketPercent },
         { name: "Availability", value: plan.available || plan.availability },
     ]
         .filter((item) => item.value)
