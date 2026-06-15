@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowRight, CheckCircle2, MapPin, Search, ShieldCheck, Tag } from "lucide-react";
+import { getAllProperties } from "../data/propertyStorage";
 
 const DALLAS_LANDING_PAGES = {
   "dallas-tx": {
@@ -220,6 +221,7 @@ const DALLAS_INTERNAL_LINKS = [
 export default function DallasSeoLandingPage() {
   const { pageType = "dallas-tx" } = useParams();
   const page = DALLAS_LANDING_PAGES[pageType];
+  const [properties, setProperties] = useState([]);
 
   useEffect(() => {
     if (!page) return;
@@ -266,11 +268,29 @@ export default function DallasSeoLandingPage() {
     };
   }, [page]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    getAllProperties()
+      .then((savedProperties) => {
+        if (isMounted) setProperties(savedProperties);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) setProperties([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   if (!page) {
     return <Navigate to="/apartments/dallas-tx" replace />;
   }
 
   const pageFaqs = getPageFaqs(page);
+  const featuredProperties = getSeoLandingProperties(properties, pageType);
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -371,6 +391,44 @@ export default function DallasSeoLandingPage() {
             <InfoCard key={section.title} title={section.title} text={section.text} />
           ))}
         </div>
+
+        <section className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+            <div>
+              <p className="text-sm font-black text-[#1f6f63]">
+                Live Dallas listings
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-[#102426]">
+                Apartments currently matching this search
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
+                These live property pages give renters direct access to floor plans, specials, photos, location details, and effective-rent estimates.
+              </p>
+            </div>
+
+            <Link
+              to={page.searchUrl}
+              className="inline-flex w-fit items-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-black text-white hover:bg-[#102426]"
+            >
+              View all matches
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {featuredProperties.length > 0 ? (
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {featuredProperties.map((property) => (
+                <LandingPropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-5 rounded-2xl bg-[#f5f8f1] p-5">
+              <p className="text-sm font-bold text-[#526260]">
+                Live matches are being refreshed. Use the search page to view all available Dallas properties and current specials.
+              </p>
+            </div>
+          )}
+        </section>
 
         <div className="mt-8 grid gap-5 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm lg:grid-cols-[1fr_1fr]">
           <div>
@@ -500,6 +558,52 @@ function SeoFaqCard({ question, answer }) {
   );
 }
 
+function LandingPropertyCard({ property }) {
+  const address = [property.address, property.city, property.state, property.zipcode]
+    .filter(Boolean)
+    .join(", ");
+  const special = getPropertySpecialLabel(property);
+  const price = property.effectiveRent || property.startingRent || property.rent || "Contact for pricing";
+  const bedroomLabel = Array.isArray(property.bedrooms) && property.bedrooms.length > 0
+    ? property.bedrooms.join(" - ")
+    : getFloorPlanBedroomSummary(property);
+
+  return (
+    <article className="rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] p-5">
+      <p className="text-xs font-black uppercase text-[#1f6f63]">
+        {special ? "Current special" : "Live listing"}
+      </p>
+      <h3 className="mt-2 text-lg font-black text-[#102426]">
+        {property.name}
+      </h3>
+      <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
+        {address || "Dallas, TX"}
+      </p>
+      <div className="mt-4 grid gap-2">
+        <SeoPropertyMetric label="Price" value={price} />
+        <SeoPropertyMetric label="Bedrooms" value={bedroomLabel || "Floor plans listed"} />
+        <SeoPropertyMetric label="Special" value={special || "Ask about current specials"} />
+      </div>
+      <Link
+        to={`/properties/${property.id}`}
+        className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#edf4ef]"
+      >
+        View property
+        <ArrowRight className="h-4 w-4" />
+      </Link>
+    </article>
+  );
+}
+
+function SeoPropertyMetric({ label, value }) {
+  return (
+    <div className="rounded-xl bg-white px-3 py-2">
+      <p className="text-[11px] font-black uppercase text-[#526260]">{label}</p>
+      <p className="mt-1 text-sm font-black text-[#102426]">{value}</p>
+    </div>
+  );
+}
+
 function LandingSignal({ icon: Icon, title, text }) {
   return (
     <div className="rounded-2xl bg-white p-4 text-[#102426]">
@@ -508,6 +612,89 @@ function LandingSignal({ icon: Icon, title, text }) {
       <p className="mt-1 text-xs font-bold leading-5 text-[#526260]">{text}</p>
     </div>
   );
+}
+
+function getSeoLandingProperties(properties, pageType) {
+  return properties
+    .filter((property) => property.status === "Live")
+    .filter((property) => matchesLandingPage(property, pageType))
+    .sort((firstProperty, secondProperty) => {
+      const firstHasSpecial = getPropertySpecialLabel(firstProperty) ? 1 : 0;
+      const secondHasSpecial = getPropertySpecialLabel(secondProperty) ? 1 : 0;
+
+      return secondHasSpecial - firstHasSpecial;
+    })
+    .slice(0, 6);
+}
+
+function matchesLandingPage(property, pageType) {
+  const haystack = [
+    property.name,
+    property.address,
+    property.city,
+    property.neighborhood,
+    property.area,
+    property.special,
+    property.description,
+    ...(property.floorPlans || []).flatMap((floorPlan) => [
+      floorPlan.name,
+      floorPlan.beds,
+      floorPlan.bedrooms,
+      floorPlan.special?.label,
+      floorPlan.currentSpecial,
+    ]),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (pageType === "8-weeks-free") {
+    return /8\s*weeks|eight\s*weeks/.test(haystack);
+  }
+
+  if (pageType === "specials") {
+    return Boolean(getPropertySpecialLabel(property));
+  }
+
+  const areaKeywords = {
+    uptown: ["uptown"],
+    "oak-lawn": ["oak lawn", "turtle creek"],
+    "bishop-arts": ["bishop arts", "oak cliff"],
+    "victory-park": ["victory park"],
+    downtown: ["downtown"],
+  };
+  const keywords = areaKeywords[pageType];
+
+  if (keywords) {
+    return keywords.some((keyword) => haystack.includes(keyword));
+  }
+
+  return haystack.includes("dallas") || property.state === "TX";
+}
+
+function getPropertySpecialLabel(property) {
+  return (
+    property.special ||
+    (property.floorPlans || [])
+      .map((floorPlan) => floorPlan.special?.label || floorPlan.currentSpecial)
+      .find(Boolean) ||
+    ""
+  );
+}
+
+function getFloorPlanBedroomSummary(property) {
+  const bedrooms = [
+    ...new Set(
+      (property.floorPlans || [])
+        .map((floorPlan) => floorPlan.beds || floorPlan.bedrooms)
+        .filter(Boolean)
+    ),
+  ];
+
+  if (bedrooms.length === 0) return "";
+  if (bedrooms.length === 1) return bedrooms[0];
+
+  return `${bedrooms[0]} - ${bedrooms[bedrooms.length - 1]}`;
 }
 
 function InfoCard({ title, text, isFeatured = false }) {

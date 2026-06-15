@@ -657,6 +657,10 @@ function getPropertySeoAdditionalProperties({
         { name: "Normal rent range", value: rentSummary.normalRentLabel },
         { name: "Estimated effective rent range", value: rentSummary.effectiveRentLabel },
         { name: "Availability", value: rentSummary.availabilityLabel },
+        { name: "Required monthly fees", value: property?.requiredMonthlyFees || property?.monthlyFees || "" },
+        { name: "Pet policy", value: property?.petPolicy || property?.petsAllowed || "" },
+        { name: "Parking", value: property?.parking || property?.parkingPolicy || "" },
+        { name: "School district", value: property?.schoolDistrict || "" },
         { name: "Property manager", value: property?.managementCompany || property?.manager || "" },
     ].filter((item) => item.value);
 
@@ -877,6 +881,14 @@ export default function PublicPropertyListing() {
         propertySpecialLabel,
         savingsLabel,
         startingRentLabel,
+    });
+    const propertyResearchGuide = getPropertyResearchGuide({
+        addressLabel,
+        listingFloorPlans,
+        managementLabel,
+        property,
+        propertySpecialLabel,
+        renterValueToolkit,
     });
     const floorPlanFilters = [
         "All",
@@ -1363,6 +1375,47 @@ export default function PublicPropertyListing() {
                                         </p>
                                     </div>
                                 </div>
+
+                                <section className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+                                        <div>
+                                            <p className="text-sm font-black text-[#1f6f63]">
+                                                Apartment guide
+                                            </p>
+                                            <h2 className="mt-2 text-2xl font-black text-[#102426]">
+                                                About {property.name}
+                                            </h2>
+                                            <p className="mt-3 text-sm font-semibold leading-7 text-[#526260]">
+                                                {propertyResearchGuide.overview}
+                                            </p>
+                                        </div>
+
+                                        <div className="rounded-2xl bg-[#f5f8f1] p-4">
+                                            <p className="text-sm font-black text-[#102426]">
+                                                Quick facts
+                                            </p>
+                                            <div className="mt-3 space-y-2">
+                                                {propertyResearchGuide.quickFacts.map((fact) => (
+                                                    <SeoInfoRow
+                                                        key={fact.label}
+                                                        label={fact.label}
+                                                        value={fact.value}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6 grid gap-4 md:grid-cols-3">
+                                        {propertyResearchGuide.researchCards.map((card) => (
+                                            <HighlightCard
+                                                key={card.title}
+                                                title={card.title}
+                                                text={card.text}
+                                            />
+                                        ))}
+                                    </div>
+                                </section>
                                 {/*Floor Plans*/}
                                 <div
                                     id="floor-plans"
@@ -3532,6 +3585,90 @@ function HighlightCard({ title, text }) {
             <p className="mt-2 text-sm leading-6 text-[#526260]">{text}</p>
         </div>
     );
+}
+
+function SeoInfoRow({ label, value }) {
+    return (
+        <div className="flex items-start justify-between gap-3 border-b border-[#d7e6df] pb-2 last:border-b-0 last:pb-0">
+            <span className="text-xs font-black uppercase text-[#526260]">
+                {label}
+            </span>
+            <span className="max-w-[180px] text-right text-sm font-black text-[#102426]">
+                {value}
+            </span>
+        </div>
+    );
+}
+
+function getPropertyResearchGuide({
+    addressLabel,
+    listingFloorPlans,
+    managementLabel,
+    property,
+    propertySpecialLabel,
+    renterValueToolkit,
+}) {
+    const propertyName = property?.name || "this Dallas apartment community";
+    const cityState = [property?.city || "Dallas", property?.state || "TX"]
+        .filter(Boolean)
+        .join(", ");
+    const rentSummary = getPropertyLevelRentSummary({
+        effectiveRentLabel: property?.effectiveRent || "",
+        hasPropertySpecial: Boolean(propertySpecialLabel),
+        listingFloorPlans,
+        propertySpecialLabel,
+        startingRentLabel: property?.startingRent || property?.rent || "Contact for pricing",
+    });
+    const bedroomLabel = getPropertySeoBedroomLabel(property, listingFloorPlans);
+    const feeLabel = property?.requiredMonthlyFees || property?.monthlyFees || "Confirm with property";
+    const availableFloorPlanCount = listingFloorPlans.filter(isFloorPlanAvailable).length;
+    const totalFloorPlanCount = listingFloorPlans.length;
+    const specialText =
+        propertySpecialLabel && propertySpecialLabel !== "No active special listed"
+            ? ` The current special is listed as ${propertySpecialLabel}.`
+            : " No active special is currently listed, so renters should ask about current concessions before applying.";
+
+    return {
+        overview: `${propertyName} is a ${cityState} apartment listing near ${addressLabel || "Dallas"} with ${bedroomLabel}. Below Market Apartments shows normal rent, estimated effective value, active specials, floor plans, photos, and nearby location context together so renters can compare the listing before scheduling a tour.${specialText}`,
+        quickFacts: [
+            {
+                label: "Normal rent",
+                value: rentSummary.normalRentLabel,
+            },
+            {
+                label: "Effective value",
+                value: rentSummary.effectiveRentLabel,
+            },
+            {
+                label: "Floor plans",
+                value: `${availableFloorPlanCount || 0} available / ${totalFloorPlanCount || 0} total`,
+            },
+            {
+                label: "Fees",
+                value: feeLabel,
+            },
+            {
+                label: "Managed by",
+                value: managementLabel,
+            },
+        ],
+        researchCards: [
+            {
+                title: "Pricing transparency",
+                text: `Compare ${rentSummary.normalRentLabel} normal rent against ${rentSummary.effectiveRentLabel} estimated effective value before deciding if the special is worth touring.`,
+            },
+            {
+                title: "Special confirmation",
+                text: propertySpecialLabel
+                    ? `Ask whether ${propertySpecialLabel} applies to the exact unit, move-in date, and lease term you want.`
+                    : "Ask the leasing office whether any new move-in special is available for your target floor plan.",
+            },
+            {
+                title: "Application checklist",
+                text: `Before applying, confirm monthly fees, parking, deposits, pet rules, utilities, and whether the deal score of ${renterValueToolkit.dealScore} reflects the unit you want.`,
+            },
+        ],
+    };
 }
 
 function getRenterValueToolkit({
