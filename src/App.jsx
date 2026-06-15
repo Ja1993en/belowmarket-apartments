@@ -63,6 +63,30 @@ export default function App() {
           path="/apartments/dallas-tx/:pageType"
           element={<DallasSeoLandingPage />}
         />
+        <Route
+          path="/dallas-apartments-6-weeks-free"
+          element={<DallasSeoLandingPage pageKey="6-weeks-free" />}
+        />
+        <Route
+          path="/dallas-apartments-4-weeks-free"
+          element={<DallasSeoLandingPage pageKey="4-weeks-free" />}
+        />
+        <Route
+          path="/dallas-apartments-no-deposit"
+          element={<DallasSeoLandingPage pageKey="no-deposit" />}
+        />
+        <Route
+          path="/farmers-branch-apartments-specials"
+          element={<DallasSeoLandingPage pageKey="farmers-branch-specials" />}
+        />
+        <Route
+          path="/irving-apartments-specials"
+          element={<DallasSeoLandingPage pageKey="irving-specials" />}
+        />
+        <Route
+          path="/oak-lawn-apartments-specials"
+          element={<DallasSeoLandingPage pageKey="oak-lawn-apartments-specials" />}
+        />
 
         <Route
           path="/properties/:propertyId"
