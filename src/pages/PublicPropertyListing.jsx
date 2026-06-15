@@ -3582,24 +3582,18 @@ function FloorPlanCard({
         : null;
 
     return (
-        <div className="flex min-h-[250px] flex-col justify-between rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-            <div className="flex min-w-0 gap-3">
+        <div className="flex min-h-[290px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
+            <div className="flex min-w-0 gap-4">
                 {image && (
                     <img
                         src={image}
                         alt={`${name} floor plan`}
-                        className="h-16 w-16 shrink-0 rounded-xl object-cover sm:h-20 sm:w-20"
+                        className="h-20 w-20 shrink-0 rounded-2xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
                     />
                 )}
 
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                        {special && (
-                            <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                                <span className="truncate">{special.label}</span>
-                            </span>
-                        )}
-
                         <span
                             className={`rounded-full px-2.5 py-1 text-[11px] font-black ${status === "available"
                                 ? "bg-[#d8efe6] text-[#1f6f63]"
@@ -3610,6 +3604,12 @@ function FloorPlanCard({
                         >
                             {available}
                         </span>
+
+                        {special && (
+                            <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                <span className="truncate">{special.label}</span>
+                            </span>
+                        )}
                     </div>
 
                     <p className="mt-2 truncate text-lg font-black text-[#102426]">
@@ -3622,7 +3622,7 @@ function FloorPlanCard({
                 </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                 <FloorPlanMetric label="Starting" value={rent} />
 
                 {effectiveRent && (
@@ -3638,8 +3638,8 @@ function FloorPlanCard({
                 )}
             </div>
 
-            <div className="mt-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                <div className="min-w-0">
+            <div className="mt-5 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
+                <div className="min-w-0 text-center sm:text-left">
                     {belowMarketPercent ? (
                         <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
                             {belowMarketPercent} below
@@ -3649,11 +3649,11 @@ function FloorPlanCard({
                     )}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     <button
                         type="button"
                         onClick={onToggleCompare}
-                        className={`shrink-0 rounded-xl px-4 py-2 text-sm font-bold ${
+                        className={`rounded-xl px-4 py-3 text-sm font-bold ${
                             isCompared
                                 ? "bg-[#f2b84b] text-[#102426]"
                                 : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
@@ -3665,7 +3665,7 @@ function FloorPlanCard({
                     <button
                         type="button"
                         onClick={onViewDetails}
-                        className="shrink-0 rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
+                        className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
                     >
                         Details
                     </button>
