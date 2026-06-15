@@ -60,6 +60,7 @@ export default function LeadDetailsPage() {
     const [assignmentSaved, setAssignmentSaved] = useState(false);
     const [statusSaved, setStatusSaved] = useState(false);
     const [qualitySaved, setQualitySaved] = useState(false);
+    const [prioritySaved, setPrioritySaved] = useState(false);
 
     const refreshLead = useCallback(async () => {
         if (isLocalLead) {
@@ -350,6 +351,8 @@ export default function LeadDetailsPage() {
                 ...lead,
                 ...updates,
             });
+            setPrioritySaved(true);
+            window.setTimeout(() => setPrioritySaved(false), 2000);
         } catch (error) {
             console.error(error);
             alert("Could not update priority. Please try again.");
@@ -1138,6 +1141,12 @@ export default function LeadDetailsPage() {
                                         </button>
                                     ))}
                                 </div>
+
+                                {prioritySaved && (
+                                    <p className="mt-3 rounded-2xl bg-[#d8efe6] px-4 py-3 text-center text-sm font-bold text-[#1f6f63]">
+                                        Priority saved
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
