@@ -860,6 +860,29 @@ export default function LeadDetailsPage() {
                             <ContactRow icon={Phone} label="Phone" value={lead.phone} />
                             <ContactRow icon={Mail} label="Email" value={lead.email} />
                         </div>
+
+                        <div className="mt-5 grid grid-cols-3 gap-2">
+                            <a
+                                href={`tel:${lead.phone}`}
+                                className="inline-flex items-center justify-center rounded-2xl bg-[#173f3f] px-3 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                            >
+                                Call
+                            </a>
+
+                            <a
+                                href={`sms:${lead.phone}`}
+                                className="inline-flex items-center justify-center rounded-2xl bg-[#f2b84b] px-3 py-3 text-sm font-bold text-[#102426] hover:bg-[#f9d783]"
+                            >
+                                Text
+                            </a>
+
+                            <a
+                                href={`mailto:${lead.email}`}
+                                className="inline-flex items-center justify-center rounded-2xl bg-[#e7f3ee] px-3 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d8efe6]"
+                            >
+                                Email
+                            </a>
+                        </div>
                     </div>
 
                     <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
