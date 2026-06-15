@@ -906,8 +906,15 @@ export default function LeadDetailsPage() {
                                 View Renter Page
                             </Link>
 
-                            <p className="rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-semibold text-[#8a5b0a]">
-                                Send properties before sharing the renter page.
+                            <p
+                                className={`rounded-2xl px-4 py-3 text-sm font-semibold ${recommendationCount > 0
+                                    ? "bg-[#d8efe6] text-[#1f6f63]"
+                                    : "bg-[#fff8e6] text-[#8a5b0a]"
+                                    }`}
+                            >
+                                {recommendationCount > 0
+                                    ? "Renter page is ready to share."
+                                    : "Send properties before sharing the renter page."}
                             </p>
 
                             <Link
