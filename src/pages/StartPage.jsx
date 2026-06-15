@@ -46,6 +46,28 @@ function getAdTracking(searchParams) {
   };
 }
 
+async function sendLeadNotification(lead) {
+  try {
+    const response = await fetch("/api/send-lead-email", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        ...lead,
+        adminUrl: `${window.location.origin}/admin/leads/${lead.id}`,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      console.warn(body.error || "Lead email notification was not sent.");
+    }
+  } catch (error) {
+    console.warn("Lead email notification was not sent.", error);
+  }
+}
+
 export default function StartPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -140,6 +162,10 @@ export default function StartPage() {
 
       setCreatedLeadId(savedLead.id);
       setSubmitted(true);
+      await sendLeadNotification({
+        ...leadPayload,
+        ...savedLead,
+      });
       navigate("/thank-you");
     } catch (error) {
       console.error(error);
@@ -148,6 +174,7 @@ export default function StartPage() {
         saveLocalLead(leadPayload);
         setCreatedLeadId(leadPayload.id);
         setSubmitted(true);
+        await sendLeadNotification(leadPayload);
         navigate("/thank-you");
         return;
       }
