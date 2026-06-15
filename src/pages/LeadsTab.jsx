@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Clock3, Mail, Phone, Search, Send, Users } from "lucide-react";
+import { BadgeCheck, Clock3, Mail, Phone, Search, Send, Trophy, Users, XCircle } from "lucide-react";
 import {
   archiveSupabaseTestLeads,
   getSupabaseLeads,
@@ -36,6 +36,7 @@ export default function LeadsTab() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [sourceFilter, setSourceFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");
+  const [qualityFilter, setQualityFilter] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
   const [recommendationFilter, setRecommendationFilter] = useState("All");
   const [tourFilter, setTourFilter] = useState(initialTourFilter);
@@ -213,6 +214,8 @@ export default function LeadsTab() {
       (statusFilter === "Needs Action" && matchesNeedsAction);
 
     const matchesSource = sourceFilter === "All" || lead.source === sourceFilter;
+    const matchesQuality =
+      qualityFilter === "All" || (lead.quality || "New") === qualityFilter;
     const matchesDataType =
       (dataTypeFilter === "All Data" && lead.status !== "Archived") ||
       (dataTypeFilter === "Test Data" && lead.source === "Test Data" && lead.status !== "Archived") ||
@@ -246,6 +249,7 @@ export default function LeadsTab() {
       matchesSearch &&
       matchesStatus &&
       matchesSource &&
+      matchesQuality &&
       matchesDataType &&
       matchesPriority &&
       matchesRecommendations &&
@@ -293,6 +297,15 @@ export default function LeadsTab() {
   const highPriorityCount = activeLeads.filter(
     (lead) => lead.priority === "High"
   ).length;
+  const qualifiedLeadCount = activeLeads.filter(
+    (lead) => lead.quality === "Qualified"
+  ).length;
+  const badFitLeadCount = activeLeads.filter(
+    (lead) => lead.quality === "Bad Fit"
+  ).length;
+  const convertedLeadCount = activeLeads.filter(
+    (lead) => lead.quality === "Converted"
+  ).length;
   const needsRecommendationCount = activeLeads.filter(
     (lead) => (lead.recommendedPropertyIds?.length || 0) === 0
   ).length;
@@ -323,6 +336,7 @@ export default function LeadsTab() {
     statusFilter !== "All" ||
     sourceFilter !== "All" ||
     priorityFilter !== "All" ||
+    qualityFilter !== "All" ||
     sortBy !== "newest" ||
     recommendationFilter !== "All" ||
     tourFilter !== "All" ||
@@ -422,6 +436,7 @@ export default function LeadsTab() {
             setStatusFilter("All");
             setSourceFilter("All");
             setPriorityFilter("All");
+            setQualityFilter("All");
             setSortBy("newest");
             setRecommendationFilter("All");
             setTourFilter("All");
@@ -434,6 +449,7 @@ export default function LeadsTab() {
             statusFilter === "All" &&
             sourceFilter === "All" &&
             priorityFilter === "All" &&
+            qualityFilter === "All" &&
             sortBy === "newest" &&
             recommendationFilter === "All" &&
             tourFilter === "All" &&
@@ -456,6 +472,7 @@ export default function LeadsTab() {
             setSearchTerm("");
             setSourceFilter("All");
             setPriorityFilter("All");
+            setQualityFilter("All");
             setSortBy("newest");
             setStatusFilter(nextStatus);
             setRecommendationFilter("All");
@@ -483,6 +500,7 @@ export default function LeadsTab() {
             setStatusFilter(nextStatus);
             setSourceFilter("All");
             setPriorityFilter("All");
+            setQualityFilter("All");
             setSortBy("newest");
             setRecommendationFilter("All");
             setTourFilter("All");
@@ -511,6 +529,7 @@ export default function LeadsTab() {
             setStatusFilter("All");
             setSourceFilter("All");
             setPriorityFilter("All");
+            setQualityFilter("All");
             setSortBy("newest");
             setRecommendationFilter(nextRecommendation);
             setTourFilter("All");
@@ -539,6 +558,7 @@ export default function LeadsTab() {
             setStatusFilter("All");
             setSourceFilter("All");
             setPriorityFilter("All");
+            setQualityFilter("All");
             setSortBy("newest"); setRecommendationFilter(nextRecommendation);
             setTourFilter("All");
             setActivityFilter("All Activity");
@@ -564,6 +584,7 @@ export default function LeadsTab() {
             setStatusFilter("All");
             setSourceFilter("All");
             setPriorityFilter("All");
+            setQualityFilter("All");
             setSortBy("newest"); setRecommendationFilter("All");
             setTourFilter(nextTour);
             setActivityFilter("All Activity");
@@ -594,6 +615,7 @@ export default function LeadsTab() {
             setStatusFilter("All");
             setSourceFilter("All");
             setPriorityFilter("All");
+            setQualityFilter("All");
             setSortBy("newest");
             setRecommendationFilter("All");
             setTourFilter("All");
@@ -604,6 +626,86 @@ export default function LeadsTab() {
           isActive={activityFilter === "Has Activity"}
         />
 
+        <LeadStatCard
+          icon={BadgeCheck}
+          title="Qualified Leads"
+          value={qualifiedLeadCount}
+          subtitle={
+            qualityFilter === "Qualified"
+              ? "Click to show all leads"
+              : "Good renter fit"
+          }
+          onClick={() => {
+            const nextQuality = qualityFilter === "Qualified" ? "All" : "Qualified";
+
+            setSearchTerm("");
+            setStatusFilter("All");
+            setSourceFilter("All");
+            setPriorityFilter("All");
+            setQualityFilter(nextQuality);
+            setSortBy("newest");
+            setRecommendationFilter("All");
+            setTourFilter("All");
+            setActivityFilter("All Activity");
+            setDataTypeFilter("All Data");
+            setSearchParams({}, { replace: true });
+          }}
+          isActive={qualityFilter === "Qualified"}
+        />
+
+        <LeadStatCard
+          icon={XCircle}
+          title="Bad Fit"
+          value={badFitLeadCount}
+          subtitle={
+            qualityFilter === "Bad Fit"
+              ? "Click to show all leads"
+              : "Not worth ad spend"
+          }
+          onClick={() => {
+            const nextQuality = qualityFilter === "Bad Fit" ? "All" : "Bad Fit";
+
+            setSearchTerm("");
+            setStatusFilter("All");
+            setSourceFilter("All");
+            setPriorityFilter("All");
+            setQualityFilter(nextQuality);
+            setSortBy("newest");
+            setRecommendationFilter("All");
+            setTourFilter("All");
+            setActivityFilter("All Activity");
+            setDataTypeFilter("All Data");
+            setSearchParams({}, { replace: true });
+          }}
+          isActive={qualityFilter === "Bad Fit"}
+        />
+
+        <LeadStatCard
+          icon={Trophy}
+          title="Converted"
+          value={convertedLeadCount}
+          subtitle={
+            qualityFilter === "Converted"
+              ? "Click to show all leads"
+              : "Best outcome"
+          }
+          onClick={() => {
+            const nextQuality = qualityFilter === "Converted" ? "All" : "Converted";
+
+            setSearchTerm("");
+            setStatusFilter("All");
+            setSourceFilter("All");
+            setPriorityFilter("All");
+            setQualityFilter(nextQuality);
+            setSortBy("newest");
+            setRecommendationFilter("All");
+            setTourFilter("All");
+            setActivityFilter("All Activity");
+            setDataTypeFilter("All Data");
+            setSearchParams({}, { replace: true });
+          }}
+          isActive={qualityFilter === "Converted"}
+        />
 
       </div>
 
@@ -629,6 +731,7 @@ export default function LeadsTab() {
               setStatusFilter("All");
               setSourceFilter("All");
               setPriorityFilter(nextPriority);
+              setQualityFilter("All");
               setSortBy("newest");
               setRecommendationFilter("All");
               setTourFilter("All");
@@ -784,6 +887,7 @@ export default function LeadsTab() {
                   setStatusFilter("All");
                   setSourceFilter("All");
                   setPriorityFilter("All");
+                  setQualityFilter("All");
                   setSortBy("newest");
                   setRecommendationFilter("All");
                   setTourFilter("All");
@@ -826,6 +930,12 @@ export default function LeadsTab() {
               <FilterChip
                 label={`Priority: ${priorityFilter}`}
                 onRemove={() => setPriorityFilter("All")}
+              />
+            )}
+            {qualityFilter !== "All" && (
+              <FilterChip
+                label={`Quality: ${qualityFilter}`}
+                onRemove={() => setQualityFilter("All")}
               />
             )}
             {/* Recommendation Chip*/}

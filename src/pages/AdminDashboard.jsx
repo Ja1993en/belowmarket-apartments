@@ -16,6 +16,9 @@ import {
     Clock3,
     Plus,
     History,
+    BadgeCheck,
+    Megaphone,
+    Trophy,
 } from "lucide-react";
 
 
@@ -132,6 +135,18 @@ export default function AdminDashboard() {
     const recommendationCount = activeDashboardLeads.filter(
         (lead) => (lead.recommendedPropertyIds?.length || 0) > 0
     ).length;
+    const googleAdsLeadCount = activeDashboardLeads.filter(
+        (lead) => lead.source === "Google Ads"
+    ).length;
+    const qualifiedLeadCount = activeDashboardLeads.filter(
+        (lead) => lead.quality === "Qualified"
+    ).length;
+    const convertedLeadCount = activeDashboardLeads.filter(
+        (lead) => lead.quality === "Converted"
+    ).length;
+    const conversionRate = googleAdsLeadCount
+        ? Math.round((convertedLeadCount / googleAdsLeadCount) * 100)
+        : 0;
     const livePropertyCount = properties.filter(
         (property) => property.status === "Live"
     ).length;
@@ -160,6 +175,24 @@ export default function AdminDashboard() {
             title: "Updates",
             value: dataHistory.length,
             subtitle: "Recent data events",
+        },
+        {
+            icon: Megaphone,
+            title: "Google Ads Leads",
+            value: googleAdsLeadCount,
+            subtitle: "Paid search requests",
+        },
+        {
+            icon: BadgeCheck,
+            title: "Qualified Leads",
+            value: qualifiedLeadCount,
+            subtitle: "Marked good fit",
+        },
+        {
+            icon: Trophy,
+            title: "Conversion Rate",
+            value: `${conversionRate}%`,
+            subtitle: "Converted / Google Ads",
         },
     ];
 
@@ -335,7 +368,7 @@ export default function AdminDashboard() {
                 </section>
             )}
 
-            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {dashboardStatsWithTours.map((stat) => (
                     <DashboardCard
                         key={stat.title}
