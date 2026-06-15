@@ -232,10 +232,6 @@ export default function LeadDetailsPage() {
         }
     };
 
-    const markContacted = () => {
-        updateStatus("Contacted");
-    };
-
     const saveNotes = async () => {
         if (!lead) return;
 
@@ -911,15 +907,6 @@ export default function LeadDetailsPage() {
                         </h2>
 
                         <div className="mt-5 grid gap-3">
-                            {lead.status !== "Contacted" && (
-                                <button
-                                    onClick={markContacted}
-                                    className="rounded-2xl bg-[#1f6f63] px-4 py-3 text-sm font-bold text-white hover:bg-[#173f3f]"
-                                >
-                                    Mark Contacted
-                                </button>
-                            )}
-
                             {leadStatuses.map((status) => (
                                 <button
                                     key={status}
