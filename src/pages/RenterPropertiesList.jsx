@@ -117,6 +117,8 @@ export default function RenterPropertiesList() {
 
   const recommendedPropertyIds =
     lead?.recommendedPropertyIds || lead?.recommended_property_ids || [];
+  const recommendedFloorPlanItems =
+    lead?.recommendedFloorPlanItems || lead?.recommended_floor_plan_items || [];
 
   const allRecommendedProperties = recommendedPropertyIds
     .map((propertyId) => properties.find((property) => property.id === String(propertyId)))
@@ -124,6 +126,20 @@ export default function RenterPropertiesList() {
 
   const recommendedProperties = allRecommendedProperties.filter(
     (property) => property.status === "Live"
+  );
+  const recommendedFloorPlansByPropertyId = recommendedFloorPlanItems.reduce(
+    (itemsByPropertyId, floorPlanItem) => {
+      if (!floorPlanItem?.propertyId) return itemsByPropertyId;
+
+      return {
+        ...itemsByPropertyId,
+        [floorPlanItem.propertyId]: [
+          ...(itemsByPropertyId[floorPlanItem.propertyId] || []),
+          floorPlanItem,
+        ],
+      };
+    },
+    {}
   );
 
   const openTourForm = (property) => {
@@ -300,6 +316,7 @@ export default function RenterPropertiesList() {
                 <RecommendedPropertyCard
                   key={property.id}
                   property={property}
+                  recommendedFloorPlans={recommendedFloorPlansByPropertyId[property.id] || []}
                   requestedPropertyIds={requestedPropertyIds}
                   selectedTourPropertyId={selectedTourProperty?.id}
                   onRequestTour={openTourForm}
@@ -478,8 +495,20 @@ function formatBedroomLabel(value) {
   return normalizedValue;
 }
 
+function formatFloorPlanMeta(floorPlanItem) {
+  return [
+    formatBedroomLabel(floorPlanItem.beds),
+    floorPlanItem.baths ? `${floorPlanItem.baths} ba` : "",
+    floorPlanItem.sqft ? `${floorPlanItem.sqft} sq ft` : "",
+    floorPlanItem.available,
+  ]
+    .filter(Boolean)
+    .join(" • ");
+}
+
 function RecommendedPropertyCard({
   property,
+  recommendedFloorPlans = [],
   requestedPropertyIds,
   selectedTourPropertyId,
   onRequestTour,
@@ -524,6 +553,52 @@ function RecommendedPropertyCard({
           <p className="text-sm font-bold text-[#8a5b0a]">Current Special</p>
           <p className="mt-1 font-black text-[#102426]">{property.special}</p>
         </div>
+
+        {recommendedFloorPlans.length > 0 && (
+          <div className="mt-5 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+            <p className="text-sm font-black text-[#1f6f63]">
+              Locator floor plan picks
+            </p>
+            <p className="mt-1 text-xs font-semibold text-[#526260]">
+              These are the specific layouts your locator highlighted for you.
+            </p>
+
+            <div className="mt-3 grid gap-3">
+              {recommendedFloorPlans.map((floorPlanItem) => (
+                <div
+                  key={`${floorPlanItem.propertyId}-${floorPlanItem.floorPlanId}`}
+                  className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]"
+                >
+                  <div className="flex gap-3">
+                    <img
+                      src={floorPlanItem.image || primaryImage}
+                      alt={`${floorPlanItem.floorPlanName} floor plan`}
+                      className="h-16 w-20 shrink-0 rounded-xl object-cover"
+                    />
+
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-black text-[#102426]">
+                        {floorPlanItem.floorPlanName}
+                      </p>
+                      <p className="mt-1 text-xs font-semibold text-[#526260]">
+                        {formatFloorPlanMeta(floorPlanItem)}
+                      </p>
+                      <p className="mt-1 text-xs font-black text-[#8a5b0a]">
+                        {floorPlanItem.effectiveRent || floorPlanItem.rent || "Contact for pricing"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {floorPlanItem.special && (
+                    <p className="mt-2 truncate text-xs font-bold text-[#8a5b0a]">
+                      {floorPlanItem.special}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
           <Link

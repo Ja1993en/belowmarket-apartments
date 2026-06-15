@@ -5,6 +5,10 @@ import { getAnyLeadById, updateLocalLead } from "../data/leadStorage";
 import { getAllProperties } from "../data/propertyStorage";
 import { getPropertyPrimaryImage } from "../data/propertySearchData";
 import {
+  getCompareFloorPlanItemKey,
+  getCompareFloorPlanItems,
+} from "../data/renterPreferenceStorage";
+import {
   getSupabaseLeadById,
   updateSupabaseLeadRecommendations,
 } from "../data/supabaseLeadStorage";
@@ -23,6 +27,10 @@ export default function SendPropertiesPage() {
   const [propertySearch, setPropertySearch] = useState("");
   const [properties, setProperties] = useState([]);
   const [propertyLoadError, setPropertyLoadError] = useState("");
+  const [comparedFloorPlanItems] = useState(() => getCompareFloorPlanItems());
+  const [selectedFloorPlanItems, setSelectedFloorPlanItems] = useState(
+    lead?.recommendedFloorPlanItems || []
+  );
   const [smsPin, setSmsPin] = useState(() =>
     sessionStorage.getItem("bmaSmsSendPin") || ""
   );
@@ -100,10 +108,11 @@ export default function SendPropertiesPage() {
 
     updateLocalLead(lead.id, {
       recommendedPropertyIds: selectedPropertyIds,
+      recommendedFloorPlanItems: selectedFloorPlanItems,
       lastTouch: "Just now",
       status: "Recommendation Sent",
     });
-  }, [isLocalLead, lead, selectedPropertyIds]);
+  }, [isLocalLead, lead, selectedFloorPlanItems, selectedPropertyIds]);
 
   const recommendationUrl = lead
     ? `${window.location.origin}/r/${lead.token}`
@@ -114,15 +123,32 @@ export default function SendPropertiesPage() {
       selectedPropertyIds.includes(property.id)
     );
   }, [properties, selectedPropertyIds]);
+  const selectedFloorPlanKeys = useMemo(
+    () => new Set(selectedFloorPlanItems.map((item) => getCompareFloorPlanItemKey(item))),
+    [selectedFloorPlanItems]
+  );
+  const floorPlanOptionsByPropertyId = useMemo(() => {
+    const optionsByPropertyId = {};
+
+    selectedProperties.forEach((property) => {
+      optionsByPropertyId[property.id] = mergeFloorPlanRecommendationItems([
+        ...comparedFloorPlanItems.filter((item) => item.propertyId === property.id),
+        ...getPropertyFloorPlanRecommendationItems(property),
+      ]);
+    });
+
+    return optionsByPropertyId;
+  }, [comparedFloorPlanItems, selectedProperties]);
   const defaultSmsMessage = useMemo(() => {
     if (!lead) return "";
 
     return buildRecommendationText({
       lead,
       recommendationUrl,
+      selectedFloorPlanItems,
       selectedProperties,
     });
-  }, [lead, recommendationUrl, selectedProperties]);
+  }, [lead, recommendationUrl, selectedFloorPlanItems, selectedProperties]);
 
   const displayedSmsMessage = isSmsMessageEdited ? smsMessage : defaultSmsMessage;
 
@@ -153,20 +179,42 @@ export default function SendPropertiesPage() {
     });
   }, [properties, normalizedPropertySearch]);
 
+  useEffect(() => {
+    setSelectedFloorPlanItems(lead?.recommendedFloorPlanItems || []);
+  }, [lead?.id]);
+
+  const toggleFloorPlanRecommendation = (floorPlanItem) => {
+    const floorPlanKey = getCompareFloorPlanItemKey(floorPlanItem);
+    const nextItems = selectedFloorPlanKeys.has(floorPlanKey)
+      ? selectedFloorPlanItems.filter(
+        (item) => getCompareFloorPlanItemKey(item) !== floorPlanKey
+      )
+      : [floorPlanItem, ...selectedFloorPlanItems];
+
+    setSelectedFloorPlanItems(nextItems);
+    setSaveMessage("");
+    setSaveError("");
+  };
+
   const toggleProperty = async (propertyId) => {
     if (!lead) return;
 
     const nextIds = selectedPropertyIds.includes(propertyId)
       ? selectedPropertyIds.filter((id) => id !== propertyId)
       : [...selectedPropertyIds, propertyId];
+    const nextFloorPlanItems = selectedFloorPlanItems.filter((item) =>
+      nextIds.includes(item.propertyId)
+    );
 
     const updates = {
       recommendedPropertyIds: nextIds,
+      recommendedFloorPlanItems: nextFloorPlanItems,
       lastTouch: "Just now",
       status: nextIds.length > 0 ? "Recommendation Sent" : "New Lead",
     };
 
     setSelectedPropertyIds(nextIds);
+    setSelectedFloorPlanItems(nextFloorPlanItems);
     setSaveMessage("");
     setSaveError("");
     setIsSavingSelections(true);
@@ -175,7 +223,7 @@ export default function SendPropertiesPage() {
       if (isLocalLead) {
         updateLocalLead(lead.id, updates);
       } else {
-        await updateSupabaseLeadRecommendations(lead.id, nextIds);
+        await updateSupabaseLeadRecommendations(lead.id, nextIds, nextFloorPlanItems);
       }
 
       setLead({ ...lead, ...updates });
@@ -195,6 +243,7 @@ export default function SendPropertiesPage() {
 
     const updates = {
       recommendedPropertyIds: selectedPropertyIds,
+      recommendedFloorPlanItems: selectedFloorPlanItems,
       lastTouch: "Just now",
       status: selectedPropertyIds.length > 0 ? "Recommendation Sent" : "New Lead",
     };
@@ -207,7 +256,11 @@ export default function SendPropertiesPage() {
       if (isLocalLead) {
         updateLocalLead(lead.id, updates);
       } else {
-        await updateSupabaseLeadRecommendations(lead.id, selectedPropertyIds);
+        await updateSupabaseLeadRecommendations(
+          lead.id,
+          selectedPropertyIds,
+          selectedFloorPlanItems
+        );
       }
 
       setLead({ ...lead, ...updates });
@@ -226,6 +279,12 @@ export default function SendPropertiesPage() {
 
   const copyRecommendationLink = async () => {
     if (!recommendationUrl) return;
+
+    const wasSaved = await saveSelections({
+      successMessage: "Recommendations saved. Link copied.",
+    });
+
+    if (!wasSaved) return;
 
     await navigator.clipboard.writeText(recommendationUrl);
     alert("Recommendation link copied.");
@@ -250,6 +309,7 @@ export default function SendPropertiesPage() {
       buildRecommendationText({
         lead,
         recommendationUrl,
+        selectedFloorPlanItems,
         selectedProperties,
       })
     );
@@ -389,7 +449,7 @@ export default function SendPropertiesPage() {
               </div>
 
               <div className="rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                {selectedPropertyIds.length} selected
+                {selectedPropertyIds.length} selected • {selectedFloorPlanItems.length} floor plans
               </div>
             </div>
 
@@ -472,7 +532,7 @@ export default function SendPropertiesPage() {
 
               <div className="flex flex-col items-start gap-2 md:items-end">
                 <span className="rounded-full bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f]">
-                  {selectedPropertyIds.length} selected
+                  {selectedPropertyIds.length} selected • {selectedFloorPlanItems.length} floor plans
                 </span>
 
                 <button
@@ -605,6 +665,101 @@ export default function SendPropertiesPage() {
                 </div>
               )}
             </div>
+
+            {selectedProperties.length > 0 && (
+              <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-5">
+                <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+                  <div>
+                    <p className="text-xs font-black uppercase text-[#1f6f63]">
+                      Optional floor plan picks
+                    </p>
+                    <h3 className="mt-1 text-xl font-black text-[#102426]">
+                      Attach exact floor plans to the renter link
+                    </h3>
+                    <p className="mt-1 text-sm font-semibold text-[#526260]">
+                      Compared floor plans show first. Select the layouts you want the renter to focus on.
+                    </p>
+                  </div>
+
+                  <span className="w-fit rounded-2xl bg-white px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+                    {selectedFloorPlanItems.length} attached
+                  </span>
+                </div>
+
+                <div className="mt-5 space-y-4">
+                  {selectedProperties.map((property) => {
+                    const floorPlanOptions = floorPlanOptionsByPropertyId[property.id] || [];
+
+                    return (
+                      <div
+                        key={property.id}
+                        className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]"
+                      >
+                        <p className="font-black text-[#102426]">
+                          {property.name}
+                        </p>
+
+                        {floorPlanOptions.length > 0 ? (
+                          <div className="mt-3 grid gap-3 md:grid-cols-2">
+                            {floorPlanOptions.map((floorPlanItem) => {
+                              const floorPlanKey = getCompareFloorPlanItemKey(floorPlanItem);
+                              const isFloorPlanSelected = selectedFloorPlanKeys.has(floorPlanKey);
+
+                              return (
+                                <button
+                                  type="button"
+                                  key={floorPlanKey}
+                                  onClick={() => toggleFloorPlanRecommendation(floorPlanItem)}
+                                  className={`rounded-2xl border p-3 text-left transition ${
+                                    isFloorPlanSelected
+                                      ? "border-[#173f3f] bg-[#e7f3ee]"
+                                      : "border-[#d7e6df] bg-white hover:bg-[#f5f8f1]"
+                                  }`}
+                                >
+                                  <div className="flex gap-3">
+                                    <img
+                                      src={floorPlanItem.image || getPropertyPrimaryImage(property)}
+                                      alt={`${floorPlanItem.floorPlanName} floor plan`}
+                                      className="h-16 w-20 shrink-0 rounded-xl object-cover"
+                                    />
+
+                                    <span className="min-w-0">
+                                      <span className="block truncate text-sm font-black text-[#102426]">
+                                        {floorPlanItem.floorPlanName}
+                                      </span>
+                                      <span className="mt-1 block text-xs font-semibold text-[#526260]">
+                                        {formatFloorPlanMeta(floorPlanItem)}
+                                      </span>
+                                      <span className="mt-1 block text-xs font-black text-[#8a5b0a]">
+                                        {floorPlanItem.effectiveRent || floorPlanItem.rent || "Contact for pricing"}
+                                      </span>
+                                    </span>
+                                  </div>
+
+                                  {floorPlanItem.special && (
+                                    <p className="mt-2 truncate text-xs font-bold text-[#8a5b0a]">
+                                      {floorPlanItem.special}
+                                    </p>
+                                  )}
+
+                                  <p className="mt-2 text-xs font-black text-[#173f3f]">
+                                    {isFloorPlanSelected ? "Attached to renter link" : "Attach floor plan"}
+                                  </p>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="mt-3 rounded-2xl bg-[#f5f8f1] p-4 text-sm font-semibold text-[#526260]">
+                            No floor plans are listed for this property yet.
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -804,18 +959,122 @@ function PropertyBadge({ label }) {
   );
 }
 
-function buildRecommendationText({ lead, recommendationUrl, selectedProperties }) {
+function formatBedroomLabel(value) {
+  const normalizedValue = String(value ?? "").trim();
+  if (!normalizedValue) return "Bedrooms not listed";
+  if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
+  if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
+
+  const bedMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)\s*beds?$/i);
+  if (bedMatch) return `${bedMatch[1]} bd`;
+
+  const numberMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)$/);
+  if (numberMatch) return `${numberMatch[1]} bd`;
+
+  return normalizedValue;
+}
+
+function buildRecommendationText({
+  lead,
+  recommendationUrl,
+  selectedFloorPlanItems = [],
+  selectedProperties,
+}) {
   const propertyNames = selectedProperties
     .map((property) => property.name)
     .filter(Boolean)
     .join(", ");
+  const floorPlanNames = selectedFloorPlanItems
+    .map((item) => `${item.floorPlanName} at ${item.propertyName}`)
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(", ");
   const propertyPhrase = propertyNames
     ? `: ${propertyNames}`
     : "";
+  const floorPlanPhrase = floorPlanNames
+    ? ` I also highlighted these floor plans: ${floorPlanNames}.`
+    : "";
 
   return ensureSmsOptOutLine(
-    `Hi ${lead.name}, I put together ${selectedProperties.length} apartment option${selectedProperties.length === 1 ? "" : "s"} for you${propertyPhrase}. View them here: ${recommendationUrl}. Reply with the ones you like and I can help schedule tours.`
+    `Hi ${lead.name}, I put together ${selectedProperties.length} apartment option${selectedProperties.length === 1 ? "" : "s"} for you${propertyPhrase}.${floorPlanPhrase} View them here: ${recommendationUrl}. Reply with the ones you like and I can help schedule tours.`
   );
+}
+
+function getPropertyFloorPlanRecommendationItems(property) {
+  if (!property?.floorPlans?.length) return [];
+
+  return property.floorPlans.map((plan, index) => {
+    if (typeof plan === "string") {
+      return {
+        propertyId: property.id,
+        propertyName: property.name,
+        floorPlanId: getFloorPlanRecommendationId(plan, index),
+        floorPlanName: plan,
+        beds: property.bedrooms?.[0] || "",
+        baths: "",
+        sqft: "",
+        rent: property.rent || property.startingRent || "",
+        effectiveRent: property.effectiveRent || "",
+        special: property.special || "",
+        available: "",
+        image: getPropertyPrimaryImage(property),
+      };
+    }
+
+    const floorPlanName = plan.name || `Floor Plan ${index + 1}`;
+    const specialLabel = plan.special?.label || plan.currentSpecial || property.special || "";
+
+    return {
+      propertyId: property.id,
+      propertyName: property.name,
+      floorPlanId: String(plan.id || getFloorPlanRecommendationId(floorPlanName, index)),
+      floorPlanName,
+      beds: plan.bedrooms ?? plan.beds ?? "",
+      baths: plan.bathrooms || plan.baths || "",
+      sqft: plan.squareFeet || plan.sqft || "",
+      rent: plan.startingRent || plan.rent || "",
+      effectiveRent: plan.effectiveRent || "",
+      special: specialLabel,
+      available: plan.availability || plan.available || "",
+      image: plan.image || getPropertyPrimaryImage(property),
+    };
+  });
+}
+
+function mergeFloorPlanRecommendationItems(items) {
+  const itemMap = new Map();
+
+  items
+    .filter((item) => item?.propertyId && item?.floorPlanId)
+    .forEach((item) => {
+      const itemKey = getCompareFloorPlanItemKey(item);
+
+      if (!itemMap.has(itemKey)) {
+        itemMap.set(itemKey, item);
+      }
+    });
+
+  return [...itemMap.values()];
+}
+
+function getFloorPlanRecommendationId(name, index) {
+  return `${String(name || "floor-plan")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")}-${index}`;
+}
+
+function formatFloorPlanMeta(floorPlanItem) {
+  return [
+    formatBedroomLabel(floorPlanItem.beds),
+    floorPlanItem.baths ? `${floorPlanItem.baths} ba` : "",
+    floorPlanItem.sqft ? `${floorPlanItem.sqft} sq ft` : "",
+    floorPlanItem.available,
+  ]
+    .filter(Boolean)
+    .join(" • ");
 }
 
 function ensureSmsOptOutLine(message) {

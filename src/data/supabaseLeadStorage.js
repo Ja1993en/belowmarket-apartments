@@ -20,6 +20,7 @@ function mapSupabaseLead(lead) {
     lastTouch: lead.last_touch,
     notes: lead.notes,
     recommendedPropertyIds: lead.recommended_property_ids || [],
+    recommendedFloorPlanItems: lead.recommended_floor_plan_items || [],
     token: lead.token,
     contactMethod: lead.contact_method,
     createdAt: lead.created_at,
@@ -48,6 +49,15 @@ function isMissingTrackingColumnError(error) {
     message.includes("landing_page") ||
     message.includes("referrer") ||
     message.includes("lead_quality")
+  );
+}
+
+function isMissingRecommendedFloorPlanColumnError(error) {
+  const message = `${error?.message || ""} ${error?.details || ""}`;
+
+  return (
+    error?.code === "PGRST204" ||
+    message.includes("recommended_floor_plan_items")
   );
 }
 
@@ -154,17 +164,40 @@ export async function getSupabaseLeads() {
   }
 
 
-  export async function updateSupabaseLeadRecommendations(leadId, propertyIds) {
+  export async function updateSupabaseLeadRecommendations(
+    leadId,
+    propertyIds,
+    floorPlanItems = []
+  ) {
+    const updatePayload = {
+      recommended_property_ids: propertyIds,
+      recommended_floor_plan_items: floorPlanItems,
+      status: propertyIds.length > 0 ? "Recommendation Sent" : "New Lead",
+      last_touch: "Just now",
+    };
     const { error } = await supabase
       .from("leads")
-      .update({
-        recommended_property_ids: propertyIds,
-        status: propertyIds.length > 0 ? "Recommendation Sent" : "New Lead",
-        last_touch: "Just now",
-      })
+      .update(updatePayload)
       .eq("id", leadId);
   
     if (error) {
+      if (isMissingRecommendedFloorPlanColumnError(error)) {
+        const fallbackResult = await supabase
+          .from("leads")
+          .update({
+            recommended_property_ids: propertyIds,
+            status: propertyIds.length > 0 ? "Recommendation Sent" : "New Lead",
+            last_touch: "Just now",
+          })
+          .eq("id", leadId);
+
+        if (fallbackResult.error) {
+          throw fallbackResult.error;
+        }
+
+        return;
+      }
+
       throw error;
     }
   }
