@@ -53,13 +53,44 @@ for (const property of requestedProperties) {
 }
 
 function buildMaaCathedralArts() {
-  const photos = [
-    "https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-hero/maa-cathedral-arts-resort-style-pool-close-up-main.jpg?h=628&iar=0&w=493",
-    "https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-resort-style-pool-aeriel.jpg?h=2467&iar=0&w=3840",
-    "https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-coworking-spaces.jpg?h=2467&iar=0&w=3840",
-    "https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-rooftop-lounge.jpg?h=2467&iar=0&w=3840",
-    "https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-clubhouse-coworking-spaces-wide-angle.jpg?h=2467&iar=0&w=3840",
-  ];
+  const photos = createMaaCathedralArtsPhotos([
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-hero/maa-cathedral-arts-resort-style-pool-close-up-main.jpg?h=628&iar=0&w=493", "Pool at MAA Cathedral Arts"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-hero/maa-cathedral-arts-clubhouse-wide-angle---main.jpg?h=628&iar=0&w=493", "Clubhouse at MAA Cathedral Arts"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-hero/maa-cathedral-arts-fitness-center-main.jpg?h=628&iar=0&w=493", "Fitness center at MAA Cathedral Arts"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-hero/maa-cathedral-arts---living-room-main.jpg?h=628&iar=0&w=493", "Living room at MAA Cathedral Arts"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-hero/maa-cathedral-arts-luxury-kitchen-main.jpg?h=628&iar=0&w=493", "Kitchen at MAA Cathedral Arts"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-hero/maa-cathedral-arts---bathroom-resized.jpg?h=4024&iar=0&w=3158", "Bathroom at MAA Cathedral Arts"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-resort-style-pool-aeriel.jpg?h=2467&iar=0&w=3840", "Pool at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-resort-style-pool-building-2-close-up.jpg?h=2467&iar=0&w=3840", "Pool at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-pool-building-2.jpg?h=2467&iar=0&w=3840", "Pool at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-resort-style-pool-close-up-(1).jpg?h=2467&iar=0&w=3840", "Pool at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-luxury-pool.jpg?h=1365&iar=0&w=2048", "Pool at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-luxury-pool-wide-angle.jpg?h=1365&iar=0&w=2048", "Pool at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-coworking-spaces.jpg?h=2467&iar=0&w=3840", "Cowork space at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-clubhouse-coworking-spaces-wide-angle.jpg?h=2467&iar=0&w=3840", "Cowork space at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-clubhouse-coworking-spaces.jpg?h=2467&iar=0&w=3840", "Cowork space at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-rooftop-lounge-indoor.jpg?h=2467&iar=0&w=3840", "Rooftop lounge at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-rooftop-lounge-close-up-angle.jpg?h=2467&iar=0&w=3840", "Rooftop lounge at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-rooftop-lounge-angle.jpg?h=2467&iar=0&w=3840", "Rooftop lounge at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-rooftop-lounge.jpg?h=2467&iar=0&w=3840", "Rooftop lounge at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-two-bedroom-luxury-apartment.jpg?h=2467&iar=0&w=3840", "Kitchen at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/_dsc7461.jpg?h=4024&iar=0&w=6024", "Living room at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/_dsc0809.jpg?h=4024&iar=0&w=6024", "Living room at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/_dsc0845.jpg?h=4024&iar=0&w=6024", "Bedroom at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/_dsc0830.jpg?h=4024&iar=0&w=6024", "Bathroom at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/_dsc0851.jpg?h=4024&iar=0&w=6024", "Bathroom at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-one-bedroom-kitchen.jpg?h=2467&iar=0&w=3840", "Kitchen at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-one-bedroom-kitchen-living-room.jpg?h=2467&iar=0&w=3840", "Kitchen at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/_dsc0770.jpg?h=4024&iar=0&w=6024", "Living room at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-clubhouse.jpg?h=2467&iar=0&w=3840", "Clubhouse at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-clubhouse-billiards.jpg?h=2467&iar=0&w=3840", "Clubhouse at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-clubhouse-wide-angle-(1).jpg?h=2467&iar=0&w=3840", "Clubhouse at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/_dsc7611.jpg?h=4024&iar=0&w=6024", "Fitness at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/_dsc7629.jpg?h=4024&iar=0&w=6024", "Fitness at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/_dsc7674.jpg?h=4024&iar=0&w=6024", "Fitness at MAA Cathedral Arts luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-rideshare-waiting-lounge-(2).jpg?h=2467&iar=0&w=3840", "Lounge at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+    ["https://edge.sitecorecloud.io/midamericaa7861-test603e-prod9e24-2f78/media/project/maac/maac_com/texas/dallas/properties/maa-cathedral-arts/property-gallery/maa-cathedral-arts-leasing-office.jpg?h=2467&iar=0&w=3840", "Leasing office at MAA Cathedral Arts Luxury apartment homes in Dallas, TX"],
+  ]);
 
   const floorPlans = [
     maaFloorPlan("S1", "S1", 0, 1, 507, 1218, 1288, 2, 0, "", "06/10/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S1A Light.png"),
@@ -104,6 +135,38 @@ function buildMaaCathedralArts() {
     ],
     sourceUrl: "https://www.maac.com/texas/dallas/maa-cathedral-arts/",
   });
+}
+
+function createMaaCathedralArtsPhotos(photoSources) {
+  return photoSources.map(([url, alt], index) => {
+    const category = getMaaPhotoCategory(url, alt);
+
+    return {
+      id: `maa-cathedral-arts-photo-${String(index + 1).padStart(2, "0")}`,
+      name: alt || `MAA Cathedral Arts photo ${index + 1}`,
+      category,
+      url,
+      alt,
+    };
+  });
+}
+
+function getMaaPhotoCategory(url, alt = "") {
+  const text = `${url} ${alt}`.toLowerCase();
+
+  if (text.includes("pool")) return "Pool";
+  if (text.includes("rooftop")) return "Rooftop";
+  if (text.includes("fitness")) return "Fitness";
+  if (text.includes("clubhouse") || text.includes("cowork") || text.includes("billiards")) {
+    return "Clubhouse";
+  }
+  if (text.includes("kitchen") || text.includes("living") || text.includes("bedroom") || text.includes("bathroom")) {
+    return "Interior";
+  }
+  if (text.includes("leasing")) return "Leasing";
+  if (text.includes("lounge")) return "Lounge";
+
+  return "Property";
 }
 
 function buildCortlandOnMckinney() {
