@@ -58,6 +58,8 @@ export default function LeadDetailsPage() {
     const [copiedRenterLink, setCopiedRenterLink] = useState(false);
     const [notesSaved, setNotesSaved] = useState(false);
     const [assignmentSaved, setAssignmentSaved] = useState(false);
+    const [statusSaved, setStatusSaved] = useState(false);
+    const [qualitySaved, setQualitySaved] = useState(false);
 
     const refreshLead = useCallback(async () => {
         if (isLocalLead) {
@@ -249,6 +251,8 @@ export default function LeadDetailsPage() {
                 ...lead,
                 ...updates,
             });
+            setStatusSaved(true);
+            window.setTimeout(() => setStatusSaved(false), 2000);
         } catch (error) {
             console.error(error);
             alert("Could not update lead status. Please try again.");
@@ -378,6 +382,8 @@ export default function LeadDetailsPage() {
                 ...lead,
                 ...updates,
             });
+            setQualitySaved(true);
+            window.setTimeout(() => setQualitySaved(false), 2000);
         } catch (error) {
             console.error(error);
             alert("Could not update lead quality. Make sure the lead_quality column exists in Supabase.");
@@ -1017,6 +1023,12 @@ export default function LeadDetailsPage() {
                                     {status}
                                 </button>
                             ))}
+
+                            {statusSaved && (
+                                <p className="rounded-2xl bg-[#d8efe6] px-4 py-3 text-center text-sm font-bold text-[#1f6f63]">
+                                    Status saved
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -1043,6 +1055,12 @@ export default function LeadDetailsPage() {
                                 </button>
                             ))}
                         </div>
+
+                        {qualitySaved && (
+                            <p className="mt-3 rounded-2xl bg-[#d8efe6] px-4 py-3 text-center text-sm font-bold text-[#1f6f63]">
+                                Quality saved
+                            </p>
+                        )}
                     </div>
 
                     <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
