@@ -62,16 +62,16 @@ function buildMaaCathedralArts() {
   ];
 
   const floorPlans = [
-    maaFloorPlan("S1", "S1 0x1 507 SF", 0, 1, 507, 1218, 1288, 2, 0, "", "06/10/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S1A Light.png"),
-    maaFloorPlan("S2", "S2 0x1 542 SF", 0, 1, 542, 1338, 1338, 1, 0, "", "08/05/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S2 Light.png"),
-    maaFloorPlan("A2", "A2 1x1 674 SF", 1, 1, 674, 1653, 1848, 7, 4, "Lease Now for 4 weeks free", "06/15/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A2 Light.png"),
-    maaFloorPlan("A3", "A3 1x1 701 SF", 1, 1, 701, 1683, 1783, 7, 4, "Lease Now for 4 weeks free", "06/23/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A3 Light.png"),
-    maaFloorPlan("A5", "A5 1x1 801 SF", 1, 1, 801, 1838, 1923, 3, 6, "Lease Now for 6 weeks free", "06/12/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A5 Light.png"),
-    maaFloorPlan("A6", "A6 1x1 902 SF", 1, 1, 902, 2063, 2063, 1, 4, "Lease Now for 4 weeks free", "08/26/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A6 Light.png"),
-    maaFloorPlan("A8", "A8 1x1 1046 SF", 1, 1, 1046, 2178, 2178, 1, 4, "Lease Now for 4 weeks free", "07/15/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A8 Light.png"),
-    maaFloorPlan("B1", "B1 2x2 1011 SF", 2, 2, 1011, 2158, 2273, 5, 6, "Lease Now for 6 weeks free", "05/21/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B1 Light.png"),
-    maaFloorPlan("B3", "B3 2x2 1209 SF", 2, 2, 1209, 2293, 2598, 5, 6, "Lease Now for 6 weeks free", "03/24/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B3 Light.png"),
-    maaFloorPlan("B4", "B4 2x2 1388 SF", 2, 2, 1388, 2608, 2608, 1, 8, "Lease Now for 8 weeks free", "06/26/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B4 Light.png"),
+    maaFloorPlan("S1", "S1", 0, 1, 507, 1218, 1288, 2, 0, "", "06/10/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S1A Light.png"),
+    maaFloorPlan("S2", "S2", 0, 1, 542, 1338, 1338, 1, 0, "", "08/05/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S2 Light.png"),
+    maaFloorPlan("A2", "A2", 1, 1, 674, 1653, 1848, 7, 4, "Lease Now for 4 weeks free", "06/15/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A2 Light.png"),
+    maaFloorPlan("A3", "A3", 1, 1, 701, 1683, 1783, 7, 4, "Lease Now for 4 weeks free", "06/23/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A3 Light.png"),
+    maaFloorPlan("A5", "A5", 1, 1, 801, 1838, 1923, 3, 6, "Lease Now for 6 weeks free", "06/12/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A5 Light.png"),
+    maaFloorPlan("A6", "A6", 1, 1, 902, 2063, 2063, 1, 4, "Lease Now for 4 weeks free", "08/26/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A6 Light.png"),
+    maaFloorPlan("A8", "A8", 1, 1, 1046, 2178, 2178, 1, 4, "Lease Now for 4 weeks free", "07/15/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/A8 Light.png"),
+    maaFloorPlan("B1", "B1", 2, 2, 1011, 2158, 2273, 5, 6, "Lease Now for 6 weeks free", "05/21/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B1 Light.png"),
+    maaFloorPlan("B3", "B3", 2, 2, 1209, 2293, 2598, 5, 6, "Lease Now for 6 weeks free", "03/24/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B3 Light.png"),
+    maaFloorPlan("B4", "B4", 2, 2, 1388, 2608, 2608, 1, 8, "Lease Now for 8 weeks free", "06/26/2026", "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/B4 Light.png"),
   ];
 
   return propertyRecord({
