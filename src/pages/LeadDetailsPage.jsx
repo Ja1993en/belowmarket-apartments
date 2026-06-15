@@ -906,6 +906,10 @@ export default function LeadDetailsPage() {
                                 View Renter Page
                             </Link>
 
+                            <p className="rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-semibold text-[#8a5b0a]">
+                                Send properties before sharing the renter page.
+                            </p>
+
                             <Link
                                 to={`/admin/leads/${lead.id}/message`}
                                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d8efe6]"
