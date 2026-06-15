@@ -251,6 +251,35 @@ function enrichFloorPlanWithMarketBenchmark(property, plan) {
     };
 }
 
+function getMarketRentCopy({
+    marketRentSource,
+    marketRentAreaName,
+    marketRentLastUpdated,
+    beds,
+}) {
+    const bedroomLabel = formatBedroomLabel(beds).toLowerCase();
+    const areaLabel = marketRentAreaName ? ` near ${marketRentAreaName}` : " nearby";
+    const updatedLabel = marketRentLastUpdated ? ` Updated ${marketRentLastUpdated}.` : "";
+
+    if (marketRentSource === "Property-entered market rent") {
+        return {
+            metricLabel: "Market",
+            title: "Property market rent",
+            cardNote: "Compared with the property's listed market rent.",
+            detailNote:
+                "This is the market rent entered for this listing. Use it to compare the normal rent, special, and estimated effective value before touring.",
+        };
+    }
+
+    return {
+        metricLabel: "Nearby Avg",
+        title: "Nearby rent estimate",
+        cardNote: `Similar ${bedroomLabel} apartments${areaLabel} average around this price.${updatedLabel}`,
+        detailNote:
+            `This estimate compares similar ${bedroomLabel} apartments${areaLabel}. It helps show whether the special creates real value, but it is not a quote from the property.${updatedLabel}`,
+    };
+}
+
 function getPropertySeoMetadata({ property, listingFloorPlans, propertyGalleryImages }) {
     const propertyName = property?.name || "Apartment";
     const city = property?.city || "Dallas";
@@ -2133,7 +2162,7 @@ export default function PublicPropertyListing() {
                                     {selectedFloorPlan.marketRent && (
                                         <div className="rounded-2xl bg-[#f5f8f1] p-4">
                                             <p className="text-sm font-bold text-[#526260]">
-                                                Market Comparison
+                                                {getMarketRentCopy(selectedFloorPlan).title}
                                             </p>
 
                                             <p className="mt-1 text-2xl font-black text-[#102426]">
@@ -2142,7 +2171,7 @@ export default function PublicPropertyListing() {
 
                                             {selectedFloorPlan.marketRentSource && (
                                                 <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                                    {selectedFloorPlan.marketRentConfidence || selectedFloorPlan.marketRentSource}
+                                                    {getMarketRentCopy(selectedFloorPlan).detailNote}
                                                 </p>
                                             )}
                                         </div>
@@ -3382,11 +3411,8 @@ function FloorPlanCard({
     effectiveRent,
     marketRent,
     marketRentSource,
-    marketRentConfidence,
     marketRentAreaName,
     marketRentLastUpdated,
-    marketRentPropertyClass,
-    marketRentClassConfidence,
     savings,
     belowMarketPercent,
     available,
@@ -3395,6 +3421,15 @@ function FloorPlanCard({
     special,
     onViewDetails,
 }) {
+    const marketRentCopy = marketRent
+        ? getMarketRentCopy({
+            marketRentSource,
+            marketRentAreaName,
+            marketRentLastUpdated,
+            beds,
+        })
+        : null;
+
     return (
         <div className="flex min-h-[250px] flex-col justify-between rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
             <div className="flex min-w-0 gap-3">
@@ -3444,7 +3479,7 @@ function FloorPlanCard({
                 )}
 
                 {marketRent && (
-                    <FloorPlanMetric label="Market" value={marketRent} />
+                    <FloorPlanMetric label={marketRentCopy.metricLabel} value={marketRent} />
                 )}
 
                 {savings && (
@@ -3473,11 +3508,7 @@ function FloorPlanCard({
 
             {marketRentSource && (
                 <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
-                    Market comparison: {marketRentConfidence || marketRentSource}
-                    {marketRentAreaName ? ` for ${marketRentAreaName}` : ""}
-                    {marketRentPropertyClass ? ` • ${marketRentPropertyClass}` : ""}
-                    {marketRentClassConfidence ? ` (${marketRentClassConfidence})` : ""}
-                    {marketRentLastUpdated ? ` • Updated ${marketRentLastUpdated}` : ""}
+                    {marketRentCopy.cardNote}
                 </p>
             )}
         </div>
