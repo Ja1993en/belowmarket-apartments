@@ -23,6 +23,11 @@ import {
   PrivacyPolicyPage,
   TermsAndConditionsPage,
 } from "./pages/LegalPage";
+import {
+  AboutPage,
+  ContactPage,
+  MethodologyPage,
+} from "./pages/TrustPages";
 
 clearLegacyDemoData();
 
@@ -32,6 +37,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/start" element={<StartPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/methodology" element={<MethodologyPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />

@@ -375,6 +375,15 @@ export default function HomePage() {
                 <div className="mx-auto flex max-w-[1500px] flex-col gap-3 text-sm font-bold text-[#526260] md:flex-row md:items-center md:justify-between">
                     <p>Below Market Apartments</p>
                     <div className="flex flex-wrap gap-4">
+                        <Link to="/about" className="hover:text-[#173f3f]">
+                            About
+                        </Link>
+                        <Link to="/contact" className="hover:text-[#173f3f]">
+                            Contact
+                        </Link>
+                        <Link to="/methodology" className="hover:text-[#173f3f]">
+                            Methodology
+                        </Link>
                         <Link to="/privacy-policy" className="hover:text-[#173f3f]">
                             Privacy Policy
                         </Link>

@@ -38,6 +38,9 @@ const coreRoutes = [
   { path: "/apartments/dallas-tx/victory-park", priority: "0.8", changefreq: "weekly" },
   { path: "/apartments/dallas-tx/downtown", priority: "0.8", changefreq: "weekly" },
   { path: "/start", priority: "0.7", changefreq: "monthly" },
+  { path: "/about", priority: "0.65", changefreq: "monthly" },
+  { path: "/contact", priority: "0.65", changefreq: "monthly" },
+  { path: "/methodology", priority: "0.7", changefreq: "monthly" },
   { path: "/privacy-policy", priority: "0.3", changefreq: "yearly" },
   { path: "/terms-and-conditions", priority: "0.3", changefreq: "yearly" },
 ];
