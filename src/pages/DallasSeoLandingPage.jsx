@@ -154,6 +154,84 @@ const DALLAS_LANDING_PAGES = {
       { label: "All Dallas apartments", to: "/apartments/dallas-tx" },
     ],
   },
+  "dallas-luxury-specials": {
+    title: "Dallas Luxury Apartments With Specials",
+    eyebrow: "Luxury apartment specials",
+    description:
+      "Search Dallas luxury apartments with current rent specials, weeks-free offers, waived fees, photos, floor plans, and transparent effective rent estimates.",
+    searchLabel: "Search luxury specials",
+    searchUrl: "/properties?search=luxury%20special",
+    primaryKeyword: "Dallas luxury apartments specials",
+    highlight:
+      "Compare luxury Dallas apartments by current special, normal rent, estimated effective rent, floor plans, and location.",
+    sections: [
+      {
+        title: "Luxury pricing needs clear deal math",
+        text: "Higher-rent apartments can make concessions look bigger, but renters should still compare the normal rent, effective value, fees, and lease term.",
+      },
+      {
+        title: "Look for the right lifestyle fit",
+        text: "Use photos, floor plans, amenities, map details, and specials together before deciding which Dallas luxury communities are worth touring.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
+      { label: "Uptown Dallas specials", to: "/apartments/dallas-tx/uptown" },
+      { label: "No deposit apartments", to: "/dallas-apartments-no-deposit" },
+    ],
+  },
+  "move-in-specials": {
+    title: "Dallas Apartments With Move-In Specials",
+    eyebrow: "Move-in specials",
+    description:
+      "Find Dallas apartments with move-in specials including weeks free, waived fees, rent credits, no-deposit offers, and effective rent estimates.",
+    searchLabel: "Search move-in specials",
+    searchUrl: "/properties?search=move-in%20special",
+    primaryKeyword: "Dallas apartments with move-in specials",
+    highlight:
+      "Start with active move-in specials, then compare the actual rent basis, estimated deal value, available floor plans, and fees.",
+    sections: [
+      {
+        title: "Move-in specials come in different forms",
+        text: "A special may be weeks free, a rent credit, waived admin fees, a deposit offer, or a combination. The details matter before applying.",
+      },
+      {
+        title: "Compare the offer against the whole lease",
+        text: "Below Market Apartments helps renters compare normal rent and estimated effective rent so the advertised special is easier to understand.",
+      },
+    ],
+    relatedLinks: [
+      { label: "8 weeks free apartments", to: "/apartments/dallas-tx/8-weeks-free" },
+      { label: "Waived admin fee", to: "/dallas-apartments-waived-admin-fee" },
+      { label: "No deposit apartments", to: "/dallas-apartments-no-deposit" },
+    ],
+  },
+  "waived-admin-fee": {
+    title: "Dallas Apartments With Waived Admin Fees",
+    eyebrow: "Waived fee specials",
+    description:
+      "Browse Dallas apartments advertising waived admin fees, waived application fees, move-in credits, and current rent specials.",
+    searchLabel: "Search waived admin fee",
+    searchUrl: "/properties?search=waived%20admin%20fee",
+    primaryKeyword: "Dallas apartments waived admin fee",
+    highlight:
+      "Find Dallas apartments that may lower upfront costs with waived admin fees, waived application fees, or related move-in offers.",
+    sections: [
+      {
+        title: "Waived fees can lower upfront cost",
+        text: "A waived admin fee is different from discounted rent. Renters should compare both upfront savings and monthly rent before applying.",
+      },
+      {
+        title: "Ask which fees are actually waived",
+        text: "Confirm whether the property is waiving admin fees, application fees, deposits, or only specific charges tied to a move-in window.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Move-in specials", to: "/dallas-apartments-with-move-in-specials" },
+      { label: "No deposit apartments", to: "/dallas-apartments-no-deposit" },
+      { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
+    ],
+  },
   "farmers-branch-specials": {
     title: "Farmers Branch Apartments With Specials",
     eyebrow: "Farmers Branch apartment deals",
@@ -178,6 +256,32 @@ const DALLAS_LANDING_PAGES = {
       { label: "Irving apartment specials", to: "/irving-apartments-specials" },
       { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
       { label: "6 weeks free apartments", to: "/dallas-apartments-6-weeks-free" },
+    ],
+  },
+  "farmers-branch-6-weeks-free": {
+    title: "Farmers Branch Apartments With 6 Weeks Free",
+    eyebrow: "Farmers Branch 6 weeks free",
+    description:
+      "Search Farmers Branch apartments advertising 6 weeks free with effective rent estimates, floor plans, photos, and current availability.",
+    searchLabel: "Search Farmers Branch 6 weeks free",
+    searchUrl: "/properties?search=Farmers%20Branch%206%20weeks%20free",
+    primaryKeyword: "Farmers Branch apartments 6 weeks free",
+    highlight:
+      "Compare Farmers Branch properties offering 6 weeks free with normal rent, estimated effective rent, and live floor plan details.",
+    sections: [
+      {
+        title: "Target Farmers Branch specials directly",
+        text: "This page focuses on the city plus the concession so renters do not have to sort through every Dallas-area listing first.",
+      },
+      {
+        title: "Confirm unit and move-in timing",
+        text: "Six weeks free may apply only to select homes, lease terms, or move-in dates, so always confirm the exact unit before applying.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Farmers Branch specials", to: "/farmers-branch-apartments-specials" },
+      { label: "6 weeks free apartments", to: "/dallas-apartments-6-weeks-free" },
+      { label: "Las Colinas specials", to: "/las-colinas-apartments-specials" },
     ],
   },
   "irving-specials": {
@@ -206,6 +310,32 @@ const DALLAS_LANDING_PAGES = {
       { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
     ],
   },
+  "las-colinas-specials": {
+    title: "Las Colinas Apartments With Specials",
+    eyebrow: "Las Colinas apartment deals",
+    description:
+      "Browse Las Colinas and Irving apartments with rent specials, weeks-free offers, photos, floor plans, and estimated effective rent.",
+    searchLabel: "Search Las Colinas specials",
+    searchUrl: "/properties?search=Las%20Colinas",
+    primaryKeyword: "Las Colinas apartments specials",
+    highlight:
+      "Compare Las Colinas apartment specials near Irving with normal rent, estimated effective value, and available floor plans.",
+    sections: [
+      {
+        title: "Search around Las Colinas by value",
+        text: "Las Colinas renters can compare active specials and floor plans while keeping commute, rent, and fees in view.",
+      },
+      {
+        title: "Use the special to narrow your tours",
+        text: "Start with properties advertising current concessions, then confirm availability and move-in timing before applying.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Irving apartment specials", to: "/irving-apartments-specials" },
+      { label: "Farmers Branch specials", to: "/farmers-branch-apartments-specials" },
+      { label: "8 weeks free apartments", to: "/apartments/dallas-tx/8-weeks-free" },
+    ],
+  },
   uptown: {
     title: "Uptown Dallas Apartments With Specials",
     eyebrow: "Uptown Dallas apartments",
@@ -230,6 +360,32 @@ const DALLAS_LANDING_PAGES = {
       { label: "Oak Lawn apartments", to: "/apartments/dallas-tx/oak-lawn" },
       { label: "Downtown Dallas apartments", to: "/apartments/dallas-tx/downtown" },
       { label: "Dallas apartment specials", to: "/apartments/dallas-tx/specials" },
+    ],
+  },
+  "uptown-4-weeks-free": {
+    title: "Uptown Dallas Apartments With 4 Weeks Free",
+    eyebrow: "Uptown 4 weeks free",
+    description:
+      "Search Uptown Dallas apartments advertising 4 weeks free, one month free, rent credits, effective rent estimates, and live floor plans.",
+    searchLabel: "Search Uptown 4 weeks free",
+    searchUrl: "/properties?search=Uptown%204%20weeks%20free",
+    primaryKeyword: "Uptown Dallas apartments 4 weeks free",
+    highlight:
+      "Compare Uptown Dallas apartments with 4 weeks free while keeping normal rent, effective rent, floor plans, and fees visible.",
+    sections: [
+      {
+        title: "Compare Uptown specials before touring",
+        text: "Uptown apartments can have strong specials, but renters should confirm whether the offer applies to the exact floor plan and lease term.",
+      },
+      {
+        title: "Look at the full monthly picture",
+        text: "Estimated effective rent helps compare concessions, while normal rent and fees help renters understand what may actually be due monthly.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Uptown Dallas specials", to: "/apartments/dallas-tx/uptown" },
+      { label: "4 weeks free apartments", to: "/dallas-apartments-4-weeks-free" },
+      { label: "Luxury Dallas specials", to: "/dallas-luxury-apartments-specials" },
     ],
   },
   "oak-lawn": {
@@ -372,6 +528,12 @@ const DALLAS_INTERNAL_LINKS = [
   { label: "No deposit", to: "/dallas-apartments-no-deposit" },
   { label: "Farmers Branch", to: "/farmers-branch-apartments-specials" },
   { label: "Irving", to: "/irving-apartments-specials" },
+  { label: "Luxury specials", to: "/dallas-luxury-apartments-specials" },
+  { label: "Move-in specials", to: "/dallas-apartments-with-move-in-specials" },
+  { label: "Waived admin fee", to: "/dallas-apartments-waived-admin-fee" },
+  { label: "Las Colinas", to: "/las-colinas-apartments-specials" },
+  { label: "Farmers Branch 6 weeks", to: "/farmers-branch-apartments-6-weeks-free" },
+  { label: "Uptown 4 weeks", to: "/uptown-dallas-apartments-4-weeks-free" },
   { label: "Uptown Dallas", to: "/apartments/dallas-tx/uptown" },
   { label: "Oak Lawn", to: "/oak-lawn-apartments-specials" },
   { label: "Bishop Arts", to: "/apartments/dallas-tx/bishop-arts" },
@@ -796,13 +958,23 @@ function matchesLandingPage(property, pageType) {
     property.city,
     property.neighborhood,
     property.area,
+    property.propertyClass,
+    property.assetClass,
+    property.benchmarkClass,
+    property.managementCompany,
     property.special,
     property.description,
+    ...(property.amenities || []),
+    ...(property.communityAmenities || []),
+    ...(property.apartmentAmenities || []),
+    ...(property.unitFeatures || []),
     ...(property.floorPlans || []).flatMap((floorPlan) => [
       floorPlan.name,
       floorPlan.beds,
       floorPlan.bedrooms,
+      floorPlan.adminFeeSpecial,
       floorPlan.special?.label,
+      floorPlan.special?.adminFeeSpecial,
       floorPlan.currentSpecial,
     ]),
   ]
@@ -826,6 +998,32 @@ function matchesLandingPage(property, pageType) {
     return /no\s*deposit|zero\s*deposit|\$0\s*deposit|0\s*deposit|deposit\s*waiv|waiv\w*\s+deposit/.test(haystack);
   }
 
+  if (pageType === "waived-admin-fee") {
+    return /waiv\w*.*(admin|application|app).*fee|(admin|application|app).*fee.*waiv|credited\s+back|fee\s+credit/.test(haystack);
+  }
+
+  if (pageType === "move-in-specials") {
+    return Boolean(getPropertySpecialLabel(property));
+  }
+
+  if (pageType === "dallas-luxury-specials") {
+    const hasSpecial = Boolean(getPropertySpecialLabel(property));
+    const hasLuxurySignal = /luxury|class\s*a|high[-\s]?rise|penthouse|concierge|resort|skyline|premium/.test(haystack);
+
+    return hasSpecial && (hasLuxurySignal || haystack.includes("uptown") || haystack.includes("turtle creek") || haystack.includes("victory park"));
+  }
+
+  if (pageType === "farmers-branch-6-weeks-free") {
+    return (
+      (haystack.includes("farmers branch") || haystack.includes("mercer crossing")) &&
+      /6\s*weeks|six\s*weeks/.test(haystack)
+    );
+  }
+
+  if (pageType === "uptown-4-weeks-free") {
+    return haystack.includes("uptown") && /4\s*weeks|four\s*weeks|1\s*month|one\s*month/.test(haystack);
+  }
+
   if (pageType === "specials") {
     return Boolean(getPropertySpecialLabel(property));
   }
@@ -839,6 +1037,7 @@ function matchesLandingPage(property, pageType) {
     downtown: ["downtown"],
     "farmers-branch-specials": ["farmers branch", "mercer crossing"],
     "irving-specials": ["irving", "las colinas"],
+    "las-colinas-specials": ["las colinas", "irving"],
   };
   const keywords = areaKeywords[pageType];
 
