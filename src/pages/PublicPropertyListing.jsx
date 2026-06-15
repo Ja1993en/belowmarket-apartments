@@ -2325,9 +2325,17 @@ export default function PublicPropertyListing() {
                                                         : "bg-[#f5f8f1]"
                                                         }`}                                                >
                                                     <div>
-                                                        <p className="font-bold text-[#102426]">
-                                                            Unit {unit.unit}
-                                                        </p>
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <p className="font-bold text-[#102426]">
+                                                                Unit {unit.unit}
+                                                            </p>
+
+                                                            {isRenovatedUnit(unit) && (
+                                                                <span className="rounded-full bg-[#fff8e6] px-2 py-1 text-xs font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                                                    Renovated
+                                                                </span>
+                                                            )}
+                                                        </div>
 
                                                         <div className="mt-3 flex flex-wrap gap-2">
                                                             {unit.requestCount > 0 &&
@@ -3670,6 +3678,14 @@ function FloorPlanCard({
                 </p>
             )}
         </div>
+    );
+}
+
+function isRenovatedUnit(unit = {}) {
+    if (unit.isRenovated || unit.renovated) return true;
+
+    return /renovated|updated|upgraded/i.test(
+        [unit.notes, unit.description, unit.finish, unit.unitType].filter(Boolean).join(" ")
     );
 }
 

@@ -1315,7 +1315,7 @@ function FloorPlanEditor({
                 Bulk Import Availability
               </h5>
               <p className="mt-1 text-xs font-bold leading-5 text-[#526260]">
-                Paste rows from a spreadsheet. Format: Unit, Rent, Available Date, Status, Free Weeks, Notes.
+                Paste rows from a spreadsheet. Format: Unit, Rent, Available Date, Status, Free Weeks, Renovated, Notes.
               </p>
             </div>
 
@@ -1323,7 +1323,7 @@ function FloorPlanEditor({
               type="button"
               onClick={() =>
                 setBulkAvailabilityText(
-                  "Unit,Rent,Available Date,Status,Free Weeks,Notes\n1204,1795,07/15/2026,available,8,Top floor\n1308,1845,07/20/2026,available,8,\n1402,1945,08/01/2026,limited,6,"
+                  "Unit,Rent,Available Date,Status,Free Weeks,Renovated,Notes\n1204,1795,07/15/2026,available,8,yes,Top floor\n1308,1845,07/20/2026,available,8,no,\n1402,1945,08/01/2026,limited,6,yes,"
                 )
               }
               className="w-fit rounded-xl bg-white px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
@@ -1339,7 +1339,7 @@ function FloorPlanEditor({
               setBulkAvailabilityMessage("");
             }}
             rows={4}
-            placeholder="Unit,Rent,Available Date,Status,Free Weeks,Notes&#10;1204,1795,07/15/2026,available,8,Top floor&#10;1308,1845,07/20/2026,available,8,"
+            placeholder="Unit,Rent,Available Date,Status,Free Weeks,Renovated,Notes&#10;1204,1795,07/15/2026,available,8,yes,Top floor&#10;1308,1845,07/20/2026,available,8,no,"
             className="mt-3 w-full rounded-xl border border-[#b8d9d0] bg-white px-3 py-2 text-sm font-bold text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
           />
 
@@ -1435,6 +1435,29 @@ function FloorPlanEditor({
                     <option value="pending">Pending</option>
                     <option value="leased">Leased</option>
                   </select>
+                </label>
+                <label className="flex items-center gap-3 rounded-2xl bg-white p-4">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(availableUnit.isRenovated)}
+                    onChange={(event) =>
+                      onAvailabilityChange(
+                        floorPlan.id,
+                        availableUnit.id,
+                        "isRenovated",
+                        event.target.checked
+                      )
+                    }
+                    className="h-5 w-5 rounded border-[#b8d9d0] text-[#1f6f63] focus:ring-[#f2b84b]"
+                  />
+                  <span>
+                    <span className="block text-sm font-black text-[#102426]">
+                      Renovated unit
+                    </span>
+                    <span className="text-xs font-semibold text-[#526260]">
+                      Shows a renter badge for this unit number.
+                    </span>
+                  </span>
                 </label>
                 <label className="rounded-2xl bg-white p-4">
                   <span className="text-sm font-semibold text-[#526260]">
@@ -1744,6 +1767,7 @@ function createBlankAvailableUnit() {
     availableDate: "",
     rent: "",
     status: "available",
+    isRenovated: false,
     specialMode: "floorPlan",
     freeWeeks: "",
     rentCreditSpecial: "",
@@ -1776,7 +1800,9 @@ function isAvailabilityHeaderRow(row, index) {
 
 function parseAvailabilityImportRow(row) {
   const columns = splitAvailabilityImportColumns(row);
-  const [unit = "", rent = "", availableDate = "", status = "", freeWeeks = "", notes = ""] = columns;
+  const [unit = "", rent = "", availableDate = "", status = "", freeWeeks = ""] = columns;
+  const renovated = columns.length > 6 ? columns[5] || "" : "";
+  const notes = columns.length > 6 ? columns[6] || "" : columns[5] || "";
 
   return {
     ...createBlankAvailableUnit(),
@@ -1784,6 +1810,7 @@ function parseAvailabilityImportRow(row) {
     rent: formatImportedRent(rent),
     availableDate: normalizeImportedDate(availableDate),
     status: normalizeImportedStatus(status),
+    isRenovated: isAffirmativeValue(renovated) || /renovated|updated|upgraded/i.test(notes),
     specialMode: freeWeeks.trim() ? "custom" : "floorPlan",
     freeWeeks: freeWeeks.trim(),
     notes: notes.trim(),
@@ -1844,6 +1871,12 @@ function normalizeImportedStatus(value) {
   if (["limited", "hold", "pending"].includes(status)) return "limited";
 
   return "available";
+}
+
+function isAffirmativeValue(value) {
+  return ["yes", "y", "true", "renovated", "updated", "upgraded", "1"].includes(
+    String(value || "").trim().toLowerCase()
+  );
 }
 
 function normalizeFloorPlansForDraft(property) {
@@ -2039,6 +2072,7 @@ function normalizeAvailableUnitsForDraft(availableUnits = [], defaultRent = "") 
       availableDate: availableUnit.availableDate || getDateFromAvailabilityLabel(availableUnit.available),
       rent: availableUnit.rent || defaultRent,
       status: availableUnit.status || "available",
+      isRenovated: Boolean(availableUnit.isRenovated || availableUnit.renovated),
       specialMode:
         availableUnit.specialMode ||
         (Number(parsedFreeWeeks || 0) > 0 || rentCreditSpecial ? "custom" : "floorPlan"),
@@ -2076,6 +2110,7 @@ function normalizeAvailableUnitForStorage(availableUnit, index, defaultRent) {
     available: formatAvailableDate(availableDate),
     rent: availableUnit.rent.trim() || defaultRent.trim(),
     status: availableUnit.status,
+    isRenovated: Boolean(availableUnit.isRenovated),
     specialMode,
     freeWeeks,
     rentCreditSpecial,
