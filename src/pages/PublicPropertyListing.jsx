@@ -10,10 +10,13 @@ import {
 } from "../data/propertySearchData";
 import { getAllProperties, getAnyPropertyById } from "../data/propertyStorage";
 import {
+    clearCompareSelections,
     getCompareFloorPlanItemKey,
     getCompareFloorPlanItems,
     getComparePropertyIds,
     getSavedPropertyIds,
+    MAX_COMPARE_FLOOR_PLANS,
+    MAX_COMPARE_PROPERTIES,
     removeCompareFloorPlanItem,
     removeComparePropertyId,
     toggleCompareFloorPlanItem,
@@ -937,6 +940,7 @@ export default function PublicPropertyListing() {
     const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
     const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
     const [compareFloorPlanItems, setCompareFloorPlanItems] = useState(getCompareFloorPlanItems);
+    const [compareMessage, setCompareMessage] = useState("");
     const compareListRef = useRef(null);
     {/* Usestate end*/ }
 
@@ -983,6 +987,66 @@ export default function PublicPropertyListing() {
 
         return () => window.clearTimeout(resetSelectedPhoto);
     }, [propertyGalleryImages]);
+
+    const scrollToCompareBoard = () => {
+        window.setTimeout(() => {
+            compareListRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        }, 50);
+    };
+
+    const handleToggleFloorPlanCompare = (compareFloorPlanItem, isFloorPlanCompared) => {
+        if (!isFloorPlanCompared && compareFloorPlanItems.length >= MAX_COMPARE_FLOOR_PLANS) {
+            setCompareMessage(
+                `You can compare up to ${MAX_COMPARE_FLOOR_PLANS} floor plans. Remove one before adding another.`
+            );
+            scrollToCompareBoard();
+            return;
+        }
+
+        setCompareFloorPlanItems(toggleCompareFloorPlanItem(compareFloorPlanItem));
+
+        if (property?.id && !comparePropertyIds.includes(property.id)) {
+            setComparePropertyIds(toggleComparePropertyId(property.id));
+        }
+
+        setCompareMessage(
+            isFloorPlanCompared
+                ? "Floor plan removed from compare."
+                : "Floor plan added to compare."
+        );
+        scrollToCompareBoard();
+    };
+
+    const handleTogglePropertyCompare = () => {
+        if (!property?.id) return;
+
+        if (!isPropertyCompared && comparePropertyIds.length >= MAX_COMPARE_PROPERTIES) {
+            setCompareMessage(
+                `You can compare up to ${MAX_COMPARE_PROPERTIES} properties. Remove one before adding another.`
+            );
+            scrollToCompareBoard();
+            return;
+        }
+
+        setComparePropertyIds(toggleComparePropertyId(property.id));
+        setCompareMessage(
+            isPropertyCompared
+                ? "Property removed from compare."
+                : "Property added to compare."
+        );
+        scrollToCompareBoard();
+    };
+
+    const handleClearCompareBoard = () => {
+        const clearedSelections = clearCompareSelections();
+
+        setComparePropertyIds(clearedSelections.propertyIds);
+        setCompareFloorPlanItems(clearedSelections.floorPlanItems);
+        setCompareMessage("Compare board cleared.");
+    };
 
 
     const filteredFloorPlans =
@@ -1358,9 +1422,7 @@ export default function PublicPropertyListing() {
 
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            setComparePropertyIds(toggleComparePropertyId(property.id))
-                                        }
+                                        onClick={handleTogglePropertyCompare}
                                         className={`rounded-2xl px-5 py-3 text-sm font-black ${
                                             isPropertyCompared
                                                 ? "bg-[#f2b84b] text-[#102426]"
@@ -1391,15 +1453,34 @@ export default function PublicPropertyListing() {
                                                 <p className="mt-1 text-sm font-semibold text-[#526260]">
                                                     Exact floor plans appear first. Property-only cards stay below until you choose a floor plan.
                                                 </p>
+                                                <p className="mt-2 text-xs font-black text-[#173f3f]">
+                                                    Compare up to {MAX_COMPARE_FLOOR_PLANS} floor plans and {MAX_COMPARE_PROPERTIES} properties.
+                                                </p>
                                             </div>
 
-                                            <Link
-                                                to="/properties"
-                                                className="w-fit rounded-2xl bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f] hover:bg-[#d8efe6]"
-                                            >
-                                                Back to search
-                                            </Link>
+                                            <div className="flex flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleClearCompareBoard}
+                                                    className="w-fit rounded-2xl bg-[#fff0ea] px-4 py-2 text-sm font-bold text-[#e4572e] hover:bg-[#fde8df]"
+                                                >
+                                                    Clear all
+                                                </button>
+
+                                                <Link
+                                                    to="/properties"
+                                                    className="w-fit rounded-2xl bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f] hover:bg-[#d8efe6]"
+                                                >
+                                                    Back to search
+                                                </Link>
+                                            </div>
                                         </div>
+
+                                        {compareMessage && (
+                                            <p className="mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                                {compareMessage}
+                                            </p>
+                                        )}
 
                                         {compareFloorPlanItems.length > 0 && (
                                             <div className="mt-4">
@@ -1864,20 +1945,12 @@ export default function PublicPropertyListing() {
                                                     status={plan.status}
                                                     special={plan.special}
                                                     isCompared={isFloorPlanCompared}
-                                                    onToggleCompare={() => {
-                                                        setCompareFloorPlanItems(toggleCompareFloorPlanItem(compareFloorPlanItem));
-
-                                                        if (property?.id && !comparePropertyIds.includes(property.id)) {
-                                                            setComparePropertyIds(toggleComparePropertyId(property.id));
-                                                        }
-
-                                                        window.setTimeout(() => {
-                                                            compareListRef.current?.scrollIntoView({
-                                                                behavior: "smooth",
-                                                                block: "start",
-                                                            });
-                                                        }, 50);
-                                                    }}
+                                                    onToggleCompare={() =>
+                                                        handleToggleFloorPlanCompare(
+                                                            compareFloorPlanItem,
+                                                            isFloorPlanCompared
+                                                        )
+                                                    }
                                                     onViewDetails={() => {
                                                         setSelectedFloorPlan(plan);
                                                         setLeadSubmitted(false);

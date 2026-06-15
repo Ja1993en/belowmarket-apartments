@@ -1,8 +1,8 @@
 const SAVED_PROPERTIES_KEY = "bmaSavedPropertyIds";
 const COMPARE_PROPERTIES_KEY = "bmaComparePropertyIds";
 const COMPARE_FLOOR_PLANS_KEY = "bmaCompareFloorPlanItems";
-const MAX_COMPARE_PROPERTIES = 4;
-const MAX_COMPARE_FLOOR_PLANS = 5;
+export const MAX_COMPARE_PROPERTIES = 4;
+export const MAX_COMPARE_FLOOR_PLANS = 5;
 
 export function getSavedPropertyIds() {
   return readStoredIds(SAVED_PROPERTIES_KEY);
@@ -43,7 +43,9 @@ export function toggleCompareFloorPlanItem(floorPlanItem) {
   );
   const nextItems = itemAlreadySaved
     ? currentItems.filter((item) => getCompareFloorPlanItemKey(item) !== nextItemKey)
-    : [nextItem, ...currentItems].slice(0, MAX_COMPARE_FLOOR_PLANS);
+    : currentItems.length >= MAX_COMPARE_FLOOR_PLANS
+      ? currentItems
+      : [nextItem, ...currentItems];
 
   writeStoredItems(COMPARE_FLOOR_PLANS_KEY, nextItems);
   return nextItems;
@@ -61,6 +63,16 @@ export function removeCompareFloorPlanItem(floorPlanItem) {
 
 export function getCompareFloorPlanItemKey(item) {
   return `${item.propertyId}:${item.floorPlanId}`;
+}
+
+export function clearCompareSelections() {
+  writeStoredIds(COMPARE_PROPERTIES_KEY, []);
+  writeStoredItems(COMPARE_FLOOR_PLANS_KEY, []);
+
+  return {
+    propertyIds: [],
+    floorPlanItems: [],
+  };
 }
 
 function toggleStoredId(storageKey, propertyId, maxItems = Infinity) {
