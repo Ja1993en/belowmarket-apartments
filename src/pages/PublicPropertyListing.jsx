@@ -1878,6 +1878,7 @@ export default function PublicPropertyListing() {
                                                     savings={plan.savings}
                                                     belowMarketPercent={plan.belowMarketPercent}
                                                     available={plan.available}
+                                                    availableUnits={plan.availableUnits}
                                                     image={plan.image}
                                                     status={plan.status}
                                                     special={plan.special}
@@ -3818,6 +3819,7 @@ function FloorPlanCard({
     savings,
     belowMarketPercent,
     available,
+    availableUnits = [],
     image,
     status,
     special,
@@ -3825,6 +3827,7 @@ function FloorPlanCard({
     onToggleCompare,
     onViewDetails,
 }) {
+    const [isExpanded, setIsExpanded] = useState(false);
     const marketRentCopy = marketRent
         ? getMarketRentCopy({
             marketRentSource,
@@ -3833,6 +3836,15 @@ function FloorPlanCard({
             beds,
         })
         : null;
+    const visibleUnits = [...(availableUnits || [])]
+        .filter((unit) => unit?.status !== "leased")
+        .sort((a, b) => parseCurrency(a.rent) - parseCurrency(b.rent))
+        .slice(0, 3);
+    const availableUnitCount = visibleUnits.length || getFloorPlanAvailableUnitCount({
+        available,
+        availableUnits,
+        status,
+    }) || 0;
 
     return (
         <div className="flex min-h-[290px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
@@ -3917,13 +3929,133 @@ function FloorPlanCard({
 
                     <button
                         type="button"
-                        onClick={onViewDetails}
+                        onClick={() => setIsExpanded((currentValue) => !currentValue)}
                         className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
                     >
-                        Details
+                        {isExpanded ? "Hide Details" : "View Details"}
                     </button>
                 </div>
             </div>
+
+            {isExpanded && (
+                <div className="mt-5 rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-4">
+                    <div className="grid gap-4 md:grid-cols-[160px_1fr]">
+                        {image && (
+                            <img
+                                src={image}
+                                alt={`${name} expanded floor plan`}
+                                className="h-40 w-full rounded-2xl bg-white object-cover ring-1 ring-[#d7e6df]"
+                            />
+                        )}
+
+                        <div className="min-w-0">
+                            <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                Floor plan details
+                            </p>
+                            <h4 className="mt-1 text-xl font-black text-[#102426]">
+                                {name}
+                            </h4>
+                            <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                {formatBedroomLabel(beds)} • {baths || "Baths not listed"} ba • {sqft || "Sq ft not listed"} sq ft
+                            </p>
+
+                            <div className="mt-4 grid grid-cols-2 gap-2">
+                                <FloorPlanMetric label="Normal" value={rent || "Contact"} />
+                                <FloorPlanMetric
+                                    label="Effective"
+                                    value={effectiveRent || rent || "Contact"}
+                                    highlight
+                                />
+                            </div>
+
+                            {special?.label && (
+                                <div className="mt-3 rounded-2xl bg-[#fff8e6] p-3 ring-1 ring-[#f2d08a]">
+                                    <p className="text-xs font-black uppercase text-[#8a5b0a]">
+                                        Special
+                                    </p>
+                                    <p className="mt-1 text-sm font-black text-[#102426]">
+                                        {special.label}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
+                        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                            <div>
+                                <p className="text-sm font-black text-[#102426]">
+                                    Available units
+                                </p>
+                                <p className="mt-1 text-xs font-semibold text-[#526260]">
+                                    {availableUnitCount > 0
+                                        ? `${availableUnitCount} unit${availableUnitCount === 1 ? "" : "s"} listed for this layout.`
+                                        : "Ask your locator to confirm current availability."}
+                                </p>
+                            </div>
+
+                            <span className="w-fit rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#173f3f]">
+                                {available || "Availability not listed"}
+                            </span>
+                        </div>
+
+                        {visibleUnits.length > 0 ? (
+                            <div className="mt-3 grid gap-2">
+                                {visibleUnits.map((unit) => (
+                                    <div
+                                        key={unit.unit || `${unit.rent}-${unit.available}`}
+                                        className="flex flex-col justify-between gap-2 rounded-2xl bg-[#f5f8f1] p-3 sm:flex-row sm:items-center"
+                                    >
+                                        <div>
+                                            <p className="text-sm font-black text-[#102426]">
+                                                Unit {unit.unit || "Available"}
+                                            </p>
+                                            <p className="mt-1 text-xs font-semibold text-[#526260]">
+                                                {unit.available || "Availability not listed"}
+                                            </p>
+                                            {unit.currentSpecial && (
+                                                <p className="mt-1 text-xs font-bold text-[#8a5b0a]">
+                                                    {cleanUnitSpecialLabel(unit.currentSpecial)}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <p className="text-lg font-black text-[#102426]">
+                                            {unit.rent || rent || "Contact"}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="mt-3 rounded-2xl bg-[#f5f8f1] p-3 text-sm font-semibold text-[#526260]">
+                                Unit-level availability is not listed yet. Use Request Tour to confirm the latest options.
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                        <button
+                            type="button"
+                            onClick={onToggleCompare}
+                            className={`rounded-xl px-4 py-3 text-sm font-bold ${
+                                isCompared
+                                    ? "bg-[#f2b84b] text-[#102426]"
+                                    : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
+                            }`}
+                        >
+                            {isCompared ? "Comparing" : "Compare Floor Plan"}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={onViewDetails}
+                            className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                        >
+                            Request Tour
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {marketRentSource && (
                 <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
