@@ -9,7 +9,7 @@ import {
     isReliableGeocodeResult,
 } from "../data/propertySearchData";
 import { getMarketRentBenchmark } from "../data/marketRentBenchmarks";
-import { getAnyPropertyById } from "../data/propertyStorage";
+import { getAllProperties, getAnyPropertyById } from "../data/propertyStorage";
 import {
     getComparePropertyIds,
     getSavedPropertyIds,
@@ -780,6 +780,7 @@ export default function PublicPropertyListing() {
     {/* Usestate start*/ }
     const { propertyId } = useParams();
     const [property, setProperty] = useState(null);
+    const [compareProperties, setCompareProperties] = useState([]);
     const [isLoadingProperty, setIsLoadingProperty] = useState(true);
 
     useEffect(() => {
@@ -801,6 +802,23 @@ export default function PublicPropertyListing() {
             isMounted = false;
         };
     }, [propertyId]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        getAllProperties()
+            .then((savedProperties) => {
+                if (isMounted) setCompareProperties(savedProperties);
+            })
+            .catch((error) => {
+                console.error(error);
+                if (isMounted) setCompareProperties([]);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
     const addressLabel = property ? getPropertyAddressLabel(property) : "";
     const startingRentLabel = property?.startingRent || property?.rent || "Contact for pricing";
     const effectiveRentLabel = property?.effectiveRent || "";
@@ -965,6 +983,14 @@ export default function PublicPropertyListing() {
     const selectedGalleryPhoto = selectedPhoto || propertyGalleryImages[0];
     const isPropertySaved = property ? savedPropertyIds.includes(property.id) : false;
     const isPropertyCompared = property ? comparePropertyIds.includes(property.id) : false;
+    const selectedCompareProperties = comparePropertyIds
+        .map((comparePropertyId) =>
+            compareProperties.find((compareProperty) => compareProperty.id === comparePropertyId)
+        )
+        .filter(Boolean);
+    const otherCompareProperties = selectedCompareProperties.filter(
+        (compareProperty) => compareProperty.id !== property?.id
+    );
 
     useEffect(() => {
         if (!propertyGalleryImages.length) return;
@@ -1369,6 +1395,56 @@ export default function PublicPropertyListing() {
                                         Request Tour
                                     </a>
                                 </div>
+
+                                {otherCompareProperties.length > 0 && (
+                                    <div className="mt-4 rounded-3xl border border-[#d7e6df] bg-white p-4 shadow-sm">
+                                        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+                                            <div>
+                                                <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                                    Your compare list
+                                                </p>
+                                                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                                    Jump to another property you selected to compare.
+                                                </p>
+                                            </div>
+
+                                            <Link
+                                                to="/properties"
+                                                className="w-fit rounded-2xl bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f] hover:bg-[#d8efe6]"
+                                            >
+                                                Back to search
+                                            </Link>
+                                        </div>
+
+                                        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                                            {otherCompareProperties.map((compareProperty) => (
+                                                <Link
+                                                    key={compareProperty.id}
+                                                    to={`/properties/${compareProperty.id}`}
+                                                    className="flex min-w-0 gap-3 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+                                                >
+                                                    <img
+                                                        src={getPropertyPrimaryImage(compareProperty)}
+                                                        alt={compareProperty.name}
+                                                        className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                                                    />
+
+                                                    <span className="min-w-0">
+                                                        <span className="block truncate text-sm font-black text-[#102426]">
+                                                            {compareProperty.name}
+                                                        </span>
+                                                        <span className="mt-1 block truncate text-xs font-semibold text-[#526260]">
+                                                            {compareProperty.area || compareProperty.city || "Dallas area"}
+                                                        </span>
+                                                        <span className="mt-1 block truncate text-xs font-bold text-[#8a5b0a]">
+                                                            {compareProperty.special || "View deal details"}
+                                                        </span>
+                                                    </span>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
 
                                 {hasPropertySpecial && (
