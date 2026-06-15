@@ -111,6 +111,30 @@ export default function App() {
           path="/uptown-dallas-apartments-4-weeks-free"
           element={<DallasSeoLandingPage pageKey="uptown-4-weeks-free" />}
         />
+        <Route
+          path="/medical-district-apartments-specials"
+          element={<DallasSeoLandingPage pageKey="medical-district-specials" />}
+        />
+        <Route
+          path="/turtle-creek-apartments-specials"
+          element={<DallasSeoLandingPage pageKey="turtle-creek-specials" />}
+        />
+        <Route
+          path="/farmers-branch-apartments-8-weeks-free"
+          element={<DallasSeoLandingPage pageKey="farmers-branch-8-weeks-free" />}
+        />
+        <Route
+          path="/west-dallas-apartments-specials"
+          element={<DallasSeoLandingPage pageKey="west-dallas-specials" />}
+        />
+        <Route
+          path="/deep-ellum-apartments-specials"
+          element={<DallasSeoLandingPage pageKey="deep-ellum-specials" />}
+        />
+        <Route
+          path="/north-dallas-apartments-specials"
+          element={<DallasSeoLandingPage pageKey="north-dallas-specials" />}
+        />
 
         <Route
           path="/properties/:propertyId"

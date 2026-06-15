@@ -388,6 +388,162 @@ const DALLAS_LANDING_PAGES = {
       { label: "Luxury Dallas specials", to: "/dallas-luxury-apartments-specials" },
     ],
   },
+  "medical-district-specials": {
+    title: "Medical District Apartments With Specials",
+    eyebrow: "Medical District apartment deals",
+    description:
+      "Search Medical District Dallas apartments with active rent specials, effective rent estimates, floor plans, photos, and nearby commute context.",
+    searchLabel: "Search Medical District",
+    searchUrl: "/properties?search=Medical%20District",
+    primaryKeyword: "Medical District apartments specials",
+    highlight:
+      "Compare apartments near the Dallas Medical District by active special, normal rent, estimated effective rent, floor plans, and location.",
+    sections: [
+      {
+        title: "Search near hospitals and work centers",
+        text: "Medical District renters often care about commute time, floor plan value, and move-in cost. This page keeps specials and effective rent visible while comparing nearby listings.",
+      },
+      {
+        title: "Compare Medical District and Inwood-area deals",
+        text: "Use this page to compare apartment specials near Forest Park Road, Inwood Road, UT Southwestern, and nearby Dallas medical employment corridors.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Inwood on the Park", to: "/properties/inwood-on-the-park" },
+      { label: "Dallas 8 weeks free", to: "/apartments/dallas-tx/8-weeks-free" },
+      { label: "North Dallas specials", to: "/north-dallas-apartments-specials" },
+    ],
+  },
+  "turtle-creek-specials": {
+    title: "Turtle Creek Apartments With Specials",
+    eyebrow: "Turtle Creek apartment deals",
+    description:
+      "Browse Turtle Creek and Oak Lawn apartments with current rent specials, effective rent estimates, photos, floor plans, and location details.",
+    searchLabel: "Search Turtle Creek",
+    searchUrl: "/properties?search=Turtle%20Creek",
+    primaryKeyword: "Turtle Creek apartments specials",
+    highlight:
+      "Compare Turtle Creek apartment specials with normal rent, effective rent, property photos, and Oak Lawn location context.",
+    sections: [
+      {
+        title: "Compare Turtle Creek luxury and value",
+        text: "Turtle Creek searches can include premium rent ranges, so renters should compare the actual floor plan, special, and monthly fees before touring.",
+      },
+      {
+        title: "Support for Oak Lawn searches",
+        text: "This page connects Turtle Creek, Oak Lawn, and central Dallas apartment searches so renters can compare nearby specials from one cluster.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Parkview Turtle Creek", to: "/properties/parkview-turtle-creek-by-hanover" },
+      { label: "Oak Lawn specials", to: "/oak-lawn-apartments-specials" },
+      { label: "Dallas luxury specials", to: "/dallas-luxury-apartments-specials" },
+    ],
+  },
+  "farmers-branch-8-weeks-free": {
+    title: "Farmers Branch Apartments With 8 Weeks Free",
+    eyebrow: "Farmers Branch 8 weeks free",
+    description:
+      "Find Farmers Branch apartments advertising 8 weeks free and compare normal rent, effective rent, floor plans, photos, and availability.",
+    searchLabel: "Search Farmers Branch 8 weeks free",
+    searchUrl: "/properties?search=Farmers%20Branch%208%20weeks%20free",
+    primaryKeyword: "Farmers Branch apartments 8 weeks free",
+    highlight:
+      "Compare Farmers Branch apartments with 8 weeks free while keeping the normal rent, effective rent, and exact floor plan details in view.",
+    sections: [
+      {
+        title: "Target the high-value concession",
+        text: "Eight weeks free can create a strong estimated effective rent, but renters should confirm the credit timing and whether it applies to the exact unit.",
+      },
+      {
+        title: "Compare Farmers Branch and Mercer Crossing",
+        text: "Use this page for Farmers Branch searches around Luna Road, Mercer Crossing, and nearby North Dallas access points.",
+      },
+    ],
+    relatedLinks: [
+      { label: "The Elara", to: "/properties/the-elara" },
+      { label: "Farmers Branch specials", to: "/farmers-branch-apartments-specials" },
+      { label: "Farmers Branch 6 weeks", to: "/farmers-branch-apartments-6-weeks-free" },
+    ],
+  },
+  "west-dallas-specials": {
+    title: "West Dallas Apartments With Specials",
+    eyebrow: "West Dallas apartment deals",
+    description:
+      "Search West Dallas apartments with active specials, rent credits, effective rent estimates, floor plans, photos, and location context.",
+    searchLabel: "Search West Dallas",
+    searchUrl: "/properties?search=West%20Dallas",
+    primaryKeyword: "West Dallas apartments specials",
+    highlight:
+      "Compare West Dallas apartment specials near Singleton Boulevard, Trinity Groves, and Downtown Dallas access points.",
+    sections: [
+      {
+        title: "Compare West Dallas value",
+        text: "West Dallas renters can use this page to compare active specials, floor plan availability, normal rent, and estimated effective rent.",
+      },
+      {
+        title: "Review unique rent credits carefully",
+        text: "Some West Dallas offers use rent credits instead of standard weeks-free concessions, so comparing the effective value is especially helpful.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Trinity", to: "/properties/trinity-singleton" },
+      { label: "Move-in specials", to: "/dallas-apartments-with-move-in-specials" },
+      { label: "Downtown Dallas", to: "/apartments/dallas-tx/downtown" },
+    ],
+  },
+  "deep-ellum-specials": {
+    title: "Deep Ellum Apartments With Specials",
+    eyebrow: "Deep Ellum apartment deals",
+    description:
+      "Browse Deep Ellum and nearby East Dallas apartments with rent specials, effective rent estimates, photos, floor plans, and location details.",
+    searchLabel: "Search Deep Ellum",
+    searchUrl: "/properties?search=Deep%20Ellum",
+    primaryKeyword: "Deep Ellum apartments specials",
+    highlight:
+      "Compare Deep Ellum apartment specials with normal rent, effective rent, floor plans, and nearby Dallas location context.",
+    sections: [
+      {
+        title: "Search around Live Oak and central Dallas",
+        text: "Deep Ellum renters often compare lifestyle access, commute routes, and active specials. This page keeps the deal details visible while comparing properties.",
+      },
+      {
+        title: "Confirm the exact special before applying",
+        text: "Properties may offer weeks free, rent credits, or waived fees. Ask how the concession applies to the exact floor plan and move-in date.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Oak & Ellum", to: "/properties/oak-and-ellum" },
+      { label: "4 weeks free apartments", to: "/dallas-apartments-4-weeks-free" },
+      { label: "Downtown Dallas specials", to: "/apartments/dallas-tx/downtown" },
+    ],
+  },
+  "north-dallas-specials": {
+    title: "North Dallas Apartments With Specials",
+    eyebrow: "North Dallas apartment deals",
+    description:
+      "Find North Dallas apartments with active specials, effective rent estimates, photos, floor plans, and renter-friendly deal comparisons.",
+    searchLabel: "Search North Dallas",
+    searchUrl: "/properties?search=North%20Dallas",
+    primaryKeyword: "North Dallas apartments specials",
+    highlight:
+      "Compare North Dallas apartment specials by normal rent, estimated effective rent, floor plans, fees, and neighborhood fit.",
+    sections: [
+      {
+        title: "Compare value across North Dallas",
+        text: "North Dallas searches can include Lake Highlands, Park Lane, Inwood, Medical District, and nearby commute corridors. This page helps compare specials across those areas.",
+      },
+      {
+        title: "Use specials to narrow the list",
+        text: "Start with active concessions, then compare floor plans, fees, photos, and location before deciding which apartments are worth touring.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Ava Apartment Homes", to: "/properties/ava-apartment-homes" },
+      { label: "Medical District specials", to: "/medical-district-apartments-specials" },
+      { label: "Dallas move-in specials", to: "/dallas-apartments-with-move-in-specials" },
+    ],
+  },
   "oak-lawn": {
     title: "Oak Lawn Dallas Apartments With Specials",
     eyebrow: "Oak Lawn apartment deals",
@@ -534,6 +690,12 @@ const DALLAS_INTERNAL_LINKS = [
   { label: "Las Colinas", to: "/las-colinas-apartments-specials" },
   { label: "Farmers Branch 6 weeks", to: "/farmers-branch-apartments-6-weeks-free" },
   { label: "Uptown 4 weeks", to: "/uptown-dallas-apartments-4-weeks-free" },
+  { label: "Medical District", to: "/medical-district-apartments-specials" },
+  { label: "Turtle Creek", to: "/turtle-creek-apartments-specials" },
+  { label: "Farmers Branch 8 weeks", to: "/farmers-branch-apartments-8-weeks-free" },
+  { label: "West Dallas", to: "/west-dallas-apartments-specials" },
+  { label: "Deep Ellum", to: "/deep-ellum-apartments-specials" },
+  { label: "North Dallas", to: "/north-dallas-apartments-specials" },
   { label: "Uptown Dallas", to: "/apartments/dallas-tx/uptown" },
   { label: "Oak Lawn", to: "/oak-lawn-apartments-specials" },
   { label: "Bishop Arts", to: "/apartments/dallas-tx/bishop-arts" },
@@ -1020,6 +1182,13 @@ function matchesLandingPage(property, pageType) {
     );
   }
 
+  if (pageType === "farmers-branch-8-weeks-free") {
+    return (
+      (haystack.includes("farmers branch") || haystack.includes("mercer crossing") || haystack.includes("luna")) &&
+      /8\s*weeks|eight\s*weeks/.test(haystack)
+    );
+  }
+
   if (pageType === "uptown-4-weeks-free") {
     return haystack.includes("uptown") && /4\s*weeks|four\s*weeks|1\s*month|one\s*month/.test(haystack);
   }
@@ -1038,6 +1207,11 @@ function matchesLandingPage(property, pageType) {
     "farmers-branch-specials": ["farmers branch", "mercer crossing"],
     "irving-specials": ["irving", "las colinas"],
     "las-colinas-specials": ["las colinas", "irving"],
+    "medical-district-specials": ["medical district", "forest park", "inwood", "ut southwestern", "medical"],
+    "turtle-creek-specials": ["turtle creek", "oak lawn"],
+    "west-dallas-specials": ["west dallas", "singleton", "trinity groves"],
+    "deep-ellum-specials": ["deep ellum", "live oak", "east dallas"],
+    "north-dallas-specials": ["north dallas", "skillman", "park lane", "lake highlands", "inwood", "medical district"],
   };
   const keywords = areaKeywords[pageType];
 
