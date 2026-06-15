@@ -10,38 +10,55 @@ export async function onRequestPost({ request, env }) {
       `https://belowmarketapartments.com/admin/leads/${encodeURIComponent(
         cleanText(lead.id)
       )}`;
+    const fromEmail =
+      env.RESEND_FROM_EMAIL ||
+      "Below Market Apartments <onboarding@resend.dev>";
+    const replyTo =
+      env.LEAD_REPLY_TO ||
+      env.LEAD_NOTIFICATION_TO ||
+      "jalen.l.mcneal@belowmarketapartments.com";
 
-    const resendResponse = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${env.RESEND_API_KEY}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        from:
-          env.RESEND_FROM_EMAIL ||
-          "Below Market Apartments <onboarding@resend.dev>",
-        to: env.LEAD_NOTIFICATION_TO || "jalen.l.mcneal@belowmarketapartments.com",
-        subject: `New apartment lead: ${leadName}`,
-        html: buildLeadEmailHtml(lead, adminUrl),
-        text: buildLeadEmailText(lead, adminUrl),
-      }),
+    const adminEmailResult = await sendResendEmail(env, {
+      from: fromEmail,
+      to: env.LEAD_NOTIFICATION_TO || "jalen.l.mcneal@belowmarketapartments.com",
+      reply_to: replyTo,
+      subject: `New apartment lead: ${leadName}`,
+      html: buildLeadEmailHtml(lead, adminUrl),
+      text: buildLeadEmailText(lead, adminUrl),
     });
 
-    const resendBody = await resendResponse.json();
-
-    if (!resendResponse.ok) {
+    if (!adminEmailResult.ok) {
       return jsonResponse(
         {
           error:
-            resendBody?.message ||
+            adminEmailResult.body?.message ||
             "Resend could not send the lead notification email.",
         },
-        resendResponse.status
+        adminEmailResult.status
       );
     }
 
-    return jsonResponse({ id: resendBody.id });
+    const renterEmail = cleanText(lead.email);
+    let renterEmailResult = null;
+
+    if (renterEmail) {
+      renterEmailResult = await sendResendEmail(env, {
+        from: fromEmail,
+        to: renterEmail,
+        reply_to: replyTo,
+        subject: "We received your apartment search request",
+        html: buildRenterConfirmationHtml(lead),
+        text: buildRenterConfirmationText(lead),
+      });
+    }
+
+    return jsonResponse({
+      id: adminEmailResult.body.id,
+      renterConfirmationSent: Boolean(renterEmailResult?.ok),
+      renterConfirmationError: renterEmailResult?.ok
+        ? ""
+        : renterEmailResult?.body?.message || "",
+    });
   } catch (error) {
     return jsonResponse(
       {
@@ -67,6 +84,24 @@ function validateEmailConfig(env) {
   }
 
   return "";
+}
+
+async function sendResendEmail(env, email) {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(email),
+  });
+  const body = await response.json().catch(() => ({}));
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    body,
+  };
 }
 
 function buildLeadEmailHtml(lead, adminUrl) {
@@ -113,6 +148,64 @@ function buildLeadEmailHtml(lead, adminUrl) {
   `;
 }
 
+function buildRenterConfirmationHtml(lead) {
+  const renterName = cleanText(lead.name) || "there";
+  const details = [
+    ["Preferred Area", getPreferenceArea(lead)],
+    ["Bedrooms", lead.bedrooms],
+    ["Budget", lead.budget],
+    ["Move-in", lead.moveIn],
+    ["Contact Method", lead.contactMethod],
+  ].filter(([, value]) => cleanText(value));
+
+  return `
+    <div style="font-family: Arial, sans-serif; color: #102426; line-height: 1.6;">
+      <h1 style="margin: 0 0 12px; font-size: 24px;">We received your apartment search request</h1>
+      <p style="margin: 0 0 16px;">Hi ${escapeHtml(renterName)},</p>
+      <p style="margin: 0 0 16px;">
+        Thanks for reaching out to Below Market Apartments. We will review your preferences and follow up with current Dallas-area apartment specials that fit your search.
+      </p>
+      <div style="margin: 20px 0; padding: 16px; background: #f5f8f1; border: 1px solid #d7e6df; border-radius: 14px;">
+        <p style="margin: 0 0 10px; font-weight: 700;">Search summary</p>
+        ${details
+          .map(
+            ([label, value]) => `
+              <p style="margin: 6px 0;"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>
+            `
+          )
+          .join("")}
+      </div>
+      <p style="margin: 0 0 16px;">
+        If anything changes, reply to this email or call/text 945-269-3768.
+      </p>
+      <p style="margin: 0;">Below Market Apartments</p>
+    </div>
+  `;
+}
+
+function buildRenterConfirmationText(lead) {
+  const renterName = cleanText(lead.name) || "there";
+  const lines = [
+    `Hi ${renterName},`,
+    "",
+    "We received your apartment search request.",
+    "We will review your preferences and follow up with current Dallas-area apartment specials that fit your search.",
+    "",
+    "Search summary:",
+    `Preferred Area: ${getPreferenceArea(lead)}`,
+    `Bedrooms: ${cleanText(lead.bedrooms)}`,
+    `Budget: ${cleanText(lead.budget)}`,
+    `Move-in: ${cleanText(lead.moveIn)}`,
+    `Contact Method: ${cleanText(lead.contactMethod)}`,
+    "",
+    "If anything changes, reply to this email or call/text 945-269-3768.",
+    "",
+    "Below Market Apartments",
+  ];
+
+  return lines.filter((line) => !line.endsWith(": ")).join("\n");
+}
+
 function buildLeadEmailText(lead, adminUrl) {
   const lines = [
     "New apartment lead",
@@ -137,6 +230,16 @@ function buildLeadEmailText(lead, adminUrl) {
   ];
 
   return lines.filter((line) => !line.endsWith(": ")).join("\n");
+}
+
+function getPreferenceArea(lead) {
+  const preference = cleanText(lead.preference);
+
+  if (!preference) return "";
+
+  const [, area] = preference.split(" - ");
+
+  return cleanText(area) || preference;
 }
 
 function cleanText(value) {
