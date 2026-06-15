@@ -8,7 +8,6 @@ import {
     hasPreciseStreetAddress,
     isReliableGeocodeResult,
 } from "../data/propertySearchData";
-import { getMarketRentBenchmark } from "../data/marketRentBenchmarks";
 import { getAllProperties, getAnyPropertyById } from "../data/propertyStorage";
 import {
     getCompareFloorPlanItemKey,
@@ -194,7 +193,6 @@ function normalizeListingFloorPlans(property) {
 }
 
 function enrichFloorPlanWithMarketBenchmark(property, plan) {
-    const benchmark = getMarketRentBenchmark(property, plan);
     const manualMarketRent = plan.marketRent || property?.marketRent || "";
     const effectiveRentNumber =
         parseCurrency(plan.effectiveRent) || parseCurrency(plan.rent);
@@ -214,45 +212,10 @@ function enrichFloorPlanWithMarketBenchmark(property, plan) {
         };
     }
 
-    if (!benchmark) {
-        return {
-            ...plan,
-            marketRent: "",
-            marketRentSource: "",
-        };
-    }
-
-    const shouldShowBenchmark =
-        benchmark.marketRent > 0 &&
-        effectiveRentNumber > 0 &&
-        benchmark.marketRent > effectiveRentNumber;
-
-    if (!shouldShowBenchmark) {
-        return {
-            ...plan,
-            marketRent: "",
-            marketRentSource: "",
-            marketRentHiddenReason:
-                "Class-adjusted benchmark did not show positive renter value.",
-        };
-    }
-
-    const benchmarkSavingsNumber = Math.max(benchmark.marketRent - effectiveRentNumber, 0);
-    const benchmarkPercentNumber = benchmark.marketRent
-        ? Math.round((benchmarkSavingsNumber / benchmark.marketRent) * 100)
-        : 0;
-
     return {
         ...plan,
-        marketRent: formatCurrency(benchmark.marketRent),
-        marketRentSource: benchmark.source,
-        marketRentConfidence: benchmark.confidence,
-        marketRentAreaName: benchmark.areaName,
-        marketRentLastUpdated: benchmark.lastUpdated,
-        marketRentPropertyClass: benchmark.propertyClassLabel,
-        marketRentClassConfidence: benchmark.classConfidence,
-        savings: plan.savings || (benchmarkSavingsNumber ? `${formatCurrency(benchmarkSavingsNumber)}/mo` : "$0/mo"),
-        belowMarketPercent: plan.belowMarketPercent || `${benchmarkPercentNumber}%`,
+        marketRent: "",
+        marketRentSource: "",
     };
 }
 
@@ -3863,6 +3826,13 @@ function FloorPlanCard({
         availableUnits,
         status,
     }) || 0;
+    const hasManualMarketComparison = marketRentSource === "Property-entered market rent";
+    const savingsLabel = hasManualMarketComparison ? "Savings" : "Special Value";
+    const valueBadgeLabel = belowMarketPercent
+        ? hasManualMarketComparison
+            ? `${belowMarketPercent} vs market rent`
+            : `${belowMarketPercent} special value`
+        : "";
 
     return (
         <div className="flex min-h-[290px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
@@ -3917,15 +3887,15 @@ function FloorPlanCard({
                 )}
 
                 {savings && (
-                    <FloorPlanMetric label="Savings" value={savings} highlight />
+                    <FloorPlanMetric label={savingsLabel} value={savings} highlight />
                 )}
             </div>
 
             <div className="mt-5 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
                 <div className="min-w-0 text-center sm:text-left">
-                    {belowMarketPercent ? (
+                    {valueBadgeLabel ? (
                         <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
-                            {belowMarketPercent} below
+                            {valueBadgeLabel}
                         </span>
                     ) : (
                         <span className="text-xs font-bold text-[#526260]">Compare fees before applying</span>
