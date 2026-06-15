@@ -709,13 +709,13 @@ export default function LeadsTab() {
 
       </div>
 
-      <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <h2 className="text-2xl font-black text-slate-900">
+            <h2 className="text-2xl font-black text-[#102426]">
               Lead Pipeline
             </h2>
-            <p className="mt-1 text-slate-500">
+            <p className="mt-1 font-semibold text-[#526260]">
               {dataTypeFilter === "Archived"
                 ? `Showing ${filteredLeads.length} archived leads.`
                 : `Showing ${filteredLeads.length} of ${activeLeads.length} active leads.`}
@@ -740,8 +740,8 @@ export default function LeadsTab() {
               setSearchParams({}, { replace: true });
             }}
             className={`rounded-full px-4 py-2 text-sm font-bold ${priorityFilter === "High"
-              ? "bg-red-700 text-white"
-              : "bg-red-100 text-red-700 hover:bg-red-200"
+              ? "bg-[#b33818] text-white"
+              : "bg-[#fde8df] text-[#b33818] hover:bg-[#f9d4c6]"
               }`}
           >
             {priorityFilter === "High"
@@ -771,8 +771,8 @@ export default function LeadsTab() {
                   setSearchParams({}, { replace: true });
                 }}
                 className={`rounded-2xl px-4 py-3 text-left ${statusFilter === status
-                  ? "bg-slate-950 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  ? "bg-[#102426] text-white"
+                  : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#e7f3ee]"
                   }`}
               >
                 <p className="text-sm font-bold">{status}</p>
@@ -784,13 +784,13 @@ export default function LeadsTab() {
 
         <div className="mt-6 grid gap-3">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#78908a]" />
             <input
               type="text"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search leads..."
-              className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400"
+              className="w-full rounded-2xl border border-[#d7e6df] bg-white py-3 pl-12 pr-4 font-semibold text-[#102426] placeholder:text-[#78908a] outline-none focus:border-[#1f6f63]"
             />
           </div>
 
@@ -798,7 +798,7 @@ export default function LeadsTab() {
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 outline-none focus:border-slate-400"
+              className="rounded-2xl border border-[#d7e6df] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#1f6f63]"
             >
               <option>All</option>
               <option>New Lead</option>
@@ -811,7 +811,7 @@ export default function LeadsTab() {
             <select
               value={sourceFilter}
               onChange={(event) => setSourceFilter(event.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 outline-none focus:border-slate-400"
+              className="rounded-2xl border border-[#d7e6df] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#1f6f63]"
             >
               {leadSources.map((source) => (
                 <option key={source}>{source}</option>
@@ -821,7 +821,7 @@ export default function LeadsTab() {
             <select
               value={priorityFilter}
               onChange={(event) => setPriorityFilter(event.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 outline-none focus:border-slate-400"
+              className="rounded-2xl border border-[#d7e6df] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#1f6f63]"
             >
               {leadPriorities.map((priority) => (
                 <option key={priority}>{priority}</option>
@@ -831,7 +831,7 @@ export default function LeadsTab() {
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 outline-none focus:border-slate-400"
+              className="rounded-2xl border border-[#d7e6df] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#1f6f63]"
             >
               <option value="newest">Newest First</option>
               <option value="priority">Highest Priority</option>
@@ -842,7 +842,7 @@ export default function LeadsTab() {
             <select
               value={recommendationFilter}
               onChange={(event) => setRecommendationFilter(event.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 outline-none focus:border-slate-400"
+              className="rounded-2xl border border-[#d7e6df] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#1f6f63]"
             >
               <option>All</option>
               <option>Has Recommendations</option>
@@ -861,7 +861,7 @@ export default function LeadsTab() {
                   setSearchParams({ tourFilter: value }, { replace: true });
                 }
               }}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 outline-none focus:border-slate-400"
+              className="rounded-2xl border border-[#d7e6df] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#1f6f63]"
             >
               <option>All</option>
               <option>Has Tour Requests</option>
@@ -872,7 +872,7 @@ export default function LeadsTab() {
             <select
               value={dataTypeFilter}
               onChange={(event) => setDataTypeFilter(event.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 outline-none focus:border-slate-400"
+              className="rounded-2xl border border-[#d7e6df] bg-white px-4 py-3 font-semibold text-[#173f3f] outline-none focus:border-[#1f6f63]"
             >
               <option>All Data</option>
               <option>Live Data</option>
@@ -895,7 +895,7 @@ export default function LeadsTab() {
                   setDataTypeFilter("All Data");
                   setSearchParams({}, { replace: true });
                 }}
-                className="rounded-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                className="rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
               >
                 Clear
               </button>
@@ -989,12 +989,12 @@ export default function LeadsTab() {
               />
             ))
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center">
-              <h3 className="text-xl font-black text-slate-900">
+            <div className="rounded-2xl border border-dashed border-[#a9cfc2] bg-[#f5f8f1] p-10 text-center">
+              <h3 className="text-xl font-black text-[#102426]">
                 {hasActiveFilters ? "No leads match these filters" : "No leads yet"}
               </h3>
 
-              <p className="mt-2 text-slate-500">
+              <p className="mt-2 font-semibold text-[#526260]">
                 {hasActiveFilters
                   ? "Try clearing filters or changing your search."
                   : "Production leads now come from Supabase. Create a renter from the start page or use the test lead helper to verify the live workflow."}
@@ -1006,14 +1006,14 @@ export default function LeadsTab() {
                     type="button"
                     onClick={createTestLead}
                     disabled={isCreatingTestLead}
-                    className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#d7e6df]"
                   >
                     {isCreatingTestLead ? "Creating..." : "Create Test Lead"}
                   </button>
 
                   <Link
                     to="/start"
-                    className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                    className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
                   >
                     Open Start Page
                   </Link>
@@ -1032,7 +1032,7 @@ function FilterChip({ label, onRemove }) {
     <button
       type="button"
       onClick={onRemove}
-      className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200"
+      className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-bold text-[#173f3f] hover:bg-[#d7e6df]"
     >
       {label} ×
     </button>
@@ -1140,13 +1140,13 @@ function LeadRow({ lead, tourRequests }) {
   const nextAction = getNextActionText(leadHealth.label);
 
   return (
-    <div className="rounded-2xl bg-slate-50 p-5">
+    <div className="rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] p-5">
       <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to={`/admin/leads/${lead.id}`}
-              className="text-xl font-black text-slate-900 hover:text-slate-600"
+              className="text-xl font-black text-[#102426] hover:text-[#1f6f63]"
             >
               {lead.name}
             </Link>
@@ -1162,7 +1162,7 @@ function LeadRow({ lead, tourRequests }) {
               {(lead.quality || "New")} Quality
             </span>
 
-            <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-600">
+            <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-bold text-[#173f3f]">
               {lead.source}
             </span>
 
@@ -1178,18 +1178,18 @@ function LeadRow({ lead, tourRequests }) {
 
           </div>
 
-          <p className="mt-2 text-sm font-semibold text-slate-600">
+          <p className="mt-2 text-sm font-semibold text-[#526260]">
             {lead.preference}
           </p>
 
           <Link
             to={leadHealth.to}
-            className="mt-2 block w-fit text-sm font-bold text-slate-700 hover:text-slate-950"
+            className="mt-2 block w-fit text-sm font-bold text-[#173f3f] hover:text-[#1f6f63]"
           >
             Next action: {nextAction}
           </Link>
 
-          <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-500">
+          <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold text-[#526260]">
             <span className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
               {lead.phone}
@@ -1202,14 +1202,14 @@ function LeadRow({ lead, tourRequests }) {
           </div>
 
           <div className="mt-3 space-y-1">
-            <p className="text-sm font-bold text-slate-600">
+            <p className="text-sm font-bold text-[#526260]">
               {recommendationCount} recommended{" "}
               {recommendationCount === 1 ? "property" : "properties"}
             </p>
 
             <Link
               to={`/admin/leads/${lead.id}#activity-timeline`}
-              className="block w-fit text-sm font-bold text-slate-500 hover:text-slate-900 hover:underline"
+              className="block w-fit text-sm font-bold text-[#526260] hover:text-[#173f3f] hover:underline"
             >
               View {activityCount} {activityCount === 1 ? "activity" : "activities"}
             </Link>
@@ -1217,7 +1217,7 @@ function LeadRow({ lead, tourRequests }) {
             {latestActivity && (
               <Link
                 to={`/admin/leads/${lead.id}#activity-timeline`}
-                className="flex w-fit items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 hover:underline"
+                className="flex w-fit items-center gap-2 text-sm font-semibold text-[#526260] hover:text-[#173f3f] hover:underline"
               >
                 <Clock3 className="h-4 w-4" />
                 Last activity: {latestActivity.title} · {formatLeadActivityDate(latestActivity.createdAt)}
@@ -1233,13 +1233,13 @@ function LeadRow({ lead, tourRequests }) {
                 {tourRequestCount} tour {tourRequestCount === 1 ? "request" : "requests"}
 
                 {hasTourFollowUpNeeded ? (
-                  <span className="text-slate-500"> need follow-up</span>
+                  <span className="text-[#526260]"> need follow-up</span>
                 ) : (
-                  <span className="text-slate-500"> followed up</span>
+                  <span className="text-[#526260]"> followed up</span>
                 )}
 
                 {latestTourRequest?.preferredDate && hasTourFollowUpNeeded && (
-                  <span className="text-slate-500">
+                  <span className="text-[#526260]">
                     {" "}
                     · Latest: {latestTourRequest.preferredDate}
                     {latestTourRequest.preferredTime
@@ -1253,14 +1253,14 @@ function LeadRow({ lead, tourRequests }) {
 
           </div>
 
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="mt-3 text-sm font-semibold text-[#526260]">
             Assigned to {lead.assignedTo} • Last touch {lead.lastTouch}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2 sm:justify-end lg:min-w-[320px]">          <Link
           to={`/admin/leads/${lead.id}`}
-          className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100"
+          className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
         >
           Details
         </Link>
@@ -1268,8 +1268,8 @@ function LeadRow({ lead, tourRequests }) {
           <Link
             to={`/admin/leads/${lead.id}/send-properties`}
             className={`rounded-xl px-4 py-2 text-sm font-bold ${recommendationCount === 0
-              ? "bg-slate-950 text-white hover:bg-slate-800"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              ? "bg-[#102426] text-white hover:bg-[#173f3f]"
+              : "bg-[#e7f3ee] text-[#173f3f] hover:bg-[#d7e6df]"
               }`}
           >
             Recommend
@@ -1278,7 +1278,7 @@ function LeadRow({ lead, tourRequests }) {
           {!hasTourFollowUpNeeded && (
             <Link
               to={`/admin/leads/${lead.id}/message`}
-              className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200"
+              className="rounded-xl bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
             >
               Message Lead
             </Link>
@@ -1287,7 +1287,7 @@ function LeadRow({ lead, tourRequests }) {
           {hasTourFollowUpNeeded && (
             <Link
               to={`/admin/leads/${lead.id}/message`}
-              className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700"
+              className="rounded-xl bg-[#1f6f63] px-4 py-2 text-sm font-bold text-white hover:bg-[#173f3f]"
             >
               Follow Up
             </Link>
@@ -1296,9 +1296,9 @@ function LeadRow({ lead, tourRequests }) {
       </div>
 
       {lead.notes && lead.notes !== "No notes added yet." && (
-        <div className="mt-4 rounded-2xl bg-white p-4">
-          <p className="text-sm font-bold text-slate-500">Lead Notes</p>
-          <p className="mt-1 text-sm text-slate-700">{lead.notes}</p>
+        <div className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
+          <p className="text-sm font-bold text-[#526260]">Lead Notes</p>
+          <p className="mt-1 text-sm font-semibold text-[#173f3f]">{lead.notes}</p>
         </div>
       )}
     </div>
@@ -1306,29 +1306,29 @@ function LeadRow({ lead, tourRequests }) {
 }
 
 function getStatusClasses(status) {
-  if (status === "New Lead") return "bg-emerald-100 text-emerald-700";
-  if (status === "Contacted") return "bg-sky-100 text-sky-700";
-  if (status === "Tour Needed") return "bg-amber-100 text-amber-700";
-  if (status === "Recommendation Sent") return "bg-indigo-100 text-indigo-700";
+  if (status === "New Lead") return "bg-[#d8efe6] text-[#1f6f63]";
+  if (status === "Contacted") return "bg-[#e7f3ee] text-[#173f3f]";
+  if (status === "Tour Needed") return "bg-[#fff8e6] text-[#8a5b0a]";
+  if (status === "Recommendation Sent") return "bg-[#e7f3ee] text-[#173f3f]";
 
-  return "bg-slate-200 text-slate-700";
+  return "bg-[#e7f3ee] text-[#526260]";
 }
 
 function getPriorityClasses(priority) {
-  if (priority === "High") return "bg-red-100 text-red-700";
-  if (priority === "Medium") return "bg-amber-100 text-amber-700";
+  if (priority === "High") return "bg-[#fde8df] text-[#b33818]";
+  if (priority === "Medium") return "bg-[#fff8e6] text-[#8a5b0a]";
 
-  return "bg-slate-200 text-slate-700";
+  return "bg-[#e7f3ee] text-[#526260]";
 }
 
 function getQualityClasses(quality) {
-  if (quality === "Qualified") return "bg-emerald-100 text-emerald-700";
-  if (quality === "Converted") return "bg-indigo-100 text-indigo-700";
-  if (quality === "Bad Fit") return "bg-red-100 text-red-700";
-  if (quality === "No Response") return "bg-amber-100 text-amber-700";
-  if (quality === "Duplicate") return "bg-slate-200 text-slate-700";
+  if (quality === "Qualified") return "bg-[#d8efe6] text-[#1f6f63]";
+  if (quality === "Converted") return "bg-[#f2b84b] text-[#102426]";
+  if (quality === "Bad Fit") return "bg-[#fde8df] text-[#b33818]";
+  if (quality === "No Response") return "bg-[#fff8e6] text-[#8a5b0a]";
+  if (quality === "Duplicate") return "bg-[#e7f3ee] text-[#526260]";
 
-  return "bg-sky-100 text-sky-700";
+  return "bg-[#e7f3ee] text-[#173f3f]";
 }
 
 
@@ -1336,7 +1336,7 @@ function getLeadHealth({ lead, recommendationCount, hasTourFollowUpNeeded }) {
   if (recommendationCount === 0) {
     return {
       label: "Needs Recommendations",
-      classes: "bg-amber-100 text-amber-700",
+      classes: "bg-[#fff8e6] text-[#8a5b0a]",
       to: `/admin/leads/${lead.id}/send-properties`,
     };
   }
@@ -1344,7 +1344,7 @@ function getLeadHealth({ lead, recommendationCount, hasTourFollowUpNeeded }) {
   if (hasTourFollowUpNeeded) {
     return {
       label: "Tour Follow-up",
-      classes: "bg-emerald-100 text-emerald-700",
+      classes: "bg-[#d8efe6] text-[#1f6f63]",
       to: `/admin/leads/${lead.id}/message`,
     };
   }
@@ -1352,14 +1352,14 @@ function getLeadHealth({ lead, recommendationCount, hasTourFollowUpNeeded }) {
   if (lead.status === "New Lead") {
     return {
       label: "New Lead",
-      classes: "bg-slate-100 text-slate-700",
+      classes: "bg-[#e7f3ee] text-[#173f3f]",
       to: `/admin/leads/${lead.id}`,
     };
   }
 
   return {
     label: "No Action Needed",
-    classes: "bg-indigo-100 text-indigo-700",
+    classes: "bg-[#e7f3ee] text-[#526260]",
     to: `/admin/leads/${lead.id}`,
   };
 }
