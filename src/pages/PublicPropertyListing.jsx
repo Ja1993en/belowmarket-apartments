@@ -1042,6 +1042,10 @@ export default function PublicPropertyListing() {
     const unavailableFloorPlans = sortedFloorPlans.filter(
         (plan) => !isFloorPlanAvailable(plan)
     );
+    const availableUnitCount = availableFloorPlans.reduce(
+        (total, plan) => total + (getFloorPlanAvailableUnitCount(plan) || 0),
+        0
+    );
     const paginatedFloorPlans = showUnavailableFloorPlans
         ? sortedFloorPlans
         : availableFloorPlans;
@@ -1645,6 +1649,9 @@ export default function PublicPropertyListing() {
                                             <p className="text-sm font-black text-[#102426]">
                                                 {availableFloorPlans.length} available floor plan
                                                 {availableFloorPlans.length === 1 ? "" : "s"}
+                                                {availableUnitCount > 0
+                                                    ? ` • ${availableUnitCount} available unit${availableUnitCount === 1 ? "" : "s"}`
+                                                    : ""}
                                             </p>
 
                                             {unavailableFloorPlans.length > 0 && (
@@ -1705,6 +1712,9 @@ export default function PublicPropertyListing() {
                                             {paginatedFloorPlans.length}{" "}
                                             {showUnavailableFloorPlans ? "total" : "available"} floor plan
                                             {paginatedFloorPlans.length === 1 ? "" : "s"}
+                                            {availableUnitCount > 0 && !showUnavailableFloorPlans
+                                                ? ` covering ${availableUnitCount} available unit${availableUnitCount === 1 ? "" : "s"}`
+                                                : ""}
                                         </p>
                                     )}
 
