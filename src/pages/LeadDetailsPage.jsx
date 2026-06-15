@@ -57,6 +57,7 @@ export default function LeadDetailsPage() {
     const [isLocalLead, setIsLocalLead] = useState(Boolean(initialLead));
     const [copiedRenterLink, setCopiedRenterLink] = useState(false);
     const [notesSaved, setNotesSaved] = useState(false);
+    const [assignmentSaved, setAssignmentSaved] = useState(false);
 
     const refreshLead = useCallback(async () => {
         if (isLocalLead) {
@@ -312,6 +313,8 @@ export default function LeadDetailsPage() {
                 ...lead,
                 ...updates,
             });
+            setAssignmentSaved(true);
+            window.setTimeout(() => setAssignmentSaved(false), 2000);
         } catch (error) {
             console.error(error);
             alert("Could not save assignment. Please try again.");
@@ -1067,6 +1070,12 @@ export default function LeadDetailsPage() {
                                 >
                                     Save Assignment
                                 </button>
+
+                                {assignmentSaved && (
+                                    <p className="mt-3 rounded-2xl bg-[#d8efe6] px-4 py-3 text-center text-sm font-bold text-[#1f6f63]">
+                                        Assignment saved
+                                    </p>
+                                )}
                             </div>
 
                             <SimpleRow label="Source" value={lead.source} />
