@@ -480,10 +480,18 @@ function HeroMetric({ icon: Icon, label, value }) {
   );
 }
 
-function formatBedroomLabel(value) {
+function formatBedroomLabel(value, fallbackName = "") {
   const normalizedValue = String(value ?? "").trim();
+  const normalizedFallback = String(fallbackName || "").trim();
+  if (
+    /studio/i.test(normalizedValue) ||
+    normalizedValue === "0" ||
+    /studio/i.test(normalizedFallback) ||
+    /^s\d*[a-z]?$/i.test(normalizedFallback)
+  ) {
+    return "Studio";
+  }
   if (!normalizedValue) return "Bedrooms not listed";
-  if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
   if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
 
   const bedMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)\s*beds?$/i);
@@ -497,7 +505,7 @@ function formatBedroomLabel(value) {
 
 function formatFloorPlanMeta(floorPlanItem) {
   return [
-    formatBedroomLabel(floorPlanItem.beds),
+    formatBedroomLabel(floorPlanItem.beds, floorPlanItem.floorPlanName),
     floorPlanItem.baths ? `${floorPlanItem.baths} ba` : "",
     floorPlanItem.sqft ? `${floorPlanItem.sqft} sq ft` : "",
     floorPlanItem.available,

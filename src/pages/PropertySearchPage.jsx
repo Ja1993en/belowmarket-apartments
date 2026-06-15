@@ -2404,7 +2404,7 @@ function formatRentRange(minRent, maxRent) {
 function getBedsLabel(property, floorPlans = null) {
   const bedroomsFromFloorPlans =
     floorPlans
-      ?.map((floorPlan) => floorPlan.bedrooms || floorPlan.beds)
+      ?.map(getBedroomValueFromFloorPlan)
       .filter((bedroomValue) => bedroomValue !== undefined && bedroomValue !== null) ||
     [];
   const bedrooms = [
@@ -2426,6 +2426,20 @@ function getBedsLabel(property, floorPlans = null) {
   if (firstCount > 0 && lastCount > firstCount) return `${firstCount}-${lastCount} bd`;
 
   return `${formatBedroomLabel(firstBedroom)} - ${formatBedroomLabel(lastBedroom)}`;
+}
+
+function getBedroomValueFromFloorPlan(floorPlan = {}) {
+  const bedroomValue = floorPlan.bedrooms ?? floorPlan.beds;
+  if (bedroomValue !== undefined && bedroomValue !== null && bedroomValue !== "") {
+    return bedroomValue;
+  }
+
+  const floorPlanName = String(floorPlan.name || floorPlan.floorPlanName || "").trim();
+  if (/studio/i.test(floorPlanName) || /^s\d*[a-z]?$/i.test(floorPlanName)) {
+    return "Studio";
+  }
+
+  return bedroomValue;
 }
 
 function getBedroomCount(value) {

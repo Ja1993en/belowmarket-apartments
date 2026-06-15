@@ -180,8 +180,12 @@ export default function SendPropertiesPage() {
   }, [properties, normalizedPropertySearch]);
 
   useEffect(() => {
-    setSelectedFloorPlanItems(lead?.recommendedFloorPlanItems || []);
-  }, [lead?.id]);
+    const syncSelectedFloorPlans = window.setTimeout(() => {
+      setSelectedFloorPlanItems(lead?.recommendedFloorPlanItems || []);
+    }, 0);
+
+    return () => window.clearTimeout(syncSelectedFloorPlans);
+  }, [lead?.id, lead?.recommendedFloorPlanItems]);
 
   const toggleFloorPlanRecommendation = (floorPlanItem) => {
     const floorPlanKey = getCompareFloorPlanItemKey(floorPlanItem);
@@ -959,10 +963,18 @@ function PropertyBadge({ label }) {
   );
 }
 
-function formatBedroomLabel(value) {
+function formatBedroomLabel(value, fallbackName = "") {
   const normalizedValue = String(value ?? "").trim();
+  const normalizedFallback = String(fallbackName || "").trim();
+  if (
+    /studio/i.test(normalizedValue) ||
+    normalizedValue === "0" ||
+    /studio/i.test(normalizedFallback) ||
+    /^s\d*[a-z]?$/i.test(normalizedFallback)
+  ) {
+    return "Studio";
+  }
   if (!normalizedValue) return "Bedrooms not listed";
-  if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
   if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
 
   const bedMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)\s*beds?$/i);
@@ -1068,7 +1080,7 @@ function getFloorPlanRecommendationId(name, index) {
 
 function formatFloorPlanMeta(floorPlanItem) {
   return [
-    formatBedroomLabel(floorPlanItem.beds),
+    formatBedroomLabel(floorPlanItem.beds, floorPlanItem.floorPlanName),
     floorPlanItem.baths ? `${floorPlanItem.baths} ba` : "",
     floorPlanItem.sqft ? `${floorPlanItem.sqft} sq ft` : "",
     floorPlanItem.available,

@@ -1679,7 +1679,7 @@ export default function PublicPropertyListing() {
                                                                     at {item.propertyName}
                                                                 </p>
                                                                 <p className="mt-2 text-xs font-semibold text-[#526260]">
-                                                                    {formatBedroomLabel(item.beds)} • {item.baths || "Baths not listed"} ba •{" "}
+                                                                    {formatBedroomLabel(item.beds, item.floorPlanName)} • {item.baths || "Baths not listed"} ba •{" "}
                                                                     {item.sqft || "Sq ft not listed"} sq ft
                                                                 </p>
                                                             </div>
@@ -3763,7 +3763,7 @@ function ComparedFloorPlanCard({
                         at {item.propertyName}
                     </p>
                     <p className="mt-2 text-xs font-semibold text-[#526260]">
-                        {formatBedroomLabel(item.beds)} • {item.baths || "Baths not listed"} ba •{" "}
+                        {formatBedroomLabel(item.beds, item.floorPlanName)} • {item.baths || "Baths not listed"} ba •{" "}
                         {item.sqft || "Sq ft not listed"} sq ft
                     </p>
                 </div>
@@ -3882,7 +3882,7 @@ function FloorPlanCard({
                     </p>
 
                     <p className="mt-1 text-sm font-semibold text-[#526260]">
-                        {formatBedroomLabel(beds)} • {baths} ba • {sqft} sq ft
+                        {formatBedroomLabel(beds, name)} • {baths} ba • {sqft} sq ft
                     </p>
                 </div>
             </div>
@@ -3956,7 +3956,7 @@ function FloorPlanCard({
                                 {name}
                             </h4>
                             <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                {formatBedroomLabel(beds)} • {baths || "Baths not listed"} ba • {sqft || "Sq ft not listed"} sq ft
+                                {formatBedroomLabel(beds, name)} • {baths || "Baths not listed"} ba • {sqft || "Sq ft not listed"} sq ft
                             </p>
 
                             <div className="mt-4 grid grid-cols-2 gap-2">
@@ -4142,11 +4142,19 @@ function getFloorPlanAvailableUnitCount(plan) {
     return null;
 }
 
-function formatBedroomLabel(value) {
+function formatBedroomLabel(value, fallbackName = "") {
     const normalizedValue = String(value ?? "").trim();
-    if (!normalizedValue || normalizedValue === "Not set") return "Beds not listed";
+    const normalizedFallback = String(fallbackName || "").trim();
     if (normalizedValue === "All") return "All";
-    if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
+    if (
+        /studio/i.test(normalizedValue) ||
+        normalizedValue === "0" ||
+        /studio/i.test(normalizedFallback) ||
+        /^s\d*[a-z]?$/i.test(normalizedFallback)
+    ) {
+        return "Studio";
+    }
+    if (!normalizedValue || normalizedValue === "Not set") return "Beds not listed";
     if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
 
     const bedMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)\s*beds?$/i);
