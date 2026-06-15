@@ -33,7 +33,7 @@ import {
 } from "../data/leadStorage";
 
 const leadStatuses = ["New Lead", "Contacted", "Tour Needed", "Recommendation Sent"];
-const leadQualities = ["New", "Qualified", "Bad Fit", "No Response", "Duplicate", "Converted"];
+const leadQualities = ["New", "Qualified", "Not Qualified", "No Response", "Converted"];
 
 export default function LeadDetailsPage() {
     const { leadId } = useParams();

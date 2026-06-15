@@ -214,8 +214,11 @@ export default function LeadsTab() {
       (statusFilter === "Needs Action" && matchesNeedsAction);
 
     const matchesSource = sourceFilter === "All" || lead.source === sourceFilter;
+    const leadQuality = lead.quality || "New";
     const matchesQuality =
-      qualityFilter === "All" || (lead.quality || "New") === qualityFilter;
+      qualityFilter === "All" ||
+      leadQuality === qualityFilter ||
+      (qualityFilter === "Not Qualified" && leadQuality === "Bad Fit");
     const matchesDataType =
       (dataTypeFilter === "All Data" && lead.status !== "Archived") ||
       (dataTypeFilter === "Test Data" && lead.source === "Test Data" && lead.status !== "Archived") ||
@@ -300,8 +303,8 @@ export default function LeadsTab() {
   const qualifiedLeadCount = activeLeads.filter(
     (lead) => lead.quality === "Qualified"
   ).length;
-  const badFitLeadCount = activeLeads.filter(
-    (lead) => lead.quality === "Bad Fit"
+  const notQualifiedLeadCount = activeLeads.filter(
+    (lead) => lead.quality === "Not Qualified" || lead.quality === "Bad Fit"
   ).length;
   const convertedLeadCount = activeLeads.filter(
     (lead) => lead.quality === "Converted"
@@ -655,15 +658,15 @@ export default function LeadsTab() {
 
         <LeadStatCard
           icon={XCircle}
-          title="Bad Fit"
-          value={badFitLeadCount}
+          title="Not Qualified"
+          value={notQualifiedLeadCount}
           subtitle={
-            qualityFilter === "Bad Fit"
+            qualityFilter === "Not Qualified"
               ? "Click to show all leads"
               : "Not worth ad spend"
           }
           onClick={() => {
-            const nextQuality = qualityFilter === "Bad Fit" ? "All" : "Bad Fit";
+            const nextQuality = qualityFilter === "Not Qualified" ? "All" : "Not Qualified";
 
             setSearchTerm("");
             setStatusFilter("All");
@@ -677,7 +680,7 @@ export default function LeadsTab() {
             setDataTypeFilter("All Data");
             setSearchParams({}, { replace: true });
           }}
-          isActive={qualityFilter === "Bad Fit"}
+          isActive={qualityFilter === "Not Qualified"}
         />
 
         <LeadStatCard
@@ -1324,9 +1327,8 @@ function getPriorityClasses(priority) {
 function getQualityClasses(quality) {
   if (quality === "Qualified") return "bg-[#d8efe6] text-[#1f6f63]";
   if (quality === "Converted") return "bg-[#f2b84b] text-[#102426]";
-  if (quality === "Bad Fit") return "bg-[#fde8df] text-[#b33818]";
+  if (quality === "Not Qualified" || quality === "Bad Fit") return "bg-[#fde8df] text-[#b33818]";
   if (quality === "No Response") return "bg-[#fff8e6] text-[#8a5b0a]";
-  if (quality === "Duplicate") return "bg-[#e7f3ee] text-[#526260]";
 
   return "bg-[#e7f3ee] text-[#173f3f]";
 }
