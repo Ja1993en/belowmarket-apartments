@@ -32,6 +32,8 @@ import {
     updateLocalLead,
 } from "../data/leadStorage";
 
+const leadStatuses = ["New Lead", "Contacted", "Tour Needed", "Recommendation Sent"];
+
 export default function LeadDetailsPage() {
     const { leadId } = useParams();
     const navigate = useNavigate();
@@ -205,15 +207,19 @@ export default function LeadDetailsPage() {
         try {
             if (isLocalLead) {
                 updateLocalLead(lead.id, updates);
-
-                saveLeadActivity({
-                    leadId: lead.id,
-                    title: "Lead status updated",
-                    description: `Status changed to ${status}.`,
-                });
             } else {
                 await updateSupabaseLead(lead.id, updates);
             }
+
+            saveLeadActivity({
+                leadId: lead.id,
+                title: status === "Contacted" ? "Lead contacted" : "Lead status updated",
+                description:
+                    status === "Contacted"
+                        ? "First follow-up was completed."
+                        : `Status changed to ${status}.`,
+                category: "Admin",
+            });
 
             setLead({
                 ...lead,
@@ -223,6 +229,10 @@ export default function LeadDetailsPage() {
             console.error(error);
             alert("Could not update lead status. Please try again.");
         }
+    };
+
+    const markContacted = () => {
+        updateStatus("Contacted");
     };
 
     const saveNotes = async () => {
@@ -868,7 +878,16 @@ export default function LeadDetailsPage() {
                         </h2>
 
                         <div className="mt-5 grid gap-3">
-                            {["New Lead", "Tour Needed", "Recommendation Sent"].map((status) => (
+                            {lead.status !== "Contacted" && (
+                                <button
+                                    onClick={markContacted}
+                                    className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-700"
+                                >
+                                    Mark Contacted
+                                </button>
+                            )}
+
+                            {leadStatuses.map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => updateStatus(status)}
@@ -999,6 +1018,7 @@ function SimpleRow({ label, value }) {
 
 function getStatusClasses(status) {
     if (status === "New Lead") return "bg-emerald-100 text-emerald-700";
+    if (status === "Contacted") return "bg-sky-100 text-sky-700";
     if (status === "Tour Needed") return "bg-amber-100 text-amber-700";
     if (status === "Recommendation Sent") return "bg-indigo-100 text-indigo-700";
 

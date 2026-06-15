@@ -647,8 +647,8 @@ export default function LeadsTab() {
           </button>
         </div>
 
-        <div className="mt-6 grid gap-3 md:grid-cols-3">
-          {["New Lead", "Tour Needed", "Recommendation Sent"].map((status) => {
+        <div className="mt-6 grid gap-3 md:grid-cols-4">
+          {["New Lead", "Contacted", "Tour Needed", "Recommendation Sent"].map((status) => {
             const count = leads.filter((lead) => lead.status === status).length;
 
             return (
@@ -699,6 +699,7 @@ export default function LeadsTab() {
             >
               <option>All</option>
               <option>New Lead</option>
+              <option>Contacted</option>
               <option>Tour Needed</option>
               <option>Recommendation Sent</option>
               <option>Archived</option>
@@ -1192,6 +1193,7 @@ function LeadRow({ lead, tourRequests }) {
 
 function getStatusClasses(status) {
   if (status === "New Lead") return "bg-emerald-100 text-emerald-700";
+  if (status === "Contacted") return "bg-sky-100 text-sky-700";
   if (status === "Tour Needed") return "bg-amber-100 text-amber-700";
   if (status === "Recommendation Sent") return "bg-indigo-100 text-indigo-700";
 
