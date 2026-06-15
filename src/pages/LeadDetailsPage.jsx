@@ -56,6 +56,7 @@ export default function LeadDetailsPage() {
     const [properties, setProperties] = useState([]);
     const [isLocalLead, setIsLocalLead] = useState(Boolean(initialLead));
     const [copiedRenterLink, setCopiedRenterLink] = useState(false);
+    const [notesSaved, setNotesSaved] = useState(false);
 
     const refreshLead = useCallback(async () => {
         if (isLocalLead) {
@@ -278,6 +279,8 @@ export default function LeadDetailsPage() {
                 ...lead,
                 ...updates,
             });
+            setNotesSaved(true);
+            window.setTimeout(() => setNotesSaved(false), 2000);
         } catch (error) {
             console.error(error);
             alert("Could not save notes. Please try again.");
@@ -881,12 +884,20 @@ export default function LeadDetailsPage() {
                                 className="mt-5 w-full resize-none rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] p-4 text-[#102426] outline-none focus:border-[#1f6f63]"
                             />
 
-                            <button
-                                onClick={saveNotes}
-                                className="mt-4 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
-                            >
-                                Save Notes
-                            </button>
+                            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                                <button
+                                    onClick={saveNotes}
+                                    className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                                >
+                                    Save Notes
+                                </button>
+
+                                {notesSaved && (
+                                    <p className="rounded-2xl bg-[#d8efe6] px-4 py-3 text-sm font-bold text-[#1f6f63]">
+                                        Notes saved
+                                    </p>
+                                )}
+                            </div>
                         </>
                     </div>
                 </section>
