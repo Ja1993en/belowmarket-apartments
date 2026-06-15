@@ -973,6 +973,54 @@ export default function PublicPropertyListing() {
     const compareFloorPlanKeys = new Set(
         compareFloorPlanItems.map((item) => getCompareFloorPlanItemKey(item))
     );
+    const compareDetailRows = [
+        ...compareFloorPlanItems.map((item) => {
+            const matchingFloorPlan =
+                item.propertyId === property?.id
+                    ? listingFloorPlans.find(
+                        (plan) =>
+                            getCompareFloorPlanItemKey(getFloorPlanCompareItem(property, plan)) ===
+                            getCompareFloorPlanItemKey(item)
+                    )
+                    : null;
+
+            return {
+                id: getCompareFloorPlanItemKey(item),
+                type: "Floor plan",
+                propertyId: item.propertyId,
+                title: item.floorPlanName,
+                subtitle: item.propertyName,
+                beds: formatBedroomLabel(item.beds, item.floorPlanName),
+                baths: item.baths ? `${item.baths} ba` : "Baths not listed",
+                sqft: item.sqft ? `${item.sqft} sq ft` : "Sq ft not listed",
+                normalRent: item.rent || "Contact",
+                effectiveRent: item.effectiveRent || item.rent || "Contact",
+                special: item.special || "No special listed",
+                availability: item.available || "Availability not listed",
+                savings: getCompareSavingsLabel(item.rent, item.effectiveRent),
+                floorPlan: matchingFloorPlan,
+            };
+        }),
+        ...propertyOnlyCompareProperties.map((compareProperty) => ({
+            id: compareProperty.id,
+            type: "Property",
+            propertyId: compareProperty.id,
+            title: compareProperty.name,
+            subtitle: compareProperty.area || compareProperty.city || "Dallas area",
+            beds: getPropertyBedroomCompareLabel(compareProperty),
+            baths: "Varies",
+            sqft: "Varies",
+            normalRent: compareProperty.marketRent || compareProperty.rent || compareProperty.startingRent || "Contact",
+            effectiveRent: compareProperty.effectiveRent || compareProperty.rent || compareProperty.startingRent || "Contact",
+            special: compareProperty.special || "No special listed",
+            availability: compareProperty.availability || "View floor plans",
+            savings: compareProperty.savings || getCompareSavingsLabel(
+                compareProperty.marketRent || compareProperty.rent,
+                compareProperty.effectiveRent
+            ),
+            floorPlan: null,
+        })),
+    ];
 
     useEffect(() => {
         if (!propertyGalleryImages.length) return;
@@ -1582,6 +1630,24 @@ export default function PublicPropertyListing() {
                                                     })}
                                                 </div>
                                             </div>
+                                        )}
+
+                                        {compareDetailRows.length > 0 && (
+                                            <CompareDetailsTable
+                                                rows={compareDetailRows}
+                                                onRequestFloorPlan={(floorPlan) => {
+                                                    setSelectedFloorPlan(floorPlan);
+                                                    setLeadSubmitted(false);
+                                                    setLeadForm({
+                                                        name: "",
+                                                        phone: "",
+                                                        email: "",
+                                                        moveInDate: "",
+                                                        contactMethod: "",
+                                                        selectedUnit: "",
+                                                    });
+                                                }}
+                                            />
                                         )}
 
                                         {propertyOnlyCompareProperties.length === 1 && isPropertyCompared && compareFloorPlanItems.length === 0 && (
@@ -3859,6 +3925,176 @@ function ComparedFloorPlanCard({
     );
 }
 
+function CompareDetailsTable({ rows, onRequestFloorPlan }) {
+    return (
+        <div className="mt-5 rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-4">
+            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+                <div>
+                    <p className="text-xs font-black uppercase text-[#1f6f63]">
+                        Compare details
+                    </p>
+                    <h3 className="mt-1 text-lg font-black text-[#102426]">
+                        Side-by-side shortlist
+                    </h3>
+                    <p className="mt-1 text-sm font-semibold text-[#526260]">
+                        Compare rent, size, specials, and availability before deciding what to tour.
+                    </p>
+                </div>
+
+                <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+                    {rows.length} option{rows.length === 1 ? "" : "s"}
+                </span>
+            </div>
+
+            <div className="mt-4 grid gap-3 lg:hidden">
+                {rows.map((row) => (
+                    <div key={row.id} className="rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                                <p className="text-[10px] font-black uppercase text-[#1f6f63]">
+                                    {row.type}
+                                </p>
+                                <p className="mt-1 truncate text-base font-black text-[#102426]">
+                                    {row.title}
+                                </p>
+                                <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+                                    {row.subtitle}
+                                </p>
+                            </div>
+                            <CompareDetailsAction row={row} onRequestFloorPlan={onRequestFloorPlan} />
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-2 gap-2">
+                            <CompareDetailMetric label="Beds" value={row.beds} />
+                            <CompareDetailMetric label="Baths" value={row.baths} />
+                            <CompareDetailMetric label="Sq ft" value={row.sqft} />
+                            <CompareDetailMetric label="Normal" value={row.normalRent} />
+                            <CompareDetailMetric label="Effective" value={row.effectiveRent} highlight />
+                            <CompareDetailMetric label="Savings" value={row.savings} highlight />
+                        </div>
+
+                        <p className="mt-3 truncate text-xs font-black text-[#8a5b0a]">
+                            {row.special}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-[#526260]">
+                            {row.availability}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-4 hidden overflow-x-auto rounded-2xl bg-white ring-1 ring-[#d7e6df] lg:block">
+                <table className="min-w-[980px] w-full border-collapse text-left text-sm">
+                    <thead className="bg-[#173f3f] text-white">
+                        <tr>
+                            {[
+                                "Option",
+                                "Beds / Baths",
+                                "Sq ft",
+                                "Normal",
+                                "Effective",
+                                "Special",
+                                "Availability",
+                                "Savings",
+                                "Action",
+                            ].map((heading) => (
+                                <th key={heading} className="px-4 py-3 text-xs font-black uppercase">
+                                    {heading}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map((row, index) => (
+                            <tr
+                                key={row.id}
+                                className={index % 2 === 0 ? "bg-white" : "bg-[#f5f8f1]"}
+                            >
+                                <td className="px-4 py-4 align-top">
+                                    <p className="text-[10px] font-black uppercase text-[#1f6f63]">
+                                        {row.type}
+                                    </p>
+                                    <p className="mt-1 max-w-[180px] font-black text-[#102426]">
+                                        {row.title}
+                                    </p>
+                                    <p className="mt-1 max-w-[180px] text-xs font-bold text-[#526260]">
+                                        {row.subtitle}
+                                    </p>
+                                </td>
+                                <td className="px-4 py-4 align-top font-bold text-[#102426]">
+                                    {row.beds}
+                                    <span className="block text-xs font-semibold text-[#526260]">
+                                        {row.baths}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-4 align-top font-bold text-[#102426]">
+                                    {row.sqft}
+                                </td>
+                                <td className="px-4 py-4 align-top font-bold text-[#102426]">
+                                    {row.normalRent}
+                                </td>
+                                <td className="px-4 py-4 align-top font-black text-[#1f6f63]">
+                                    {row.effectiveRent}
+                                </td>
+                                <td className="max-w-[190px] px-4 py-4 align-top text-xs font-bold text-[#8a5b0a]">
+                                    {row.special}
+                                </td>
+                                <td className="max-w-[160px] px-4 py-4 align-top text-xs font-semibold text-[#526260]">
+                                    {row.availability}
+                                </td>
+                                <td className="px-4 py-4 align-top font-black text-[#1f6f63]">
+                                    {row.savings}
+                                </td>
+                                <td className="px-4 py-4 align-top">
+                                    <CompareDetailsAction row={row} onRequestFloorPlan={onRequestFloorPlan} />
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+function CompareDetailsAction({ row, onRequestFloorPlan }) {
+    if (row.floorPlan) {
+        return (
+            <button
+                type="button"
+                onClick={() => onRequestFloorPlan(row.floorPlan)}
+                className="shrink-0 rounded-xl bg-[#173f3f] px-3 py-2 text-xs font-black text-white hover:bg-[#102426]"
+            >
+                Request tour
+            </button>
+        );
+    }
+
+    return (
+        <Link
+            to={`/properties/${row.propertyId}`}
+            className="inline-flex shrink-0 rounded-xl bg-[#e7f3ee] px-3 py-2 text-xs font-black text-[#173f3f] hover:bg-[#d7e6df]"
+        >
+            View property
+        </Link>
+    );
+}
+
+function CompareDetailMetric({ label, value, highlight = false }) {
+    return (
+        <div
+            className={`rounded-xl p-3 ${
+                highlight
+                    ? "bg-[#e7f3ee] text-[#1f6f63]"
+                    : "bg-[#f5f8f1] text-[#173f3f]"
+            }`}
+        >
+            <p className="text-[10px] font-black uppercase">{label}</p>
+            <p className="mt-1 truncate text-xs font-black">{value}</p>
+        </div>
+    );
+}
+
 function FloorPlanCard({
     name,
     beds,
@@ -4227,10 +4463,30 @@ function formatBedroomLabel(value, fallbackName = "") {
     return normalizedValue;
 }
 
+function getPropertyBedroomCompareLabel(property) {
+    if (Array.isArray(property?.bedrooms) && property.bedrooms.length > 0) {
+        return property.bedrooms.map((bedroom) => formatBedroomLabel(bedroom)).join(" / ");
+    }
+
+    return formatBedroomLabel(property?.bedrooms || property?.beds || "");
+}
+
 function parseCurrency(value) {
     const firstCurrencyValue = String(value || "").replace(/,/g, "").match(/\d+(\.\d+)?/);
     const parsedValue = Number(firstCurrencyValue?.[0] || 0);
     return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function getCompareSavingsLabel(normalRent, effectiveRent) {
+    const normalRentNumber = parseCurrency(normalRent);
+    const effectiveRentNumber = parseCurrency(effectiveRent);
+    const savingsNumber = normalRentNumber - effectiveRentNumber;
+
+    if (normalRentNumber > 0 && effectiveRentNumber > 0 && savingsNumber > 0) {
+        return `${formatCurrency(savingsNumber)}/mo`;
+    }
+
+    return "Verify";
 }
 
 function formatCurrency(value) {
