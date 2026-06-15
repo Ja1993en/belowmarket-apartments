@@ -14,6 +14,7 @@ import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import {
     ArrowLeft,
     CalendarDays,
+    Copy,
     Mail,
     MessageSquare,
     Phone,
@@ -54,6 +55,7 @@ export default function LeadDetailsPage() {
     );
     const [properties, setProperties] = useState([]);
     const [isLocalLead, setIsLocalLead] = useState(Boolean(initialLead));
+    const [copiedRenterLink, setCopiedRenterLink] = useState(false);
 
     const refreshLead = useCallback(async () => {
         if (isLocalLead) {
@@ -196,6 +198,25 @@ export default function LeadDetailsPage() {
             ? activityEvents
             : activityEvents.filter((event) => event.category === activityFilter);
 
+    const copyRenterLink = async () => {
+        if (!lead) return;
+
+        if (recommendationCount === 0) {
+            alert("Send properties before copying this renter link.");
+            return;
+        }
+
+        const renterLink = `${window.location.origin}/r/${lead.token}`;
+
+        try {
+            await navigator.clipboard.writeText(renterLink);
+            setCopiedRenterLink(true);
+            window.setTimeout(() => setCopiedRenterLink(false), 2000);
+        } catch (error) {
+            console.error(error);
+            alert("Could not copy the renter link. Please try again.");
+        }
+    };
 
     const updateStatus = async (status) => {
         if (!lead) return;
@@ -916,6 +937,15 @@ export default function LeadDetailsPage() {
                                     ? "Renter page is ready to share."
                                     : "Send properties before sharing the renter page."}
                             </p>
+
+                            <button
+                                type="button"
+                                onClick={copyRenterLink}
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d8efe6]"
+                            >
+                                <Copy className="h-4 w-4" />
+                                {copiedRenterLink ? "Renter Link Copied" : "Copy Renter Link"}
+                            </button>
 
                             <Link
                                 to={`/admin/leads/${lead.id}/message`}
