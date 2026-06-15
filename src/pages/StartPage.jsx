@@ -17,6 +17,35 @@ const emptyForm = {
   notes: "",
 };
 
+function getTrackingValue(searchParams, key) {
+  return searchParams.get(key)?.trim() || "";
+}
+
+function getAdTracking(searchParams) {
+  const utmSource = getTrackingValue(searchParams, "utm_source");
+  const utmMedium = getTrackingValue(searchParams, "utm_medium");
+  const utmCampaign = getTrackingValue(searchParams, "utm_campaign");
+  const utmTerm = getTrackingValue(searchParams, "utm_term");
+  const utmContent = getTrackingValue(searchParams, "utm_content");
+  const gclid = getTrackingValue(searchParams, "gclid");
+
+  return {
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    utmTerm,
+    utmContent,
+    gclid,
+    landingPage: `${window.location.pathname}${window.location.search}`,
+    referrer: document.referrer || "",
+    hasPaidTracking:
+      Boolean(gclid) ||
+      utmSource.toLowerCase() === "google" ||
+      utmMedium.toLowerCase().includes("paid") ||
+      utmMedium.toLowerCase().includes("cpc"),
+  };
+}
+
 export default function StartPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -70,6 +99,7 @@ export default function StartPage() {
     }
 
     setFormError("");
+    const adTracking = getAdTracking(searchParams);
 
     const leadPayload = {
       id: `local-${Date.now()}`,
@@ -82,7 +112,7 @@ export default function StartPage() {
       moveIn: form.moveIn,
       status: "New Lead",
       priority: "Medium",
-      source: "Start page",
+      source: adTracking.hasPaidTracking ? "Google Ads" : "Start page",
       sourcePropertyId: sourceProperty?.id || null,
       sourcePropertyName: sourceProperty?.name || null,
 
@@ -93,6 +123,14 @@ export default function StartPage() {
       token: `lead-${Date.now()}`,
       contactMethod: form.contactMethod || "Not selected",
       createdAt: new Date().toISOString(),
+      utmSource: adTracking.utmSource,
+      utmMedium: adTracking.utmMedium,
+      utmCampaign: adTracking.utmCampaign,
+      utmTerm: adTracking.utmTerm,
+      utmContent: adTracking.utmContent,
+      gclid: adTracking.gclid,
+      landingPage: adTracking.landingPage,
+      referrer: adTracking.referrer,
     };
 
     try {

@@ -22,36 +22,100 @@ function mapSupabaseLead(lead) {
     token: lead.token,
     contactMethod: lead.contact_method,
     createdAt: lead.created_at,
+    utmSource: lead.utm_source || "",
+    utmMedium: lead.utm_medium || "",
+    utmCampaign: lead.utm_campaign || "",
+    utmTerm: lead.utm_term || "",
+    utmContent: lead.utm_content || "",
+    gclid: lead.gclid || "",
+    landingPage: lead.landing_page || "",
+    referrer: lead.referrer || "",
   };
 }
 
+function isMissingTrackingColumnError(error) {
+  const message = `${error?.message || ""} ${error?.details || ""}`;
+
+  return (
+    error?.code === "PGRST204" ||
+    message.includes("utm_source") ||
+    message.includes("utm_medium") ||
+    message.includes("utm_campaign") ||
+    message.includes("utm_term") ||
+    message.includes("utm_content") ||
+    message.includes("gclid") ||
+    message.includes("landing_page") ||
+    message.includes("referrer")
+  );
+}
+
 export async function saveSupabaseLead(lead) {
+  const baseLeadPayload = {
+    name: lead.name,
+    phone: lead.phone,
+    email: lead.email,
+    preference: lead.preference,
+    bedrooms: lead.bedrooms,
+    budget: lead.budget,
+    move_in: lead.moveIn,
+    status: lead.status,
+    priority: lead.priority,
+    source: lead.source,
+    source_property_id: lead.sourcePropertyId,
+    source_property_name: lead.sourcePropertyName,
+    assigned_to: lead.assignedTo,
+    last_touch: lead.lastTouch,
+    notes: lead.notes,
+    recommended_property_ids: lead.recommendedPropertyIds,
+    token: lead.token,
+    contact_method: lead.contactMethod,
+  };
+
+  const trackingPayload = {
+    utm_source: lead.utmSource || null,
+    utm_medium: lead.utmMedium || null,
+    utm_campaign: lead.utmCampaign || null,
+    utm_term: lead.utmTerm || null,
+    utm_content: lead.utmContent || null,
+    gclid: lead.gclid || null,
+    landing_page: lead.landingPage || null,
+    referrer: lead.referrer || null,
+  };
+
   const { data, error } = await supabase
     .from("leads")
     .insert({
-      name: lead.name,
-      phone: lead.phone,
-      email: lead.email,
-      preference: lead.preference,
-      bedrooms: lead.bedrooms,
-      budget: lead.budget,
-      move_in: lead.moveIn,
-      status: lead.status,
-      priority: lead.priority,
-      source: lead.source,
-      source_property_id: lead.sourcePropertyId,
-      source_property_name: lead.sourcePropertyName,
-      assigned_to: lead.assignedTo,
-      last_touch: lead.lastTouch,
-      notes: lead.notes,
-      recommended_property_ids: lead.recommendedPropertyIds,
-      token: lead.token,
-      contact_method: lead.contactMethod,
+      ...baseLeadPayload,
+      ...trackingPayload,
     })
     .select("*")
     .single();
    
   if (error) {
+    if (isMissingTrackingColumnError(error)) {
+      const fallbackResult = await supabase
+        .from("leads")
+        .insert(baseLeadPayload)
+        .select("*")
+        .single();
+
+      if (fallbackResult.error) {
+        throw fallbackResult.error;
+      }
+
+      return {
+        ...mapSupabaseLead(fallbackResult.data),
+        utmSource: lead.utmSource || "",
+        utmMedium: lead.utmMedium || "",
+        utmCampaign: lead.utmCampaign || "",
+        utmTerm: lead.utmTerm || "",
+        utmContent: lead.utmContent || "",
+        gclid: lead.gclid || "",
+        landingPage: lead.landingPage || "",
+        referrer: lead.referrer || "",
+      };
+    }
+
     throw error;
   }
 

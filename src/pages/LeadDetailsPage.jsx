@@ -137,6 +137,18 @@ export default function LeadDetailsPage() {
     const hasTourFollowUpNeeded = sortedTourRequests.some(
         (request) => (request.status || "New") !== "Followed Up"
     );
+    const trackingRows = lead
+        ? [
+            ["UTM Source", lead.utmSource],
+            ["UTM Medium", lead.utmMedium],
+            ["UTM Campaign", lead.utmCampaign],
+            ["UTM Term", lead.utmTerm],
+            ["UTM Content", lead.utmContent],
+            ["Google Click ID", lead.gclid],
+            ["Landing Page", lead.landingPage],
+            ["Referrer", lead.referrer],
+        ].filter(([, value]) => Boolean(value))
+        : [];
 
     const savedActivityEvents = lead ? getLeadActivitiesForLead(lead.id) : [];
 
@@ -901,6 +913,26 @@ export default function LeadDetailsPage() {
                             <SimpleRow label="Source" value={lead.source} />
                             {lead.sourcePropertyName && (
                                 <SimpleRow label="Source Property" value={lead.sourcePropertyName} />
+                            )}
+                            {trackingRows.length > 0 && (
+                                <div className="rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-100">
+                                    <p className="text-sm font-black text-emerald-800">
+                                        Ad Tracking
+                                    </p>
+
+                                    <div className="mt-3 space-y-3">
+                                        {trackingRows.map(([label, value]) => (
+                                            <div key={label}>
+                                                <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">
+                                                    {label}
+                                                </p>
+                                                <p className="mt-1 break-words text-sm font-semibold text-slate-800">
+                                                    {value}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             )}
                             <SimpleRow label="Last Touch" value={lead.lastTouch} />
                             <div className="rounded-2xl bg-slate-50 p-4">
