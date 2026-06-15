@@ -988,9 +988,6 @@ export default function PublicPropertyListing() {
             compareProperties.find((compareProperty) => compareProperty.id === comparePropertyId)
         )
         .filter(Boolean);
-    const otherCompareProperties = selectedCompareProperties.filter(
-        (compareProperty) => compareProperty.id !== property?.id
-    );
 
     useEffect(() => {
         if (!propertyGalleryImages.length) return;
@@ -1396,7 +1393,7 @@ export default function PublicPropertyListing() {
                                     </a>
                                 </div>
 
-                                {otherCompareProperties.length > 0 && (
+                                {selectedCompareProperties.length > 0 && (
                                     <div className="mt-4 rounded-3xl border border-[#d7e6df] bg-white p-4 shadow-sm">
                                         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
                                             <div>
@@ -1404,7 +1401,7 @@ export default function PublicPropertyListing() {
                                                     Your compare list
                                                 </p>
                                                 <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                                    Jump to another property you selected to compare.
+                                                    Jump between the properties you selected to compare.
                                                 </p>
                                             </div>
 
@@ -1417,7 +1414,10 @@ export default function PublicPropertyListing() {
                                         </div>
 
                                         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                            {otherCompareProperties.map((compareProperty) => (
+                                            {selectedCompareProperties.map((compareProperty) => {
+                                                const isCurrentCompareProperty = compareProperty.id === property?.id;
+
+                                                return (
                                                 <Link
                                                     key={compareProperty.id}
                                                     to={`/properties/${compareProperty.id}`}
@@ -1433,6 +1433,11 @@ export default function PublicPropertyListing() {
                                                         <span className="block truncate text-sm font-black text-[#102426]">
                                                             {compareProperty.name}
                                                         </span>
+                                                        {isCurrentCompareProperty && (
+                                                            <span className="mt-1 inline-flex rounded-full bg-[#f2b84b] px-2 py-0.5 text-[10px] font-black uppercase text-[#102426]">
+                                                                Current page
+                                                            </span>
+                                                        )}
                                                         <span className="mt-1 block truncate text-xs font-semibold text-[#526260]">
                                                             {compareProperty.area || compareProperty.city || "Dallas area"}
                                                         </span>
@@ -1441,8 +1446,15 @@ export default function PublicPropertyListing() {
                                                         </span>
                                                     </span>
                                                 </Link>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
+
+                                        {selectedCompareProperties.length === 1 && isPropertyCompared && (
+                                            <p className="mt-3 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-semibold text-[#8a5b0a]">
+                                                Add more properties from search to compare them here.
+                                            </p>
+                                        )}
                                     </div>
                                 )}
 
