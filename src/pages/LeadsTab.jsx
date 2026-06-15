@@ -195,7 +195,7 @@ export default function LeadsTab() {
 
 
   const filteredLeads = leads.filter((lead) => {
-    const searchableText = `${lead.name} ${lead.email} ${lead.phone} ${lead.preference} ${lead.status} ${lead.assignedTo}`.toLowerCase();
+    const searchableText = `${lead.name} ${lead.email} ${lead.phone} ${lead.preference} ${lead.status} ${lead.quality || ""} ${lead.assignedTo}`.toLowerCase();
 
     const matchesSearch = searchableText.includes(searchTerm.toLowerCase());
     const hasTourFollowUpNeeded = getLeadTourRequests(lead).some(
@@ -1048,6 +1048,10 @@ function LeadRow({ lead, tourRequests }) {
               {lead.priority} Priority
             </span>
 
+            <span className={`rounded-full px-3 py-1 text-xs font-bold ${getQualityClasses(lead.quality || "New")}`}>
+              {(lead.quality || "New")} Quality
+            </span>
+
             <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-600">
               {lead.source}
             </span>
@@ -1205,6 +1209,16 @@ function getPriorityClasses(priority) {
   if (priority === "Medium") return "bg-amber-100 text-amber-700";
 
   return "bg-slate-200 text-slate-700";
+}
+
+function getQualityClasses(quality) {
+  if (quality === "Qualified") return "bg-emerald-100 text-emerald-700";
+  if (quality === "Converted") return "bg-indigo-100 text-indigo-700";
+  if (quality === "Bad Fit") return "bg-red-100 text-red-700";
+  if (quality === "No Response") return "bg-amber-100 text-amber-700";
+  if (quality === "Duplicate") return "bg-slate-200 text-slate-700";
+
+  return "bg-sky-100 text-sky-700";
 }
 
 

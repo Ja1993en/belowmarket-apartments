@@ -11,6 +11,7 @@ function mapSupabaseLead(lead) {
     budget: lead.budget,
     moveIn: lead.move_in,
     status: lead.status,
+    quality: lead.lead_quality || lead.quality || "New",
     priority: lead.priority,
     source: lead.source,
     sourcePropertyId: lead.source_property_id,
@@ -45,7 +46,8 @@ function isMissingTrackingColumnError(error) {
     message.includes("utm_content") ||
     message.includes("gclid") ||
     message.includes("landing_page") ||
-    message.includes("referrer")
+    message.includes("referrer") ||
+    message.includes("lead_quality")
   );
 }
 
@@ -72,6 +74,7 @@ export async function saveSupabaseLead(lead) {
   };
 
   const trackingPayload = {
+    lead_quality: lead.quality || "New",
     utm_source: lead.utmSource || null,
     utm_medium: lead.utmMedium || null,
     utm_campaign: lead.utmCampaign || null,
@@ -105,6 +108,7 @@ export async function saveSupabaseLead(lead) {
 
       return {
         ...mapSupabaseLead(fallbackResult.data),
+        quality: lead.quality || "New",
         utmSource: lead.utmSource || "",
         utmMedium: lead.utmMedium || "",
         utmCampaign: lead.utmCampaign || "",
@@ -185,15 +189,18 @@ export async function getSupabaseLeads() {
   }
 
   export async function updateSupabaseLead(leadId, updates) {
+    const updatePayload = {};
+
+    if (updates.status !== undefined) updatePayload.status = updates.status;
+    if (updates.quality !== undefined) updatePayload.lead_quality = updates.quality;
+    if (updates.priority !== undefined) updatePayload.priority = updates.priority;
+    if (updates.assignedTo !== undefined) updatePayload.assigned_to = updates.assignedTo;
+    if (updates.lastTouch !== undefined) updatePayload.last_touch = updates.lastTouch;
+    if (updates.notes !== undefined) updatePayload.notes = updates.notes;
+
     const { error } = await supabase
       .from("leads")
-      .update({
-        status: updates.status,
-        priority: updates.priority,
-        assigned_to: updates.assignedTo,
-        last_touch: updates.lastTouch,
-        notes: updates.notes,
-      })
+      .update(updatePayload)
       .eq("id", leadId);
   
     if (error) {

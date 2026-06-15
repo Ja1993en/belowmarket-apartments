@@ -133,6 +133,7 @@ export default function StartPage() {
       budget: form.budget,
       moveIn: form.moveIn,
       status: "New Lead",
+      quality: "New",
       priority: "Medium",
       source: adTracking.hasPaidTracking ? "Google Ads" : "Start page",
       sourcePropertyId: sourceProperty?.id || null,

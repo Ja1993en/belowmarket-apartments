@@ -33,6 +33,7 @@ import {
 } from "../data/leadStorage";
 
 const leadStatuses = ["New Lead", "Contacted", "Tour Needed", "Recommendation Sent"];
+const leadQualities = ["New", "Qualified", "Bad Fit", "No Response", "Duplicate", "Converted"];
 
 export default function LeadDetailsPage() {
     const { leadId } = useParams();
@@ -325,6 +326,38 @@ export default function LeadDetailsPage() {
         } catch (error) {
             console.error(error);
             alert("Could not update priority. Please try again.");
+        }
+    };
+
+    const updateQuality = async (quality) => {
+        if (!lead) return;
+
+        const updates = {
+            quality,
+            lastTouch: "Just now",
+        };
+
+        try {
+            if (isLocalLead) {
+                updateLocalLead(lead.id, updates);
+            } else {
+                await updateSupabaseLead(lead.id, updates);
+            }
+
+            saveLeadActivity({
+                leadId: lead.id,
+                title: "Lead quality updated",
+                description: `Lead quality changed to ${quality}.`,
+                category: "Admin",
+            });
+
+            setLead({
+                ...lead,
+                ...updates,
+            });
+        } catch (error) {
+            console.error(error);
+            alert("Could not update lead quality. Make sure the lead_quality column exists in Supabase.");
         }
     };
 
@@ -897,6 +930,31 @@ export default function LeadDetailsPage() {
                                         }`}
                                 >
                                     {status}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <h2 className="text-2xl font-black text-slate-900">
+                            Lead Quality
+                        </h2>
+
+                        <p className="mt-2 text-sm font-semibold text-slate-500">
+                            Track whether this lead is worth the ad spend.
+                        </p>
+
+                        <div className="mt-5 grid grid-cols-2 gap-3">
+                            {leadQualities.map((quality) => (
+                                <button
+                                    key={quality}
+                                    onClick={() => updateQuality(quality)}
+                                    className={`rounded-2xl px-4 py-3 text-sm font-bold ${((lead.quality || "New") === quality)
+                                        ? "bg-slate-950 text-white"
+                                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                        }`}
+                                >
+                                    {quality}
                                 </button>
                             ))}
                         </div>
