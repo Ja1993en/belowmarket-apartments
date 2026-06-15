@@ -604,13 +604,26 @@ export default function LeadDetailsPage() {
                     </div>
 
                     <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                        <h2 className="text-2xl font-black text-[#102426]">
-                            Recommended Properties
-                        </h2>
+                        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                            <div>
+                                <h2 className="text-2xl font-black text-[#102426]">
+                                    Recommended Properties
+                                </h2>
 
-                        <p className="mt-1 text-[#526260]">
-                            {recommendedProperties.length} properties currently attached to this lead.
-                        </p>
+                                <p className="mt-1 text-[#526260]">
+                                    {recommendedProperties.length} properties currently attached to this lead.
+                                </p>
+                            </div>
+
+                            {recommendedProperties.length > 0 && (
+                                <Link
+                                    to={`/admin/leads/${lead.id}/send-properties`}
+                                    className="inline-flex items-center justify-center rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-bold text-[#102426] hover:bg-[#f9d783]"
+                                >
+                                    Manage Recommendations
+                                </Link>
+                            )}
+                        </div>
 
                         <div className="mt-5 space-y-3">
                             {recommendedProperties.length > 0 ? (
@@ -646,6 +659,13 @@ export default function LeadDetailsPage() {
                                     <p className="mt-2 text-sm text-[#526260]">
                                         Send properties to build this renter's recommendation list.
                                     </p>
+
+                                    <Link
+                                        to={`/admin/leads/${lead.id}/send-properties`}
+                                        className="mt-5 inline-flex items-center justify-center rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                                    >
+                                        Send Properties
+                                    </Link>
                                 </div>
                             )}
                         </div>
