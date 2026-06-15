@@ -903,7 +903,11 @@ export default function PublicPropertyListing() {
     });
     const floorPlanFilters = [
         "All",
-        ...new Set(listingFloorPlans.map((plan) => plan.beds).filter(Boolean)),
+        ...new Set(
+            listingFloorPlans
+                .map((plan) => plan.beds)
+                .filter((beds) => beds !== null && beds !== undefined && beds !== "")
+        ),
     ];
     const [showGallery, setShowGallery] = useState(false);
     const [activePhotoCategory, setActivePhotoCategory] = useState("All");
