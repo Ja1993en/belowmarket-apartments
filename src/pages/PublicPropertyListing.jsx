@@ -752,6 +752,7 @@ export default function PublicPropertyListing() {
     {/* Usestate start*/ }
     const { propertyId } = useParams();
     const location = useLocation();
+    const floorPlansSectionRef = useRef(null);
     const [property, setProperty] = useState(null);
     const [compareProperties, setCompareProperties] = useState([]);
     const [isLoadingProperty, setIsLoadingProperty] = useState(true);
@@ -837,14 +838,36 @@ export default function PublicPropertyListing() {
         if (!property || !location.hash) return undefined;
 
         const targetId = decodeURIComponent(location.hash.replace("#", ""));
-        const scrollToHashTarget = window.setTimeout(() => {
-            document.getElementById(targetId)?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-            });
-        }, 100);
+        if (targetId !== "floor-plans") return undefined;
 
-        return () => window.clearTimeout(scrollToHashTarget);
+        let attempt = 0;
+        let scrollTimer = 0;
+        let animationFrame = 0;
+
+        const scrollToFloorPlans = () => {
+            const target = floorPlansSectionRef.current || document.getElementById(targetId);
+            attempt += 1;
+
+            if (target) {
+                target.scrollIntoView({
+                    behavior: attempt === 1 ? "auto" : "smooth",
+                    block: "start",
+                });
+            }
+
+            if (attempt < 10) {
+                scrollTimer = window.setTimeout(() => {
+                    animationFrame = window.requestAnimationFrame(scrollToFloorPlans);
+                }, attempt < 4 ? 150 : 300);
+            }
+        };
+
+        animationFrame = window.requestAnimationFrame(scrollToFloorPlans);
+
+        return () => {
+            window.clearTimeout(scrollTimer);
+            window.cancelAnimationFrame(animationFrame);
+        };
     }, [location.hash, property, propertyId, listingFloorPlans.length]);
 
     useEffect(() => {
@@ -1849,7 +1872,8 @@ export default function PublicPropertyListing() {
                                 {/*Floor Plans*/}
                                 <div
                                     id="floor-plans"
-                                    className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm"
+                                    ref={floorPlansSectionRef}
+                                    className="mt-8 scroll-mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm"
                                 >                                <h2 className="text-2xl font-black text-[#102426]">
                                         Floor Plans
                                     </h2>
