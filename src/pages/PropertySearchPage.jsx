@@ -220,6 +220,7 @@ export default function PropertySearchPage() {
         availabilityLink: "",
         linkTo: getFloorPlansRoute(row.propertyId),
         actionLabel: "View floor plans",
+        image: row.image || getPropertyPrimaryImage(row.property || {}),
       })),
     [compareFloorPlanRows]
   );
@@ -240,6 +241,7 @@ export default function PropertySearchPage() {
         availabilityLink: getFloorPlansRoute(property.id),
         linkTo: getFloorPlansRoute(property.id),
         actionLabel: "View floor plans",
+        image: getPropertyPrimaryImage(property),
       })),
     [propertyCompareRows]
   );
@@ -1674,10 +1676,21 @@ function CompareDetailsTab({ rows, mode }) {
             {rows.map((row, index) => (
               <tr key={row.id} className={index % 2 === 0 ? "bg-white" : "bg-[#f5f8f1]"}>
                 <td className="px-4 py-4 align-top">
-                  <p className="max-w-[180px] font-black text-[#102426]">{row.title}</p>
-                  <p className="mt-1 max-w-[180px] text-xs font-bold text-[#526260]">
-                    {row.propertyName}
-                  </p>
+                  <div className="flex min-w-[240px] items-center gap-3">
+                    <img
+                      src={row.image}
+                      alt={`${row.title} ${row.type.toLowerCase()} preview`}
+                      className="h-16 w-20 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                    />
+                    <div className="min-w-0">
+                      <p className="max-w-[160px] truncate font-black text-[#102426]">
+                        {row.title}
+                      </p>
+                      <p className="mt-1 max-w-[160px] truncate text-xs font-bold text-[#526260]">
+                        {row.propertyName}
+                      </p>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-4 py-4 align-top text-xs font-black uppercase text-[#1f6f63]">
                   {row.type}
