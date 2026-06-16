@@ -170,8 +170,9 @@ func drawPropertyTile(
         drawRounded(CGRect(x: rect.minX + 93, y: rect.minY + 24, width: 42, height: 42), gold, radius: 21)
         drawText("✓", x: rect.minX + 93, y: rect.minY + 32, w: 42, h: 28, size: 24, fill: ink, weight: .black, align: .center)
     }
-    drawText(name, x: rect.minX + 144, y: rect.minY + 18, w: 245, h: 27, size: 19, fill: ink, weight: .black)
-    drawText(area, x: rect.minX + 144, y: rect.minY + 48, w: 240, h: 20, size: 14, fill: muted, weight: .semibold)
+    drawText(name, x: rect.minX + 144, y: rect.minY + 14, w: 188, h: 42, size: 17, fill: ink, weight: .black)
+    drawPill(selected ? "Added" : "Compare", x: rect.minX + 342, y: rect.minY + 18, w: 100, h: 34, fill: selected ? goldSoft : mint, textColor: selected ? color(0x7B5208) : green, borderColor: selected ? gold : border, size: 12)
+    drawText(area, x: rect.minX + 144, y: rect.minY + 58, w: 240, h: 20, size: 14, fill: muted, weight: .semibold)
     drawPill(special, x: rect.minX + 144, y: rect.minY + 82, w: 145, h: 34, fill: goldSoft, textColor: color(0x7B5208), borderColor: color(0xF1D58A), size: 12)
     drawText("After special", x: rect.minX + 322, y: rect.minY + 78, w: 106, h: 18, size: 12, fill: muted, weight: .black, align: .right)
     drawText(after, x: rect.minX + 315, y: rect.minY + 96, w: 112, h: 28, size: 23, fill: green, weight: .black, align: .right)
@@ -191,24 +192,20 @@ func drawFloorPlanTile(y: CGFloat, name: String, detail: String, normal: String,
     drawText(savings, x: rect.minX + 318, y: rect.minY + 112, w: 100, h: 24, size: 19, fill: green, weight: .black, align: .right)
 }
 
-func drawCursor(x: CGFloat, y: CGFloat, scale: CGFloat = 1, pulse: Bool = false) {
-    if pulse {
-        drawRounded(CGRect(x: x - 30, y: y - 30, width: 60, height: 60), gold.withAlphaComponent(0.38), radius: 30)
-    }
-    let path = NSBezierPath()
-    path.move(to: CGPoint(x: x, y: y))
-    path.line(to: CGPoint(x: x + 21 * scale, y: y + 70 * scale))
-    path.line(to: CGPoint(x: x + 41 * scale, y: y + 47 * scale))
-    path.line(to: CGPoint(x: x + 72 * scale, y: y + 92 * scale))
-    path.line(to: CGPoint(x: x + 93 * scale, y: y + 78 * scale))
-    path.line(to: CGPoint(x: x + 62 * scale, y: y + 34 * scale))
-    path.line(to: CGPoint(x: x + 91 * scale, y: y + 31 * scale))
-    path.close()
-    paper.setFill()
-    path.fill()
-    ink.setStroke()
-    path.lineWidth = 3
-    path.stroke()
+func drawTapPulse(x: CGFloat, y: CGFloat, p: CGFloat, start: CGFloat, end: CGFloat, label: String = "Added") {
+    guard p >= start && p <= end else { return }
+    let q = ease(Double((p - start) / (end - start)))
+    let ringRadius = 24 + q * 42
+    let ringAlpha = max(0, 0.42 * (1 - q))
+
+    let ringPath = NSBezierPath(ovalIn: CGRect(x: x - ringRadius, y: y - ringRadius, width: ringRadius * 2, height: ringRadius * 2))
+    gold.withAlphaComponent(ringAlpha).setFill()
+    ringPath.fill()
+
+    drawRounded(CGRect(x: x - 19, y: y - 19, width: 38, height: 38), gold.withAlphaComponent(0.86), radius: 19)
+    drawRounded(CGRect(x: x - 7, y: y - 7, width: 14, height: 14), paper.withAlphaComponent(0.95), radius: 7)
+
+    _ = label
 }
 
 func drawTitle(_ title: String, subtitle: String, y: CGFloat = 96, light: Bool = false) {
@@ -232,16 +229,17 @@ func drawSearchScene(_ p: CGFloat) {
     drawCoverImage(photoCortland, in: CGRect(x: 0, y: 0, width: width, height: 410), radius: 0)
     drawLinearOverlay(CGRect(x: 0, y: 0, width: width, height: 410), topAlpha: 0.04, bottomAlpha: 0.72)
     drawLogo(x: 58, y: 56, size: 58, showName: true, light: true)
-    drawText("Tap compare on the properties you like.", x: 58, y: 286, w: 570, h: 70, size: 35, fill: paper, weight: .black)
+    drawText("Tap Compare on your favorites.", x: 58, y: 286, w: 570, h: 70, size: 35, fill: paper, weight: .black)
     drawPhone(y: 378, h: 772)
     drawPhoneHeader(y: 430)
     drawPill("Properties", x: 132, y: 512, w: 128, h: 38, fill: green, textColor: paper, borderColor: green)
     drawPill("Floor Plans", x: 274, y: 512, w: 132, h: 38, fill: paper, textColor: green)
     drawPill("Details", x: 420, y: 512, w: 96, h: 38, fill: paper, textColor: green)
-    drawPropertyTile(y: 586, image: photoDominion, name: "Dominion", area: "Farmers Branch", special: "6 Weeks Free", after: "$1,189", selected: p > 0.32, lift: p > 0.32 ? 5 : 0)
-    drawPropertyTile(y: 744, image: photoMaa, name: "MAA Cathedral Arts", area: "Lower Greenville", special: "8 Weeks Free", after: "$1,015", selected: p > 0.56, lift: p > 0.56 ? 5 : 0)
+    drawPropertyTile(y: 586, image: photoDominion, name: "Dominion", area: "Farmers Branch", special: "6 Weeks Free", after: "$1,189", selected: p > 0.2, lift: p > 0.2 ? 5 : 0)
+    drawPropertyTile(y: 744, image: photoMaa, name: "MAA Cathedral Arts", area: "Lower Greenville", special: "8 Weeks Free", after: "$1,015", selected: p > 0.43, lift: p > 0.43 ? 5 : 0)
     drawPropertyTile(y: 902, image: photoCortland, name: "Cortland on McKinney", area: "Uptown Dallas", special: "Move-in deal", after: "$1,355", selected: false)
-    drawCursor(x: 486 - p * 35, y: 660 + p * 155, scale: 0.58, pulse: (p > 0.3 && p < 0.43) || (p > 0.55 && p < 0.68))
+    drawTapPulse(x: 522, y: 621, p: p, start: 0.16, end: 0.31)
+    drawTapPulse(x: 522, y: 779, p: p, start: 0.39, end: 0.54)
 }
 
 func drawFloorPlanScene(_ p: CGFloat) {
@@ -253,10 +251,11 @@ func drawFloorPlanScene(_ p: CGFloat) {
     drawLinearOverlay(CGRect(x: 130, y: 420, width: 460, height: 128), topAlpha: 0.02, bottomAlpha: 0.62)
     drawText("Dominion at Mercer Crossing", x: 154, y: 476, w: 342, h: 30, size: 22, fill: paper, weight: .black)
     drawPill("6 Weeks Free", x: 154, y: 510, w: 138, h: 34, fill: gold, textColor: ink, borderColor: nil, size: 13)
-    drawFloorPlanTile(y: 584, name: "A1", detail: "1 bd • 1 ba • 758 sq ft", normal: "$1,409", after: "$1,233", savings: "$176", selected: p > 0.35)
-    drawFloorPlanTile(y: 750, name: "A2", detail: "1 bd • 1 ba • 812 sq ft", normal: "$1,554", after: "$1,360", savings: "$194", selected: p > 0.62)
-    drawPill("\(p > 0.62 ? 2 : p > 0.35 ? 1 : 0) selected to compare", x: 174, y: 940, w: 372, h: 54, fill: green, textColor: paper, borderColor: nil, size: 18)
-    drawCursor(x: 480 - p * 28, y: 622 + p * 160, scale: 0.58, pulse: (p > 0.33 && p < 0.48) || (p > 0.6 && p < 0.74))
+    drawFloorPlanTile(y: 584, name: "A1", detail: "1 bd • 1 ba • 758 sq ft", normal: "$1,409", after: "$1,233", savings: "$176", selected: p > 0.2)
+    drawFloorPlanTile(y: 750, name: "A2", detail: "1 bd • 1 ba • 812 sq ft", normal: "$1,554", after: "$1,360", savings: "$194", selected: p > 0.43)
+    drawPill("\(p > 0.43 ? 2 : p > 0.2 ? 1 : 0) selected to compare", x: 174, y: 940, w: 372, h: 54, fill: green, textColor: paper, borderColor: nil, size: 18)
+    drawTapPulse(x: 502, y: 622, p: p, start: 0.19, end: 0.34, label: "Selected")
+    drawTapPulse(x: 502, y: 788, p: p, start: 0.43, end: 0.58, label: "Selected")
 }
 
 func drawCompareCard(x: CGFloat, y: CGFloat, w: CGFloat, title: String, image: NSImage?, badge: String, normal: String, after: String, savings: String, highlight: Bool = false) {
