@@ -752,8 +752,10 @@ export default function PropertySearchPage() {
                       : "bg-[#f5f8f1] text-[#173f3f] ring-[#d7e6df] hover:bg-[#d7e6df]"
                   }`}
                 >
-                  <span className="flex min-w-0 items-center justify-between gap-1 sm:gap-2">
-                    <span className="truncate">{tab.label}</span>
+                  <span className="flex min-w-0 items-start justify-between gap-1 sm:items-center sm:gap-2">
+                    <span className="min-w-0 whitespace-normal leading-tight sm:truncate">
+                      {tab.label}
+                    </span>
                     <span className="shrink-0 rounded-full bg-white/75 px-1.5 py-0.5 text-[9px] text-[#173f3f] sm:px-2 sm:text-[10px]">
                       {count || tab.emptyText}
                     </span>
