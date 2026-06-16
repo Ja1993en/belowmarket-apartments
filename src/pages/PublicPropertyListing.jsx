@@ -4928,12 +4928,15 @@ function getCompareSummaryItems({ floorPlanCount, propertyOnlyCount, rows }) {
                 : "Specials may vary by floor plan and lease term.",
         },
         {
-            label: "Needs exact plan",
-            value: `${propertyOnlyCount} propert${propertyOnlyCount === 1 ? "y" : "ies"}`,
+            label: propertyOnlyCount > 0 ? "Choose floor plans" : "Exact floor plans",
+            value:
+                propertyOnlyCount > 0
+                    ? `${propertyOnlyCount} propert${propertyOnlyCount === 1 ? "y" : "ies"} waiting`
+                    : `${floorPlanCount} selected`,
             detail:
                 propertyOnlyCount > 0
-                    ? "Pick a floor plan for cleaner side-by-side comparison."
-                    : `${floorPlanCount} exact floor plan${floorPlanCount === 1 ? "" : "s"} selected.`,
+                    ? "Pick exact layouts to compare real rent, size, specials, and availability."
+                    : "You are comparing specific layouts for the clearest rent and size view.",
         },
     ];
 }
