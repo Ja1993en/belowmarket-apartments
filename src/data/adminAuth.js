@@ -1,26 +1,45 @@
-const ADMIN_ACCESS_KEY = "belowMarketAdminAccess";
+export async function hasAdminAccess() {
+  try {
+    const response = await fetch("/api/admin-session", {
+      credentials: "include",
+    });
 
-export function hasAdminAccess() {
-  return sessionStorage.getItem(ADMIN_ACCESS_KEY) === "true";
-}
+    if (!response.ok) return false;
 
-export function loginAdmin(username, password) {
-  const adminUsername = import.meta.env.VITE_ADMIN_USERNAME;
-  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-
-  if (
-    adminUsername &&
-    adminPassword &&
-    username === adminUsername &&
-    password === adminPassword
-  ) {
-    sessionStorage.setItem(ADMIN_ACCESS_KEY, "true");
-    return true;
+    const body = await response.json();
+    return Boolean(body.authenticated);
+  } catch {
+    return false;
   }
-
-  return false;
 }
 
-export function logoutAdmin() {
-  sessionStorage.removeItem(ADMIN_ACCESS_KEY);
+export async function loginAdmin(username, password) {
+  try {
+    const response = await fetch("/api/admin-login", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+    const body = await response.json().catch(() => ({}));
+
+    return {
+      ok: response.ok && Boolean(body.authenticated),
+      error: body.error || "Incorrect admin credentials.",
+    };
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the admin login service.",
+    };
+  }
+}
+
+export async function logoutAdmin() {
+  await fetch("/api/admin-logout", {
+    method: "POST",
+    credentials: "include",
+  }).catch(() => {});
 }

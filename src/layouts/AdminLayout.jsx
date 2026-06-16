@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Navigate,
   NavLink,
@@ -18,13 +19,47 @@ import { hasAdminAccess, logoutAdmin } from "../data/adminAuth";
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+  const [isAllowed, setIsAllowed] = useState(false);
 
-  if (!hasAdminAccess()) {
+  useEffect(() => {
+    let isMounted = true;
+
+    async function checkAccess() {
+      const accessAllowed = await hasAdminAccess();
+
+      if (isMounted) {
+        setIsAllowed(accessAllowed);
+        setIsCheckingAccess(false);
+      }
+    }
+
+    checkAccess();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (isCheckingAccess) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f5f8f1] p-6 text-center text-[#102426]">
+        <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#d7e6df]">
+          <p className="text-sm font-black uppercase text-[#1f6f63]">
+            Admin Portal
+          </p>
+          <p className="mt-2 text-lg font-black">Checking access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAllowed) {
     return <Navigate to="/admin-login" replace state={{ from: location }} />;
   }
 
-  const handleLogout = () => {
-    logoutAdmin();
+  const handleLogout = async () => {
+    await logoutAdmin();
     navigate("/admin-login", { replace: true });
   };
 

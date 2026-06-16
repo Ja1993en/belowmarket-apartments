@@ -9,18 +9,22 @@ export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const redirectPath = location.state?.from?.pathname || "/admin";
 
-  const submitLogin = (event) => {
+  const submitLogin = async (event) => {
     event.preventDefault();
+    setIsSubmitting(true);
+    setError("");
 
-    const isLoggedIn = loginAdmin(username, password);
-    if (isLoggedIn) {
+    const result = await loginAdmin(username, password);
+    if (result.ok) {
       navigate(redirectPath, { replace: true });
       return;
     }
 
-    setError("Incorrect admin credentials.");
+    setError(result.error || "Incorrect admin credentials.");
+    setIsSubmitting(false);
   };
 
   return (
@@ -88,9 +92,10 @@ export default function AdminLoginPage() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="mt-6 w-full rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
           >
-            Log In
+            {isSubmitting ? "Logging in..." : "Log In"}
           </button>
         </div>
       </form>
