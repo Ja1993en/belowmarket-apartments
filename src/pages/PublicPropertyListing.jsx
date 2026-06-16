@@ -1003,6 +1003,7 @@ export default function PublicPropertyListing() {
     const [compareMessage, setCompareMessage] = useState("");
     const [isCompareBoardOpen, setIsCompareBoardOpen] = useState(false);
     const [activeCompareTab, setActiveCompareTab] = useState("Summary");
+    const [isFloorPlanComparePromptDismissed, setIsFloorPlanComparePromptDismissed] = useState(false);
     const compareListRef = useRef(null);
     {/* Usestate end*/ }
 
@@ -1091,6 +1092,8 @@ export default function PublicPropertyListing() {
         propertyOnlyCount: propertyOnlyCompareProperties.length,
         rows: compareDetailRows,
     });
+    const shouldShowFloorPlanComparePrompt =
+        compareFloorPlanItems.length > 0 && !isFloorPlanComparePromptDismissed;
 
     useEffect(() => {
         if (!propertyGalleryImages.length) return;
@@ -1115,6 +1118,12 @@ export default function PublicPropertyListing() {
         }, 50);
     };
 
+    const handleViewFloorPlanCompareBoard = () => {
+        setIsCompareBoardOpen(true);
+        setActiveCompareTab("Floor Plans");
+        scrollToCompareBoard();
+    };
+
     const handleToggleFloorPlanCompare = (compareFloorPlanItem, isFloorPlanCompared) => {
         if (!isFloorPlanCompared && compareFloorPlanItems.length >= MAX_COMPARE_FLOOR_PLANS) {
             setCompareMessage(
@@ -1124,7 +1133,13 @@ export default function PublicPropertyListing() {
             return;
         }
 
-        setCompareFloorPlanItems(toggleCompareFloorPlanItem(compareFloorPlanItem));
+        const nextCompareFloorPlanItems = toggleCompareFloorPlanItem(compareFloorPlanItem);
+
+        setCompareFloorPlanItems(nextCompareFloorPlanItems);
+
+        if (!isFloorPlanCompared || nextCompareFloorPlanItems.length === 0) {
+            setIsFloorPlanComparePromptDismissed(false);
+        }
 
         if (property?.id && !comparePropertyIds.includes(property.id)) {
             setComparePropertyIds(toggleComparePropertyId(property.id));
@@ -1162,6 +1177,7 @@ export default function PublicPropertyListing() {
 
         setComparePropertyIds(clearedSelections.propertyIds);
         setCompareFloorPlanItems(clearedSelections.floorPlanItems);
+        setIsFloorPlanComparePromptDismissed(false);
         setCompareMessage("Compare board cleared.");
     };
 
@@ -1983,6 +1999,33 @@ export default function PublicPropertyListing() {
                                                 ? ` covering ${availableUnitCount} available unit${availableUnitCount === 1 ? "" : "s"}`
                                                 : ""}
                                         </p>
+                                    )}
+
+                                    {shouldShowFloorPlanComparePrompt && (
+                                        <div className="mt-4 flex flex-col justify-between gap-3 rounded-2xl bg-[#e7f3ee] p-4 ring-1 ring-[#a9cfc2] sm:flex-row sm:items-center">
+                                            <p className="text-sm font-black text-[#173f3f]">
+                                                {compareFloorPlanItems.length} floor plan
+                                                {compareFloorPlanItems.length === 1 ? "" : "s"} selected to compare
+                                            </p>
+
+                                            <div className="flex flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleViewFloorPlanCompareBoard}
+                                                    className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-black text-white hover:bg-[#102426]"
+                                                >
+                                                    View compare
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsFloorPlanComparePromptDismissed(true)}
+                                                    className="rounded-xl bg-white px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                                                >
+                                                    Keep browsing
+                                                </button>
+                                            </div>
+                                        </div>
                                     )}
 
                                     <div className="mt-5 grid gap-3 lg:grid-cols-2">
