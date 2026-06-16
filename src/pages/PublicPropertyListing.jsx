@@ -1135,7 +1135,6 @@ export default function PublicPropertyListing() {
                 ? "Floor plan removed from compare."
                 : "Floor plan added to compare."
         );
-        scrollToCompareBoard();
     };
 
     const handleTogglePropertyCompare = () => {
@@ -4497,7 +4496,7 @@ function FloorPlanCard({
                                 : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
                         }`}
                     >
-                        {isCompared ? "Comparing" : "Compare Floor Plan"}
+                        {isCompared ? "Added" : "Compare Floor Plan"}
                     </button>
 
                     <button
@@ -4508,6 +4507,12 @@ function FloorPlanCard({
                         {isExpanded ? "Hide Details" : "View Details"}
                     </button>
                 </div>
+
+                {isCompared && (
+                    <p className="mt-3 rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+                        Added to compare. Select more layouts or compare from search.
+                    </p>
+                )}
             </div>
 
             {isExpanded && (
@@ -4638,7 +4643,7 @@ function FloorPlanCard({
                                                 : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
                                         }`}
                                     >
-                                        {isCompared ? "Comparing" : "Compare Floor Plan"}
+                                        {isCompared ? "Added" : "Compare Floor Plan"}
                                     </button>
 
                                     <button
@@ -4649,6 +4654,12 @@ function FloorPlanCard({
                                         Request Tour
                                     </button>
                                 </div>
+
+                                {isCompared && (
+                                    <p className="mt-3 rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+                                        Added to compare. Select more layouts or compare from search.
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
