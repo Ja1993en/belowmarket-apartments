@@ -254,6 +254,19 @@ export default function AdminDashboard() {
     ).length;
 
     const tourRequestCount = dashboardTourRequests.length;
+    const tourRequestsByLeadId = dashboardTourRequests.reduce((counts, request) => {
+        const leadId = String(request.leadId || "");
+        if (!leadId) return counts;
+
+        return {
+            ...counts,
+            [leadId]: (counts[leadId] || 0) + 1,
+        };
+    }, {});
+    const sourcePerformanceRows = getLeadSourcePerformanceRows(
+        activeDashboardLeads,
+        tourRequestsByLeadId
+    );
 
     const recentTourActivities = [...dashboardTourRequests]
         .sort((a, b) =>
@@ -467,6 +480,38 @@ export default function AdminDashboard() {
                 </div>
             </DashboardPanel>
 
+            <DashboardPanel
+                eyebrow="Lead Sources"
+                title="Source performance"
+                description="Compare where active leads are coming from and which channels are producing qualified renters."
+                actionLabel="Open Leads"
+                actionTo="/admin/leads"
+                actionStyle="dark"
+            >
+                {sourcePerformanceRows.length > 0 ? (
+                    <div className="overflow-hidden rounded-2xl ring-1 ring-[#d7e6df]">
+                        <div className="hidden grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(90px,1fr))] gap-3 bg-[#102426] px-4 py-3 text-xs font-black uppercase tracking-wide text-[#fff7df] md:grid">
+                            <span>Source</span>
+                            <span className="text-right">Leads</span>
+                            <span className="text-right">Qualified</span>
+                            <span className="text-right">Converted</span>
+                            <span className="text-right">Tours</span>
+                        </div>
+
+                        <div className="divide-y divide-[#d7e6df] bg-white">
+                            {sourcePerformanceRows.map((source) => (
+                                <SourcePerformanceRow
+                                    key={source.label}
+                                    source={source}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <EmptyPanel message="No active lead sources to show yet." />
+                )}
+            </DashboardPanel>
+
             <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
                 <DashboardPanel
                     eyebrow="Work Queue"
@@ -626,6 +671,39 @@ function ConversionStatCard({ icon: Icon, title, value, subtitle }) {
     );
 }
 
+function SourcePerformanceRow({ source }) {
+    return (
+        <div className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(90px,1fr))] md:items-center">
+            <div className="min-w-0">
+                <p className="font-black text-[#102426]">
+                    {source.label}
+                </p>
+                <p className="mt-1 text-xs font-bold text-[#78908a]">
+                    {source.share}% of active leads
+                </p>
+            </div>
+
+            <SourceMetric label="Leads" value={source.leadCount} />
+            <SourceMetric label="Qualified" value={source.qualifiedCount} />
+            <SourceMetric label="Converted" value={source.convertedCount} />
+            <SourceMetric label="Tours" value={source.tourRequestCount} />
+        </div>
+    );
+}
+
+function SourceMetric({ label, value }) {
+    return (
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl bg-[#f5f8f1] px-3 py-2 md:block md:bg-transparent md:p-0 md:text-right">
+            <span className="text-xs font-bold text-[#78908a] md:hidden">
+                {label}
+            </span>
+            <span className="text-sm font-black text-[#102426]">
+                {value}
+            </span>
+        </div>
+    );
+}
+
 function ConversionEventItem({ event }) {
     const content = (
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
@@ -713,6 +791,70 @@ function formatLeadEventTime(createdAt) {
     if (!createdAt) return "Just now";
 
     return new Date(createdAt).toLocaleString();
+}
+
+function getLeadSourcePerformanceRows(leads, tourRequestsByLeadId) {
+    const sourceMap = leads.reduce((rows, lead) => {
+        const source = normalizeLeadSource(lead);
+
+        if (!rows[source]) {
+            rows[source] = {
+                label: source,
+                leadCount: 0,
+                qualifiedCount: 0,
+                convertedCount: 0,
+                tourRequestCount: 0,
+            };
+        }
+
+        rows[source].leadCount += 1;
+
+        if (lead.quality === "Qualified") {
+            rows[source].qualifiedCount += 1;
+        }
+
+        if (lead.quality === "Converted") {
+            rows[source].convertedCount += 1;
+        }
+
+        rows[source].tourRequestCount += tourRequestsByLeadId[String(lead.id)] || 0;
+
+        return rows;
+    }, {});
+
+    const preferredOrder = [
+        "Google Ads",
+        "Start page",
+        "Public listing",
+        "Locator referral",
+        "Unknown",
+    ];
+
+    return Object.values(sourceMap)
+        .map((source) => ({
+            ...source,
+            share: leads.length
+                ? Math.round((source.leadCount / leads.length) * 100)
+                : 0,
+        }))
+        .sort((a, b) => {
+            const aIndex = preferredOrder.indexOf(a.label);
+            const bIndex = preferredOrder.indexOf(b.label);
+
+            if (aIndex !== -1 || bIndex !== -1) {
+                return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+            }
+
+            return b.leadCount - a.leadCount || a.label.localeCompare(b.label);
+        });
+}
+
+function normalizeLeadSource(lead) {
+    if (lead.source === "Google Ads" || lead.utmSource === "google") {
+        return "Google Ads";
+    }
+
+    return lead.source || "Unknown";
 }
 
 function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
