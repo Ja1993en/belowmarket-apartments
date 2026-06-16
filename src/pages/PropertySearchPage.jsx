@@ -705,13 +705,13 @@ export default function PropertySearchPage() {
         </div>
 
         {hasCompareItems && (
-          <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
+          <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-3 shadow-sm sm:p-5">
             <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
               <div>
                 <p className="text-sm font-black text-[#1f6f63]">
                   Compare saved options
                 </p>
-                <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                <h2 className="mt-1 text-xl font-black text-[#102426] sm:text-2xl">
                   Side-by-side renter value
                 </h2>
                 <p className="mt-1 text-sm font-semibold text-[#526260]">
@@ -725,13 +725,13 @@ export default function PropertySearchPage() {
                   setComparePropertyIds(clearedSelections.propertyIds);
                   setCompareFloorPlanItems(clearedSelections.floorPlanItems);
                 }}
-                className="w-fit rounded-2xl bg-[#fff0ea] px-4 py-3 text-sm font-black text-[#e4572e] hover:bg-[#fde8df]"
+                className="w-fit rounded-2xl bg-[#fff0ea] px-3 py-2.5 text-xs font-black text-[#e4572e] hover:bg-[#fde8df] sm:px-4 sm:py-3 sm:text-sm"
               >
                 Clear compare
               </button>
             </div>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2">
               {COMPARE_TABS.map((tab) => {
                 const count =
                   tab.label === "Floor Plans"
@@ -746,20 +746,20 @@ export default function PropertySearchPage() {
                   type="button"
                   aria-pressed={activeCompareTab === tab.label}
                   onClick={() => setActiveCompareTab(tab.label)}
-                  className={`rounded-2xl px-4 py-3 text-left text-sm font-black ring-1 transition ${
+                  className={`min-w-0 rounded-2xl px-2.5 py-2 text-left text-xs font-black ring-1 transition sm:px-4 sm:py-3 sm:text-sm ${
                     activeCompareTab === tab.label
                       ? "bg-[#173f3f] text-white"
                       : "bg-[#f5f8f1] text-[#173f3f] ring-[#d7e6df] hover:bg-[#d7e6df]"
                   }`}
                 >
-                  <span className="flex items-center justify-between gap-2">
-                    <span>{tab.label}</span>
-                    <span className="rounded-full bg-white/75 px-2 py-0.5 text-[10px] text-[#173f3f]">
+                  <span className="flex min-w-0 items-center justify-between gap-1 sm:gap-2">
+                    <span className="truncate">{tab.label}</span>
+                    <span className="shrink-0 rounded-full bg-white/75 px-1.5 py-0.5 text-[9px] text-[#173f3f] sm:px-2 sm:text-[10px]">
                       {count || tab.emptyText}
                     </span>
                   </span>
                   <span
-                    className={`mt-1 block text-xs font-bold ${
+                    className={`mt-1 block truncate text-[10px] font-bold sm:text-xs ${
                       activeCompareTab === tab.label ? "text-white/80" : "text-[#526260]"
                     }`}
                   >
@@ -1506,9 +1506,9 @@ function MiniBreakdown({ label, value }) {
 
 function CompareMetric({ label, value }) {
   return (
-    <div className="mt-3 border-t border-[#d7e6df] pt-3">
+    <div className="mt-2 border-t border-[#d7e6df] pt-2 sm:mt-3 sm:pt-3">
       <p className="text-[10px] font-black uppercase text-[#526260]">{label}</p>
-      <p className="mt-1 text-sm font-black text-[#102426]">{value}</p>
+      <p className="mt-1 truncate text-xs font-black text-[#102426] sm:text-sm">{value}</p>
     </div>
   );
 }
@@ -1594,18 +1594,18 @@ function ComparePropertiesTab({ rows, onRemove }) {
   }
 
   return (
-    <div className="mt-4 overflow-x-auto pb-1">
-      <div className="grid min-w-[720px] gap-3 md:grid-cols-4">
+    <div className="mt-4">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {rows.map(({ property, priceSummary }) => (
-          <div key={property.id} className="rounded-2xl bg-[#f5f8f1] p-4">
-            <div className="flex items-start justify-between gap-3">
-              <p className="min-w-0 truncate text-sm font-black text-[#102426]">
+          <div key={property.id} className="min-w-0 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <p className="min-w-0 truncate text-xs font-black text-[#102426] sm:text-sm">
                 {property.name}
               </p>
               <button
                 type="button"
                 onClick={() => onRemove(property.id)}
-                className="shrink-0 rounded-full bg-[#fff0ea] px-3 py-1 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                className="shrink-0 rounded-full bg-[#fff0ea] px-2 py-1 text-[10px] font-black text-[#e4572e] hover:bg-[#fde8df] sm:px-3 sm:text-xs"
               >
                 Remove
               </button>
@@ -1623,7 +1623,7 @@ function ComparePropertiesTab({ rows, onRemove }) {
             <Link
               to={getFloorPlansRoute(property.id)}
               onClick={rememberFloorPlanSectionTarget}
-              className="mt-4 block rounded-xl bg-[#173f3f] px-3 py-2.5 text-center text-xs font-black text-white hover:bg-[#102426]"
+              className="mt-3 block rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black text-white hover:bg-[#102426] sm:mt-4 sm:py-2.5"
             >
               View floor plans
             </Link>
