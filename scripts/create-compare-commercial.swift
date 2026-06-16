@@ -13,7 +13,7 @@ let posterURL = URL(fileURLWithPath: "public/marketing/bma-compare-commercial-po
 try? FileManager.default.removeItem(at: outputURL)
 try? FileManager.default.removeItem(at: posterURL)
 
-func c(_ hex: Int, _ alpha: CGFloat = 1) -> NSColor {
+func color(_ hex: Int, _ alpha: CGFloat = 1) -> NSColor {
     NSColor(
         calibratedRed: CGFloat((hex >> 16) & 0xff) / 255,
         green: CGFloat((hex >> 8) & 0xff) / 255,
@@ -22,31 +22,37 @@ func c(_ hex: Int, _ alpha: CGFloat = 1) -> NSColor {
     )
 }
 
-let bg = c(0xF5F8F1)
-let paper = c(0xFFFFFF)
-let dark = c(0x102426)
-let green = c(0x173F3F)
-let mint = c(0xE7F3EE)
-let softMint = c(0xF2F8F3)
-let gold = c(0xF2B84B)
-let goldSoft = c(0xFFF8E6)
-let muted = c(0x526260)
-let border = c(0xD7E6DF)
-let blue = c(0x174A7C)
-let blueSoft = c(0xEEF5FF)
+let cream = color(0xF5F8F1)
+let paper = color(0xFFFFFF)
+let ink = color(0x102426)
+let green = color(0x173F3F)
+let greenDeep = color(0x0D2B2B)
+let mint = color(0xE7F3EE)
+let mintSoft = color(0xF2F8F3)
+let gold = color(0xF2B84B)
+let goldSoft = color(0xFFF5D8)
+let muted = color(0x61716E)
+let border = color(0xD7E6DF)
+let coral = color(0xC85B3F)
+let shadow = color(0x061616, 0.18)
+
+let photoDominion = NSImage(contentsOfFile: "public/marketing/dominion-pool.jpg")
+let photoCortland = NSImage(contentsOfFile: "public/marketing/cortland-living.jpg")
+let photoMaa = NSImage(contentsOfFile: "public/marketing/maa-pool.jpg")
+let logoPreview = NSImage(contentsOfFile: "public/social-preview-bma.png")
 
 func ease(_ value: Double) -> CGFloat {
     let t = max(0, min(1, value))
     return CGFloat(t * t * (3 - 2 * t))
 }
 
-func sceneProgress(_ t: Double, _ start: Double, _ end: Double) -> CGFloat {
+func progress(_ t: Double, _ start: Double, _ end: Double) -> CGFloat {
     ease((t - start) / (end - start))
 }
 
-func drawRound(_ rect: CGRect, _ color: NSColor, radius: CGFloat = 24, stroke: NSColor? = nil, lineWidth: CGFloat = 1) {
+func drawRounded(_ rect: CGRect, _ fill: NSColor, radius: CGFloat = 24, stroke: NSColor? = nil, lineWidth: CGFloat = 1) {
     let path = NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius)
-    color.setFill()
+    fill.setFill()
     path.fill()
     if let stroke {
         stroke.setStroke()
@@ -62,197 +68,274 @@ func drawText(
     w: CGFloat,
     h: CGFloat,
     size: CGFloat,
-    color: NSColor = dark,
+    fill: NSColor = ink,
     weight: NSFont.Weight = .regular,
     align: NSTextAlignment = .left,
-    line: CGFloat = 1.08
+    line: CGFloat = 1.04
 ) {
     let paragraph = NSMutableParagraphStyle()
     paragraph.alignment = align
-    paragraph.lineHeightMultiple = line
     paragraph.lineBreakMode = .byWordWrapping
-    let font = NSFont.systemFont(ofSize: size, weight: weight)
+    paragraph.lineHeightMultiple = line
     let attributed = NSAttributedString(
         string: text,
         attributes: [
-            .font: font,
-            .foregroundColor: color,
+            .font: NSFont.systemFont(ofSize: size, weight: weight),
+            .foregroundColor: fill,
             .paragraphStyle: paragraph,
         ]
     )
     attributed.draw(in: CGRect(x: x, y: y, width: w, height: h))
 }
 
-func drawPill(_ text: String, x: CGFloat, y: CGFloat, w: CGFloat, color: NSColor, textColor: NSColor = dark) {
-    drawRound(CGRect(x: x, y: y, width: w, height: 42), color, radius: 21, stroke: border)
-    drawText(text, x: x + 14, y: y + 11, w: w - 28, h: 20, size: 14, color: textColor, weight: .bold, align: .center)
+func drawCoverImage(_ image: NSImage?, in rect: CGRect, radius: CGFloat = 0, opacity: CGFloat = 1) {
+    guard let image else {
+        drawRounded(rect, mint, radius: radius)
+        return
+    }
+
+    NSGraphicsContext.saveGraphicsState()
+    if radius > 0 {
+        NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).addClip()
+    } else {
+        NSBezierPath(rect: rect).addClip()
+    }
+
+    let imageSize = image.size
+    let imageRatio = imageSize.width / imageSize.height
+    let rectRatio = rect.width / rect.height
+    var source = CGRect(origin: .zero, size: imageSize)
+    if imageRatio > rectRatio {
+        let newWidth = imageSize.height * rectRatio
+        source.origin.x = (imageSize.width - newWidth) / 2
+        source.size.width = newWidth
+    } else {
+        let newHeight = imageSize.width / rectRatio
+        source.origin.y = (imageSize.height - newHeight) / 2
+        source.size.height = newHeight
+    }
+    image.draw(in: rect, from: source, operation: .sourceOver, fraction: opacity, respectFlipped: true, hints: nil)
+    NSGraphicsContext.restoreGraphicsState()
 }
 
-func drawLogo(x: CGFloat, y: CGFloat, compact: Bool = false) {
-    drawRound(CGRect(x: x, y: y, width: compact ? 62 : 82, height: compact ? 62 : 82), green, radius: compact ? 20 : 26)
-    drawText("BMA", x: x + 8, y: y + (compact ? 20 : 27), w: compact ? 46 : 66, h: 28, size: compact ? 18 : 24, color: paper, weight: .black, align: .center)
-    if !compact {
-        drawText("Below Market\nApartments", x: x + 96, y: y + 10, w: 260, h: 64, size: 24, color: dark, weight: .black)
+func drawLinearOverlay(_ rect: CGRect, topAlpha: CGFloat = 0.15, bottomAlpha: CGFloat = 0.7) {
+    let gradient = NSGradient(colors: [color(0x061616, topAlpha), color(0x061616, bottomAlpha)])!
+    gradient.draw(in: NSBezierPath(rect: rect), angle: -90)
+}
+
+func drawShadowCard(_ rect: CGRect, fill: NSColor = paper, radius: CGFloat = 28, stroke: NSColor = border) {
+    drawRounded(rect.offsetBy(dx: 0, dy: 10), shadow, radius: radius)
+    drawRounded(rect, fill, radius: radius, stroke: stroke)
+}
+
+func drawLogo(x: CGFloat, y: CGFloat, size: CGFloat = 78, showName: Bool = true, light: Bool = false) {
+    drawRounded(CGRect(x: x, y: y, width: size, height: size), light ? paper : green, radius: size * 0.28)
+    drawText("BMA", x: x + 8, y: y + size * 0.34, w: size - 16, h: size * 0.32, size: size * 0.27, fill: light ? green : paper, weight: .black, align: .center)
+    if showName {
+        drawText("Below Market\nApartments", x: x + size + 14, y: y + 9, w: 270, h: 64, size: 24, fill: light ? paper : ink, weight: .black)
     }
 }
 
-func drawPhoneShell(x: CGFloat = 82, y: CGFloat = 214, w: CGFloat = 556, h: CGFloat = 850) {
-    drawRound(CGRect(x: x, y: y, width: w, height: h), dark, radius: 58)
-    drawRound(CGRect(x: x + 14, y: y + 14, width: w - 28, height: h - 28), paper, radius: 46)
-    drawRound(CGRect(x: x + w / 2 - 70, y: y + 28, width: 140, height: 18), dark, radius: 9)
+func drawPill(_ text: String, x: CGFloat, y: CGFloat, w: CGFloat, h: CGFloat = 42, fill: NSColor = mint, textColor: NSColor = green, borderColor: NSColor? = border, size: CGFloat = 14) {
+    drawRounded(CGRect(x: x, y: y, width: w, height: h), fill, radius: h / 2, stroke: borderColor)
+    drawText(text, x: x + 12, y: y + (h - size) / 2 - 1, w: w - 24, h: size + 6, size: size, fill: textColor, weight: .black, align: .center)
 }
 
-func drawAppHeader(y: CGFloat = 258) {
-    drawLogo(x: 120, y: y, compact: true)
-    drawText("Below Market\nApartments", x: 192, y: y + 7, w: 240, h: 52, size: 20, color: dark, weight: .black)
-    drawRound(CGRect(x: 500, y: y + 12, width: 82, height: 42), mint, radius: 21)
-    drawText("Deals", x: 510, y: y + 24, w: 62, h: 18, size: 14, color: green, weight: .bold, align: .center)
+func drawPhone(x: CGFloat = 96, y: CGFloat = 260, w: CGFloat = 528, h: CGFloat = 790, screenFill: NSColor = cream) {
+    drawRounded(CGRect(x: x, y: y, width: w, height: h), greenDeep, radius: 58)
+    drawRounded(CGRect(x: x + 13, y: y + 13, width: w - 26, height: h - 26), screenFill, radius: 47)
+    drawRounded(CGRect(x: x + w / 2 - 64, y: y + 28, width: 128, height: 17), greenDeep, radius: 8.5)
 }
 
-func drawPropertyCard(y: CGFloat, name: String, area: String, special: String, rent: String, selected: Bool = false) {
-    drawRound(CGRect(x: 118, y: y, width: 484, height: 130), paper, radius: 24, stroke: selected ? gold : border, lineWidth: selected ? 3 : 1)
-    drawRound(CGRect(x: 138, y: y + 20, width: 88, height: 88), selected ? gold : mint, radius: 18)
-    drawText(selected ? "✓" : "$", x: 138, y: y + 42, w: 88, h: 38, size: 34, color: selected ? dark : green, weight: .black, align: .center)
-    drawText(name, x: 244, y: y + 20, w: 280, h: 26, size: 20, color: dark, weight: .black)
-    drawText(area, x: 244, y: y + 50, w: 260, h: 22, size: 15, color: muted, weight: .semibold)
-    drawPill(special, x: 244, y: y + 80, w: 172, color: goldSoft, textColor: c(0x8A5B0A))
-    drawText(rent, x: 472, y: y + 78, w: 100, h: 42, size: 21, color: green, weight: .black, align: .right)
+func drawPhoneHeader(x: CGFloat = 132, y: CGFloat = 312) {
+    drawLogo(x: x, y: y, size: 54, showName: false)
+    drawText("Below Market\nApartments", x: x + 68, y: y + 2, w: 210, h: 50, size: 18, fill: ink, weight: .black)
+    drawPill("Deals", x: x + 330, y: y + 7, w: 90, h: 40, fill: paper, textColor: green)
 }
 
-func drawFloorPlanCard(y: CGFloat, name: String, normal: String, effective: String, savings: String, selected: Bool) {
-    drawRound(CGRect(x: 118, y: y, width: 484, height: 150), paper, radius: 24, stroke: selected ? gold : border, lineWidth: selected ? 3 : 1)
-    drawText(name, x: 142, y: y + 20, w: 140, h: 28, size: 24, color: dark, weight: .black)
-    drawText("1 bd • 1 ba • 772 sq ft", x: 142, y: y + 54, w: 220, h: 22, size: 15, color: muted, weight: .semibold)
-    drawRound(CGRect(x: 386, y: y + 18, width: 176, height: 38), selected ? goldSoft : mint, radius: 19, stroke: selected ? gold : border)
-    drawText(selected ? "Added to compare" : "Compare", x: 398, y: y + 29, w: 152, h: 17, size: 13, color: selected ? c(0x8A5B0A) : green, weight: .black, align: .center)
-    drawText("Normal rent", x: 142, y: y + 96, w: 110, h: 16, size: 12, color: muted, weight: .black)
-    drawText(normal, x: 142, y: y + 114, w: 110, h: 24, size: 20, color: dark, weight: .black)
-    drawText("After special", x: 292, y: y + 96, w: 120, h: 16, size: 12, color: muted, weight: .black)
-    drawText(effective, x: 292, y: y + 114, w: 120, h: 24, size: 20, color: green, weight: .black)
-    drawText("Savings", x: 440, y: y + 96, w: 90, h: 16, size: 12, color: muted, weight: .black, align: .right)
-    drawText(savings, x: 438, y: y + 114, w: 96, h: 24, size: 20, color: green, weight: .black, align: .right)
-}
-
-func drawCompareTable(y: CGFloat) {
-    drawRound(CGRect(x: 82, y: y, width: 556, height: 514), paper, radius: 30, stroke: border)
-    drawText("Side-by-side renter value", x: 116, y: y + 28, w: 420, h: 34, size: 25, color: dark, weight: .black)
-    drawPill("Properties", x: 116, y: y + 78, w: 128, color: green, textColor: paper)
-    drawPill("Floor Plans", x: 256, y: y + 78, w: 138, color: softMint, textColor: green)
-    drawPill("Details", x: 406, y: y + 78, w: 100, color: softMint, textColor: green)
-
-    let columns: [(String, CGFloat, CGFloat)] = [
-        ("Option", 116, 128),
-        ("Normal", 258, 84),
-        ("After", 356, 84),
-        ("Savings", 454, 86),
-    ]
-    for column in columns {
-        drawText(column.0, x: column.1, y: y + 144, w: column.2, h: 18, size: 13, color: muted, weight: .black)
+func drawPropertyTile(
+    y: CGFloat,
+    image: NSImage?,
+    name: String,
+    area: String,
+    special: String,
+    after: String,
+    selected: Bool,
+    lift: CGFloat = 0
+) {
+    let rect = CGRect(x: 130, y: y - lift, width: 460, height: 138)
+    drawShadowCard(rect, fill: paper, radius: 26, stroke: selected ? gold : border)
+    drawCoverImage(image, in: CGRect(x: rect.minX + 14, y: rect.minY + 14, width: 112, height: 110), radius: 20)
+    if selected {
+        drawRounded(CGRect(x: rect.minX + 93, y: rect.minY + 24, width: 42, height: 42), gold, radius: 21)
+        drawText("✓", x: rect.minX + 93, y: rect.minY + 32, w: 42, h: 28, size: 24, fill: ink, weight: .black, align: .center)
     }
-
-    let rows = [
-        ("Dominion", "$1,359", "$1,189", "$170/mo"),
-        ("Oak & Ellum", "$1,108", "$974", "$134/mo"),
-        ("MAA Arts", "$1,218", "$1,015", "$203/mo"),
-    ]
-    for (index, row) in rows.enumerated() {
-        let rowY = y + 184 + CGFloat(index) * 96
-        drawRound(CGRect(x: 110, y: rowY, width: 500, height: 74), index == 0 ? mint : c(0xFAFCF8), radius: 18, stroke: border)
-        drawText(row.0, x: 130, y: rowY + 18, w: 126, h: 34, size: 16, color: dark, weight: .black)
-        drawText(row.1, x: 258, y: rowY + 25, w: 84, h: 24, size: 16, color: dark, weight: .bold)
-        drawText(row.2, x: 356, y: rowY + 25, w: 84, h: 24, size: 16, color: green, weight: .black)
-        drawText(row.3, x: 454, y: rowY + 25, w: 86, h: 24, size: 16, color: green, weight: .black)
-    }
-
-    drawRound(CGRect(x: 168, y: y + 434, width: 384, height: 52), gold, radius: 26)
-    drawText("Choose what is worth touring", x: 190, y: y + 449, w: 340, h: 24, size: 18, color: dark, weight: .black, align: .center)
+    drawText(name, x: rect.minX + 144, y: rect.minY + 18, w: 245, h: 27, size: 19, fill: ink, weight: .black)
+    drawText(area, x: rect.minX + 144, y: rect.minY + 48, w: 240, h: 20, size: 14, fill: muted, weight: .semibold)
+    drawPill(special, x: rect.minX + 144, y: rect.minY + 82, w: 145, h: 34, fill: goldSoft, textColor: color(0x7B5208), borderColor: color(0xF1D58A), size: 12)
+    drawText("After special", x: rect.minX + 322, y: rect.minY + 78, w: 106, h: 18, size: 12, fill: muted, weight: .black, align: .right)
+    drawText(after, x: rect.minX + 315, y: rect.minY + 96, w: 112, h: 28, size: 23, fill: green, weight: .black, align: .right)
 }
 
-func drawPointer(x: CGFloat, y: CGFloat, scale: CGFloat = 1, click: Bool = false) {
-    if click {
-        drawRound(CGRect(x: x - 28, y: y - 28, width: 56, height: 56), gold.withAlphaComponent(0.35), radius: 28)
+func drawFloorPlanTile(y: CGFloat, name: String, detail: String, normal: String, after: String, savings: String, selected: Bool) {
+    let rect = CGRect(x: 128, y: y, width: 464, height: 146)
+    drawShadowCard(rect, fill: paper, radius: 25, stroke: selected ? gold : border)
+    drawText(name, x: rect.minX + 22, y: rect.minY + 18, w: 90, h: 34, size: 26, fill: ink, weight: .black)
+    drawText(detail, x: rect.minX + 22, y: rect.minY + 54, w: 210, h: 22, size: 14, fill: muted, weight: .semibold)
+    drawPill(selected ? "Selected" : "Compare", x: rect.minX + 312, y: rect.minY + 20, w: 126, h: 36, fill: selected ? goldSoft : mint, textColor: selected ? color(0x7B5208) : green, borderColor: selected ? gold : border, size: 13)
+    drawText("Normal", x: rect.minX + 24, y: rect.minY + 94, w: 86, h: 16, size: 12, fill: muted, weight: .black)
+    drawText(normal, x: rect.minX + 24, y: rect.minY + 112, w: 86, h: 24, size: 19, fill: ink, weight: .black)
+    drawText("After special", x: rect.minX + 162, y: rect.minY + 94, w: 120, h: 16, size: 12, fill: muted, weight: .black)
+    drawText(after, x: rect.minX + 162, y: rect.minY + 112, w: 120, h: 24, size: 19, fill: green, weight: .black)
+    drawText("Saves", x: rect.minX + 330, y: rect.minY + 94, w: 86, h: 16, size: 12, fill: muted, weight: .black, align: .right)
+    drawText(savings, x: rect.minX + 318, y: rect.minY + 112, w: 100, h: 24, size: 19, fill: green, weight: .black, align: .right)
+}
+
+func drawCursor(x: CGFloat, y: CGFloat, scale: CGFloat = 1, pulse: Bool = false) {
+    if pulse {
+        drawRounded(CGRect(x: x - 30, y: y - 30, width: 60, height: 60), gold.withAlphaComponent(0.38), radius: 30)
     }
     let path = NSBezierPath()
     path.move(to: CGPoint(x: x, y: y))
-    path.line(to: CGPoint(x: x + 26 * scale, y: y + 72 * scale))
-    path.line(to: CGPoint(x: x + 44 * scale, y: y + 48 * scale))
-    path.line(to: CGPoint(x: x + 74 * scale, y: y + 96 * scale))
-    path.line(to: CGPoint(x: x + 94 * scale, y: y + 84 * scale))
-    path.line(to: CGPoint(x: x + 64 * scale, y: y + 38 * scale))
-    path.line(to: CGPoint(x: x + 94 * scale, y: y + 34 * scale))
+    path.line(to: CGPoint(x: x + 21 * scale, y: y + 70 * scale))
+    path.line(to: CGPoint(x: x + 41 * scale, y: y + 47 * scale))
+    path.line(to: CGPoint(x: x + 72 * scale, y: y + 92 * scale))
+    path.line(to: CGPoint(x: x + 93 * scale, y: y + 78 * scale))
+    path.line(to: CGPoint(x: x + 62 * scale, y: y + 34 * scale))
+    path.line(to: CGPoint(x: x + 91 * scale, y: y + 31 * scale))
     path.close()
     paper.setFill()
     path.fill()
-    dark.setStroke()
+    ink.setStroke()
     path.lineWidth = 3
     path.stroke()
 }
 
-func drawCaption(_ text: String, sub: String, t: CGFloat) {
-    let y = 1060 + (1 - t) * 20
-    drawText(text, x: 58, y: y, w: 604, h: 96, size: 30, color: dark, weight: .black, align: .center)
-    drawText(sub, x: 72, y: y + 98, w: 576, h: 70, size: 19, color: muted, weight: .semibold, align: .center)
+func drawTitle(_ title: String, subtitle: String, y: CGFloat = 96, light: Bool = false) {
+    drawText(title, x: 56, y: y, w: 608, h: 126, size: 42, fill: light ? paper : ink, weight: .black, align: .center, line: 0.98)
+    drawText(subtitle, x: 74, y: y + 138, w: 572, h: 66, size: 20, fill: light ? paper.withAlphaComponent(0.86) : muted, weight: .semibold, align: .center)
+}
+
+func drawHeroScene(_ p: CGFloat) {
+    drawCoverImage(photoDominion, in: CGRect(x: 0, y: 0, width: width, height: height), radius: 0)
+    drawLinearOverlay(CGRect(x: 0, y: 0, width: width, height: height), topAlpha: 0.25, bottomAlpha: 0.88)
+    drawLogo(x: 58, y: 66, size: 70, showName: true, light: true)
+    drawText("Find the best apartment deals near you.", x: 54, y: 735 - p * 18, w: 612, h: 170, size: 54, fill: paper, weight: .black, align: .left, line: 0.96)
+    drawText("Choose properties. Compare floor plans. See the real savings before you tour.", x: 58, y: 914, w: 560, h: 92, size: 24, fill: paper.withAlphaComponent(0.9), weight: .semibold, line: 1.1)
+    drawRounded(CGRect(x: 58, y: 1044, width: 322, height: 58), gold, radius: 29)
+    drawText("Free for renters", x: 84, y: 1061, w: 270, h: 26, size: 20, fill: ink, weight: .black, align: .center)
+    drawText("belowmarketapartments.com", x: 58, y: 1128, w: 440, h: 30, size: 21, fill: paper, weight: .black)
+}
+
+func drawSearchScene(_ p: CGFloat) {
+    drawRounded(CGRect(x: 0, y: 0, width: width, height: height), cream, radius: 0)
+    drawCoverImage(photoCortland, in: CGRect(x: 0, y: 0, width: width, height: 410), radius: 0)
+    drawLinearOverlay(CGRect(x: 0, y: 0, width: width, height: 410), topAlpha: 0.04, bottomAlpha: 0.72)
+    drawLogo(x: 58, y: 56, size: 58, showName: true, light: true)
+    drawText("Tap compare on the properties you like.", x: 58, y: 286, w: 570, h: 70, size: 35, fill: paper, weight: .black)
+    drawPhone(y: 378, h: 772)
+    drawPhoneHeader(y: 430)
+    drawPill("Properties", x: 132, y: 512, w: 128, h: 38, fill: green, textColor: paper, borderColor: green)
+    drawPill("Floor Plans", x: 274, y: 512, w: 132, h: 38, fill: paper, textColor: green)
+    drawPill("Details", x: 420, y: 512, w: 96, h: 38, fill: paper, textColor: green)
+    drawPropertyTile(y: 586, image: photoDominion, name: "Dominion", area: "Farmers Branch", special: "6 Weeks Free", after: "$1,189", selected: p > 0.32, lift: p > 0.32 ? 5 : 0)
+    drawPropertyTile(y: 744, image: photoMaa, name: "MAA Cathedral Arts", area: "Lower Greenville", special: "8 Weeks Free", after: "$1,015", selected: p > 0.56, lift: p > 0.56 ? 5 : 0)
+    drawPropertyTile(y: 902, image: photoCortland, name: "Cortland on McKinney", area: "Uptown Dallas", special: "Move-in deal", after: "$1,355", selected: false)
+    drawCursor(x: 486 - p * 35, y: 660 + p * 155, scale: 0.58, pulse: (p > 0.3 && p < 0.43) || (p > 0.55 && p < 0.68))
+}
+
+func drawFloorPlanScene(_ p: CGFloat) {
+    drawRounded(CGRect(x: 0, y: 0, width: width, height: height), cream, radius: 0)
+    drawTitle("Choose exact floor plans.", subtitle: "Compare the layouts that actually match your budget.", y: 64)
+    drawPhone(y: 286, h: 810)
+    drawPhoneHeader(y: 338)
+    drawCoverImage(photoDominion, in: CGRect(x: 130, y: 420, width: 460, height: 128), radius: 24)
+    drawLinearOverlay(CGRect(x: 130, y: 420, width: 460, height: 128), topAlpha: 0.02, bottomAlpha: 0.62)
+    drawText("Dominion at Mercer Crossing", x: 154, y: 476, w: 342, h: 30, size: 22, fill: paper, weight: .black)
+    drawPill("6 Weeks Free", x: 154, y: 510, w: 138, h: 34, fill: gold, textColor: ink, borderColor: nil, size: 13)
+    drawFloorPlanTile(y: 584, name: "A1", detail: "1 bd • 1 ba • 758 sq ft", normal: "$1,409", after: "$1,233", savings: "$176", selected: p > 0.35)
+    drawFloorPlanTile(y: 750, name: "A2", detail: "1 bd • 1 ba • 812 sq ft", normal: "$1,554", after: "$1,360", savings: "$194", selected: p > 0.62)
+    drawPill("\(p > 0.62 ? 2 : p > 0.35 ? 1 : 0) selected to compare", x: 174, y: 940, w: 372, h: 54, fill: green, textColor: paper, borderColor: nil, size: 18)
+    drawCursor(x: 480 - p * 28, y: 622 + p * 160, scale: 0.58, pulse: (p > 0.33 && p < 0.48) || (p > 0.6 && p < 0.74))
+}
+
+func drawCompareCard(x: CGFloat, y: CGFloat, w: CGFloat, title: String, image: NSImage?, badge: String, normal: String, after: String, savings: String, highlight: Bool = false) {
+    let rect = CGRect(x: x, y: y, width: w, height: 396)
+    drawShadowCard(rect, fill: highlight ? mintSoft : paper, radius: 26, stroke: highlight ? gold : border)
+    drawCoverImage(image, in: CGRect(x: x + 16, y: y + 16, width: w - 32, height: 126), radius: 20)
+    drawPill(badge, x: x + 28, y: y + 104, w: 136, h: 34, fill: gold, textColor: ink, borderColor: nil, size: 12)
+    drawText(title, x: x + 20, y: y + 162, w: w - 40, h: 48, size: 20, fill: ink, weight: .black)
+    drawText("Normal", x: x + 24, y: y + 228, w: 90, h: 18, size: 12, fill: muted, weight: .black)
+    drawText(normal, x: x + 24, y: y + 248, w: 110, h: 28, size: 21, fill: ink, weight: .black)
+    drawText("After special", x: x + 24, y: y + 292, w: 125, h: 18, size: 12, fill: muted, weight: .black)
+    drawText(after, x: x + 24, y: y + 312, w: 130, h: 32, size: 26, fill: green, weight: .black)
+    drawRounded(CGRect(x: x + w - 132, y: y + 286, width: 108, height: 62), highlight ? gold : mint, radius: 18)
+    drawText(savings, x: x + w - 126, y: y + 302, w: 96, h: 24, size: 19, fill: highlight ? ink : green, weight: .black, align: .center)
+    drawText("savings", x: x + w - 126, y: y + 326, w: 96, h: 16, size: 11, fill: highlight ? ink : green, weight: .bold, align: .center)
+}
+
+func drawCompareScene(_ p: CGFloat) {
+    drawRounded(CGRect(x: 0, y: 0, width: width, height: height), cream, radius: 0)
+    drawLogo(x: 58, y: 54, size: 58, showName: true)
+    drawTitle("Compare before you tour.", subtitle: "Properties first. Floor plans next. Details when you need them.", y: 150)
+    drawPill("Properties", x: 86, y: 324, w: 158, h: 48, fill: green, textColor: paper, borderColor: green, size: 16)
+    drawPill("Floor Plans", x: 264, y: 324, w: 166, h: 48, fill: paper, textColor: green, size: 16)
+    drawPill("Details", x: 450, y: 324, w: 118, h: 48, fill: paper, textColor: green, size: 16)
+    drawCompareCard(x: 54 - (1 - p) * 36, y: 420, w: 286, title: "Dominion", image: photoDominion, badge: "6 Weeks Free", normal: "$1,359", after: "$1,189", savings: "$170/mo", highlight: true)
+    drawCompareCard(x: 380 + (1 - p) * 36, y: 420, w: 286, title: "MAA Cathedral Arts", image: photoMaa, badge: "8 Weeks Free", normal: "$1,218", after: "$1,015", savings: "$203/mo")
+    drawShadowCard(CGRect(x: 72, y: 870, width: 576, height: 142), fill: greenDeep, radius: 30, stroke: greenDeep)
+    drawText("See the deal, rent, savings, and next step side by side.", x: 106, y: 900, w: 508, h: 78, size: 28, fill: paper, weight: .black, align: .center)
+    drawPill("No more guessing", x: 226, y: 1002, w: 268, h: 48, fill: gold, textColor: ink, borderColor: nil, size: 17)
+}
+
+func drawDecisionScene(_ p: CGFloat) {
+    drawCoverImage(photoMaa, in: CGRect(x: 0, y: 0, width: width, height: height), radius: 0)
+    drawLinearOverlay(CGRect(x: 0, y: 0, width: width, height: height), topAlpha: 0.12, bottomAlpha: 0.78)
+    drawLogo(x: 58, y: 58, size: 62, showName: true, light: true)
+    drawText("Tour the deal that makes sense.", x: 54, y: 658 - p * 14, w: 600, h: 138, size: 52, fill: paper, weight: .black, line: 0.98)
+    let checks = [
+        ("Compare selected properties", "Side by side"),
+        ("Pick exact floor plans", "Not just averages"),
+        ("Know what to confirm", "Fees, terms, availability"),
+    ]
+    for (index, item) in checks.enumerated() {
+        let rowY = 846 + CGFloat(index) * 92
+        drawRounded(CGRect(x: 62, y: rowY, width: 596, height: 70), paper.withAlphaComponent(0.92), radius: 22)
+        drawRounded(CGRect(x: 84, y: rowY + 16, width: 38, height: 38), gold, radius: 19)
+        drawText("✓", x: 84, y: rowY + 22, w: 38, h: 24, size: 22, fill: ink, weight: .black, align: .center)
+        drawText(item.0, x: 142, y: rowY + 15, w: 330, h: 22, size: 18, fill: ink, weight: .black)
+        drawText(item.1, x: 142, y: rowY + 40, w: 330, h: 20, size: 14, fill: muted, weight: .semibold)
+    }
+}
+
+func drawEndScene(_ p: CGFloat) {
+    drawRounded(CGRect(x: 0, y: 0, width: width, height: height), greenDeep, radius: 0)
+    drawCoverImage(photoDominion, in: CGRect(x: 0, y: 0, width: width, height: 560), radius: 0, opacity: 0.48)
+    drawLinearOverlay(CGRect(x: 0, y: 0, width: width, height: 560), topAlpha: 0.12, bottomAlpha: 0.84)
+    drawLogo(x: 116, y: 170, size: 92, showName: true, light: true)
+    drawText("Below Market Apartments", x: 62, y: 560, w: 596, h: 64, size: 40, fill: paper, weight: .black, align: .center)
+    drawText("Find the best apartment deals near you.", x: 80, y: 642, w: 560, h: 92, size: 32, fill: paper.withAlphaComponent(0.9), weight: .semibold, align: .center)
+    drawRounded(CGRect(x: 92, y: 800, width: 536, height: 82), gold, radius: 41)
+    drawText("Browse. Select. Compare.", x: 120, y: 824, w: 480, h: 34, size: 28, fill: ink, weight: .black, align: .center)
+    drawText("belowmarketapartments.com", x: 84, y: 940, w: 552, h: 42, size: 30, fill: paper, weight: .black, align: .center)
+    drawText("Free apartment search for renters", x: 100, y: 1000, w: 520, h: 32, size: 20, fill: gold, weight: .black, align: .center)
+    _ = p
 }
 
 func renderScene(t: Double) {
-    drawRound(CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)), bg, radius: 0)
-    let shimmer = CGFloat((sin(t * 1.2) + 1) / 2)
-    drawRound(CGRect(x: -90, y: 80 + shimmer * 30, width: 270, height: 270), mint.withAlphaComponent(0.7), radius: 135)
-    drawRound(CGRect(x: 548, y: 920 - shimmer * 20, width: 230, height: 230), goldSoft.withAlphaComponent(0.9), radius: 115)
-
     switch t {
     case 0..<6:
-        let p = sceneProgress(t, 0, 6)
-        drawLogo(x: 82, y: 96)
-        drawPhoneShell(y: 274)
-        drawAppHeader(y: 318)
-        drawPropertyCard(y: 420, name: "Oak & Ellum", area: "East Dallas", special: "4 Weeks Free", rent: "$974", selected: false)
-        drawPropertyCard(y: 570, name: "Dominion at Mercer", area: "Farmers Branch", special: "6 Weeks Free", rent: "$1,189", selected: false)
-        drawPropertyCard(y: 720, name: "MAA Cathedral Arts", area: "Lower Greenville", special: "8 Weeks Free", rent: "$1,015", selected: false)
-        drawCaption("Stop guessing which deal is best.", sub: "Below Market Apartments puts specials, rent, and availability in one place.", t: p)
-    case 6..<13:
-        let p = sceneProgress(t, 6, 13)
-        drawPhoneShell(y: 220)
-        drawAppHeader(y: 264)
-        drawPropertyCard(y: 366, name: "Oak & Ellum", area: "East Dallas", special: "4 Weeks Free", rent: "$974", selected: p > 0.35)
-        drawPropertyCard(y: 516, name: "Dominion at Mercer", area: "Farmers Branch", special: "6 Weeks Free", rent: "$1,189", selected: p > 0.6)
-        drawPropertyCard(y: 666, name: "MAA Cathedral Arts", area: "Lower Greenville", special: "8 Weeks Free", rent: "$1,015", selected: false)
-        let px = 500 - p * 120
-        let py = 474 + p * 122
-        drawPointer(x: px, y: py, scale: 0.7, click: p > 0.35 && p < 0.5 || p > 0.6 && p < 0.75)
-        drawCaption("Choose properties you like.", sub: "Tap compare on the listings that match your budget and location.", t: p)
-    case 13..<21:
-        let p = sceneProgress(t, 13, 21)
-        drawPhoneShell(y: 190)
-        drawAppHeader(y: 234)
-        drawText("Dominion at Mercer Crossing", x: 120, y: 324, w: 430, h: 34, size: 23, color: dark, weight: .black)
-        drawPill("6 Weeks Free", x: 120, y: 372, w: 148, color: goldSoft, textColor: c(0x8A5B0A))
-        drawFloorPlanCard(y: 442, name: "A1", normal: "$1,409", effective: "$1,233", savings: "$176", selected: p > 0.35)
-        drawFloorPlanCard(y: 618, name: "A2", normal: "$1,554", effective: "$1,360", savings: "$194", selected: p > 0.62)
-        drawPointer(x: 485 - p * 45, y: 488 + p * 150, scale: 0.65, click: p > 0.35 && p < 0.48 || p > 0.62 && p < 0.76)
-        drawCaption("Then compare specific floor plans.", sub: "Normal rent, rent after special, and estimated savings stay side by side.", t: p)
-    case 21..<31:
-        let p = sceneProgress(t, 21, 31)
-        drawCompareTable(y: 260)
-        drawPointer(x: 196 + p * 212, y: 338, scale: 0.62, click: p > 0.32 && p < 0.46)
-        drawCaption("Switch views without losing your picks.", sub: "Compare properties, floor plans, and details in the order renters shop.", t: p)
-    case 31..<38:
-        let p = sceneProgress(t, 31, 38)
-        drawPhoneShell(y: 230)
-        drawAppHeader(y: 274)
-        drawCompareTable(y: 380)
-        drawCaption("See the real renter value.", sub: "Compare specials before you tour, apply, or pay fees.", t: p)
+        drawHeroScene(progress(t, 0, 6))
+    case 6..<14:
+        drawSearchScene(progress(t, 6, 14))
+    case 14..<22:
+        drawFloorPlanScene(progress(t, 14, 22))
+    case 22..<32:
+        drawCompareScene(progress(t, 22, 32))
+    case 32..<38:
+        drawDecisionScene(progress(t, 32, 38))
     default:
-        let p = sceneProgress(t, 38, 42)
-        drawLogo(x: 116, y: 205)
-        drawText("Find the best apartment deals near you.", x: 78, y: 432, w: 564, h: 120, size: 40, color: dark, weight: .black, align: .center)
-        drawText("Browse. Select. Compare. Tour with confidence.", x: 86, y: 570, w: 548, h: 74, size: 24, color: muted, weight: .semibold, align: .center)
-        drawRound(CGRect(x: 140, y: 706, width: 440, height: 70), gold, radius: 35)
-        drawText("belowmarketapartments.com", x: 160, y: 728, w: 400, h: 28, size: 22, color: dark, weight: .black, align: .center)
-        drawText("Free apartment search for renters", x: 112, y: 820, w: 496, h: 34, size: 20, color: green, weight: .black, align: .center)
-        drawRound(CGRect(x: 88, y: 930, width: 544, height: 120), paper.withAlphaComponent(0.85), radius: 32, stroke: border)
-        drawText("The smarter way to shop specials.", x: 122, y: 966, w: 476, h: 36, size: 28, color: dark, weight: .black, align: .center)
-        _ = p
+        drawEndScene(progress(t, 38, 42))
     }
 }
 
@@ -324,7 +407,7 @@ let settings: [String: Any] = [
     AVVideoWidthKey: width,
     AVVideoHeightKey: height,
     AVVideoCompressionPropertiesKey: [
-        AVVideoAverageBitRateKey: 3_500_000,
+        AVVideoAverageBitRateKey: 4_800_000,
         AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
     ],
 ]
@@ -361,10 +444,11 @@ for frame in 0..<totalFrames {
 }
 
 input.markAsFinished()
+let semaphore = DispatchSemaphore(value: 0)
 writer.finishWriting {
-    writePoster(seconds: 22)
+    writePoster(seconds: 24)
     print("Wrote \(outputURL.path)")
     print("Wrote \(posterURL.path)")
+    semaphore.signal()
 }
-
-RunLoop.current.run(until: Date().addingTimeInterval(2))
+_ = semaphore.wait(timeout: .now() + 10)
