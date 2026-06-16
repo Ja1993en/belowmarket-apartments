@@ -4202,19 +4202,35 @@ function CompareBoardStat({ label, value, tone }) {
 
 function CompareSummaryPanel({ items, compact = false }) {
     return (
-        <div className={`mt-4 grid gap-3 ${compact ? "sm:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-2 xl:grid-cols-4"}`}>
-            {items.map((item) => (
+        <div className={`mt-4 grid gap-2 ${compact ? "sm:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-2 xl:grid-cols-4"}`}>
+            {items.map((item, index) => (
                 <div
                     key={item.label}
-                    className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]"
+                    className="min-w-0 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-[#d7e6df]"
                 >
-                    <p className="text-[10px] font-black uppercase text-[#1f6f63]">
-                        {item.label}
-                    </p>
-                    <p className="mt-2 truncate text-lg font-black text-[#102426]">
-                        {item.value}
-                    </p>
-                    <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[#526260]">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <p className="truncate text-[10px] font-black uppercase text-[#1f6f63]">
+                                {item.label}
+                            </p>
+                            <p className="mt-1 truncate text-base font-black text-[#102426]">
+                                {item.value}
+                            </p>
+                        </div>
+                        <span
+                            className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${
+                                index === 0
+                                    ? "bg-[#1f6f63]"
+                                    : index === 1
+                                        ? "bg-[#f2b84b]"
+                                        : index === 2
+                                            ? "bg-[#e4572e]"
+                                            : "bg-[#173f3f]"
+                            }`}
+                            aria-hidden="true"
+                        />
+                    </div>
+                    <p className="mt-2 truncate text-[11px] font-semibold text-[#526260]">
                         {item.detail}
                     </p>
                 </div>
@@ -4928,15 +4944,15 @@ function getCompareSummaryItems({ floorPlanCount, propertyOnlyCount, rows }) {
                 : "Specials may vary by floor plan and lease term.",
         },
         {
-            label: propertyOnlyCount > 0 ? "Choose floor plans" : "Exact floor plans",
+            label: propertyOnlyCount > 0 ? "Choose plans" : "Exact plans",
             value:
                 propertyOnlyCount > 0
-                    ? `${propertyOnlyCount} propert${propertyOnlyCount === 1 ? "y" : "ies"} waiting`
+                    ? `${propertyOnlyCount} waiting`
                     : `${floorPlanCount} selected`,
             detail:
                 propertyOnlyCount > 0
-                    ? "Pick exact layouts to compare real rent, size, specials, and availability."
-                    : "You are comparing specific layouts for the clearest rent and size view.",
+                    ? "Select layouts for a cleaner comparison."
+                    : "Specific layouts selected.",
         },
     ];
 }
