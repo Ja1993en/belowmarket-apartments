@@ -4465,11 +4465,10 @@ function FloorPlanCard({
     }) || 0;
     const hasManualMarketComparison = marketRentSource === "Property-entered market rent";
     const savingsLabel = "Estimated savings";
-    const valueBadgeLabel = belowMarketPercent
-        ? hasManualMarketComparison
-            ? `${belowMarketPercent} vs market rent`
-            : `${belowMarketPercent} special value`
-        : "";
+    const valueBadgeLabel =
+        belowMarketPercent && !hasManualMarketComparison
+            ? `${belowMarketPercent} special value`
+            : "";
     const displayRent = formatFloorPlanMetricValue(rent);
     const displayEffectiveRent = formatFloorPlanMetricValue(effectiveRent);
     const displayMarketRent = formatFloorPlanMetricValue(marketRent);
@@ -4527,10 +4526,6 @@ function FloorPlanCard({
 
                 {effectiveRent && (
                     <FloorPlanMetric label="After special" value={displayEffectiveRent} highlight />
-                )}
-
-                {marketRent && (
-                    <FloorPlanMetric label={marketRentCopy.metricLabel} value={displayMarketRent} />
                 )}
 
                 {hasSavingsMetric && (
@@ -4733,11 +4728,6 @@ function FloorPlanCard({
                 </div>
             )}
 
-            {marketRentSource && (
-                <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
-                    {marketRentCopy.cardNote}
-                </p>
-            )}
         </div>
     );
 }
