@@ -39,6 +39,23 @@ const BED_FILTER_OPTIONS = [
   { label: "2 bd", value: "2" },
   { label: "3+ bd", value: "3plus" },
 ];
+const COMPARE_TABS = [
+  {
+    label: "Properties",
+    helper: "Saved communities",
+    emptyText: "Start here",
+  },
+  {
+    label: "Floor Plans",
+    helper: "Exact layouts",
+    emptyText: "Add layouts",
+  },
+  {
+    label: "Details",
+    helper: "Full table",
+    emptyText: "Review",
+  },
+];
 const mapboxGeocodeRequests = new Map();
 const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
 
@@ -697,7 +714,7 @@ export default function PropertySearchPage() {
                   Side-by-side renter value
                 </h2>
                 <p className="mt-1 text-sm font-semibold text-[#526260]">
-                  Toggle between floor plans, properties, and full details.
+                  Start with properties, compare exact floor plans, then review the full detail table.
                 </p>
               </div>
               <button
@@ -714,28 +731,43 @@ export default function PropertySearchPage() {
               </button>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {["Properties", "Floor Plans", "Details"].map((tab) => (
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              {COMPARE_TABS.map((tab) => {
+                const count =
+                  tab.label === "Floor Plans"
+                    ? compareFloorPlanRows.length
+                    : tab.label === "Properties"
+                      ? propertyCompareRows.length
+                      : compareDetailRows.length;
+
+                return (
                 <button
-                  key={tab}
+                  key={tab.label}
                   type="button"
-                  onClick={() => setActiveCompareTab(tab)}
-                  className={`rounded-full px-4 py-2 text-sm font-black ${
-                    activeCompareTab === tab
+                  aria-pressed={activeCompareTab === tab.label}
+                  onClick={() => setActiveCompareTab(tab.label)}
+                  className={`rounded-2xl px-4 py-3 text-left text-sm font-black ring-1 transition ${
+                    activeCompareTab === tab.label
                       ? "bg-[#173f3f] text-white"
-                      : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
+                      : "bg-[#f5f8f1] text-[#173f3f] ring-[#d7e6df] hover:bg-[#d7e6df]"
                   }`}
                 >
-                  {tab}
-                  <span className="ml-2 rounded-full bg-white/75 px-2 py-0.5 text-[10px] text-[#173f3f]">
-                    {tab === "Floor Plans"
-                      ? compareFloorPlanRows.length
-                      : tab === "Properties"
-                        ? propertyCompareRows.length
-                        : compareDetailRows.length}
+                  <span className="flex items-center justify-between gap-2">
+                    <span>{tab.label}</span>
+                    <span className="rounded-full bg-white/75 px-2 py-0.5 text-[10px] text-[#173f3f]">
+                      {count || tab.emptyText}
+                    </span>
+                  </span>
+                  <span
+                    className={`mt-1 block text-xs font-bold ${
+                      activeCompareTab === tab.label ? "text-white/80" : "text-[#526260]"
+                    }`}
+                  >
+                    {tab.helper}
                   </span>
                 </button>
-              ))}
+                );
+              })}
             </div>
 
             {activeCompareTab === "Floor Plans" && (
