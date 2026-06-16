@@ -186,6 +186,7 @@ export default function PropertySearchPage() {
         effectiveRent: row.effectiveRent || row.rent || "Contact",
         special: row.special || "No special listed",
         availability: row.available || "Availability not listed",
+        availabilityLink: "",
         linkTo: `/properties/${row.propertyId}`,
       })),
     [compareFloorPlanRows]
@@ -204,6 +205,7 @@ export default function PropertySearchPage() {
         effectiveRent: priceSummary.effectiveRentLabel,
         special: priceSummary.specialLabel || property.special || "No special listed",
         availability: property.availability || "View floor plans",
+        availabilityLink: `/properties/${property.id}#floor-plans`,
         linkTo: `/properties/${property.id}`,
       })),
     [propertyCompareRows]
@@ -1637,7 +1639,16 @@ function CompareDetailsTab({ rows, mode }) {
                   {row.special}
                 </td>
                 <td className="max-w-[160px] px-4 py-4 align-top text-xs font-semibold text-[#526260]">
-                  {row.availability}
+                  {row.availabilityLink ? (
+                    <Link
+                      to={row.availabilityLink}
+                      className="font-black text-[#173f3f] underline decoration-[#f2b84b] decoration-2 underline-offset-4 hover:text-[#1f6f63]"
+                    >
+                      {row.availability}
+                    </Link>
+                  ) : (
+                    row.availability
+                  )}
                 </td>
                 <td className="px-4 py-4 align-top">
                   <Link
