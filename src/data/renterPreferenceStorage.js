@@ -1,6 +1,10 @@
 const SAVED_PROPERTIES_KEY = "bmaSavedPropertyIds";
 const COMPARE_PROPERTIES_KEY = "bmaComparePropertyIds";
 const COMPARE_FLOOR_PLANS_KEY = "bmaCompareFloorPlanItems";
+const COMPARE_STORAGE_KEYS = new Set([
+  COMPARE_PROPERTIES_KEY,
+  COMPARE_FLOOR_PLANS_KEY,
+]);
 export const MAX_COMPARE_PROPERTIES = 4;
 export const MAX_COMPARE_FLOOR_PLANS = 5;
 
@@ -89,7 +93,8 @@ function readStoredIds(storageKey) {
   if (typeof window === "undefined") return [];
 
   try {
-    const parsedIds = JSON.parse(window.localStorage.getItem(storageKey) || "[]");
+    clearLegacyCompareLocalStorage(storageKey);
+    const parsedIds = JSON.parse(getStorage(storageKey)?.getItem(storageKey) || "[]");
     return Array.isArray(parsedIds) ? parsedIds.filter(Boolean) : [];
   } catch (error) {
     console.error(error);
@@ -101,7 +106,8 @@ function readStoredItems(storageKey) {
   if (typeof window === "undefined") return [];
 
   try {
-    const parsedItems = JSON.parse(window.localStorage.getItem(storageKey) || "[]");
+    clearLegacyCompareLocalStorage(storageKey);
+    const parsedItems = JSON.parse(getStorage(storageKey)?.getItem(storageKey) || "[]");
     return Array.isArray(parsedItems) ? parsedItems.filter(Boolean) : [];
   } catch (error) {
     console.error(error);
@@ -111,12 +117,32 @@ function readStoredItems(storageKey) {
 
 function writeStoredIds(storageKey, ids) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(storageKey, JSON.stringify(ids));
+  clearLegacyCompareLocalStorage(storageKey);
+  getStorage(storageKey)?.setItem(storageKey, JSON.stringify(ids));
 }
 
 function writeStoredItems(storageKey, items) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(storageKey, JSON.stringify(items));
+  clearLegacyCompareLocalStorage(storageKey);
+  getStorage(storageKey)?.setItem(storageKey, JSON.stringify(items));
+}
+
+function getStorage(storageKey) {
+  if (COMPARE_STORAGE_KEYS.has(storageKey)) {
+    return window.sessionStorage;
+  }
+
+  return window.localStorage;
+}
+
+function clearLegacyCompareLocalStorage(storageKey) {
+  if (!COMPARE_STORAGE_KEYS.has(storageKey)) return;
+
+  try {
+    window.localStorage?.removeItem(storageKey);
+  } catch {
+    // Compare still works from session storage if legacy cleanup is blocked.
+  }
 }
 
 function normalizeFloorPlanCompareItem(item) {

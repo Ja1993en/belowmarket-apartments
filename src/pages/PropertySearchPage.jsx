@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Building2, MapPin, Navigation, Search, Tag } from "lucide-react";
 import { getAllProperties } from "../data/propertyStorage";
 import {
+  clearCompareSelections,
   getCompareFloorPlanItemKey,
   getCompareFloorPlanItems,
   getComparePropertyIds,
@@ -720,10 +721,9 @@ export default function PropertySearchPage() {
               <button
                 type="button"
                 onClick={() => {
-                  localStorage.setItem("bmaComparePropertyIds", "[]");
-                  localStorage.setItem("bmaCompareFloorPlanItems", "[]");
-                  setComparePropertyIds([]);
-                  setCompareFloorPlanItems([]);
+                  const clearedSelections = clearCompareSelections();
+                  setComparePropertyIds(clearedSelections.propertyIds);
+                  setCompareFloorPlanItems(clearedSelections.floorPlanItems);
                 }}
                 className="w-fit rounded-2xl bg-[#fff0ea] px-4 py-3 text-sm font-black text-[#e4572e] hover:bg-[#fde8df]"
               >
