@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { saveLocalLead } from "../data/leadStorage";
 import { saveSupabaseLead } from "../data/supabaseLeadStorage";
+import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { getAnyPropertyById } from "../data/propertyStorage";
 const emptyForm = {
@@ -164,6 +165,28 @@ export default function StartPage() {
       setIsSubmitting(true);
 
       const savedLead = await saveSupabaseLead(leadPayload);
+
+      saveLeadEventInBackground({
+        leadId: savedLead.id,
+        eventType: "lead_submitted",
+        propertyId: savedLead.sourcePropertyId,
+        propertyName: savedLead.sourcePropertyName,
+        metadata: {
+          source: savedLead.source,
+          bedrooms: savedLead.bedrooms,
+          budget: savedLead.budget,
+          moveIn: savedLead.moveIn,
+          contactMethod: savedLead.contactMethod,
+          utmSource: savedLead.utmSource,
+          utmMedium: savedLead.utmMedium,
+          utmCampaign: savedLead.utmCampaign,
+          utmTerm: savedLead.utmTerm,
+          utmContent: savedLead.utmContent,
+          gclid: savedLead.gclid,
+          landingPage: savedLead.landingPage,
+          referrer: savedLead.referrer,
+        },
+      });
 
       sendLeadNotificationInBackground({
         ...leadPayload,

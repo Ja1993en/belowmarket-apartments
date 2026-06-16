@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient";
+import { saveLeadEventInBackground } from "./supabaseLeadEvents";
 
 function mapSupabaseLead(lead) {
   return {
@@ -195,10 +196,36 @@ export async function getSupabaseLeads() {
           throw fallbackResult.error;
         }
 
+        if (propertyIds.length > 0) {
+          saveLeadEventInBackground({
+            leadId,
+            eventType: "recommendation_sent",
+            metadata: {
+              propertyIds,
+              propertyCount: propertyIds.length,
+              floorPlanItems: [],
+              floorPlanCount: 0,
+            },
+          });
+        }
+
         return;
       }
 
       throw error;
+    }
+
+    if (propertyIds.length > 0) {
+      saveLeadEventInBackground({
+        leadId,
+        eventType: "recommendation_sent",
+        metadata: {
+          propertyIds,
+          propertyCount: propertyIds.length,
+          floorPlanItems,
+          floorPlanCount: floorPlanItems.length,
+        },
+      });
     }
   }
 

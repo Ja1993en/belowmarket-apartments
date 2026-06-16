@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { BedDouble, Building2, CalendarDays, MapPin, PiggyBank } from "lucide-react";
 import { getSupabaseLeadByToken } from "../data/supabaseLeadStorage";
@@ -6,6 +6,7 @@ import {
   getSupabaseTourRequestsForLead,
   saveSupabaseTourRequest,
 } from "../data/supabaseTourStorage";
+import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 
 import {
@@ -41,6 +42,7 @@ export default function RenterPropertiesList() {
   );
   const [tourError, setTourError] = useState("");
   const [isSubmittingTour, setIsSubmittingTour] = useState(false);
+  const loggedRenterLinkOpenRef = useRef(false);
   const [tourForm, setTourForm] = useState({
     preferredDate: "",
     preferredTime: "",
@@ -74,6 +76,22 @@ export default function RenterPropertiesList() {
         if (supabaseLead) {
           setLead(supabaseLead);
           setIsLocalFallbackLead(false);
+
+          if (!loggedRenterLinkOpenRef.current) {
+            loggedRenterLinkOpenRef.current = true;
+            saveLeadEventInBackground({
+              leadId: supabaseLead.id,
+              eventType: "renter_link_opened",
+              metadata: {
+                token,
+                recommendedPropertyIds: supabaseLead.recommendedPropertyIds || [],
+                recommendedPropertyCount:
+                  supabaseLead.recommendedPropertyIds?.length || 0,
+                recommendedFloorPlanCount:
+                  supabaseLead.recommendedFloorPlanItems?.length || 0,
+              },
+            });
+          }
 
           const supabaseTourRequests = await getSupabaseTourRequestsForLead(
             supabaseLead.id
@@ -193,6 +211,18 @@ export default function RenterPropertiesList() {
         saveTourRequest(tourRequest);
       } else {
         await saveSupabaseTourRequest(tourRequest);
+        saveLeadEventInBackground({
+          leadId: lead.id,
+          eventType: "tour_requested",
+          propertyId: selectedTourProperty.id,
+          propertyName: selectedTourProperty.name,
+          metadata: {
+            preferredDate: tourForm.preferredDate,
+            preferredTime: tourForm.preferredTime,
+            hasMessage: Boolean(tourForm.message.trim()),
+            token,
+          },
+        });
       }
 
       setExistingTourRequests([tourRequest, ...existingTourRequests]);
