@@ -29,6 +29,7 @@ const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
 const NEARBY_PLACE_RADIUS_MILES = 10;
 const NEARBY_PLACE_CACHE_VERSION = "v3";
 const FLOOR_PLAN_PAGE_SIZE = 6;
+const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
 const NEARBY_PLACE_QUERIES = [
     {
         query: "Walmart",
@@ -835,9 +836,12 @@ export default function PublicPropertyListing() {
         [property]
     );
     useEffect(() => {
-        if (!property || !location.hash) return undefined;
+        if (!property) return undefined;
 
-        const targetId = decodeURIComponent(location.hash.replace("#", ""));
+        const storedTargetId = window.sessionStorage?.getItem(FLOOR_PLAN_SCROLL_TARGET_KEY) || "";
+        const targetId = location.hash
+            ? decodeURIComponent(location.hash.replace("#", ""))
+            : storedTargetId;
         if (targetId !== "floor-plans") return undefined;
 
         let attempt = 0;
@@ -853,6 +857,7 @@ export default function PublicPropertyListing() {
                     behavior: attempt === 1 ? "auto" : "smooth",
                     block: "start",
                 });
+                window.sessionStorage?.removeItem(FLOOR_PLAN_SCROLL_TARGET_KEY);
             }
 
             if (attempt < 10) {

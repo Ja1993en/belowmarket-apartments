@@ -40,6 +40,11 @@ const BED_FILTER_OPTIONS = [
   { label: "3+ bd", value: "3plus" },
 ];
 const mapboxGeocodeRequests = new Map();
+const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
+
+function rememberFloorPlanSectionTarget() {
+  window.sessionStorage?.setItem(FLOOR_PLAN_SCROLL_TARGET_KEY, "floor-plans");
+}
 
 function createPriceFilterOptions() {
   const ranges = [{ label: "Under $800", min: 0, max: 800 }];
@@ -187,7 +192,8 @@ export default function PropertySearchPage() {
         special: row.special || "No special listed",
         availability: row.available || "Availability not listed",
         availabilityLink: "",
-        linkTo: `/properties/${row.propertyId}`,
+        linkTo: `/properties/${row.propertyId}#floor-plans`,
+        actionLabel: "View floor plans",
       })),
     [compareFloorPlanRows]
   );
@@ -206,7 +212,8 @@ export default function PropertySearchPage() {
         special: priceSummary.specialLabel || property.special || "No special listed",
         availability: property.availability || "View floor plans",
         availabilityLink: `/properties/${property.id}#floor-plans`,
-        linkTo: `/properties/${property.id}`,
+        linkTo: `/properties/${property.id}#floor-plans`,
+        actionLabel: "View floor plans",
       })),
     [propertyCompareRows]
   );
@@ -1642,6 +1649,7 @@ function CompareDetailsTab({ rows, mode }) {
                   {row.availabilityLink ? (
                     <Link
                       to={row.availabilityLink}
+                      onClick={rememberFloorPlanSectionTarget}
                       className="font-black text-[#173f3f] underline decoration-[#f2b84b] decoration-2 underline-offset-4 hover:text-[#1f6f63]"
                     >
                       {row.availability}
@@ -1653,9 +1661,10 @@ function CompareDetailsTab({ rows, mode }) {
                 <td className="px-4 py-4 align-top">
                   <Link
                     to={row.linkTo}
+                    onClick={rememberFloorPlanSectionTarget}
                     className="inline-flex rounded-xl bg-[#173f3f] px-3 py-2 text-xs font-black text-white hover:bg-[#102426]"
                   >
-                    View
+                    {row.actionLabel || "View"}
                   </Link>
                 </td>
               </tr>
