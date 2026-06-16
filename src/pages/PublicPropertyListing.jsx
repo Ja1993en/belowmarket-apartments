@@ -191,10 +191,30 @@ function normalizeListingFloorPlans(property) {
             belowMarketPercent: plan.belowMarketPercent || "",
             available: plan.availability || plan.available || "Not set",
             status: plan.status || "available",
-            special: plan.special || (plan.currentSpecial ? { label: plan.currentSpecial } : null),
+            special: normalizeSpecial(plan.special, plan.currentSpecial),
             availableUnits: plan.availableUnits || [],
         });
     });
+}
+
+function normalizeSpecial(special, fallbackLabel = "") {
+    if (special && typeof special === "object") {
+        return {
+            ...special,
+            label: special.label || fallbackLabel || "",
+        };
+    }
+
+    const label = typeof special === "string" ? special : fallbackLabel;
+
+    if (!label) return null;
+
+    return {
+        label,
+        freeWeeks: getFreeWeeksFromSpecialLabel(label),
+        rentCreditSpecial: getRentCreditSpecialFromLabel(label),
+        leaseTermMonths: 12,
+    };
 }
 
 function enrichFloorPlanWithMarketBenchmark(property, plan) {
