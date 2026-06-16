@@ -1054,7 +1054,7 @@ export default function PublicPropertyListing() {
             title: item.floorPlanName,
             subtitle: item.propertyName,
             beds: formatBedroomLabel(item.beds, item.floorPlanName),
-            baths: item.baths ? `${item.baths} ba` : "Baths not listed",
+            baths: formatBathroomLabel(item.baths),
             sqft: item.sqft ? `${item.sqft} sq ft` : "Sq ft not listed",
             normalRent: item.rent || "Contact",
             effectiveRent: item.effectiveRent || item.rent || "Contact",
@@ -4109,7 +4109,7 @@ function ComparedFloorPlanCard({
                         at {item.propertyName}
                     </p>
                     <p className="mt-2 text-xs font-semibold text-[#526260]">
-                        {formatBedroomLabel(item.beds, item.floorPlanName)} • {item.baths || "Baths not listed"} ba •{" "}
+                        {formatBedroomLabel(item.beds, item.floorPlanName)} • {formatBathroomLabel(item.baths)} •{" "}
                         {item.sqft || "Sq ft not listed"} sq ft
                     </p>
                 </div>
@@ -4455,7 +4455,11 @@ function FloorPlanCard({
     });
 
     return (
-        <div className="flex min-h-[290px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
+        <div
+            className={`flex flex-col rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df] ${
+                isExpanded ? "lg:col-span-2" : "min-h-[290px] justify-between"
+            }`}
+        >
             <div className="flex min-w-0 gap-4">
                 {image && (
                     <img
@@ -4483,7 +4487,7 @@ function FloorPlanCard({
                     </p>
 
                     <p className="mt-1 text-sm font-semibold text-[#526260]">
-                        {formatBedroomLabel(beds, name)} • {baths} ba • {sqft} sq ft
+                        {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft} sq ft
                     </p>
                 </div>
             </div>
@@ -4539,13 +4543,13 @@ function FloorPlanCard({
             </div>
 
             {isExpanded && (
-                <div className="mt-5 rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-4">
-                    <div className="grid gap-4 md:grid-cols-[160px_1fr]">
+                <div className="mt-5 rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-4 lg:p-5">
+                    <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
                         {image && (
                             <img
                                 src={image}
                                 alt={`${name} expanded floor plan`}
-                                className="h-40 w-full rounded-2xl bg-white object-cover ring-1 ring-[#d7e6df]"
+                                className="h-48 w-full rounded-2xl bg-white object-cover ring-1 ring-[#d7e6df]"
                             />
                         )}
 
@@ -4557,16 +4561,22 @@ function FloorPlanCard({
                                 {name}
                             </h4>
                             <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                {formatBedroomLabel(beds, name)} • {baths || "Baths not listed"} ba • {sqft || "Sq ft not listed"} sq ft
+                                {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
                             </p>
 
-                            <div className="mt-4 grid grid-cols-2 gap-2">
+                            <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
                                 <FloorPlanMetric label="Normal" value={displayRent || "Contact"} />
                                 <FloorPlanMetric
                                     label="Effective"
                                     value={displayEffectiveRent || displayRent || "Contact"}
                                     highlight
                                 />
+                                {marketRent && (
+                                    <FloorPlanMetric label={marketRentCopy.metricLabel} value={displayMarketRent} />
+                                )}
+                                {hasSavingsMetric && (
+                                    <FloorPlanMetric label={savingsLabel} value={displaySavings} highlight />
+                                )}
                             </div>
 
                             {special?.label && (
@@ -4806,6 +4816,15 @@ function formatBedroomLabel(value, fallbackName = "") {
     if (numberMatch) return `${numberMatch[1]} bd`;
 
     return normalizedValue;
+}
+
+function formatBathroomLabel(value) {
+    const normalizedValue = String(value ?? "").trim();
+
+    if (!normalizedValue || normalizedValue === "Not set") return "Baths not listed";
+    if (/bath|ba/i.test(normalizedValue)) return normalizedValue;
+
+    return `${normalizedValue} ba`;
 }
 
 function getCompareSummaryItems({ floorPlanCount, propertyOnlyCount, rows }) {
