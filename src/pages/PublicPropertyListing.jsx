@@ -4455,11 +4455,7 @@ function FloorPlanCard({
     });
 
     return (
-        <div
-            className={`flex flex-col rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df] ${
-                isExpanded ? "lg:col-span-2" : "min-h-[290px] justify-between"
-            }`}
-        >
+        <div className="flex min-h-[290px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
             <div className="flex min-w-0 gap-4">
                 {image && (
                     <img
@@ -4543,127 +4539,146 @@ function FloorPlanCard({
             </div>
 
             {isExpanded && (
-                <div className="mt-5 rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-4 lg:p-5">
-                    <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
-                        {image && (
-                            <img
-                                src={image}
-                                alt={`${name} expanded floor plan`}
-                                className="h-48 w-full rounded-2xl bg-white object-cover ring-1 ring-[#d7e6df]"
-                            />
-                        )}
-
-                        <div className="min-w-0">
-                            <p className="text-xs font-black uppercase text-[#1f6f63]">
-                                Floor plan details
-                            </p>
-                            <h4 className="mt-1 text-xl font-black text-[#102426]">
-                                {name}
-                            </h4>
-                            <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
-                            </p>
-
-                            <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
-                                <FloorPlanMetric label="Normal" value={displayRent || "Contact"} />
-                                <FloorPlanMetric
-                                    label="Effective"
-                                    value={displayEffectiveRent || displayRent || "Contact"}
-                                    highlight
-                                />
-                                {marketRent && (
-                                    <FloorPlanMetric label={marketRentCopy.metricLabel} value={displayMarketRent} />
-                                )}
-                                {hasSavingsMetric && (
-                                    <FloorPlanMetric label={savingsLabel} value={displaySavings} highlight />
-                                )}
-                            </div>
-
-                            {special?.label && (
-                                <div className="mt-3 rounded-2xl bg-[#fff8e6] p-3 ring-1 ring-[#f2d08a]">
-                                    <p className="text-xs font-black uppercase text-[#8a5b0a]">
-                                        Special
-                                    </p>
-                                    <p className="mt-1 text-sm font-black text-[#102426]">
-                                        {special.label}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
-                        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                <div
+                    className="fixed inset-0 z-50 flex items-end justify-center bg-[#102426]/70 p-3 backdrop-blur-sm sm:items-center sm:p-6"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={`${name} floor plan details`}
+                >
+                    <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl">
+                        <div className="flex flex-col justify-between gap-3 border-b border-[#d7e6df] pb-4 sm:flex-row sm:items-start">
                             <div>
-                                <p className="text-sm font-black text-[#102426]">
-                                    Available units
+                                <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                    Floor plan details
                                 </p>
-                                <p className="mt-1 text-xs font-semibold text-[#526260]">
-                                    {availableUnitCount > 0
-                                        ? `${availableUnitCount} unit${availableUnitCount === 1 ? "" : "s"} listed for this layout.`
-                                        : "Ask your locator to confirm current availability."}
+                                <h4 className="mt-1 text-2xl font-black text-[#102426]">
+                                    {name}
+                                </h4>
+                                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                    {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
                                 </p>
                             </div>
 
-                            <span className="w-fit rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#173f3f]">
-                                {available || "Availability not listed"}
-                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setIsExpanded(false)}
+                                className="w-fit rounded-2xl bg-[#f5f8f1] px-4 py-2 text-sm font-black text-[#173f3f] hover:bg-[#d7e6df]"
+                            >
+                                Close
+                            </button>
                         </div>
 
-                        {visibleUnits.length > 0 ? (
-                            <div className="mt-3 grid gap-2">
-                                {visibleUnits.map((unit) => (
-                                    <div
-                                        key={unit.unit || `${unit.rent}-${unit.available}`}
-                                        className="flex flex-col justify-between gap-2 rounded-2xl bg-[#f5f8f1] p-3 sm:flex-row sm:items-center"
-                                    >
-                                        <div>
-                                            <p className="text-sm font-black text-[#102426]">
-                                                Unit {unit.unit || "Available"}
-                                            </p>
-                                            <p className="mt-1 text-xs font-semibold text-[#526260]">
-                                                {unit.available || "Availability not listed"}
-                                            </p>
-                                            {unit.currentSpecial && (
-                                                <p className="mt-1 text-xs font-bold text-[#8a5b0a]">
-                                                    {cleanUnitSpecialLabel(unit.currentSpecial)}
-                                                </p>
-                                            )}
-                                        </div>
+                        <div className="mt-5 grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+                            {image && (
+                                <img
+                                    src={image}
+                                    alt={`${name} expanded floor plan`}
+                                    className="h-56 w-full rounded-2xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                                />
+                            )}
 
-                                        <p className="text-lg font-black text-[#102426]">
-                                            {unit.rent || rent || "Contact"}
+                            <div className="min-w-0">
+                                <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+                                    <FloorPlanMetric label="Normal" value={displayRent || "Contact"} />
+                                    <FloorPlanMetric
+                                        label="Effective"
+                                        value={displayEffectiveRent || displayRent || "Contact"}
+                                        highlight
+                                    />
+                                    {marketRent && (
+                                        <FloorPlanMetric label={marketRentCopy.metricLabel} value={displayMarketRent} />
+                                    )}
+                                    {hasSavingsMetric && (
+                                        <FloorPlanMetric label={savingsLabel} value={displaySavings} highlight />
+                                    )}
+                                </div>
+
+                                {special?.label && (
+                                    <div className="mt-4 rounded-2xl bg-[#fff8e6] p-3 ring-1 ring-[#f2d08a]">
+                                        <p className="text-xs font-black uppercase text-[#8a5b0a]">
+                                            Special
+                                        </p>
+                                        <p className="mt-1 text-sm font-black text-[#102426]">
+                                            {special.label}
                                         </p>
                                     </div>
-                                ))}
+                                )}
+
+                                <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                                    <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                                        <div>
+                                            <p className="text-sm font-black text-[#102426]">
+                                                Available units
+                                            </p>
+                                            <p className="mt-1 text-xs font-semibold text-[#526260]">
+                                                {availableUnitCount > 0
+                                                    ? `${availableUnitCount} unit${availableUnitCount === 1 ? "" : "s"} listed for this layout.`
+                                                    : "Ask your locator to confirm current availability."}
+                                            </p>
+                                        </div>
+
+                                        <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+                                            {available || "Availability not listed"}
+                                        </span>
+                                    </div>
+
+                                    {visibleUnits.length > 0 ? (
+                                        <div className="mt-3 grid gap-2">
+                                            {visibleUnits.map((unit) => (
+                                                <div
+                                                    key={unit.unit || `${unit.rent}-${unit.available}`}
+                                                    className="flex flex-col justify-between gap-2 rounded-2xl bg-white p-3 sm:flex-row sm:items-center"
+                                                >
+                                                    <div>
+                                                        <p className="text-sm font-black text-[#102426]">
+                                                            Unit {unit.unit || "Available"}
+                                                        </p>
+                                                        <p className="mt-1 text-xs font-semibold text-[#526260]">
+                                                            {unit.available || "Availability not listed"}
+                                                        </p>
+                                                        {unit.currentSpecial && (
+                                                            <p className="mt-1 text-xs font-bold text-[#8a5b0a]">
+                                                                {cleanUnitSpecialLabel(unit.currentSpecial)}
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <p className="text-lg font-black text-[#102426]">
+                                                        {unit.rent || rent || "Contact"}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="mt-3 rounded-2xl bg-white p-3 text-sm font-semibold text-[#526260]">
+                                            Unit-level availability is not listed yet. Use Request Tour to confirm the latest options.
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                                    <button
+                                        type="button"
+                                        onClick={onToggleCompare}
+                                        className={`rounded-xl px-4 py-3 text-sm font-bold ${
+                                            isCompared
+                                                ? "bg-[#f2b84b] text-[#102426]"
+                                                : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
+                                        }`}
+                                    >
+                                        {isCompared ? "Comparing" : "Compare Floor Plan"}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={onViewDetails}
+                                        className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                                    >
+                                        Request Tour
+                                    </button>
+                                </div>
                             </div>
-                        ) : (
-                            <p className="mt-3 rounded-2xl bg-[#f5f8f1] p-3 text-sm font-semibold text-[#526260]">
-                                Unit-level availability is not listed yet. Use Request Tour to confirm the latest options.
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                        <button
-                            type="button"
-                            onClick={onToggleCompare}
-                            className={`rounded-xl px-4 py-3 text-sm font-bold ${
-                                isCompared
-                                    ? "bg-[#f2b84b] text-[#102426]"
-                                    : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
-                            }`}
-                        >
-                            {isCompared ? "Comparing" : "Compare Floor Plan"}
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={onViewDetails}
-                            className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
-                        >
-                            Request Tour
-                        </button>
+                        </div>
                     </div>
                 </div>
             )}
