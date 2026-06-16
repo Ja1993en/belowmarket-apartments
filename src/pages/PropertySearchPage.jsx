@@ -42,8 +42,16 @@ const BED_FILTER_OPTIONS = [
 const mapboxGeocodeRequests = new Map();
 const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
 
+function getFloorPlansRoute(propertyId) {
+  return `/properties/${propertyId}?section=floor-plans#floor-plans`;
+}
+
 function rememberFloorPlanSectionTarget() {
-  window.sessionStorage?.setItem(FLOOR_PLAN_SCROLL_TARGET_KEY, "floor-plans");
+  try {
+    window.sessionStorage?.setItem(FLOOR_PLAN_SCROLL_TARGET_KEY, "floor-plans");
+  } catch {
+    // Navigation still carries the query/hash target when session storage is unavailable.
+  }
 }
 
 function createPriceFilterOptions() {
@@ -192,7 +200,7 @@ export default function PropertySearchPage() {
         special: row.special || "No special listed",
         availability: row.available || "Availability not listed",
         availabilityLink: "",
-        linkTo: `/properties/${row.propertyId}#floor-plans`,
+        linkTo: getFloorPlansRoute(row.propertyId),
         actionLabel: "View floor plans",
       })),
     [compareFloorPlanRows]
@@ -211,8 +219,8 @@ export default function PropertySearchPage() {
         effectiveRent: priceSummary.effectiveRentLabel,
         special: priceSummary.specialLabel || property.special || "No special listed",
         availability: property.availability || "View floor plans",
-        availabilityLink: `/properties/${property.id}#floor-plans`,
-        linkTo: `/properties/${property.id}#floor-plans`,
+        availabilityLink: getFloorPlansRoute(property.id),
+        linkTo: getFloorPlansRoute(property.id),
         actionLabel: "View floor plans",
       })),
     [propertyCompareRows]

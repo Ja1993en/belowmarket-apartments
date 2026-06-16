@@ -838,8 +838,16 @@ export default function PublicPropertyListing() {
     useEffect(() => {
         if (!property) return undefined;
 
-        const storedTargetId = window.sessionStorage?.getItem(FLOOR_PLAN_SCROLL_TARGET_KEY) || "";
-        const targetId = location.hash
+        let storedTargetId;
+        try {
+            storedTargetId = window.sessionStorage?.getItem(FLOOR_PLAN_SCROLL_TARGET_KEY);
+        } catch {
+            storedTargetId = null;
+        }
+        const requestedSection = new URLSearchParams(location.search).get("section");
+        const targetId = requestedSection === "floor-plans"
+            ? "floor-plans"
+            : location.hash
             ? decodeURIComponent(location.hash.replace("#", ""))
             : storedTargetId;
         if (targetId !== "floor-plans") return undefined;
@@ -853,17 +861,27 @@ export default function PublicPropertyListing() {
             attempt += 1;
 
             if (target) {
-                target.scrollIntoView({
-                    behavior: attempt === 1 ? "auto" : "smooth",
-                    block: "start",
-                });
-                window.sessionStorage?.removeItem(FLOOR_PLAN_SCROLL_TARGET_KEY);
+                const targetTop = Math.max(
+                    target.getBoundingClientRect().top + window.scrollY - 16,
+                    0
+                );
+                const behavior = attempt < 3 ? "auto" : "smooth";
+
+                window.scrollTo({ top: targetTop, behavior });
+                document.documentElement.scrollTop = targetTop;
+                document.body.scrollTop = targetTop;
+
+                try {
+                    window.sessionStorage?.removeItem(FLOOR_PLAN_SCROLL_TARGET_KEY);
+                } catch {
+                    // No cleanup needed if session storage is unavailable.
+                }
             }
 
-            if (attempt < 10) {
+            if (attempt < 16) {
                 scrollTimer = window.setTimeout(() => {
                     animationFrame = window.requestAnimationFrame(scrollToFloorPlans);
-                }, attempt < 4 ? 150 : 300);
+                }, attempt < 6 ? 150 : 300);
             }
         };
 
@@ -873,7 +891,7 @@ export default function PublicPropertyListing() {
             window.clearTimeout(scrollTimer);
             window.cancelAnimationFrame(animationFrame);
         };
-    }, [location.hash, property, propertyId, listingFloorPlans.length]);
+    }, [location.hash, location.search, property, propertyId, listingFloorPlans.length]);
 
     useEffect(() => {
         if (!property || property.status !== "Live") return undefined;
