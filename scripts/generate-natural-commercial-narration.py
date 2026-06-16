@@ -14,19 +14,19 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = PROJECT_ROOT / "public" / "marketing" / "bma-compare-commercial-narration.mp3"
 
 SCRIPT = """
-Still scrolling listings, trying to find the real apartment deal?
+Apartment hunting can get confusing fast, especially when every listing shows a different special.
 
-Meet Below Market Apartments.
+Below Market Apartments helps you slow it down and compare the numbers clearly.
 
-Browse current specials near you, tap Compare on the properties that catch your eye, and add the floor plans that fit your budget.
+Browse current specials near you, tap Compare on the properties you like, and add the floor plans that fit your budget.
 
-In seconds, see normal rent, rent after the special, and monthly savings side by side.
+Then see normal rent, estimated rent after the special, and monthly savings side by side.
 
-No more guessing. No more jumping between tabs.
+It makes it easier to spot which deal is actually worth touring.
 
-Compare properties first, floor plans next, then tour the deal that actually makes sense.
+Compare properties first, floor plans next, and details when you're ready.
 
-Below Market Apartments. Find the best apartment deals near you.
+Below Market Apartments. Find the best apartment deals near you, and tour with more confidence.
 """.strip()
 
 
@@ -35,8 +35,8 @@ async def main() -> None:
     communicate = edge_tts.Communicate(
         text=SCRIPT,
         voice=voice,
-        rate="+8%",
-        pitch="+5Hz",
+        rate="+6%",
+        pitch="+3Hz",
     )
     await communicate.save(str(OUTPUT))
     print(f"Wrote {OUTPUT}")
