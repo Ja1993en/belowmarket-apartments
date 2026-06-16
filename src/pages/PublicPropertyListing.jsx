@@ -4462,6 +4462,8 @@ function FloorPlanCard({
     onViewDetails,
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const hasSpecial = Boolean(special?.label);
+    const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "No special listed";
     const marketRentCopy = marketRent
         ? getMarketRentCopy({
             marketRentSource,
@@ -4470,11 +4472,11 @@ function FloorPlanCard({
             beds,
         })
         : null;
-    const visibleUnits = [...(availableUnits || [])]
+    const sortedAvailableUnits = [...(availableUnits || [])]
         .filter((unit) => unit?.status !== "leased")
-        .sort((a, b) => parseCurrency(a.rent) - parseCurrency(b.rent))
-        .slice(0, 3);
-    const availableUnitCount = visibleUnits.length || getFloorPlanAvailableUnitCount({
+        .sort((a, b) => parseCurrency(a.rent) - parseCurrency(b.rent));
+    const visibleUnits = sortedAvailableUnits.slice(0, 3);
+    const availableUnitCount = sortedAvailableUnits.length || getFloorPlanAvailableUnitCount({
         available,
         availableUnits,
         status,
@@ -4490,6 +4492,10 @@ function FloorPlanCard({
     const displayMarketRent = formatFloorPlanMetricValue(marketRent);
     const displaySavings = formatFloorPlanMetricValue(savings);
     const hasSavingsMetric = savings && parseCurrency(savings) > 0;
+    const displayRentValue = displayRent || "Contact";
+    const displayEffectiveValue = displayEffectiveRent || displayRentValue;
+    const displaySavingsValue =
+        hasSavingsMetric ? displaySavings : hasSpecial ? "Ask property" : "No special";
     const hasAvailableFloorPlanUnits =
         availableUnitCount > 0 || isFloorPlanAvailable({ available, availableUnits, status });
     const availabilityBadgeClass = hasAvailableFloorPlanUnits
@@ -4502,17 +4508,24 @@ function FloorPlanCard({
         availableUnitCount,
         hasAvailableFloorPlanUnits,
     });
+    const imageAlt = image ? `${name} floor plan` : "Floor plan image not listed";
 
     return (
-        <div className="flex min-h-[290px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
+        <div className="flex min-h-[360px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
             <div className="flex min-w-0 gap-4">
-                {image && (
-                    <img
-                        src={image}
-                        alt={`${name} floor plan`}
-                        className="h-20 w-20 shrink-0 rounded-2xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
-                    />
-                )}
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#f5f8f1] ring-1 ring-[#d7e6df]">
+                    {image ? (
+                        <img
+                            src={image}
+                            alt={imageAlt}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <span className="px-2 text-center text-[10px] font-black uppercase leading-4 text-[#526260]">
+                            Image pending
+                        </span>
+                    )}
+                </div>
 
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -4520,11 +4533,15 @@ function FloorPlanCard({
                             {availabilityBadgeLabel}
                         </span>
 
-                        {special && (
-                            <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                                <span className="truncate">{special.label}</span>
-                            </span>
-                        )}
+                        <span
+                            className={`inline-flex max-w-full rounded-full px-2.5 py-1 text-[11px] font-black ${
+                                hasSpecial
+                                    ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+                                    : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
+                            }`}
+                        >
+                            <span className="truncate">{specialLabel}</span>
+                        </span>
                     </div>
 
                     <p className="mt-2 truncate text-lg font-black text-[#102426]">
@@ -4538,19 +4555,19 @@ function FloorPlanCard({
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-                <FloorPlanMetric label="Normal rent" value={displayRent} />
+                <FloorPlanMetric label="Normal rent" value={displayRentValue} />
 
-                {effectiveRent && (
-                    <FloorPlanMetric label="After special" value={displayEffectiveRent} highlight />
-                )}
+                <FloorPlanMetric label="Effective value" value={displayEffectiveValue} highlight={hasSpecial} />
 
-                {hasSavingsMetric && (
-                    <FloorPlanMetric label={savingsLabel} value={displaySavings} highlight />
-                )}
+                <FloorPlanMetric label={savingsLabel} value={displaySavingsValue} highlight={hasSavingsMetric} />
+
+                <FloorPlanMetric label="Availability" value={availabilityBadgeLabel} />
             </div>
 
             <p className="mt-3 rounded-2xl bg-[#f5f8f1] px-3 py-2 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
-                Estimated using the listed special over a 12-month lease. Confirm fees before applying.
+                {hasSpecial
+                    ? "Estimated using the listed special over a 12-month lease. Confirm fees before applying."
+                    : "No special is listed for this layout. Confirm current pricing, fees, and availability before applying."}
             </p>
 
             <div className="mt-3 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
@@ -4624,37 +4641,62 @@ function FloorPlanCard({
                         </div>
 
                         <div className="mt-5 grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
-                            {image && (
-                                <img
-                                    src={image}
-                                    alt={`${name} expanded floor plan`}
-                                    className="h-56 w-full rounded-2xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
-                                />
-                            )}
+                            <div className="flex h-56 w-full items-center justify-center overflow-hidden rounded-2xl bg-[#f5f8f1] ring-1 ring-[#d7e6df]">
+                                {image ? (
+                                    <img
+                                        src={image}
+                                        alt={`${name} expanded floor plan`}
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="px-4 text-center text-xs font-black uppercase leading-5 text-[#526260]">
+                                        Floor plan image pending
+                                    </span>
+                                )}
+                            </div>
 
                             <div className="min-w-0">
                                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-                                    <FloorPlanMetric label="Normal rent" value={displayRent || "Contact"} />
+                                    <FloorPlanMetric label="Normal rent" value={displayRentValue} />
                                     <FloorPlanMetric
-                                        label="After special"
-                                        value={displayEffectiveRent || displayRent || "Contact"}
-                                        highlight
+                                        label="Effective value"
+                                        value={displayEffectiveValue}
+                                        highlight={hasSpecial}
                                     />
-                                    {marketRent && (
-                                        <FloorPlanMetric label={marketRentCopy.metricLabel} value={displayMarketRent} />
-                                    )}
-                                    {hasSavingsMetric && (
-                                        <FloorPlanMetric label={savingsLabel} value={displaySavings} highlight />
-                                    )}
+                                    <FloorPlanMetric
+                                        label={savingsLabel}
+                                        value={displaySavingsValue}
+                                        highlight={hasSavingsMetric}
+                                    />
+                                    <FloorPlanMetric label="Availability" value={availabilityBadgeLabel} />
                                 </div>
 
-                                {special?.label && (
-                                    <div className="mt-4 rounded-2xl bg-[#fff8e6] p-3 ring-1 ring-[#f2d08a]">
+                                <div
+                                    className={`mt-4 rounded-2xl p-3 ring-1 ${
+                                        hasSpecial
+                                            ? "bg-[#fff8e6] ring-[#f2d08a]"
+                                            : "bg-[#f5f8f1] ring-[#d7e6df]"
+                                    }`}
+                                >
+                                    <p
+                                        className={`text-xs font-black uppercase ${
+                                            hasSpecial ? "text-[#8a5b0a]" : "text-[#526260]"
+                                        }`}
+                                    >
+                                        Special
+                                    </p>
+                                    <p className="mt-1 text-sm font-black text-[#102426]">
+                                        {specialLabel}
+                                    </p>
+                                </div>
+
+                                {marketRent && (
+                                    <div className="mt-4 rounded-2xl bg-[#eef5ff] p-3 ring-1 ring-[#c9dfff]">
                                         <p className="text-xs font-black uppercase text-[#8a5b0a]">
-                                            Special
+                                            Market context
                                         </p>
                                         <p className="mt-1 text-sm font-black text-[#102426]">
-                                            {special.label}
+                                            {marketRentCopy.metricLabel}: {displayMarketRent}
                                         </p>
                                     </div>
                                 )}
