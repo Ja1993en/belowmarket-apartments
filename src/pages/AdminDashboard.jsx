@@ -627,22 +627,44 @@ function ConversionStatCard({ icon: Icon, title, value, subtitle }) {
 }
 
 function ConversionEventItem({ event }) {
-    return (
-        <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
-            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-                <div className="min-w-0">
-                    <p className="text-sm font-black text-[#102426]">
-                        {getLeadEventLabel(event.eventType)}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
-                        {getLeadEventDescription(event)}
-                    </p>
-                </div>
+    const content = (
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+            <div className="min-w-0">
+                <p className="text-sm font-black text-[#102426]">
+                    {getLeadEventLabel(event.eventType)}
+                </p>
+                <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
+                    {getLeadEventDescription(event)}
+                </p>
+            </div>
 
-                <span className="text-xs font-bold text-[#78908a] sm:text-right">
+            <div className="grid gap-1 sm:text-right">
+                <span className="text-xs font-bold text-[#78908a]">
                     {formatLeadEventTime(event.createdAt)}
                 </span>
+                {event.leadId && (
+                    <span className="text-xs font-black text-[#1f6f63]">
+                        Open lead
+                    </span>
+                )}
             </div>
+        </div>
+    );
+
+    if (event.leadId) {
+        return (
+            <Link
+                to={`/admin/leads/${event.leadId}`}
+                className="block rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] hover:ring-[#f2b84b]"
+            >
+                {content}
+            </Link>
+        );
+    }
+
+    return (
+        <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
+            {content}
         </div>
     );
 }
