@@ -4487,89 +4487,61 @@ function FloorPlanCard({
         availableUnitCount,
         hasAvailableFloorPlanUnits,
     });
-    const primaryEffectiveRent = displayEffectiveRent || displayRent || "Contact";
-    const primaryNormalRent = displayRent || "Contact";
-    const primarySavings = hasSavingsMetric ? displaySavings : "";
-    const leaseTermMonths = special?.leaseTermMonths || 12;
-    const specialExplainer = special?.label
-        ? `Estimated using ${special.label.toLowerCase()} across a ${leaseTermMonths}-month lease.`
-        : "Confirm current specials and fees before applying.";
 
     return (
-        <div className="flex min-h-[330px] flex-col justify-between rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
+        <div className="flex min-h-[290px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
             <div className="flex min-w-0 gap-4">
                 {image && (
                     <img
                         src={image}
                         alt={`${name} floor plan`}
-                        className="h-20 w-20 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                        className="h-20 w-20 shrink-0 rounded-2xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
                     />
                 )}
 
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-lg font-black text-[#102426]">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${availabilityBadgeClass}`}>
+                            {availabilityBadgeLabel}
+                        </span>
+
+                        {special && (
+                            <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                <span className="truncate">{special.label}</span>
+                            </span>
+                        )}
+                    </div>
+
+                    <p className="mt-2 truncate text-lg font-black text-[#102426]">
                         {name}
                     </p>
 
                     <p className="mt-1 text-sm font-semibold text-[#526260]">
                         {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft} sq ft
                     </p>
-
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${availabilityBadgeClass}`}>
-                            {availabilityBadgeLabel}
-                        </span>
-
-                        {special?.label && (
-                            <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                                <span className="truncate">{special.label}</span>
-                            </span>
-                        )}
-                    </div>
                 </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                <FloorPlanMetric label="Starting" value={displayRent} />
+
+                {effectiveRent && (
+                    <FloorPlanMetric label="Effective" value={displayEffectiveRent} highlight />
+                )}
+
+                {marketRent && (
+                    <FloorPlanMetric label={marketRentCopy.metricLabel} value={displayMarketRent} />
+                )}
+
+                {hasSavingsMetric && (
+                    <FloorPlanMetric label={savingsLabel} value={displaySavings} highlight />
+                )}
             </div>
 
             <div className="mt-5 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
-                <p className="text-[11px] font-black uppercase text-[#526260]">
-                    Estimated rent after special
-                </p>
-                <div className="mt-1 flex flex-wrap items-end justify-between gap-2">
-                    <div>
-                        <p className="text-3xl font-black leading-tight text-[#1f6f63]">
-                            {primaryEffectiveRent}
-                        </p>
-                        <p className="mt-1 text-xs font-semibold text-[#526260]">
-                            Normal rent: {primaryNormalRent}
-                        </p>
-                    </div>
-
-                    {primarySavings && (
-                        <div className="rounded-xl bg-white px-3 py-2 text-right ring-1 ring-[#d7e6df]">
-                            <p className="text-[10px] font-black uppercase text-[#526260]">
-                                Est. savings
-                            </p>
-                            <p className="text-sm font-black text-[#1f6f63]">
-                                {primarySavings}
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                <p className="mt-3 text-xs font-semibold leading-5 text-[#526260]">
-                    {specialExplainer}
-                </p>
-            </div>
-
-            {marketRent && (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                    <FloorPlanMetric label={marketRentCopy.metricLabel} value={displayMarketRent} />
-                </div>
-            )}
-
-            <div className="mt-5">
-                <div className="min-w-0">
+                <div className="min-w-0 text-center sm:text-left">
                     {valueBadgeLabel ? (
-                        <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c] ring-1 ring-[#c6ddf5]">
+                        <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
                             {valueBadgeLabel}
                         </span>
                     ) : (
@@ -4587,7 +4559,7 @@ function FloorPlanCard({
                                 : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
                         }`}
                     >
-                        {isCompared ? "Added to Compare" : "Compare"}
+                        {isCompared ? "Added" : "Compare Floor Plan"}
                     </button>
 
                     <button
@@ -4595,7 +4567,7 @@ function FloorPlanCard({
                         onClick={() => setIsExpanded((currentValue) => !currentValue)}
                         className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
                     >
-                        {isExpanded ? "Hide Details" : "See Units & Details"}
+                        {isExpanded ? "Hide Details" : "View Details"}
                     </button>
                 </div>
 
