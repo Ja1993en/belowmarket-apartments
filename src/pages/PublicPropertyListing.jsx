@@ -999,6 +999,7 @@ export default function PublicPropertyListing() {
             special: item.special || "No special listed",
             availability: item.available || "Availability not listed",
             savings: getCompareSavingsLabel(item.rent, item.effectiveRent),
+            image: item.image || matchingFloorPlan?.image || "",
             floorPlan: matchingFloorPlan,
         };
     });
@@ -4075,16 +4076,26 @@ function CompareDetailsTable({ rows, onRequestFloorPlan }) {
                 {rows.map((row) => (
                     <div key={row.id} className="rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
                         <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase text-[#1f6f63]">
-                                    {row.type}
-                                </p>
-                                <p className="mt-1 truncate text-base font-black text-[#102426]">
-                                    {row.title}
-                                </p>
-                                <p className="mt-1 truncate text-xs font-bold text-[#526260]">
-                                    {row.subtitle}
-                                </p>
+                            <div className="flex min-w-0 gap-3">
+                                {row.image && (
+                                    <img
+                                        src={row.image}
+                                        alt={`${row.title} floor plan`}
+                                        className="h-16 w-16 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                                    />
+                                )}
+
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-black uppercase text-[#1f6f63]">
+                                        {row.type}
+                                    </p>
+                                    <p className="mt-1 truncate text-base font-black text-[#102426]">
+                                        {row.title}
+                                    </p>
+                                    <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+                                        {row.subtitle}
+                                    </p>
+                                </div>
                             </div>
                             <CompareDetailsAction row={row} onRequestFloorPlan={onRequestFloorPlan} />
                         </div>
@@ -4136,15 +4147,27 @@ function CompareDetailsTable({ rows, onRequestFloorPlan }) {
                                 className={index % 2 === 0 ? "bg-white" : "bg-[#f5f8f1]"}
                             >
                                 <td className="px-4 py-4 align-top">
-                                    <p className="text-[10px] font-black uppercase text-[#1f6f63]">
-                                        {row.type}
-                                    </p>
-                                    <p className="mt-1 max-w-[180px] font-black text-[#102426]">
-                                        {row.title}
-                                    </p>
-                                    <p className="mt-1 max-w-[180px] text-xs font-bold text-[#526260]">
-                                        {row.subtitle}
-                                    </p>
+                                    <div className="flex min-w-[220px] gap-3">
+                                        {row.image && (
+                                            <img
+                                                src={row.image}
+                                                alt={`${row.title} floor plan`}
+                                                className="h-14 w-14 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                                            />
+                                        )}
+
+                                        <div className="min-w-0">
+                                            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
+                                                {row.type}
+                                            </p>
+                                            <p className="mt-1 max-w-[180px] font-black text-[#102426]">
+                                                {row.title}
+                                            </p>
+                                            <p className="mt-1 max-w-[180px] text-xs font-bold text-[#526260]">
+                                                {row.subtitle}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td className="px-4 py-4 align-top font-bold text-[#102426]">
                                     {row.beds}
