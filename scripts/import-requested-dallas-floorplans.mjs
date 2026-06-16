@@ -176,8 +176,12 @@ function getCortlandPhotoCategory(url, alt = "") {
 
   if (text.includes("pool")) return "Pool";
   if (text.includes("fitness") || text.includes("workout")) return "Fitness";
-  if (text.includes("lounge")) return "Lounge";
-  if (text.includes("kitchen") || text.includes("bedroom") || text.includes("living") || text.includes("balcony")) {
+  if (text.includes("dog") || text.includes("bark")) return "Pet Friendly";
+  if (text.includes("grill") || text.includes("outdoor")) return "Outdoor";
+  if (text.includes("lounge") || text.includes("clubhouse") || text.includes("workspace") || text.includes("coffee")) {
+    return "Lounge";
+  }
+  if (text.includes("kitchen") || text.includes("bedroom") || text.includes("living") || text.includes("bathroom") || text.includes("closet") || text.includes("dining")) {
     return "Interior";
   }
 
@@ -341,19 +345,50 @@ function getEarliestAvailability(units) {
 
 function buildCortlandOnMckinney() {
   const photos = createCortlandOnMckinneyPhotos([
-    ["https://cortland.com/assets/images/cache/004_imgp9040-9042_58-1-11-f712c5f76c682034ec4908afdf90425c.jpg", "Upscale resident lounge at Cortland on McKinney", "Lounge"],
-    ["https://cortland.com/assets/images/cache/DSC_2061-4-resize-81c301b8fe7b03b4bee534ed7cd6eb9c.jpg", "Kitchen with sleek countertops at Cortland on McKinney", "Interior"],
-    ["https://cortland.com/assets/images/cache/DSC_6742-eb0b3ca5b1f32a35856f65091582c9f5.jpg", "Resort-style pool at Cortland on McKinney", "Pool"],
-    ["https://cortland.com/assets/images/cache/DSC_6526-167a105c570722d4027be388071117c1.jpg", "Private balcony at Cortland on McKinney", "Interior"],
-    ["https://cortland.com/assets/images/cache/DSCF7052-ac88c3c63574168d4a03759dcbc67085.jpg", "Outdoor dining area at Cortland on McKinney", "Property"],
-    ["https://cortland.com/assets/images/cache/DSC_2056-4-resize-5-56a895ed4b2ca62bfaaccb7dbaf65d18.jpg", "Modern lighting at Cortland on McKinney", "Interior"],
-    ["https://cortland.com/assets/images/cache/003_imgp1288-1290_496-2-resize-4-16fd77ce356880ed1a8726b6051c46fc.jpg", "Spacious bedroom at Cortland on McKinney", "Interior"],
-    ["https://cortland.com/assets/images/cache/cortland_on_311_homepage_gallery_41-359e8ed72686a886f586244e9f327079.jpg", "Resort-style pool at Cortland on McKinney", "Pool"],
-    ["https://cortland.com/assets/images/cache/DSCF9757-min-c8966e8c51f54e025badaf4102b047a1.jpg", "Pet-friendly pool area at Cortland on McKinney", "Pool"],
-    ["https://cortland.com/assets/images/cache/5c5bc5fa-8ffd-4d38-bbf4-dedc97a002ce-94a57d356e4de747f9515573dc31a07b.jpg", "Fitness center at Cortland on McKinney", "Fitness"],
-    ["https://cortland.com/assets/images/cache/DSC_2100-4-resize-3-b2c3294f3cf6edfb857f892a801ef4da.jpg", "Spacious living room at Cortland on McKinney", "Interior"],
-    ["https://cortland.com/assets/images/cache/004_imgp9040-9042_58-1-12-a69b50349afa2d0f6a7441015eca43c6.jpg", "Apartment lifestyle at Cortland on McKinney", "Property"],
-    ["https://cortland.com/assets/images/cache/DSC_2149-resize-2-c7cffca728f979133e3397f78f56ef61.jpg", "24 hour fitness center at Cortland on McKinney", "Fitness"],
+    ["https://cortland.com/assets/images/cache/DSC_2061-1-b58b2f1956452e32f04224b80269b3e5.jpg", "Kitchen with sleek countertops at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_2056-1-bf33ebad79108e4b0456817e42c75dbb.jpg", "Kitchen and dining area at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_2069-1-86c57dc205f60e98b069f1942ff388ea.jpg", "Kitchen with breakfast bar at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_2095-1-2-4f1b6b0c2aeee3c9cef2addacdef7485.jpg", "Living and dining area at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_2104-12-43ce2a6ff4cf51af512017ce6b9289d4.jpg", "Spacious living room at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_2100-2-9dc5e9e307e59cca0988d0d7b39bc655.jpg", "Living room with floor-to-ceiling windows at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_2109-3-1-06b137e1ae12d9f532ac596fe5bf26dc.jpg", "Open apartment layout with modern lighting at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/003_imgp1288-1290_496-1-1-4991fe24a8a51eb5a541658927cc4a8c.jpg", "Spacious bedroom at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_2004-2-1-4b30c1d7fdc9037fb637d90ef7831ed1.jpg", "Bathroom with framed mirror at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_2016-1-1a87d3e8de53b61a713d200018f7a12f.jpg", "Deep soaking bathtub at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_2021-1-d03d172e260d2ecf5321b500420e668f.jpg", "Spacious walk-in closet at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/005_Penthosue-1-final-min-be9cd457fb52bc257ec503d5171275ea.jpg", "Penthouse wine fridge at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/006_penthouse-1-final-min-d881feb354e7e0f8e75a323079fb6386.jpg", "Penthouse kitchen layout at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/007_Penthouse-1-final-min-1dabfefe740b6a8dd979830287728420.jpg", "Penthouse kitchen with stainless steel appliances at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/008_Penthouse-1-final-min-c7ecfdc3642a76bb2e11725a495641a0.jpg", "Penthouse dining room at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/012_Penthouse-1-final-min-5b315fbf40118e2b529ce884dc9f1fcb.jpg", "Penthouse living room at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/015-Penthouse-1-final-min-7b5c04f1820df50172550930ccd24ceb.jpg", "Penthouse bedroom with floor-to-ceiling windows at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/018_Penthouse-1-final-min-f493bb1ba10bf9c678ab68d573e2553e.jpg", "Penthouse bathroom at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/029_Penthouse-2-final-min-da5be5126815278836fa5d41acc15696.jpg", "Penthouse kitchen with city views at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/030_Penthouse-2-final-min-f6d90dae3c4cca3791742ac9187f584d.jpg", "Penthouse kitchen and dining space at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/034_Penthouse-2-final-min-dd72b2c929316982933d3392ad805d31.jpg", "Penthouse living room with floor-to-ceiling windows at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/036_Penthouse-2-final-min-f748cef019216f61b5b42ad62f223f85.jpg", "Open-concept penthouse living space at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/028_Penthouse-2-final-min-36f632ccc166136c61517df975c841e7.jpg", "Penthouse bedroom at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/023_Penthouse-2-final-min-66506fec78d07f7176196b3a5075ee51.jpg", "Penthouse bathroom with double vanity at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/025_Penthouse-2-final-min-5994bcb6d5e01cfaac3b269f7015227d.jpg", "Penthouse bathroom with soaking tub and walk-in shower at Cortland on McKinney", "Penthouse"],
+    ["https://cortland.com/assets/images/cache/DSC_2143-4ebc3e6baff51e028e7a91928cd52b53.jpg", "Fitness center weight equipment at Cortland on McKinney", "Fitness"],
+    ["https://cortland.com/assets/images/cache/DSC_2134-833cf1e6d5c41775040b2f5d39e00fa5.jpg", "Spacious fitness center at Cortland on McKinney", "Fitness"],
+    ["https://cortland.com/assets/images/cache/DSC_2149-f7932c35093787f2093712a840986d6d.jpg", "Fitness center cardio equipment at Cortland on McKinney", "Fitness"],
+    ["https://cortland.com/assets/images/cache/DSC_2159-7b35d9e140469825a631ed2cf1d9bdb1.jpg", "24 hour fitness center at Cortland on McKinney", "Fitness"],
+    ["https://cortland.com/assets/images/cache/DSC_6766-083de42fc6de5427d39c73509c9c8363.jpg", "Resort-style pool with cabanas at Cortland on McKinney", "Pool"],
+    ["https://cortland.com/assets/images/cache/DSC_6772-6718ff73bceb02e5e35fa95fccf9cab3.jpg", "Resort-style pool and sun deck at Cortland on McKinney", "Pool"],
+    ["https://cortland.com/assets/images/cache/DSC_6793-1fda053f76b5ca48ab54a85ac7d64e15.jpg", "Pool and sun deck at Cortland on McKinney", "Pool"],
+    ["https://cortland.com/assets/images/cache/DSC_67781-944ef6eb67ce25d1aae5eb0d7a7c3f0e.jpg", "Outdoor grill station at Cortland on McKinney", "Outdoor"],
+    ["https://cortland.com/assets/images/cache/DSC_6805-ad413a96ccd94074f79a708ca9afa53a.jpg", "Leash-free bark park at Cortland on McKinney", "Pet Friendly"],
+    ["https://cortland.com/assets/images/cache/004_imgp9040-9042_58-2-dd689aa86326cce062f7268d6069c9bd.jpg", "Resident lounge at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/003_imgp8986-8988_810-2-33585f83ada23ab1310b9893921fb962.jpg", "Resident lounge with floor-to-ceiling windows at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/013_imgp8983-8985_855-3-8237fc56185ceefd763c8e746c9589a1.jpg", "Resident workspace at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/010_imgp9019-9021_720-2-61c6515ac3c737c3fea0b47ce3d3c33e.jpg", "Meeting room at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/006_imgp9061-9063_368-2-942ca500477e2c4568fb7223dca917d3.jpg", "Coffee bar at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/DSC_6373-dcb5e5412d436ecb46d27e85460a22ea.jpg", "Resident clubhouse at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/DSC_6415-2390bbcee5d45232455f1f357a170b55.jpg", "Community kitchen at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/DSC_64241-7db31654237aa34127e7ce52d4176d3e.jpg", "Party-ready community kitchen at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/DSC_6397-6d24357a0fe9a44c447e1a26059501c6.jpg", "Resident clubhouse with community kitchen at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/DSC_6436-67afff4756705947157a7985a0ebbc74.jpg", "Resident lounge seating at Cortland on McKinney", "Lounge"],
   ]);
 
   const floorPlans = [
