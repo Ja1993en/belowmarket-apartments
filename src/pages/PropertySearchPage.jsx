@@ -1620,6 +1620,13 @@ function ComparePropertiesTab({ rows, onRemove }) {
               label="Special"
               value={priceSummary.specialLabel || "None listed"}
             />
+            <Link
+              to={getFloorPlansRoute(property.id)}
+              onClick={rememberFloorPlanSectionTarget}
+              className="mt-4 block rounded-xl bg-[#173f3f] px-3 py-2.5 text-center text-xs font-black text-white hover:bg-[#102426]"
+            >
+              View floor plans
+            </Link>
           </div>
         ))}
       </div>
