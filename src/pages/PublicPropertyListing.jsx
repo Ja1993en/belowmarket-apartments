@@ -4464,7 +4464,7 @@ function FloorPlanCard({
         status,
     }) || 0;
     const hasManualMarketComparison = marketRentSource === "Property-entered market rent";
-    const savingsLabel = hasManualMarketComparison ? "Savings" : "Special Value";
+    const savingsLabel = "Estimated savings";
     const valueBadgeLabel = belowMarketPercent
         ? hasManualMarketComparison
             ? `${belowMarketPercent} vs market rent`
@@ -4523,10 +4523,10 @@ function FloorPlanCard({
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-                <FloorPlanMetric label="Starting" value={displayRent} />
+                <FloorPlanMetric label="Normal rent" value={displayRent} />
 
                 {effectiveRent && (
-                    <FloorPlanMetric label="Effective" value={displayEffectiveRent} highlight />
+                    <FloorPlanMetric label="After special" value={displayEffectiveRent} highlight />
                 )}
 
                 {marketRent && (
@@ -4538,7 +4538,11 @@ function FloorPlanCard({
                 )}
             </div>
 
-            <div className="mt-5 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
+            <p className="mt-3 rounded-2xl bg-[#f5f8f1] px-3 py-2 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+                Estimated using the listed special over a 12-month lease. Confirm fees before applying.
+            </p>
+
+            <div className="mt-3 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
                 <div className="min-w-0 text-center sm:text-left">
                     {valueBadgeLabel ? (
                         <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
@@ -4619,9 +4623,9 @@ function FloorPlanCard({
 
                             <div className="min-w-0">
                                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-                                    <FloorPlanMetric label="Normal" value={displayRent || "Contact"} />
+                                    <FloorPlanMetric label="Normal rent" value={displayRent || "Contact"} />
                                     <FloorPlanMetric
-                                        label="Effective"
+                                        label="After special"
                                         value={displayEffectiveRent || displayRent || "Contact"}
                                         highlight
                                     />
