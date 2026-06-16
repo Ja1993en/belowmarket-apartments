@@ -39,7 +39,6 @@ let shadow = color(0x061616, 0.18)
 let photoDominion = NSImage(contentsOfFile: "public/marketing/dominion-pool.jpg")
 let photoCortland = NSImage(contentsOfFile: "public/marketing/cortland-living.jpg")
 let photoMaa = NSImage(contentsOfFile: "public/marketing/maa-pool.jpg")
-let logoPreview = NSImage(contentsOfFile: "public/social-preview-bma.png")
 
 func ease(_ value: Double) -> CGFloat {
     let t = max(0, min(1, value))
@@ -129,8 +128,9 @@ func drawShadowCard(_ rect: CGRect, fill: NSColor = paper, radius: CGFloat = 28,
 }
 
 func drawLogo(x: CGFloat, y: CGFloat, size: CGFloat = 78, showName: Bool = true, light: Bool = false) {
-    drawRounded(CGRect(x: x, y: y, width: size, height: size), light ? paper : green, radius: size * 0.28)
-    drawText("BMA", x: x + 8, y: y + size * 0.34, w: size - 16, h: size * 0.32, size: size * 0.27, fill: light ? green : paper, weight: .black, align: .center)
+    drawRounded(CGRect(x: x, y: y, width: size, height: size), green, radius: size * 0.28)
+    drawText("BMA", x: x + 8, y: y + size * 0.34, w: size - 16, h: size * 0.32, size: size * 0.27, fill: gold, weight: .black, align: .center)
+    drawRounded(CGRect(x: x + size * 0.16, y: y + size * 0.72, width: size * 0.68, height: max(3, size * 0.045)), gold, radius: size * 0.025)
     if showName {
         drawText("Below Market\nApartments", x: x + size + 14, y: y + 9, w: 270, h: 64, size: 24, fill: light ? paper : ink, weight: .black)
     }
