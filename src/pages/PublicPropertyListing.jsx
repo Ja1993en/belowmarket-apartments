@@ -4446,12 +4446,6 @@ function FloorPlanCard({
     sqft,
     rent,
     effectiveRent,
-    marketRent,
-    marketRentSource,
-    marketRentAreaName,
-    marketRentLastUpdated,
-    savings,
-    belowMarketPercent,
     available,
     availableUnits = [],
     image,
@@ -4464,14 +4458,6 @@ function FloorPlanCard({
     const [isExpanded, setIsExpanded] = useState(false);
     const hasSpecial = Boolean(special?.label);
     const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "No special listed";
-    const marketRentCopy = marketRent
-        ? getMarketRentCopy({
-            marketRentSource,
-            marketRentAreaName,
-            marketRentLastUpdated,
-            beds,
-        })
-        : null;
     const sortedAvailableUnits = [...(availableUnits || [])]
         .filter((unit) => unit?.status !== "leased")
         .sort((a, b) => parseCurrency(a.rent) - parseCurrency(b.rent));
@@ -4481,21 +4467,10 @@ function FloorPlanCard({
         availableUnits,
         status,
     }) || 0;
-    const hasManualMarketComparison = marketRentSource === "Property-entered market rent";
-    const savingsLabel = "Estimated savings";
-    const valueBadgeLabel =
-        belowMarketPercent && !hasManualMarketComparison
-            ? `${belowMarketPercent} special value`
-            : "";
     const displayRent = formatFloorPlanMetricValue(rent);
     const displayEffectiveRent = formatFloorPlanMetricValue(effectiveRent);
-    const displayMarketRent = formatFloorPlanMetricValue(marketRent);
-    const displaySavings = formatFloorPlanMetricValue(savings);
-    const hasSavingsMetric = savings && parseCurrency(savings) > 0;
     const displayRentValue = displayRent || "Contact";
     const displayEffectiveValue = displayEffectiveRent || displayRentValue;
-    const displaySavingsValue =
-        hasSavingsMetric ? displaySavings : hasSpecial ? "Ask property" : "No special";
     const hasAvailableFloorPlanUnits =
         availableUnitCount > 0 || isFloorPlanAvailable({ available, availableUnits, status });
     const availabilityBadgeClass = hasAvailableFloorPlanUnits
@@ -4511,7 +4486,7 @@ function FloorPlanCard({
     const imageAlt = image ? `${name} floor plan` : "Floor plan image not listed";
 
     return (
-        <div className="flex min-h-[360px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
+        <div className="flex min-h-[315px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
             <div className="flex min-w-0 gap-4">
                 <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#f5f8f1] ring-1 ring-[#d7e6df]">
                     {image ? (
@@ -4554,14 +4529,10 @@ function FloorPlanCard({
                 </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-2">
                 <FloorPlanMetric label="Normal rent" value={displayRentValue} />
 
-                <FloorPlanMetric label="Effective value" value={displayEffectiveValue} highlight={hasSpecial} />
-
-                <FloorPlanMetric label={savingsLabel} value={displaySavingsValue} highlight={hasSavingsMetric} />
-
-                <FloorPlanMetric label="Availability" value={availabilityBadgeLabel} />
+                <FloorPlanMetric label="Estimated rent" value={displayEffectiveValue} highlight={hasSpecial} />
             </div>
 
             <p className="mt-3 rounded-2xl bg-[#f5f8f1] px-3 py-2 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
@@ -4572,13 +4543,9 @@ function FloorPlanCard({
 
             <div className="mt-3 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
                 <div className="min-w-0 text-center sm:text-left">
-                    {valueBadgeLabel ? (
-                        <span className="inline-flex rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
-                            {valueBadgeLabel}
-                        </span>
-                    ) : (
-                        <span className="text-xs font-bold text-[#526260]">Compare fees before applying</span>
-                    )}
+                    <span className="text-xs font-bold text-[#526260]">
+                        Compare fees and exact unit pricing before applying
+                    </span>
                 </div>
 
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -4659,15 +4626,11 @@ function FloorPlanCard({
                                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
                                     <FloorPlanMetric label="Normal rent" value={displayRentValue} />
                                     <FloorPlanMetric
-                                        label="Effective value"
+                                        label="Estimated rent"
                                         value={displayEffectiveValue}
                                         highlight={hasSpecial}
                                     />
-                                    <FloorPlanMetric
-                                        label={savingsLabel}
-                                        value={displaySavingsValue}
-                                        highlight={hasSavingsMetric}
-                                    />
+                                    <FloorPlanMetric label="Special" value={specialLabel} highlight={hasSpecial} />
                                     <FloorPlanMetric label="Availability" value={availabilityBadgeLabel} />
                                 </div>
 
@@ -4689,17 +4652,6 @@ function FloorPlanCard({
                                         {specialLabel}
                                     </p>
                                 </div>
-
-                                {marketRent && (
-                                    <div className="mt-4 rounded-2xl bg-[#eef5ff] p-3 ring-1 ring-[#c9dfff]">
-                                        <p className="text-xs font-black uppercase text-[#8a5b0a]">
-                                            Market context
-                                        </p>
-                                        <p className="mt-1 text-sm font-black text-[#102426]">
-                                            {marketRentCopy.metricLabel}: {displayMarketRent}
-                                        </p>
-                                    </div>
-                                )}
 
                                 <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
                                     <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
