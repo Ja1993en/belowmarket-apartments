@@ -3,7 +3,8 @@ import AVFoundation
 
 let projectRoot = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let videoURL = projectRoot.appendingPathComponent("public/marketing/bma-compare-commercial.mp4")
-let narrationURL = URL(fileURLWithPath: "/tmp/bma-compare-commercial-narration.aiff")
+let naturalNarrationURL = projectRoot.appendingPathComponent("public/marketing/bma-compare-commercial-narration.mp3")
+let fallbackNarrationURL = URL(fileURLWithPath: "/tmp/bma-compare-commercial-narration.aiff")
 let outputURL = URL(fileURLWithPath: "/tmp/bma-compare-commercial-with-narration.mp4")
 
 let narration = """
@@ -29,11 +30,16 @@ func availableVoiceRawValues() -> Set<String> {
 }
 
 func generateNarration() {
+    if FileManager.default.fileExists(atPath: naturalNarrationURL.path) {
+        print("Using natural narration at \(naturalNarrationURL.path)")
+        return
+    }
+
     let availableVoices = availableVoiceRawValues()
     let preferredVoices = [
-        "com.apple.speech.synthesis.voice.Alex",
         "com.apple.speech.synthesis.voice.samantha",
         "com.apple.speech.synthesis.voice.Victoria",
+        "com.apple.speech.synthesis.voice.Alex",
     ]
     guard
         let voiceId = preferredVoices.first(where: { availableVoices.contains($0) }),
@@ -42,9 +48,9 @@ func generateNarration() {
         fatalError("Could not load an English narrator voice.")
     }
 
-    synthesizer.rate = voiceId.contains("Alex") ? 154 : 162
-    try? FileManager.default.removeItem(at: narrationURL)
-    guard synthesizer.startSpeaking(narration, to: narrationURL) else {
+    synthesizer.rate = voiceId.contains("Alex") ? 154 : 160
+    try? FileManager.default.removeItem(at: fallbackNarrationURL)
+    guard synthesizer.startSpeaking(narration, to: fallbackNarrationURL) else {
         fatalError("Could not generate narration.")
     }
     while synthesizer.isSpeaking {
@@ -61,6 +67,9 @@ func addNarrationToVideo() {
     try? FileManager.default.removeItem(at: outputURL)
 
     let videoAsset = AVURLAsset(url: videoURL)
+    let narrationURL = FileManager.default.fileExists(atPath: naturalNarrationURL.path)
+        ? naturalNarrationURL
+        : fallbackNarrationURL
     let audioAsset = AVURLAsset(url: narrationURL)
     let composition = AVMutableComposition()
 
