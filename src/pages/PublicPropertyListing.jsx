@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import {
     DEFAULT_PROPERTY_IMAGE,
     getPhotoImageUrl,
@@ -751,6 +751,7 @@ function getAbsoluteSeoImageUrl(imageUrl) {
 export default function PublicPropertyListing() {
     {/* Usestate start*/ }
     const { propertyId } = useParams();
+    const location = useLocation();
     const [property, setProperty] = useState(null);
     const [compareProperties, setCompareProperties] = useState([]);
     const [isLoadingProperty, setIsLoadingProperty] = useState(true);
@@ -832,6 +833,20 @@ export default function PublicPropertyListing() {
         () => normalizeListingFloorPlans(property),
         [property]
     );
+    useEffect(() => {
+        if (!property || !location.hash) return undefined;
+
+        const targetId = decodeURIComponent(location.hash.replace("#", ""));
+        const scrollToHashTarget = window.setTimeout(() => {
+            document.getElementById(targetId)?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        }, 100);
+
+        return () => window.clearTimeout(scrollToHashTarget);
+    }, [location.hash, property, propertyId, listingFloorPlans.length]);
+
     useEffect(() => {
         if (!property || property.status !== "Live") return undefined;
 
