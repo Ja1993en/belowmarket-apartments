@@ -975,34 +975,35 @@ export default function PublicPropertyListing() {
     const compareFloorPlanKeys = new Set(
         compareFloorPlanItems.map((item) => getCompareFloorPlanItemKey(item))
     );
-    const compareDetailRows = [
-        ...compareFloorPlanItems.map((item) => {
-            const matchingFloorPlan =
-                item.propertyId === property?.id
-                    ? listingFloorPlans.find(
-                        (plan) =>
-                            getCompareFloorPlanItemKey(getFloorPlanCompareItem(property, plan)) ===
-                            getCompareFloorPlanItemKey(item)
-                    )
-                    : null;
+    const floorPlanCompareRows = compareFloorPlanItems.map((item) => {
+        const matchingFloorPlan =
+            item.propertyId === property?.id
+                ? listingFloorPlans.find(
+                    (plan) =>
+                        getCompareFloorPlanItemKey(getFloorPlanCompareItem(property, plan)) ===
+                        getCompareFloorPlanItemKey(item)
+                )
+                : null;
 
-            return {
-                id: getCompareFloorPlanItemKey(item),
-                type: "Floor plan",
-                propertyId: item.propertyId,
-                title: item.floorPlanName,
-                subtitle: item.propertyName,
-                beds: formatBedroomLabel(item.beds, item.floorPlanName),
-                baths: item.baths ? `${item.baths} ba` : "Baths not listed",
-                sqft: item.sqft ? `${item.sqft} sq ft` : "Sq ft not listed",
-                normalRent: item.rent || "Contact",
-                effectiveRent: item.effectiveRent || item.rent || "Contact",
-                special: item.special || "No special listed",
-                availability: item.available || "Availability not listed",
-                savings: getCompareSavingsLabel(item.rent, item.effectiveRent),
-                floorPlan: matchingFloorPlan,
-            };
-        }),
+        return {
+            id: getCompareFloorPlanItemKey(item),
+            type: "Floor plan",
+            propertyId: item.propertyId,
+            title: item.floorPlanName,
+            subtitle: item.propertyName,
+            beds: formatBedroomLabel(item.beds, item.floorPlanName),
+            baths: item.baths ? `${item.baths} ba` : "Baths not listed",
+            sqft: item.sqft ? `${item.sqft} sq ft` : "Sq ft not listed",
+            normalRent: item.rent || "Contact",
+            effectiveRent: item.effectiveRent || item.rent || "Contact",
+            special: item.special || "No special listed",
+            availability: item.available || "Availability not listed",
+            savings: getCompareSavingsLabel(item.rent, item.effectiveRent),
+            floorPlan: matchingFloorPlan,
+        };
+    });
+    const compareDetailRows = [
+        ...floorPlanCompareRows,
         ...propertyOnlyCompareProperties.map((compareProperty) => ({
             id: compareProperty.id,
             type: "Property",
@@ -1705,21 +1706,25 @@ export default function PublicPropertyListing() {
                                                 )}
 
                                                 {activeCompareTab === "Details" && (
-                                                    <CompareDetailsTable
-                                                        rows={compareDetailRows}
-                                                        onRequestFloorPlan={(floorPlan) => {
-                                                            setSelectedFloorPlan(floorPlan);
-                                                            setLeadSubmitted(false);
-                                                            setLeadForm({
-                                                                name: "",
-                                                                phone: "",
-                                                                email: "",
-                                                                moveInDate: "",
-                                                                contactMethod: "",
-                                                                selectedUnit: "",
-                                                            });
-                                                        }}
-                                                    />
+                                                    floorPlanCompareRows.length > 0 ? (
+                                                        <CompareDetailsTable
+                                                            rows={floorPlanCompareRows}
+                                                            onRequestFloorPlan={(floorPlan) => {
+                                                                setSelectedFloorPlan(floorPlan);
+                                                                setLeadSubmitted(false);
+                                                                setLeadForm({
+                                                                    name: "",
+                                                                    phone: "",
+                                                                    email: "",
+                                                                    moveInDate: "",
+                                                                    contactMethod: "",
+                                                                    selectedUnit: "",
+                                                                });
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <CompareEmptyState text="Choose exact floor plans to unlock the side-by-side shortlist." />
+                                                    )
                                                 )}
                                             </>
                                         )}
