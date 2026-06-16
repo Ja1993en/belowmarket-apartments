@@ -973,6 +973,12 @@ export default function PublicPropertyListing() {
         savingsLabel,
         startingRentLabel,
     });
+    const compactSeoSummary = getCompactPropertySeoSummary({
+        addressLabel,
+        listingFloorPlans,
+        property,
+        propertySpecialLabel,
+    });
     const floorPlanFilters = [
         "All",
         ...new Set(
@@ -2215,6 +2221,20 @@ export default function PublicPropertyListing() {
                                     </div>
 
                                     <SchoolSnapshotCard schoolSnapshot={schoolSnapshot} />
+
+                                    <section className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                                        <p className="text-sm font-black text-[#1f6f63]">
+                                            About this listing
+                                        </p>
+                                        <h2 className="mt-2 text-2xl font-black text-[#102426]">
+                                            About {property.name}
+                                        </h2>
+                                        <div className="mt-3 space-y-3 text-sm font-semibold leading-7 text-[#526260]">
+                                            {compactSeoSummary.map((paragraph) => (
+                                                <p key={paragraph}>{paragraph}</p>
+                                            ))}
+                                        </div>
+                                    </section>
                                 </div>
 
 
@@ -4918,6 +4938,38 @@ function HighlightCard({ title, text }) {
             <p className="mt-2 text-sm leading-6 text-[#526260]">{text}</p>
         </div>
     );
+}
+
+function getCompactPropertySeoSummary({
+    addressLabel,
+    listingFloorPlans,
+    property,
+    propertySpecialLabel,
+}) {
+    const propertyName = property?.name || "This apartment community";
+    const cityState = [property?.city || "Dallas", property?.state || "TX"]
+        .filter(Boolean)
+        .join(", ");
+    const bedroomLabel = getPropertySeoBedroomLabel(property, listingFloorPlans);
+    const rentSummary = getPropertyLevelRentSummary({
+        effectiveRentLabel: property?.effectiveRent || "",
+        hasPropertySpecial: Boolean(
+            propertySpecialLabel && propertySpecialLabel !== "No active special listed"
+        ),
+        listingFloorPlans,
+        propertySpecialLabel,
+        startingRentLabel: property?.startingRent || property?.rent || "Contact for pricing",
+    });
+    const locationLabel = addressLabel || cityState;
+    const hasSpecial =
+        propertySpecialLabel && propertySpecialLabel !== "No active special listed";
+
+    return [
+        `${propertyName} lists ${bedroomLabel} near ${locationLabel}. Renters can compare floor plans, photos, normal rent ${rentSummary.normalRentLabel}, and estimated effective rent ${rentSummary.effectiveRentLabel} before deciding whether to tour.`,
+        hasSpecial
+            ? `The current listed special is ${propertySpecialLabel}. Confirm the offer, lease term, move-in date, fees, and exact unit availability before applying.`
+            : `Use this page to compare available layouts, fees, and nearby location details. Ask the property to confirm current specials, lease terms, and exact unit availability before applying.`,
+    ].filter(Boolean);
 }
 
 function getRenterValueToolkit({
