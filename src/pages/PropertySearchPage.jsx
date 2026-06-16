@@ -172,9 +172,9 @@ export default function PropertySearchPage() {
       })),
     [compareProperties]
   );
-  const compareDetailRows = useMemo(
-    () => [
-      ...compareFloorPlanRows.map((row) => ({
+  const floorPlanDetailRows = useMemo(
+    () =>
+      compareFloorPlanRows.map((row) => ({
         id: row.compareKey,
         type: "Floor Plan",
         title: row.floorPlanName,
@@ -188,7 +188,11 @@ export default function PropertySearchPage() {
         availability: row.available || "Availability not listed",
         linkTo: `/properties/${row.propertyId}`,
       })),
-      ...propertyCompareRows.map(({ property, priceSummary }) => ({
+    [compareFloorPlanRows]
+  );
+  const propertyDetailRows = useMemo(
+    () =>
+      propertyCompareRows.map(({ property, priceSummary }) => ({
         id: property.id,
         type: "Property",
         title: property.name,
@@ -202,9 +206,12 @@ export default function PropertySearchPage() {
         availability: property.availability || "View floor plans",
         linkTo: `/properties/${property.id}`,
       })),
-    ],
-    [compareFloorPlanRows, propertyCompareRows]
+    [propertyCompareRows]
   );
+  const compareDetailRows =
+    floorPlanDetailRows.length > 0 ? floorPlanDetailRows : propertyDetailRows;
+  const compareDetailMode =
+    floorPlanDetailRows.length > 0 ? "floorPlans" : "properties";
   const hasCompareItems =
     compareFloorPlanRows.length > 0 || propertyCompareRows.length > 0;
   const selectedMapPropertyIsVisible =
@@ -733,7 +740,7 @@ export default function PropertySearchPage() {
             )}
 
             {activeCompareTab === "Details" && (
-              <CompareDetailsTab rows={compareDetailRows} />
+              <CompareDetailsTab rows={compareDetailRows} mode={compareDetailMode} />
             )}
           </div>
         )}
@@ -1571,73 +1578,81 @@ function ComparePropertiesTab({ rows, onRemove }) {
   );
 }
 
-function CompareDetailsTab({ rows }) {
+function CompareDetailsTab({ rows, mode }) {
   if (rows.length === 0) {
     return <CompareEmptyState text="Choose floor plans or properties to compare exact details." />;
   }
 
   return (
-    <div className="mt-4 overflow-x-auto rounded-2xl ring-1 ring-[#d7e6df]">
-      <table className="min-w-[960px] w-full border-collapse bg-white text-left text-sm">
-        <thead className="bg-[#173f3f] text-white">
-          <tr>
-            {[
-              "Option",
-              "Type",
-              "Beds",
-              "Sq ft",
-              "Normal",
-              "Effective",
-              "Special",
-              "Availability",
-              "Action",
-            ].map((heading) => (
-              <th key={heading} className="px-4 py-3 text-xs font-black uppercase">
-                {heading}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={row.id} className={index % 2 === 0 ? "bg-white" : "bg-[#f5f8f1]"}>
-              <td className="px-4 py-4 align-top">
-                <p className="max-w-[180px] font-black text-[#102426]">{row.title}</p>
-                <p className="mt-1 max-w-[180px] text-xs font-bold text-[#526260]">
-                  {row.propertyName}
-                </p>
-              </td>
-              <td className="px-4 py-4 align-top text-xs font-black uppercase text-[#1f6f63]">
-                {row.type}
-              </td>
-              <td className="px-4 py-4 align-top font-bold text-[#102426]">
-                {row.beds}
-                <span className="block text-xs font-semibold text-[#526260]">
-                  {row.baths}
-                </span>
-              </td>
-              <td className="px-4 py-4 align-top font-bold text-[#102426]">{row.sqft}</td>
-              <td className="px-4 py-4 align-top font-bold text-[#102426]">{row.normalRent}</td>
-              <td className="px-4 py-4 align-top font-black text-[#1f6f63]">{row.effectiveRent}</td>
-              <td className="max-w-[210px] px-4 py-4 align-top text-xs font-bold text-[#8a5b0a]">
-                {row.special}
-              </td>
-              <td className="max-w-[160px] px-4 py-4 align-top text-xs font-semibold text-[#526260]">
-                {row.availability}
-              </td>
-              <td className="px-4 py-4 align-top">
-                <Link
-                  to={row.linkTo}
-                  className="inline-flex rounded-xl bg-[#173f3f] px-3 py-2 text-xs font-black text-white hover:bg-[#102426]"
-                >
-                  View
-                </Link>
-              </td>
+    <>
+      <p className="mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold leading-6 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+        {mode === "floorPlans"
+          ? "Details is comparing exact floor plans for the clearest rent, size, and special comparison."
+          : "For the most accurate comparison, choose floor plans from each property. Until then, Details compares the selected properties."}
+      </p>
+
+      <div className="mt-4 overflow-x-auto rounded-2xl ring-1 ring-[#d7e6df]">
+        <table className="min-w-[960px] w-full border-collapse bg-white text-left text-sm">
+          <thead className="bg-[#173f3f] text-white">
+            <tr>
+              {[
+                "Option",
+                "Type",
+                "Beds",
+                "Sq ft",
+                "Normal",
+                "Effective",
+                "Special",
+                "Availability",
+                "Action",
+              ].map((heading) => (
+                <th key={heading} className="px-4 py-3 text-xs font-black uppercase">
+                  {heading}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={row.id} className={index % 2 === 0 ? "bg-white" : "bg-[#f5f8f1]"}>
+                <td className="px-4 py-4 align-top">
+                  <p className="max-w-[180px] font-black text-[#102426]">{row.title}</p>
+                  <p className="mt-1 max-w-[180px] text-xs font-bold text-[#526260]">
+                    {row.propertyName}
+                  </p>
+                </td>
+                <td className="px-4 py-4 align-top text-xs font-black uppercase text-[#1f6f63]">
+                  {row.type}
+                </td>
+                <td className="px-4 py-4 align-top font-bold text-[#102426]">
+                  {row.beds}
+                  <span className="block text-xs font-semibold text-[#526260]">
+                    {row.baths}
+                  </span>
+                </td>
+                <td className="px-4 py-4 align-top font-bold text-[#102426]">{row.sqft}</td>
+                <td className="px-4 py-4 align-top font-bold text-[#102426]">{row.normalRent}</td>
+                <td className="px-4 py-4 align-top font-black text-[#1f6f63]">{row.effectiveRent}</td>
+                <td className="max-w-[210px] px-4 py-4 align-top text-xs font-bold text-[#8a5b0a]">
+                  {row.special}
+                </td>
+                <td className="max-w-[160px] px-4 py-4 align-top text-xs font-semibold text-[#526260]">
+                  {row.availability}
+                </td>
+                <td className="px-4 py-4 align-top">
+                  <Link
+                    to={row.linkTo}
+                    className="inline-flex rounded-xl bg-[#173f3f] px-3 py-2 text-xs font-black text-white hover:bg-[#102426]"
+                  >
+                    View
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
