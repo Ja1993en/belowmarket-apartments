@@ -74,7 +74,7 @@ export default function PropertySearchPage() {
   const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
   const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
   const [compareFloorPlanItems, setCompareFloorPlanItems] = useState(getCompareFloorPlanItems);
-  const [activeCompareTab, setActiveCompareTab] = useState("Floor Plans");
+  const [activeCompareTab, setActiveCompareTab] = useState("Properties");
   const [hoveredMapPropertyId, setHoveredMapPropertyId] = useState("");
   const [selectedMapPropertyId, setSelectedMapPropertyId] = useState("");
   const resultCardRefs = useRef(new Map());
@@ -691,7 +691,7 @@ export default function PropertySearchPage() {
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              {["Floor Plans", "Properties", "Details"].map((tab) => (
+              {["Properties", "Floor Plans", "Details"].map((tab) => (
                 <button
                   key={tab}
                   type="button"
