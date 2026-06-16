@@ -27,6 +27,7 @@ import {
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
 const NEARBY_PLACE_RADIUS_MILES = 10;
+const NEARBY_PLACE_CACHE_VERSION = "v3";
 const FLOOR_PLAN_PAGE_SIZE = 6;
 const NEARBY_PLACE_QUERIES = [
     {
@@ -58,7 +59,7 @@ const NEARBY_PLACE_QUERIES = [
         keywords: ["planet fitness"],
     },
     {
-        query: "Kroger",
+        query: "Kroger grocery store",
         label: "Kroger",
         detail: "Closest Kroger found near this property",
         type: "kroger",
@@ -3104,6 +3105,8 @@ function getNearbyPlaceName(nearbyPlaces, type) {
 }
 
 function getCleanNearbyPlaceLabel(place) {
+    if (place?.label) return place.label;
+
     return String(place?.label || "")
         .replace(/^Nearby\s+/i, "")
         .trim() || "Nearby place";
@@ -3338,50 +3341,66 @@ function PropertyLocationMap({
 
         markersRef.current.forEach((marker) => marker.remove());
         markersRef.current = [];
+        const hoverPopupBindings = [];
 
         const isApproximatePin = propertyCoordinates.mapAccuracy === "approximate";
+        const propertyPopup = new mapboxGl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            offset: 28,
+        }).setHTML(
+            `<strong>${escapeMapText(property?.name || "Property")}</strong><br>${escapeMapText(
+                addressLabel
+            )}${
+                isApproximatePin
+                    ? "<br><em>Approximate location until a full street address is added.</em>"
+                    : ""
+            }`
+        );
         const propertyMarker = new mapboxGl.Marker({
             element: createPropertyMapMarker(
                 property?.name || "Property",
-                isApproximatePin
+                isApproximatePin,
+                addressLabel
             ),
             anchor: "bottom",
         })
             .setLngLat([propertyCoordinates.longitude, propertyCoordinates.latitude])
-            .setPopup(
-                new mapboxGl.Popup({ offset: 28 }).setHTML(
-                    `<strong>${escapeMapText(property?.name || "Property")}</strong><br>${escapeMapText(
-                        addressLabel
-                    )}${
-                        isApproximatePin
-                            ? "<br><em>Approximate location until a full street address is added.</em>"
-                            : ""
-                    }`
-                )
-            )
             .addTo(mapRef.current);
 
+        bindMapMarkerHoverPopup(propertyMarker, propertyPopup, mapRef.current);
+        hoverPopupBindings.push({ marker: propertyMarker, popup: propertyPopup });
         markersRef.current.push(propertyMarker);
 
         nearbyPlaces.forEach((place) => {
+            const nearbyPopup = new mapboxGl.Popup({
+                closeButton: false,
+                closeOnClick: false,
+                offset: 20,
+            }).setHTML(
+                `<strong>${escapeMapText(getCleanNearbyPlaceLabel(place))}</strong><br>${escapeMapText(
+                    place.detail
+                )}<br>${escapeMapText(place.distanceMiles.toFixed(1))} miles away`
+            );
             const marker = new mapboxGl.Marker({
                 element: createNearbyMapMarker(place),
                 anchor: "bottom",
             })
                 .setLngLat([place.longitude, place.latitude])
-                .setPopup(
-                    new mapboxGl.Popup({ offset: 20 }).setHTML(
-                        `<strong>${escapeMapText(getCleanNearbyPlaceLabel(place))}</strong><br>${escapeMapText(
-                            place.detail
-                        )}<br>${escapeMapText(place.distanceMiles.toFixed(1))} miles away`
-                    )
-                )
                 .addTo(mapRef.current);
 
+            bindMapMarkerHoverPopup(marker, nearbyPopup, mapRef.current);
+            hoverPopupBindings.push({ marker, popup: nearbyPopup });
             markersRef.current.push(marker);
         });
 
+        const unbindHoverPopups = bindMapMarkerHoverPopups(
+            mapRef.current,
+            hoverPopupBindings
+        );
+
         return () => {
+            unbindHoverPopups();
             markersRef.current.forEach((marker) => marker.remove());
             markersRef.current = [];
         };
@@ -3629,7 +3648,7 @@ function setCachedCoordinates(cacheKey, coordinates) {
 }
 
 function getNearbyPlacesCacheKey(center) {
-    return `bma-nearby:${Math.round(center.latitude * 10000)}:${Math.round(
+    return `bma-nearby:${NEARBY_PLACE_CACHE_VERSION}:${Math.round(center.latitude * 10000)}:${Math.round(
         center.longitude * 10000
     )}`;
 }
@@ -3712,6 +3731,8 @@ async function fetchNearbyPlaces(center, cacheKey) {
                         getSuggestionDistanceMiles(secondSuggestion)
                 );
 
+            const matchingPlaces = [];
+
             for (const suggestion of matchingSuggestions) {
                 const placeResult = await retrieveSearchBoxPlace(
                     suggestion.mapbox_id,
@@ -3720,11 +3741,11 @@ async function fetchNearbyPlaces(center, cacheKey) {
                 const place = getNearbyPlaceResult(placeResult, placeQuery, center);
 
                 if (place) {
-                    return place;
+                    matchingPlaces.push(place);
                 }
             }
 
-            return null;
+            return getClosestNearbyPlace(matchingPlaces);
         })
     );
 
@@ -3732,6 +3753,14 @@ async function fetchNearbyPlaces(center, cacheKey) {
     setCachedNearbyPlaces(cacheKey, places);
 
     return places;
+}
+
+function getClosestNearbyPlace(places) {
+    if (places.length === 0) return null;
+
+    return [...places].sort(
+        (firstPlace, secondPlace) => firstPlace.distanceMiles - secondPlace.distanceMiles
+    )[0];
 }
 
 async function retrieveSearchBoxPlace(mapboxId, sessionToken) {
@@ -3764,7 +3793,8 @@ function getNearbyPlaceResult(feature, placeQuery, center) {
 
     return {
         ...placeQuery,
-        label: properties.name || placeQuery.label,
+        label: placeQuery.label,
+        mapboxName: properties.name || "",
         detail:
             properties.full_address ||
             properties.place_formatted ||
@@ -3848,19 +3878,32 @@ function degreesToRadians(degrees) {
     return degrees * (Math.PI / 180);
 }
 
-function createPropertyMapMarker(propertyName, isApproximatePin = false) {
+function createPropertyMapMarker(propertyName, isApproximatePin = false, addressLabel = "") {
     const markerElement = document.createElement("div");
     markerElement.className =
-        "flex -translate-y-1 flex-col items-center";
+        "group relative flex -translate-y-1 flex-col items-center outline-none";
     markerElement.title = `${propertyName}${
         isApproximatePin ? " - approximate location" : ""
     }`;
+    markerElement.tabIndex = 0;
+    markerElement.setAttribute("role", "button");
+    markerElement.setAttribute("aria-label", markerElement.title);
     const markerBackground = isApproximatePin ? "bg-[#8a5b0a]" : "bg-[#f2b84b]";
     const markerText = isApproximatePin ? "text-white" : "text-[#102426]";
     markerElement.innerHTML = `
+        ${getMapMarkerTooltipHtml(
+            propertyName,
+            [
+                addressLabel,
+                isApproximatePin
+                    ? "Approximate location until a full street address is added."
+                    : "",
+            ]
+        )}
         <div class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white ${markerBackground} text-[10px] font-black ${markerText} shadow-lg ring-1 ring-[#8a5b0a]/25">BMA</div>
         <div class="-mt-1.5 h-3 w-3 rotate-45 border-b-2 border-r-2 border-white ${markerBackground} shadow-sm"></div>
     `;
+    attachMapMarkerTooltipEvents(markerElement);
 
     return markerElement;
 }
@@ -3882,12 +3925,147 @@ function createNearbyMapMarker(place) {
         kroger: "K",
     };
 
-    markerElement.className = "flex flex-col items-center";
+    markerElement.className = "group relative flex flex-col items-center outline-none";
+    markerElement.title = `${getCleanNearbyPlaceLabel(place)} - ${place.distanceMiles.toFixed(1)} miles away`;
+    markerElement.tabIndex = 0;
+    markerElement.setAttribute("role", "button");
+    markerElement.setAttribute("aria-label", markerElement.title);
     markerElement.innerHTML = `
+        ${getMapMarkerTooltipHtml(getCleanNearbyPlaceLabel(place), [
+            place.detail,
+            `${place.distanceMiles.toFixed(1)} miles away`,
+        ])}
         <div class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white ${colors[place.type]} text-[10px] font-black text-white shadow-md">${abbreviations[place.type]}</div>
     `;
+    attachMapMarkerTooltipEvents(markerElement);
 
     return markerElement;
+}
+
+function attachMapMarkerTooltipEvents(markerElement) {
+    const tooltipElement = markerElement.querySelector("[data-map-marker-tooltip='true']");
+    if (!tooltipElement) return;
+
+    const showTooltip = () => {
+        tooltipElement.classList.remove("hidden");
+        tooltipElement.classList.add("block");
+    };
+    const hideTooltip = () => {
+        tooltipElement.classList.add("hidden");
+        tooltipElement.classList.remove("block");
+    };
+
+    markerElement.addEventListener("pointerenter", showTooltip);
+    markerElement.addEventListener("pointerleave", hideTooltip);
+    markerElement.addEventListener("mouseenter", showTooltip);
+    markerElement.addEventListener("mouseleave", hideTooltip);
+    markerElement.addEventListener("focus", showTooltip);
+    markerElement.addEventListener("blur", hideTooltip);
+}
+
+function bindMapMarkerHoverPopup(marker, popup, map) {
+    const markerElement = marker.getElement();
+    let closePopupTimer = null;
+
+    const openPopup = () => {
+        window.clearTimeout(closePopupTimer);
+        popup.setLngLat(marker.getLngLat()).addTo(map);
+    };
+    const closePopup = (event) => {
+        if (event?.relatedTarget && markerElement.contains(event.relatedTarget)) {
+            return;
+        }
+
+        closePopupTimer = window.setTimeout(() => {
+            popup.remove();
+        }, 80);
+    };
+
+    markerElement.addEventListener("pointerenter", openPopup, true);
+    markerElement.addEventListener("pointerleave", closePopup, true);
+    markerElement.addEventListener("mouseenter", openPopup, true);
+    markerElement.addEventListener("mouseleave", closePopup, true);
+    markerElement.addEventListener("focus", openPopup, true);
+    markerElement.addEventListener("blur", closePopup, true);
+}
+
+function bindMapMarkerHoverPopups(map, hoverPopupBindings) {
+    const mapContainer = map.getContainer();
+    const popupByMarkerElement = new Map(
+        hoverPopupBindings.map(({ marker, popup }) => [
+            marker.getElement(),
+            { marker, popup },
+        ])
+    );
+    let activeBinding = null;
+    let closePopupTimer = null;
+
+    const openPopup = (binding) => {
+        window.clearTimeout(closePopupTimer);
+        activeBinding = binding;
+        binding.popup.setLngLat(binding.marker.getLngLat()).addTo(map);
+    };
+    const closePopup = () => {
+        closePopupTimer = window.setTimeout(() => {
+            activeBinding?.popup.remove();
+            activeBinding = null;
+        }, 80);
+    };
+    const getHoveredBinding = (event) => {
+        const hoveredElement = document.elementFromPoint(event.clientX, event.clientY);
+        const markerElement = hoveredElement?.closest?.(".mapboxgl-marker");
+
+        return markerElement ? popupByMarkerElement.get(markerElement) : null;
+    };
+    const handlePointerMove = (event) => {
+        const hoveredBinding = getHoveredBinding(event);
+
+        if (hoveredBinding) {
+            if (hoveredBinding !== activeBinding) {
+                activeBinding?.popup.remove();
+            }
+            openPopup(hoveredBinding);
+            return;
+        }
+
+        if (activeBinding) {
+            closePopup();
+        }
+    };
+    const handlePointerLeave = () => {
+        if (activeBinding) {
+            closePopup();
+        }
+    };
+
+    mapContainer.addEventListener("pointermove", handlePointerMove, true);
+    mapContainer.addEventListener("mousemove", handlePointerMove, true);
+    mapContainer.addEventListener("pointerleave", handlePointerLeave, true);
+    mapContainer.addEventListener("mouseleave", handlePointerLeave, true);
+
+    return () => {
+        window.clearTimeout(closePopupTimer);
+        mapContainer.removeEventListener("pointermove", handlePointerMove, true);
+        mapContainer.removeEventListener("mousemove", handlePointerMove, true);
+        mapContainer.removeEventListener("pointerleave", handlePointerLeave, true);
+        mapContainer.removeEventListener("mouseleave", handlePointerLeave, true);
+    };
+}
+
+function getMapMarkerTooltipHtml(title, details = []) {
+    const detailRows = details.filter(Boolean);
+
+    return `
+        <div data-map-marker-tooltip="true" class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-64 -translate-x-1/2 rounded-2xl bg-white p-3 text-left text-xs leading-5 text-[#526260] shadow-xl ring-1 ring-[#d7e6df] group-hover:block group-focus:block">
+            <p class="text-sm font-black text-[#102426]">${escapeMapText(title)}</p>
+            ${detailRows
+                .map(
+                    (detail) =>
+                        `<p class="mt-1 font-semibold">${escapeMapText(detail)}</p>`
+                )
+                .join("")}
+        </div>
+    `;
 }
 
 function escapeMapText(value) {
@@ -4290,6 +4468,23 @@ function FloorPlanCard({
             ? `${belowMarketPercent} vs market rent`
             : `${belowMarketPercent} special value`
         : "";
+    const displayRent = formatFloorPlanMetricValue(rent);
+    const displayEffectiveRent = formatFloorPlanMetricValue(effectiveRent);
+    const displayMarketRent = formatFloorPlanMetricValue(marketRent);
+    const displaySavings = formatFloorPlanMetricValue(savings);
+    const hasSavingsMetric = savings && parseCurrency(savings) > 0;
+    const hasAvailableFloorPlanUnits =
+        availableUnitCount > 0 || isFloorPlanAvailable({ available, availableUnits, status });
+    const availabilityBadgeClass = hasAvailableFloorPlanUnits
+        ? "bg-[#e7f3ee] text-[#1f6f63] ring-1 ring-[#a9cfc2]"
+        : status === "limited"
+            ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+            : "bg-[#fff0ea] text-[#e4572e] ring-1 ring-[#f4c8b8]";
+    const availabilityBadgeLabel = getFloorPlanAvailabilityBadgeLabel({
+        available,
+        availableUnitCount,
+        hasAvailableFloorPlanUnits,
+    });
 
     return (
         <div className="flex min-h-[290px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
@@ -4304,15 +4499,8 @@ function FloorPlanCard({
 
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                        <span
-                            className={`rounded-full px-2.5 py-1 text-[11px] font-black ${status === "available"
-                                ? "bg-[#d8efe6] text-[#1f6f63]"
-                                : status === "limited"
-                                    ? "bg-[#fff8e6] text-[#8a5b0a]"
-                                    : "bg-[#fff0ea] text-[#e4572e]"
-                                }`}
-                        >
-                            {available}
+                        <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${availabilityBadgeClass}`}>
+                            {availabilityBadgeLabel}
                         </span>
 
                         {special && (
@@ -4333,18 +4521,18 @@ function FloorPlanCard({
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-                <FloorPlanMetric label="Starting" value={rent} />
+                <FloorPlanMetric label="Starting" value={displayRent} />
 
                 {effectiveRent && (
-                    <FloorPlanMetric label="Effective" value={effectiveRent} highlight />
+                    <FloorPlanMetric label="Effective" value={displayEffectiveRent} highlight />
                 )}
 
                 {marketRent && (
-                    <FloorPlanMetric label={marketRentCopy.metricLabel} value={marketRent} />
+                    <FloorPlanMetric label={marketRentCopy.metricLabel} value={displayMarketRent} />
                 )}
 
-                {savings && (
-                    <FloorPlanMetric label={savingsLabel} value={savings} highlight />
+                {hasSavingsMetric && (
+                    <FloorPlanMetric label={savingsLabel} value={displaySavings} highlight />
                 )}
             </div>
 
@@ -4405,10 +4593,10 @@ function FloorPlanCard({
                             </p>
 
                             <div className="mt-4 grid grid-cols-2 gap-2">
-                                <FloorPlanMetric label="Normal" value={rent || "Contact"} />
+                                <FloorPlanMetric label="Normal" value={displayRent || "Contact"} />
                                 <FloorPlanMetric
                                     label="Effective"
-                                    value={effectiveRent || rent || "Contact"}
+                                    value={displayEffectiveRent || displayRent || "Contact"}
                                     highlight
                                 />
                             </div>
@@ -4522,6 +4710,47 @@ function cleanUnitSpecialLabel(label = "") {
         .trim();
 }
 
+function getFloorPlanAvailabilityBadgeLabel({
+    available,
+    availableUnitCount,
+    hasAvailableFloorPlanUnits,
+}) {
+    if (availableUnitCount > 0) {
+        return `${availableUnitCount} available unit${availableUnitCount === 1 ? "" : "s"}`;
+    }
+
+    const availableText = String(available || "").trim();
+    const availableCountMatch = availableText.match(/^(\d+)(?:\s+available)?$/i);
+    if (availableCountMatch) {
+        const unitCount = Number(availableCountMatch[1]);
+        return `${unitCount} available unit${unitCount === 1 ? "" : "s"}`;
+    }
+
+    if (hasAvailableFloorPlanUnits && /^available$/i.test(availableText)) {
+        return "Available units";
+    }
+
+    return availableText || "Availability not listed";
+}
+
+function formatFloorPlanMetricValue(value) {
+    if (value === null || value === undefined || value === "") return value;
+
+    const textValue = String(value).trim();
+    if (!textValue) return textValue;
+    if (/[$%]/.test(textValue) || /contact|verify|call|ask/i.test(textValue)) {
+        return textValue;
+    }
+
+    const currencyValue = parseCurrency(textValue);
+    if (currencyValue > 0) {
+        const suffix = /\/\s*mo|monthly/i.test(textValue) ? "/mo" : "";
+        return `${formatCurrency(currencyValue)}${suffix}`;
+    }
+
+    return textValue;
+}
+
 function FloorPlanMetric({ label, value, highlight = false }) {
     return (
         <div
@@ -4581,7 +4810,7 @@ function getFloorPlanAvailableUnitCount(plan) {
     }
 
     const availabilityText = String(plan?.available || plan?.availability || "");
-    const match = availabilityText.match(/(\d+)\s+available/i);
+    const match = availabilityText.match(/^\s*(\d+)(?:\s+available)?(?:\s+units?)?\s*$/i);
     if (match) return Number(match[1]);
 
     return null;

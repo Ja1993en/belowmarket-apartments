@@ -3,8 +3,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Building2, MapPin, Navigation, Search, Tag } from "lucide-react";
 import { getAllProperties } from "../data/propertyStorage";
 import {
+  getCompareFloorPlanItemKey,
+  getCompareFloorPlanItems,
   getComparePropertyIds,
   getSavedPropertyIds,
+  removeCompareFloorPlanItem,
   removeComparePropertyId,
   toggleComparePropertyId,
   toggleSavedPropertyId,
@@ -70,6 +73,8 @@ export default function PropertySearchPage() {
   const [propertyLoadError, setPropertyLoadError] = useState("");
   const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
   const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
+  const [compareFloorPlanItems, setCompareFloorPlanItems] = useState(getCompareFloorPlanItems);
+  const [activeCompareTab, setActiveCompareTab] = useState("Floor Plans");
   const [hoveredMapPropertyId, setHoveredMapPropertyId] = useState("");
   const [selectedMapPropertyId, setSelectedMapPropertyId] = useState("");
   const resultCardRefs = useRef(new Map());
@@ -149,6 +154,59 @@ export default function PropertySearchPage() {
         .filter(Boolean),
     [comparePropertyIds, properties]
   );
+  const compareFloorPlanRows = useMemo(
+    () =>
+      compareFloorPlanItems.map((item) => ({
+        ...item,
+        compareKey: getCompareFloorPlanItemKey(item),
+        property:
+          properties.find((property) => property.id === item.propertyId) || null,
+      })),
+    [compareFloorPlanItems, properties]
+  );
+  const propertyCompareRows = useMemo(
+    () =>
+      compareProperties.map((property) => ({
+        property,
+        priceSummary: getPropertySearchPriceSummary(property),
+      })),
+    [compareProperties]
+  );
+  const compareDetailRows = useMemo(
+    () => [
+      ...compareFloorPlanRows.map((row) => ({
+        id: row.compareKey,
+        type: "Floor Plan",
+        title: row.floorPlanName,
+        propertyName: row.propertyName,
+        beds: formatBedroomLabel(row.beds, row.floorPlanName),
+        baths: row.baths ? `${row.baths} ba` : "Baths not listed",
+        sqft: row.sqft ? `${row.sqft} sq ft` : "Sq ft not listed",
+        normalRent: row.rent || "Contact",
+        effectiveRent: row.effectiveRent || row.rent || "Contact",
+        special: row.special || "No special listed",
+        availability: row.available || "Availability not listed",
+        linkTo: `/properties/${row.propertyId}`,
+      })),
+      ...propertyCompareRows.map(({ property, priceSummary }) => ({
+        id: property.id,
+        type: "Property",
+        title: property.name,
+        propertyName: property.area || property.city || "Dallas area",
+        beds: getBedsLabel(property),
+        baths: "Varies",
+        sqft: "Varies",
+        normalRent: priceSummary.normalRentLabel,
+        effectiveRent: priceSummary.effectiveRentLabel,
+        special: priceSummary.specialLabel || property.special || "No special listed",
+        availability: property.availability || "View floor plans",
+        linkTo: `/properties/${property.id}`,
+      })),
+    ],
+    [compareFloorPlanRows, propertyCompareRows]
+  );
+  const hasCompareItems =
+    compareFloorPlanRows.length > 0 || propertyCompareRows.length > 0;
   const selectedMapPropertyIsVisible =
     selectedMapPropertyId &&
     filteredProperties.some((property) => property.id === selectedMapPropertyId);
@@ -604,7 +662,7 @@ export default function PropertySearchPage() {
           </Link>
         </div>
 
-        {compareProperties.length > 0 && (
+        {hasCompareItems && (
           <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
             <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
               <div>
@@ -614,12 +672,17 @@ export default function PropertySearchPage() {
                 <h2 className="mt-1 text-2xl font-black text-[#102426]">
                   Side-by-side renter value
                 </h2>
+                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                  Toggle between floor plans, properties, and full details.
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => {
                   localStorage.setItem("bmaComparePropertyIds", "[]");
+                  localStorage.setItem("bmaCompareFloorPlanItems", "[]");
                   setComparePropertyIds([]);
+                  setCompareFloorPlanItems([]);
                 }}
                 className="w-fit rounded-2xl bg-[#fff0ea] px-4 py-3 text-sm font-black text-[#e4572e] hover:bg-[#fde8df]"
               >
@@ -627,51 +690,51 @@ export default function PropertySearchPage() {
               </button>
             </div>
 
-            <div className="mt-4 overflow-x-auto pb-1">
-              <div className="grid min-w-[720px] gap-3 md:grid-cols-4">
-                {compareProperties.map((property) => {
-                  const priceSummary = getPropertySearchPriceSummary(property);
-
-                  return (
-                    <div
-                      key={property.id}
-                      className="rounded-2xl bg-[#f5f8f1] p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="min-w-0 truncate text-sm font-black text-[#102426]">
-                          {property.name}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setComparePropertyIds(removeComparePropertyId(property.id))
-                          }
-                          className="shrink-0 rounded-full bg-[#fff0ea] px-3 py-1 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                      <CompareMetric
-                        label="Deal score"
-                        value={`${getSearchDealScore(property, priceSummary)}/100`}
-                      />
-                      <CompareMetric
-                        label="Effective"
-                        value={priceSummary.effectiveRentLabel}
-                      />
-                      <CompareMetric
-                        label="Normal"
-                        value={priceSummary.normalRentLabel}
-                      />
-                      <CompareMetric
-                        label="Special"
-                        value={priceSummary.specialLabel || "None listed"}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {["Floor Plans", "Properties", "Details"].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveCompareTab(tab)}
+                  className={`rounded-full px-4 py-2 text-sm font-black ${
+                    activeCompareTab === tab
+                      ? "bg-[#173f3f] text-white"
+                      : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
+                  }`}
+                >
+                  {tab}
+                  <span className="ml-2 rounded-full bg-white/75 px-2 py-0.5 text-[10px] text-[#173f3f]">
+                    {tab === "Floor Plans"
+                      ? compareFloorPlanRows.length
+                      : tab === "Properties"
+                        ? propertyCompareRows.length
+                        : compareDetailRows.length}
+                  </span>
+                </button>
+              ))}
             </div>
+
+            {activeCompareTab === "Floor Plans" && (
+              <CompareFloorPlanTab
+                rows={compareFloorPlanRows}
+                onRemove={(row) =>
+                  setCompareFloorPlanItems(removeCompareFloorPlanItem(row))
+                }
+              />
+            )}
+
+            {activeCompareTab === "Properties" && (
+              <ComparePropertiesTab
+                rows={propertyCompareRows}
+                onRemove={(propertyId) =>
+                  setComparePropertyIds(removeComparePropertyId(propertyId))
+                }
+              />
+            )}
+
+            {activeCompareTab === "Details" && (
+              <CompareDetailsTab rows={compareDetailRows} />
+            )}
           </div>
         )}
 
@@ -1391,6 +1454,213 @@ function CompareMetric({ label, value }) {
       <p className="text-[10px] font-black uppercase text-[#526260]">{label}</p>
       <p className="mt-1 text-sm font-black text-[#102426]">{value}</p>
     </div>
+  );
+}
+
+function CompareFloorPlanTab({ rows, onRemove }) {
+  if (rows.length === 0) {
+    return (
+      <CompareEmptyState text="No floor plans selected yet. Open a property and tap Compare Floor Plan on the layouts you want to compare." />
+    );
+  }
+
+  return (
+    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {rows.map((row) => (
+        <div key={row.compareKey} className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+          <div className="flex gap-3">
+            <img
+              src={row.image || getPropertyPrimaryImage(row.property || {})}
+              alt={`${row.floorPlanName} floor plan`}
+              className="h-20 w-24 shrink-0 rounded-xl bg-white object-cover ring-1 ring-[#d7e6df]"
+            />
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-black text-[#102426]">
+                    {row.floorPlanName}
+                  </p>
+                  <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+                    {row.propertyName}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onRemove(row)}
+                  className="shrink-0 rounded-full bg-[#fff0ea] px-3 py-1 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                >
+                  Remove
+                </button>
+              </div>
+
+              <p className="mt-2 text-xs font-semibold text-[#526260]">
+                {formatBedroomLabel(row.beds, row.floorPlanName)} • {row.baths || "Baths not listed"} ba •{" "}
+                {row.sqft || "Sq ft not listed"} sq ft
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <CompareTile label="Starting" value={row.rent || "Contact"} />
+            <CompareTile
+              label="Effective"
+              value={row.effectiveRent || row.rent || "Contact"}
+              highlight
+            />
+          </div>
+
+          <p className="mt-3 truncate text-xs font-black text-[#8a5b0a]">
+            {row.special || "No special listed"}
+          </p>
+
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <Link
+              to={`/properties/${row.propertyId}`}
+              className="rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black text-white hover:bg-[#102426]"
+            >
+              View property
+            </Link>
+            <span className="rounded-xl bg-white px-3 py-2 text-center text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+              {row.available || "Availability not listed"}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ComparePropertiesTab({ rows, onRemove }) {
+  if (rows.length === 0) {
+    return <CompareEmptyState text="No properties selected yet. Tap Compare on properties you want to save side by side." />;
+  }
+
+  return (
+    <div className="mt-4 overflow-x-auto pb-1">
+      <div className="grid min-w-[720px] gap-3 md:grid-cols-4">
+        {rows.map(({ property, priceSummary }) => (
+          <div key={property.id} className="rounded-2xl bg-[#f5f8f1] p-4">
+            <div className="flex items-start justify-between gap-3">
+              <p className="min-w-0 truncate text-sm font-black text-[#102426]">
+                {property.name}
+              </p>
+              <button
+                type="button"
+                onClick={() => onRemove(property.id)}
+                className="shrink-0 rounded-full bg-[#fff0ea] px-3 py-1 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+              >
+                Remove
+              </button>
+            </div>
+            <CompareMetric
+              label="Deal score"
+              value={`${getSearchDealScore(property, priceSummary)}/100`}
+            />
+            <CompareMetric label="Effective" value={priceSummary.effectiveRentLabel} />
+            <CompareMetric label="Normal" value={priceSummary.normalRentLabel} />
+            <CompareMetric
+              label="Special"
+              value={priceSummary.specialLabel || "None listed"}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CompareDetailsTab({ rows }) {
+  if (rows.length === 0) {
+    return <CompareEmptyState text="Choose floor plans or properties to compare exact details." />;
+  }
+
+  return (
+    <div className="mt-4 overflow-x-auto rounded-2xl ring-1 ring-[#d7e6df]">
+      <table className="min-w-[960px] w-full border-collapse bg-white text-left text-sm">
+        <thead className="bg-[#173f3f] text-white">
+          <tr>
+            {[
+              "Option",
+              "Type",
+              "Beds",
+              "Sq ft",
+              "Normal",
+              "Effective",
+              "Special",
+              "Availability",
+              "Action",
+            ].map((heading) => (
+              <th key={heading} className="px-4 py-3 text-xs font-black uppercase">
+                {heading}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => (
+            <tr key={row.id} className={index % 2 === 0 ? "bg-white" : "bg-[#f5f8f1]"}>
+              <td className="px-4 py-4 align-top">
+                <p className="max-w-[180px] font-black text-[#102426]">{row.title}</p>
+                <p className="mt-1 max-w-[180px] text-xs font-bold text-[#526260]">
+                  {row.propertyName}
+                </p>
+              </td>
+              <td className="px-4 py-4 align-top text-xs font-black uppercase text-[#1f6f63]">
+                {row.type}
+              </td>
+              <td className="px-4 py-4 align-top font-bold text-[#102426]">
+                {row.beds}
+                <span className="block text-xs font-semibold text-[#526260]">
+                  {row.baths}
+                </span>
+              </td>
+              <td className="px-4 py-4 align-top font-bold text-[#102426]">{row.sqft}</td>
+              <td className="px-4 py-4 align-top font-bold text-[#102426]">{row.normalRent}</td>
+              <td className="px-4 py-4 align-top font-black text-[#1f6f63]">{row.effectiveRent}</td>
+              <td className="max-w-[210px] px-4 py-4 align-top text-xs font-bold text-[#8a5b0a]">
+                {row.special}
+              </td>
+              <td className="max-w-[160px] px-4 py-4 align-top text-xs font-semibold text-[#526260]">
+                {row.availability}
+              </td>
+              <td className="px-4 py-4 align-top">
+                <Link
+                  to={row.linkTo}
+                  className="inline-flex rounded-xl bg-[#173f3f] px-3 py-2 text-xs font-black text-white hover:bg-[#102426]"
+                >
+                  View
+                </Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function CompareTile({ label, value, highlight = false }) {
+  return (
+    <div
+      className={`rounded-xl px-3 py-2 ${
+        highlight
+          ? "bg-[#e7f3ee] text-[#1f6f63]"
+          : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df]"
+      }`}
+    >
+      <p className="text-[10px] font-black uppercase">{label}</p>
+      <p className="mt-1 truncate text-sm font-black">{value}</p>
+    </div>
+  );
+}
+
+function CompareEmptyState({ text }) {
+  return (
+    <p className="mt-4 rounded-2xl bg-[#f5f8f1] p-4 text-sm font-semibold text-[#526260] ring-1 ring-[#d7e6df]">
+      {text}
+    </p>
   );
 }
 

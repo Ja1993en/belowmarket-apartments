@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { saveLocalLead } from "../data/leadStorage";
 import { saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
@@ -68,13 +68,17 @@ async function sendLeadNotification(lead) {
   }
 }
 
+function sendLeadNotificationInBackground(lead) {
+  sendLeadNotification(lead).catch((error) => {
+    console.warn("Lead email notification was not sent.", error);
+  });
+}
+
 export default function StartPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const propertyId = searchParams.get("property");
   const [sourceProperty, setSourceProperty] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [createdLeadId, setCreatedLeadId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -161,22 +165,18 @@ export default function StartPage() {
 
       const savedLead = await saveSupabaseLead(leadPayload);
 
-      setCreatedLeadId(savedLead.id);
-      setSubmitted(true);
-      await sendLeadNotification({
+      sendLeadNotificationInBackground({
         ...leadPayload,
         ...savedLead,
       });
-      navigate("/thank-you");
+      navigate("/thank-you", { replace: true });
     } catch (error) {
       console.error(error);
 
       if (isLocalFallbackEnabled) {
         saveLocalLead(leadPayload);
-        setCreatedLeadId(leadPayload.id);
-        setSubmitted(true);
-        await sendLeadNotification(leadPayload);
-        navigate("/thank-you");
+        sendLeadNotificationInBackground(leadPayload);
+        navigate("/thank-you", { replace: true });
         return;
       }
 
@@ -184,12 +184,6 @@ export default function StartPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const resetForm = () => {
-    setForm(emptyForm);
-    setCreatedLeadId(null);
-    setSubmitted(false);
   };
 
   return (
@@ -218,53 +212,7 @@ export default function StartPage() {
         </section>
 
         <section className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-          {submitted ? (
-            <div className="py-10 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#d8efe6]">
-                <CheckCircle2 className="h-8 w-8 text-[#1f6f63]" />
-              </div>
-
-              <h2 className="mt-5 text-3xl font-black text-[#102426]">
-                Request received
-              </h2>
-
-              <p className="mx-auto mt-2 max-w-xl font-semibold text-[#526260]">
-                Your renter profile has been saved to the database.
-              </p>
-
-              <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                {createdLeadId && (
-                  <Link
-                    to={`/admin/leads/${createdLeadId}`}
-                    className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
-                  >
-                    View Lead Profile
-                  </Link>
-                )}
-
-                <Link
-                  to="/admin/leads"
-                  className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
-                >
-                  View Admin Leads
-                </Link>
-                <button
-                  onClick={resetForm}
-                  className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
-                >
-                  Start Another Search
-                </button>
-
-                <Link
-                  to="/"
-                  className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
-                >
-                  Browse Properties
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
               {sourceProperty && (
                 <div className="mb-5 rounded-2xl bg-[#d8efe6] p-4 text-sm font-bold text-[#1f6f63] ring-1 ring-[#a9cfc2]">
                   Interested in {sourceProperty.name}
@@ -362,8 +310,7 @@ export default function StartPage() {
               >
                 {isSubmitting ? "Submitting..." : "Submit Apartment Search"}
               </button>
-            </form>
-          )}
+          </form>
         </section>
       </div>
     </main>
