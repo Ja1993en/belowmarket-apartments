@@ -161,6 +161,29 @@ function getMaaPhotoCategory(url, alt = "") {
   return "Property";
 }
 
+function createCortlandOnMckinneyPhotos(photoSources) {
+  return photoSources.map(([url, alt, category], index) => ({
+    id: `cortland-on-mckinney-photo-${String(index + 1).padStart(2, "0")}`,
+    name: alt || `Cortland on McKinney photo ${index + 1}`,
+    category: category || getCortlandPhotoCategory(url, alt),
+    url,
+    alt,
+  }));
+}
+
+function getCortlandPhotoCategory(url, alt = "") {
+  const text = `${url} ${alt}`.toLowerCase();
+
+  if (text.includes("pool")) return "Pool";
+  if (text.includes("fitness") || text.includes("workout")) return "Fitness";
+  if (text.includes("lounge")) return "Lounge";
+  if (text.includes("kitchen") || text.includes("bedroom") || text.includes("living") || text.includes("balcony")) {
+    return "Interior";
+  }
+
+  return "Property";
+}
+
 function createMaaCathedralArtsFloorPlans() {
   const floorPlanImages = {
     S1: "https://cdngeneralcf.rentcafe.com/dmslivecafe/3/1839724/S1 Light.png",
@@ -317,6 +340,22 @@ function getEarliestAvailability(units) {
 }
 
 function buildCortlandOnMckinney() {
+  const photos = createCortlandOnMckinneyPhotos([
+    ["https://cortland.com/assets/images/cache/004_imgp9040-9042_58-1-11-f712c5f76c682034ec4908afdf90425c.jpg", "Upscale resident lounge at Cortland on McKinney", "Lounge"],
+    ["https://cortland.com/assets/images/cache/DSC_2061-4-resize-81c301b8fe7b03b4bee534ed7cd6eb9c.jpg", "Kitchen with sleek countertops at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSC_6742-eb0b3ca5b1f32a35856f65091582c9f5.jpg", "Resort-style pool at Cortland on McKinney", "Pool"],
+    ["https://cortland.com/assets/images/cache/DSC_6526-167a105c570722d4027be388071117c1.jpg", "Private balcony at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/DSCF7052-ac88c3c63574168d4a03759dcbc67085.jpg", "Outdoor dining area at Cortland on McKinney", "Property"],
+    ["https://cortland.com/assets/images/cache/DSC_2056-4-resize-5-56a895ed4b2ca62bfaaccb7dbaf65d18.jpg", "Modern lighting at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/003_imgp1288-1290_496-2-resize-4-16fd77ce356880ed1a8726b6051c46fc.jpg", "Spacious bedroom at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/cortland_on_311_homepage_gallery_41-359e8ed72686a886f586244e9f327079.jpg", "Resort-style pool at Cortland on McKinney", "Pool"],
+    ["https://cortland.com/assets/images/cache/DSCF9757-min-c8966e8c51f54e025badaf4102b047a1.jpg", "Pet-friendly pool area at Cortland on McKinney", "Pool"],
+    ["https://cortland.com/assets/images/cache/5c5bc5fa-8ffd-4d38-bbf4-dedc97a002ce-94a57d356e4de747f9515573dc31a07b.jpg", "Fitness center at Cortland on McKinney", "Fitness"],
+    ["https://cortland.com/assets/images/cache/DSC_2100-4-resize-3-b2c3294f3cf6edfb857f892a801ef4da.jpg", "Spacious living room at Cortland on McKinney", "Interior"],
+    ["https://cortland.com/assets/images/cache/004_imgp9040-9042_58-1-12-a69b50349afa2d0f6a7441015eca43c6.jpg", "Apartment lifestyle at Cortland on McKinney", "Property"],
+    ["https://cortland.com/assets/images/cache/DSC_2149-resize-2-c7cffca728f979133e3397f78f56ef61.jpg", "24 hour fitness center at Cortland on McKinney", "Fitness"],
+  ]);
+
   const floorPlans = [
     cortlandFloorPlan("7803", "The Akard", 1, 1, 1065, 2880, "Available Now", "https://cortland.com/assets/images/cache/CortlandOnMckinney_1900MckinneyAve_II-12040322_3DF_1x1-A1-Akard-Copy-ca56b696073d0894f438bba5705b6e8c.jpg"),
     cortlandFloorPlan("7864", "The Caroline", 1, 1, 1119, 3155, "Available Now", "https://cortland.com/assets/images/cache/CortlandOnMckinney_1900MckinneyAve_II-12040322_3DF_1x1-A2-Caroline-Copy-866a7fffa2d907b9d3efbbcef89c0f14.jpg"),
@@ -342,6 +381,7 @@ function buildCortlandOnMckinney() {
     longitude: -96.803578,
     special: "6 weeks free",
     status: "Live",
+    photos,
     floorPlans,
     sourceUrl: "https://cortland.com/apartments/cortland-on-mckinney/floorplans/",
   });
