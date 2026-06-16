@@ -4,6 +4,7 @@ import { dataHistory, leads } from "../data/mockData";
 import { getAllProperties } from "../data/propertyStorage";
 import { getAllLeads, getStoredTourRequests } from "../data/leadStorage";
 import { getSupabaseLeads } from "../data/supabaseLeadStorage";
+import { getSupabaseLeadEvents } from "../data/supabaseLeadEvents";
 import { getSupabaseTourRequestsForLead } from "../data/supabaseTourStorage";
 import {
     isLocalFallbackEnabled,
@@ -73,6 +74,7 @@ export default function AdminDashboard() {
     const [dashboardTourRequests, setDashboardTourRequests] = useState(
         isLocalFallbackEnabled ? getStoredTourRequests() : []
     );
+    const [dashboardLeadEvents, setDashboardLeadEvents] = useState([]);
     const [dashboardLoadedAt, setDashboardLoadedAt] = useState(null);
     const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
     const [dashboardError, setDashboardError] = useState("");
@@ -85,9 +87,10 @@ export default function AdminDashboard() {
         }
 
         try {
-            const [supabaseLeads, supabaseProperties] = await Promise.all([
+            const [supabaseLeads, supabaseProperties, supabaseLeadEvents] = await Promise.all([
                 getSupabaseLeads(),
                 getAllProperties(),
+                getSupabaseLeadEvents({ limit: 50 }),
             ]);
 
             const tourRequestGroups = await Promise.all(
@@ -97,6 +100,7 @@ export default function AdminDashboard() {
             setProperties(supabaseProperties);
             setDashboardLeads(supabaseLeads);
             setDashboardTourRequests(tourRequestGroups.flat());
+            setDashboardLeadEvents(supabaseLeadEvents);
             setIsUsingFallbackDashboardData(false);
             setDashboardLoadedAt(new Date());
         } catch (error) {
@@ -106,12 +110,14 @@ export default function AdminDashboard() {
                 setProperties([]);
                 setDashboardLeads(getAllLeads());
                 setDashboardTourRequests(getStoredTourRequests());
+                setDashboardLeadEvents([]);
                 setIsUsingFallbackDashboardData(true);
                 setDashboardError(localFallbackMessage);
             } else {
                 setProperties([]);
                 setDashboardLeads([]);
                 setDashboardTourRequests([]);
+                setDashboardLeadEvents([]);
                 setIsUsingFallbackDashboardData(false);
                 setDashboardError("Supabase could not be reached. Check the production connection.");
             }
@@ -150,6 +156,44 @@ export default function AdminDashboard() {
     const livePropertyCount = properties.filter(
         (property) => property.status === "Live"
     ).length;
+    const leadSubmittedEventCount = dashboardLeadEvents.filter(
+        (event) => event.eventType === "lead_submitted"
+    ).length;
+    const renterLinkOpenedEventCount = dashboardLeadEvents.filter(
+        (event) => event.eventType === "renter_link_opened"
+    ).length;
+    const recommendationSentEventCount = dashboardLeadEvents.filter(
+        (event) => event.eventType === "recommendation_sent"
+    ).length;
+    const tourRequestedEventCount = dashboardLeadEvents.filter(
+        (event) => event.eventType === "tour_requested"
+    ).length;
+    const conversionStats = [
+        {
+            icon: Users,
+            title: "Leads Submitted",
+            value: leadSubmittedEventCount,
+            subtitle: "Start form conversions",
+        },
+        {
+            icon: Megaphone,
+            title: "Renter Links Opened",
+            value: renterLinkOpenedEventCount,
+            subtitle: "Recommendation page visits",
+        },
+        {
+            icon: Send,
+            title: "Recommendations Sent",
+            value: recommendationSentEventCount,
+            subtitle: "Saved recommendation events",
+        },
+        {
+            icon: Clock3,
+            title: "Tours Requested",
+            value: tourRequestedEventCount,
+            subtitle: "Renter tour actions",
+        },
+    ];
 
     const dashboardStats = [
         {
@@ -232,6 +276,7 @@ export default function AdminDashboard() {
             time: event.time,
         })),
     ].slice(0, 5);
+    const recentConversionActivities = dashboardLeadEvents.slice(0, 5);
 
     const performanceSteps = [
         {
@@ -381,6 +426,47 @@ export default function AdminDashboard() {
                 ))}
             </section>
 
+            <DashboardPanel
+                eyebrow="Conversions"
+                title="Lead event tracking"
+                description="See what renters do after they find you from ads, search, or shared recommendation links."
+            >
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.75fr)]">
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        {conversionStats.map((stat) => (
+                            <ConversionStatCard
+                                key={stat.title}
+                                icon={stat.icon}
+                                title={stat.title}
+                                value={stat.value}
+                                subtitle={stat.subtitle}
+                            />
+                        ))}
+                    </div>
+
+                    <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                        <p className="text-sm font-black text-[#102426]">
+                            Recent conversion activity
+                        </p>
+
+                        <div className="mt-3 grid gap-3">
+                            {recentConversionActivities.length > 0 ? (
+                                recentConversionActivities.map((event) => (
+                                    <ConversionEventItem
+                                        key={event.id}
+                                        event={event}
+                                    />
+                                ))
+                            ) : (
+                                <p className="rounded-2xl border border-dashed border-[#a9cfc2] bg-white p-4 text-sm font-bold text-[#526260]">
+                                    No tracked conversion events yet.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </DashboardPanel>
+
             <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
                 <DashboardPanel
                     eyebrow="Work Queue"
@@ -518,6 +604,93 @@ export default function AdminDashboard() {
             </DashboardPanel>
         </div>
     );
+}
+
+function ConversionStatCard({ icon: Icon, title, value, subtitle }) {
+    return (
+        <div className="min-h-[150px] min-w-0 rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e7f3ee]">
+                <Icon className="h-5 w-5 text-[#1f6f63]" />
+            </div>
+
+            <p className="mt-4 text-sm font-bold leading-5 text-[#526260]">
+                {title}
+            </p>
+            <p className="mt-2 text-3xl font-black text-[#102426]">
+                {value}
+            </p>
+            <p className="mt-1 text-xs font-bold leading-5 text-[#78908a]">
+                {subtitle}
+            </p>
+        </div>
+    );
+}
+
+function ConversionEventItem({ event }) {
+    return (
+        <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
+            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                <div className="min-w-0">
+                    <p className="text-sm font-black text-[#102426]">
+                        {getLeadEventLabel(event.eventType)}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
+                        {getLeadEventDescription(event)}
+                    </p>
+                </div>
+
+                <span className="text-xs font-bold text-[#78908a] sm:text-right">
+                    {formatLeadEventTime(event.createdAt)}
+                </span>
+            </div>
+        </div>
+    );
+}
+
+function getLeadEventLabel(eventType) {
+    const eventLabels = {
+        lead_submitted: "Lead submitted",
+        recommendation_sent: "Recommendation saved",
+        renter_link_opened: "Renter link opened",
+        tour_requested: "Tour requested",
+    };
+
+    return eventLabels[eventType] || "Lead activity";
+}
+
+function getLeadEventDescription(event) {
+    if (event.eventType === "tour_requested") {
+        return event.propertyName
+            ? `Tour requested for ${event.propertyName}.`
+            : "A renter requested a tour.";
+    }
+
+    if (event.eventType === "recommendation_sent") {
+        const propertyCount = event.metadata?.propertyCount || 0;
+        const floorPlanCount = event.metadata?.floorPlanCount || 0;
+
+        return `${propertyCount} properties and ${floorPlanCount} floor plans saved.`;
+    }
+
+    if (event.eventType === "renter_link_opened") {
+        const propertyCount = event.metadata?.recommendedPropertyCount || 0;
+
+        return `${propertyCount} recommended properties viewed.`;
+    }
+
+    if (event.eventType === "lead_submitted") {
+        return event.metadata?.utmCampaign
+            ? `Lead came from ${event.metadata.utmCampaign}.`
+            : "A renter submitted the start form.";
+    }
+
+    return event.propertyName || "A lead event was tracked.";
+}
+
+function formatLeadEventTime(createdAt) {
+    if (!createdAt) return "Just now";
+
+    return new Date(createdAt).toLocaleString();
 }
 
 function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
