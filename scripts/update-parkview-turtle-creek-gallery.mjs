@@ -35,71 +35,6 @@ const photoSources = [
     "Interior",
   ],
   [
-    "VHyFqKPz2Z01HGQkeCQi2UPX9cILteUvIVSpfPIW-4d61989f88b02ab59a0a32d6d9e99226.jpg",
-    "Amenity space at Parkview Turtle Creek by Hanover",
-    "Amenity",
-  ],
-  [
-    "iwrD4dS8pIqqyTvH7DKCgVVGPB1RS0oUjovPVRYG-c9b04cab478c7b77c142a68c3de1f3a9.jpg",
-    "Apartment living area at Parkview Turtle Creek by Hanover",
-    "Interior",
-  ],
-  [
-    "ZIsai9fgA8OCe3U7HmS7p6fu6YzLlwul8bYxMNn4-128d77aa397cc0d18b52d08f4c48a565.jpg",
-    "Apartment kitchen at Parkview Turtle Creek by Hanover",
-    "Kitchen",
-  ],
-  [
-    "kYqT5WdFsSYm3gtJoOtVdit6hXPGlkxoTclQRmfA-54235a7db9d435a194fb74bee711c790.jpg",
-    "Apartment bedroom at Parkview Turtle Creek by Hanover",
-    "Bedroom",
-  ],
-  [
-    "KbR1G75LBW90ouA59MMuw7PoRhwKeI2RDzKxcDkR-50af73d2695792c40ea08e866c8c2ec1.jpg",
-    "Apartment bathroom at Parkview Turtle Creek by Hanover",
-    "Bathroom",
-  ],
-  [
-    "WlwZwFxqawp0gSVUCKo2BUupfMc2IiPddY69kwqC-d7674cc101f5f339c5fb70e707527213.jpg",
-    "Lounge seating at Parkview Turtle Creek by Hanover",
-    "Lounge",
-  ],
-  [
-    "r4RuzQv39xF781RV0OsNqBNfGnsCD2B8v1KWHFuC-b2a441625fa343a4a246645d260c0b07.jpg",
-    "Clubroom at Parkview Turtle Creek by Hanover",
-    "Lounge",
-  ],
-  [
-    "rwLtPxSpwT4wySwj9Eirf3eev2dssz0Tl5MOQDh3-4830e9c5cf35264d5fc03b34ca290724.jpg",
-    "Coworking area at Parkview Turtle Creek by Hanover",
-    "Coworking",
-  ],
-  [
-    "5vJqWLpoBranS6zEPViBe1LUI720BODKSCH3IfTm-2fcf4840fc69cd71378313b21122b16c.jpg",
-    "Fitness amenity at Parkview Turtle Creek by Hanover",
-    "Fitness",
-  ],
-  [
-    "qJjNSgww8121awL7up0PvIct9zYvnFZ5yFI6NP9p-b3687bf6392cf9085d5df241b3c5c0d5.jpg",
-    "Resident amenity at Parkview Turtle Creek by Hanover",
-    "Amenity",
-  ],
-  [
-    "Y9Yswvh7fLTxC90u21qMTNqrQdCZyZGCqmqQgKzd-8066f4597c36786bd044f56dc801aa56.jpg",
-    "Outdoor amenity at Parkview Turtle Creek by Hanover",
-    "Outdoor",
-  ],
-  [
-    "X3Zxc4FsATnwNWMUfR4XitdDvZZ9d569l5Fz1Iex-bbeeb3ca07587d5c9697f38a2956f794.jpg",
-    "Apartment finish detail at Parkview Turtle Creek by Hanover",
-    "Interior",
-  ],
-  [
-    "KMRlpkqLMidI3TBjrREpeQN17WTZV8VWEyd272lJ-b26348bbcc95b807b852706d0ed01929.jpg",
-    "Parkview Turtle Creek by Hanover resident space",
-    "Amenity",
-  ],
-  [
     "01-1640x900-PTC-DS-Graphite-Oak-e9d1336d2a9339b68a40c51a5570dc60.jpg",
     "Graphite Oak finish package at Parkview Turtle Creek by Hanover",
     "Finishes",
@@ -132,7 +67,7 @@ const updatedData = {
   photos,
   image: photos[0].url,
   sourceUrl: OFFICIAL_GALLERY_URL,
-  updated: "Parkview Turtle Creek by Hanover gallery refreshed from official gallery media",
+  updated: "Parkview Turtle Creek by Hanover gallery narrowed to verified Parkview-specific media",
 };
 
 await updateProperty(existing.id, updatedData);
@@ -143,7 +78,7 @@ console.log(
       id: existing.id,
       photoCount: photos.length,
       image: updatedData.image,
-      removed: "old two-photo gallery",
+      removed: "questionable hashed gallery assets",
       categories: [...new Set(photos.map((photo) => photo.category))],
     },
     null,
