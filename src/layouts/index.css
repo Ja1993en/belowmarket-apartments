@@ -154,17 +154,6 @@ table {
   height: 100svh;
 }
 
-.homepage-mission-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-@media (min-width: 768px) {
-  .homepage-mission-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-}
-
 @supports not (height: 100svh) {
   body,
   #root {

@@ -62,6 +62,9 @@ export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [properties, setProperties] = useState([]);
     const [propertyLoadError, setPropertyLoadError] = useState("");
+    const [isMissionSideBySide, setIsMissionSideBySide] = useState(() =>
+        typeof window === "undefined" ? false : window.innerWidth >= 768
+    );
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -84,6 +87,21 @@ export default function HomePage() {
 
         return () => {
             isMounted = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        const updateMissionLayout = () => {
+            setIsMissionSideBySide(window.innerWidth >= 768);
+        };
+
+        updateMissionLayout();
+        window.addEventListener("resize", updateMissionLayout);
+        window.addEventListener("orientationchange", updateMissionLayout);
+
+        return () => {
+            window.removeEventListener("resize", updateMissionLayout);
+            window.removeEventListener("orientationchange", updateMissionLayout);
         };
     }, []);
 
@@ -303,7 +321,14 @@ export default function HomePage() {
                 )}
 
                 <section className="mt-8 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm">
-                    <div className="homepage-mission-grid min-w-0">
+                    <div
+                        className="grid min-w-0"
+                        style={{
+                            gridTemplateColumns: isMissionSideBySide
+                                ? "minmax(0, 1fr) minmax(0, 1fr)"
+                                : "minmax(0, 1fr)",
+                        }}
+                    >
                         <div className="min-w-0 bg-[#173f3f] p-6 text-white md:p-8">
                             <p className="text-sm font-black text-[#f2b84b]">
                                 Our mission
