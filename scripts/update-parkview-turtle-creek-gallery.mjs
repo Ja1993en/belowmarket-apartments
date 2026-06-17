@@ -2,8 +2,9 @@ import fs from "node:fs";
 
 const PROPERTY_ID = "parkview-turtle-creek-by-hanover";
 const PROPERTY_NAME = "Parkview Turtle Creek by Hanover";
-const OFFICIAL_GALLERY_URL = "https://parkviewturtlecreek.com/gallery/";
-const MEDIA_BASE = "https://parkviewturtlecreek.com/assets/images/cache";
+const SOURCE_URL =
+  "https://www.realtor.com/rentals/details/2555-Turtle-Creek-Blvd_Dallas_TX_75219_M94895-12755";
+const MEDIA_BASE = "https://ar.rdcpix.com";
 
 const env = readEnv();
 const SUPABASE_URL = env.VITE_SUPABASE_URL;
@@ -15,48 +16,93 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 const photoSources = [
   [
-    "Parkview-Turtle-Creek_V01_Pool-Deck-Dusk_Pv_HR_25-11-072-e008ecf48a42679cf938bac4045f0c7f.jpg",
-    "Rooftop pool deck at Parkview Turtle Creek by Hanover",
-    "Pool",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2394336127s.jpg",
+    "Parkview Turtle Creek by Hanover exterior and arrival area",
+    "Exterior",
   ],
   [
-    "Parkview-Turtle-Creek_V05_Garden-Courtyard_Pv_HR_25-10-271-60e75c037123bc0006b6c0e711be6db9.jpg",
-    "Garden courtyard at Parkview Turtle Creek by Hanover",
-    "Courtyard",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2102606531s.jpg",
+    "Amenity interior at Parkview Turtle Creek by Hanover",
+    "Amenity",
   ],
   [
-    "Parkview-Turtle-Creek_V01_Pool-Deck-Dusk_Pv_HR_25-11-071-6fc00a32c3051afd64648bd8426d7e04.jpg",
-    "Pool deck lounge at Parkview Turtle Creek by Hanover",
-    "Pool",
-  ],
-  [
-    "ECNk82w60jeBTFhQZWQ7yaa0rZyMmjs5Lb4NkhOO-cb0f5a2bd1a609d02edb3b1dfe5769dd.jpg",
-    "Designer-selected interior at Parkview Turtle Creek by Hanover",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3345960582s.jpg",
+    "Apartment living room at Parkview Turtle Creek by Hanover",
     "Interior",
   ],
   [
-    "01-1640x900-PTC-DS-Graphite-Oak-e9d1336d2a9339b68a40c51a5570dc60.jpg",
-    "Graphite Oak finish package at Parkview Turtle Creek by Hanover",
-    "Finishes",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f4046566340s.jpg",
+    "Resident lounge at Parkview Turtle Creek by Hanover",
+    "Lounge",
   ],
   [
-    "02-1640x900-PTC-DS-Drift-Wood-64b886d57e5bdd56925802095e957c25.jpg",
-    "Drift Wood finish package at Parkview Turtle Creek by Hanover",
-    "Finishes",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f1513348298s.jpg",
+    "Fitness center at Parkview Turtle Creek by Hanover",
+    "Fitness",
   ],
   [
-    "03-1640x900-PTC-DS-Saddle-Elm-60dc1790e33cc92c324fef9843af92af.jpg",
-    "Saddle Elm finish package at Parkview Turtle Creek by Hanover",
-    "Finishes",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3988006003s.jpg",
+    "Recreation room at Parkview Turtle Creek by Hanover",
+    "Amenity",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f1417784789s.jpg",
+    "Outdoor patio at Parkview Turtle Creek by Hanover",
+    "Outdoor",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3110572920s.jpg",
+    "Parkview Turtle Creek by Hanover exterior view",
+    "Exterior",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2934504109s.jpg",
+    "Bathroom at Parkview Turtle Creek by Hanover",
+    "Bathroom",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2883729114s.jpg",
+    "Apartment living area at Parkview Turtle Creek by Hanover",
+    "Interior",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f954939582s.jpg",
+    "Kitchen at Parkview Turtle Creek by Hanover",
+    "Kitchen",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2039522341s.jpg",
+    "Closet storage at Parkview Turtle Creek by Hanover",
+    "Interior",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f990313477s.jpg",
+    "Apartment living room with skyline view at Parkview Turtle Creek by Hanover",
+    "Interior",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f702800437s.jpg",
+    "Bathroom finishes at Parkview Turtle Creek by Hanover",
+    "Bathroom",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3670133957s.jpg",
+    "Kitchen finishes at Parkview Turtle Creek by Hanover",
+    "Kitchen",
+  ],
+  [
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2078716526s.jpg",
+    "Apartment interior at Parkview Turtle Creek by Hanover",
+    "Interior",
   ],
 ];
 
 const photos = validateOfficialPhotos(
-  photoSources.map(([filename, alt, category], index) => ({
+  photoSources.map(([url, alt, category], index) => ({
     id: `${PROPERTY_ID}-gallery-${String(index + 1).padStart(2, "0")}`,
     name: alt,
     category,
-    url: `${MEDIA_BASE}/${filename}`,
+    url,
     alt,
   }))
 );
@@ -66,8 +112,8 @@ const updatedData = {
   ...existing.data,
   photos,
   image: photos[0].url,
-  sourceUrl: OFFICIAL_GALLERY_URL,
-  updated: "Parkview Turtle Creek by Hanover gallery narrowed to verified Parkview-specific media",
+  sourceUrl: SOURCE_URL,
+  updated: "Parkview Turtle Creek by Hanover gallery replaced with verified property media",
 };
 
 await updateProperty(existing.id, updatedData);
@@ -78,7 +124,7 @@ console.log(
       id: existing.id,
       photoCount: photos.length,
       image: updatedData.image,
-      removed: "questionable hashed gallery assets",
+      removed: "broken Parkview cache gallery URLs",
       categories: [...new Set(photos.map((photo) => photo.category))],
     },
     null,
@@ -91,7 +137,7 @@ function validateOfficialPhotos(photosToValidate) {
 
   return photosToValidate.map((photo) => {
     if (!photo.url.startsWith(`${MEDIA_BASE}/`) || !/\.(jpe?g|png|webp)$/i.test(photo.url)) {
-      throw new Error(`Invalid Parkview official gallery URL: ${photo.url}`);
+      throw new Error(`Invalid Parkview gallery URL: ${photo.url}`);
     }
 
     if (seenUrls.has(photo.url)) {
