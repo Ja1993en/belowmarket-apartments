@@ -915,8 +915,33 @@ function SearchMap({
   onPropertySelect,
   hoveredPropertyId,
 }) {
+  const [isLiveMapEnabled, setIsLiveMapEnabled] = useState(false);
+
   if (!MAPBOX_TOKEN) {
     return <FallbackSearchMap properties={properties} />;
+  }
+
+  if (!isLiveMapEnabled) {
+    return (
+      <div className="relative h-full">
+        <FallbackSearchMap properties={properties} />
+        <div className="absolute inset-x-4 bottom-4 z-30 rounded-3xl bg-white/95 p-4 shadow-xl ring-1 ring-[#d7e6df] sm:inset-x-auto sm:left-4 sm:max-w-sm">
+          <p className="text-sm font-black text-[#102426]">
+            Map preview
+          </p>
+          <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
+            Load the interactive map when you want area search, zoom, and live pins.
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsLiveMapEnabled(true)}
+            className="mt-3 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-black text-white hover:bg-[#102426]"
+          >
+            Load interactive map
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
