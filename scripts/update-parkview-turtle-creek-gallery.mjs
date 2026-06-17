@@ -16,82 +16,82 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 const photoSources = [
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2394336127s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2394336127rd-w1280_h960.webp",
     "Parkview Turtle Creek by Hanover exterior and arrival area",
     "Exterior",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2102606531s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2102606531rd-w1280_h960.webp",
     "Amenity interior at Parkview Turtle Creek by Hanover",
     "Amenity",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3345960582s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3345960582rd-w1280_h960.webp",
     "Apartment living room at Parkview Turtle Creek by Hanover",
     "Interior",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f4046566340s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f4046566340rd-w1280_h960.webp",
     "Resident lounge at Parkview Turtle Creek by Hanover",
     "Lounge",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f1513348298s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f1513348298rd-w1280_h960.webp",
     "Fitness center at Parkview Turtle Creek by Hanover",
     "Fitness",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3988006003s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3988006003rd-w1280_h960.webp",
     "Recreation room at Parkview Turtle Creek by Hanover",
     "Amenity",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f1417784789s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f1417784789rd-w1280_h960.webp",
     "Outdoor patio at Parkview Turtle Creek by Hanover",
     "Outdoor",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3110572920s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3110572920rd-w1280_h960.webp",
     "Parkview Turtle Creek by Hanover exterior view",
     "Exterior",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2934504109s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2934504109rd-w1280_h960.webp",
     "Bathroom at Parkview Turtle Creek by Hanover",
     "Bathroom",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2883729114s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2883729114rd-w1280_h960.webp",
     "Apartment living area at Parkview Turtle Creek by Hanover",
     "Interior",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f954939582s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f954939582rd-w1280_h960.webp",
     "Kitchen at Parkview Turtle Creek by Hanover",
     "Kitchen",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2039522341s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2039522341rd-w1280_h960.webp",
     "Closet storage at Parkview Turtle Creek by Hanover",
     "Interior",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f990313477s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f990313477rd-w1280_h960.webp",
     "Apartment living room with skyline view at Parkview Turtle Creek by Hanover",
     "Interior",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f702800437s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f702800437rd-w1280_h960.webp",
     "Bathroom finishes at Parkview Turtle Creek by Hanover",
     "Bathroom",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3670133957s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f3670133957rd-w1280_h960.webp",
     "Kitchen finishes at Parkview Turtle Creek by Hanover",
     "Kitchen",
   ],
   [
-    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2078716526s.jpg",
+    "https://ar.rdcpix.com/c1026b35d16e341578ac4232d7cfb5b1c-f2078716526rd-w1280_h960.webp",
     "Apartment interior at Parkview Turtle Creek by Hanover",
     "Interior",
   ],
@@ -113,7 +113,7 @@ const updatedData = {
   photos,
   image: photos[0].url,
   sourceUrl: SOURCE_URL,
-  updated: "Parkview Turtle Creek by Hanover gallery replaced with verified property media",
+  updated: "Parkview Turtle Creek by Hanover gallery replaced with high-resolution property media",
 };
 
 await updateProperty(existing.id, updatedData);
@@ -124,7 +124,7 @@ console.log(
       id: existing.id,
       photoCount: photos.length,
       image: updatedData.image,
-      removed: "broken Parkview cache gallery URLs",
+      removed: "small thumbnail gallery URLs",
       categories: [...new Set(photos.map((photo) => photo.category))],
     },
     null,
