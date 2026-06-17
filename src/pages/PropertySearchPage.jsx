@@ -59,6 +59,8 @@ const COMPARE_TABS = [
 ];
 const mapboxGeocodeRequests = new Map();
 const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
+const INITIAL_PROPERTY_CARD_LIMIT = 18;
+const MAP_GEOCODE_BATCH_SIZE = 6;
 
 function getFloorPlansRoute(propertyId) {
   return `/properties/${propertyId}?section=floor-plans#floor-plans`;
@@ -108,6 +110,9 @@ export default function PropertySearchPage() {
   const [activeCompareTab, setActiveCompareTab] = useState("Properties");
   const [hoveredMapPropertyId, setHoveredMapPropertyId] = useState("");
   const [selectedMapPropertyId, setSelectedMapPropertyId] = useState("");
+  const [visiblePropertyCount, setVisiblePropertyCount] = useState(
+    INITIAL_PROPERTY_CARD_LIMIT
+  );
   const resultCardRefs = useRef(new Map());
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
@@ -251,6 +256,12 @@ export default function PropertySearchPage() {
     floorPlanDetailRows.length > 0 ? "floorPlans" : "properties";
   const hasCompareItems =
     compareFloorPlanRows.length > 0 || propertyCompareRows.length > 0;
+  const visibleFilteredProperties = useMemo(
+    () => filteredProperties.slice(0, visiblePropertyCount),
+    [filteredProperties, visiblePropertyCount]
+  );
+  const hasMoreFilteredProperties =
+    visiblePropertyCount < filteredProperties.length;
   const selectedMapPropertyIsVisible =
     selectedMapPropertyId &&
     filteredProperties.some((property) => property.id === selectedMapPropertyId);
@@ -293,23 +304,57 @@ export default function PropertySearchPage() {
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
+    setVisiblePropertyCount(INITIAL_PROPERTY_CARD_LIMIT);
+  }, [
+    searchFromUrl,
+    selectedArea,
+    selectedBedroomFilter,
+    selectedPriceRange,
+    selectedSpecialWeeks,
+  ]);
 
-    resolveMappableProperties(filterMatchedProperties)
-      .then((resolvedProperties) => {
-        if (isMounted) {
-          setMappableSearchProperties(resolvedProperties);
-        }
+  useEffect(() => {
+    let isMounted = true;
+    let resolveTimer = null;
+
+    const propertiesWithCoordinates = filterMatchedProperties
+      .map((property) => {
+        const existingCoordinates = getPropertyCoordinates(property);
+
+        return existingCoordinates
+          ? {
+              ...property,
+              ...existingCoordinates,
+            }
+          : null;
       })
-      .catch((error) => {
-        console.error(error);
-        if (isMounted) {
-          setMappableSearchProperties([]);
-        }
-      });
+      .filter(Boolean);
+
+    setMappableSearchProperties(propertiesWithCoordinates);
+
+    const resolveMaps = () => {
+      resolveMappableProperties(filterMatchedProperties)
+        .then((resolvedProperties) => {
+          if (isMounted) {
+            setMappableSearchProperties(resolvedProperties);
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          if (isMounted) {
+            setMappableSearchProperties(propertiesWithCoordinates);
+          }
+        });
+    };
+
+    resolveTimer = window.setTimeout(
+      resolveMaps,
+      propertiesWithCoordinates.length > 0 ? 1200 : 250
+    );
 
     return () => {
       isMounted = false;
+      window.clearTimeout(resolveTimer);
     };
   }, [filterMatchedProperties]);
 
@@ -799,7 +844,7 @@ export default function PropertySearchPage() {
         )}
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredProperties.map((property) => (
+          {visibleFilteredProperties.map((property) => (
             <SearchResultCard
               key={property.id}
               property={property}
@@ -824,6 +869,25 @@ export default function PropertySearchPage() {
             />
           ))}
         </div>
+
+        {hasMoreFilteredProperties && (
+          <div className="mt-6 flex justify-center">
+            <button
+              type="button"
+              onClick={() =>
+                setVisiblePropertyCount((currentCount) =>
+                  Math.min(
+                    currentCount + INITIAL_PROPERTY_CARD_LIMIT,
+                    filteredProperties.length
+                  )
+                )
+              }
+              className="rounded-2xl bg-[#173f3f] px-6 py-3 text-sm font-black text-white hover:bg-[#102426]"
+            >
+              Show more properties
+            </button>
+          </div>
+        )}
 
         {filteredProperties.length === 0 && (
           <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-8 text-center shadow-sm">
@@ -1367,6 +1431,8 @@ function SearchResultCard({
           <img
             src={getPropertyPrimaryImage(property)}
             alt={property.name}
+            loading="lazy"
+            decoding="async"
             className="aspect-[16/9] w-full object-cover"
           />
           <div className="absolute left-3 top-3 rounded-xl bg-[#173f3f] px-2.5 py-2 text-white shadow-lg">
@@ -1762,9 +1828,16 @@ function CompareEmptyState({ text }) {
 }
 
 async function resolveMappableProperties(properties) {
-  const resolvedProperties = await Promise.all(
-    properties.map(async (property) => resolveMappableProperty(property))
-  );
+  const resolvedProperties = [];
+
+  for (let index = 0; index < properties.length; index += MAP_GEOCODE_BATCH_SIZE) {
+    const propertyBatch = properties.slice(index, index + MAP_GEOCODE_BATCH_SIZE);
+    const resolvedBatch = await Promise.all(
+      propertyBatch.map(async (property) => resolveMappableProperty(property))
+    );
+
+    resolvedProperties.push(...resolvedBatch);
+  }
 
   return resolvedProperties.filter(Boolean);
 }
