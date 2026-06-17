@@ -33,10 +33,11 @@ export function PrivacyPolicyPage() {
 
       <LegalSection title="Text Messages">
         <p>
-          If you submit your phone number, Below Market Apartments may text you
-          apartment recommendations and follow-up messages related to your
-          request. Message frequency varies based on your apartment search and
-          communication with us. Message and data rates may apply.
+          If you submit your phone number and check the text message consent box,
+          Below Market Apartments may text you apartment recommendations,
+          property links, tour coordination, and follow-up messages related to
+          your request. Message frequency varies based on your apartment search
+          and communication with us. Message and data rates may apply.
         </p>
         <p>
           You can reply <strong>STOP</strong> to opt out of text messages or
@@ -47,8 +48,8 @@ export function PrivacyPolicyPage() {
       <LegalSection title="No Selling or Third-Party Marketing Sharing">
         <p>
           We do not sell your personal information. We do not share your phone
-          number or SMS consent with third parties for their own marketing
-          purposes.
+          number, mobile opt-in information, or SMS consent with third parties
+          or affiliates for their own marketing or promotional purposes.
         </p>
       </LegalSection>
 
@@ -88,10 +89,11 @@ export function TermsAndConditionsPage() {
 
       <LegalSection title="SMS Terms">
         <p>
-          By submitting your phone number through Below Market Apartments, you
-          agree to receive text messages from Below Market Apartments related to
-          your apartment search, recommendations, property links, specials, and
-          tour assistance.
+          By submitting your phone number through Below Market Apartments and
+          checking the text message consent box, you agree to receive recurring
+          text messages from Below Market Apartments related to your apartment
+          search, recommendations, property links, specials, tour coordination,
+          and follow-up.
         </p>
         <p>
           Message frequency varies. Message and data rates may apply. Consent is
@@ -102,7 +104,8 @@ export function TermsAndConditionsPage() {
       <LegalSection title="Opt Out and Help">
         <p>
           You can reply <strong>STOP</strong> to opt out at any time. You can
-          reply <strong>HELP</strong> for help.
+          reply <strong>HELP</strong> for help. For support, you can also call
+          or text 945-269-3768.
         </p>
       </LegalSection>
 

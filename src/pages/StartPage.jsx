@@ -340,12 +340,16 @@ export default function StartPage() {
                   className="mt-1 h-4 w-4 shrink-0 accent-[#173f3f]"
                 />
                 <span>
-                  I agree to receive text messages from Below Market Apartments
-                  about apartment search help, property recommendations, tour
-                  coordination, and follow-up. Message frequency varies. Message
-                  and data rates may apply. Reply <strong>HELP</strong> for help
-                  or <strong>STOP</strong> to opt out. Consent is not a condition
-                  of renting an apartment. View our{" "}
+                  <strong className="block text-[#102426]">
+                    Text Message Consent
+                  </strong>
+                  I agree to receive recurring text messages from Below Market
+                  Apartments about apartment search help, property
+                  recommendations, tour coordination, and follow-up at the phone
+                  number I provided. Message frequency varies. Message and data
+                  rates may apply. Reply <strong>HELP</strong> for help or{" "}
+                  <strong>STOP</strong> to opt out. Consent is not a condition of
+                  renting an apartment. View our{" "}
                   <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
                     Privacy Policy
                   </Link>{" "}
