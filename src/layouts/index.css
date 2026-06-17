@@ -28,6 +28,7 @@ html {
   min-height: 100%;
   background: var(--bma-mist);
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: rgba(31, 111, 99, 0.16);
 }
 
 body {
@@ -62,11 +63,17 @@ svg {
   max-width: 100%;
 }
 
+img,
+video {
+  height: auto;
+}
+
 button,
 input,
 select,
 textarea {
   font: inherit;
+  color: inherit;
 }
 
 button,
@@ -86,6 +93,8 @@ input,
 select,
 textarea {
   border-radius: 0;
+  line-height: normal;
+  -webkit-font-smoothing: inherit;
 }
 
 input[type="search"] {
@@ -100,6 +109,49 @@ input[type="search"]::-webkit-search-cancel-button {
 
 table {
   border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.sticky,
+.fixed {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.backdrop-blur,
+.backdrop-blur-sm,
+.backdrop-blur-md,
+.backdrop-blur-lg,
+.backdrop-blur-xl,
+.backdrop-blur-2xl,
+.backdrop-blur-3xl {
+  -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,)
+    var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,)
+    var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,)
+    var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+}
+
+.object-cover {
+  object-fit: cover;
+  object-position: center;
+}
+
+.overflow-x-auto,
+.overflow-y-auto,
+.overflow-auto,
+.overflow-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.h-screen {
+  height: 100vh;
+  height: 100svh;
 }
 
 @supports not (height: 100svh) {
@@ -114,6 +166,33 @@ table {
   select,
   textarea {
     font-size: 16px;
+  }
+
+  .fixed.bottom-0 {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  select {
+    background-image:
+      linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - 18px) 50%,
+      calc(100% - 12px) 50%;
+    background-size:
+      6px 6px,
+      6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 2.5rem;
   }
 }
 
