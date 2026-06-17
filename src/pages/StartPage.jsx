@@ -15,6 +15,7 @@ const emptyForm = {
   budget: "",
   moveIn: "",
   contactMethod: "",
+  smsConsent: false,
   notes: "",
 };
 
@@ -122,6 +123,10 @@ export default function StartPage() {
     event.preventDefault();
     if (!form.name || !form.phone || !form.email || !form.area || !form.bedrooms || !form.budget || !form.moveIn) {
       setFormError("Please complete all required fields before submitting.");
+      return;
+    }
+    if (!form.smsConsent) {
+      setFormError("Please agree to receive text messages before submitting.");
       return;
     }
 
@@ -326,23 +331,31 @@ export default function StartPage() {
                 />
               </div>
 
-              <p className="mt-4 rounded-2xl bg-[#f5f8f1] p-4 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
-                By submitting this form, you agree to receive text messages
-                from Below Market Apartments about apartment search help,
-                property recommendations, tour coordination, and follow-up.
-                Message frequency varies. Message and data rates may apply.
-                Reply <strong>HELP</strong> for help or{" "}
-                <strong>STOP</strong> to opt out. Consent is not a condition of
-                renting an apartment. View our{" "}
-                <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
-                  Privacy Policy
-                </Link>{" "}
-                and{" "}
-                <Link className="font-black text-[#173f3f] underline" to="/terms-and-conditions">
-                  Terms and Conditions
-                </Link>
-                .
-              </p>
+              <label className="mt-4 flex gap-3 rounded-2xl bg-[#f5f8f1] p-4 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+                <input
+                  type="checkbox"
+                  checked={form.smsConsent}
+                  onChange={(event) => handleChange("smsConsent", event.target.checked)}
+                  required
+                  className="mt-1 h-4 w-4 shrink-0 accent-[#173f3f]"
+                />
+                <span>
+                  I agree to receive text messages from Below Market Apartments
+                  about apartment search help, property recommendations, tour
+                  coordination, and follow-up. Message frequency varies. Message
+                  and data rates may apply. Reply <strong>HELP</strong> for help
+                  or <strong>STOP</strong> to opt out. Consent is not a condition
+                  of renting an apartment. View our{" "}
+                  <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
+                    Privacy Policy
+                  </Link>{" "}
+                  and{" "}
+                  <Link className="font-black text-[#173f3f] underline" to="/terms-and-conditions">
+                    Terms and Conditions
+                  </Link>
+                  .
+                </span>
+              </label>
 
               <button
                 type="submit"
