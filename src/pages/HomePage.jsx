@@ -303,7 +303,7 @@ export default function HomePage() {
                 )}
 
                 <section className="mt-8 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm">
-                    <div className="grid min-w-0 md:grid-cols-2">
+                    <div className="homepage-mission-grid min-w-0">
                         <div className="min-w-0 bg-[#173f3f] p-6 text-white md:p-8">
                             <p className="text-sm font-black text-[#f2b84b]">
                                 Our mission
