@@ -303,8 +303,8 @@ export default function HomePage() {
                 )}
 
                 <section className="mt-8 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm">
-                    <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
-                        <div className="bg-[#173f3f] p-6 text-white md:p-8">
+                    <div className="grid min-w-0 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+                        <div className="min-w-0 bg-[#173f3f] p-6 text-white md:p-8">
                             <p className="text-sm font-black text-[#f2b84b]">
                                 Our mission
                             </p>
@@ -314,7 +314,7 @@ export default function HomePage() {
                             <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#d7ece6]">
                                 Below Market Apartments brings renters, locators, and property managers into one clearer search experience built around transparent specials, real pricing context, and better recommendations.
                             </p>
-                            <div className="mt-5 flex flex-wrap gap-2">
+                            <div className="mt-5 flex min-w-0 flex-wrap gap-2">
                                 {HOME_SEO_LINKS.map((link) => (
                                     <Link
                                         key={link.to}
@@ -327,8 +327,8 @@ export default function HomePage() {
                             </div>
                         </div>
 
-                        <div className="grid content-start gap-4 p-6 md:p-8">
-                            <div className="grid gap-3 md:grid-cols-3">
+                        <div className="grid min-w-0 content-start gap-4 p-6 md:p-8">
+                            <div className="grid min-w-0 gap-3 md:grid-cols-3">
                                 {HOME_MISSION_POINTS.map((point) => (
                                     <MissionBenefit
                                         key={point.title}
@@ -338,7 +338,7 @@ export default function HomePage() {
                                 ))}
                             </div>
 
-                            <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                            <div className="min-w-0 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
                                 <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                                     <div>
                                         <p className="text-sm font-black text-[#1f6f63]">
@@ -356,7 +356,7 @@ export default function HomePage() {
                                     </Link>
                                 </div>
 
-                                <div className="mt-4 grid gap-2 md:grid-cols-2">
+                                <div className="mt-4 grid min-w-0 gap-2 md:grid-cols-2">
                                     {HOME_RENTER_FAQS.map((faq) => (
                                         <SeoFaqCard
                                             key={faq.question}
@@ -1233,19 +1233,29 @@ function MissionBenefit({ title, text }) {
 }
 
 function SeoFaqCard({ question, answer }) {
+    const [isOpen, setIsOpen] = useState(false);
+
     return (
-        <details className="group rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df] open:ring-[#f2b84b]">
-            <summary className="cursor-pointer list-none text-sm font-black leading-5 text-[#102426]">
-                <span className="inline-flex w-full items-start justify-between gap-3">
+        <div className={`rounded-2xl bg-white p-4 ring-1 ${isOpen ? "ring-[#f2b84b]" : "ring-[#d7e6df]"}`}>
+            <button
+                type="button"
+                onClick={() => setIsOpen((currentValue) => !currentValue)}
+                aria-expanded={isOpen}
+                className="flex w-full items-start justify-between gap-3 text-left text-sm font-black leading-5 text-[#102426]"
+            >
+                <span className="min-w-0 flex-1">
                     {question}
-                    <span className="text-[#1f6f63] transition group-open:rotate-45">
-                        +
-                    </span>
                 </span>
-            </summary>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
-                {answer}
-            </p>
-        </details>
+                <span className={`shrink-0 text-[#1f6f63] transition ${isOpen ? "rotate-45" : ""}`}>
+                    +
+                </span>
+            </button>
+
+            {isOpen && (
+                <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
+                    {answer}
+                </p>
+            )}
+        </div>
     );
 }
