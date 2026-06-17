@@ -7,6 +7,10 @@ const SOURCE_URL = "https://www.kesslerbluffsdallas.com/";
 const MEDIA_BASE = "https://sxxweb8cdn.cachefly.net";
 const MEDIA_PATH = "/common/uploads/zrs2019/678/media/";
 const PREFERRED_IMAGE_URL = `${MEDIA_BASE}${MEDIA_PATH}b4812081-1217-4e2c-904a-f3df85bbd50c.jpg`;
+const EXCLUDED_MEDIA_FILENAMES = new Set([
+  "78ab19eb-7c90-4a05-841d-a66fd241b7fc.jpg",
+  "8063059c-8d74-4f93-9b3e-5f1a485ab59f.jpeg",
+]);
 
 const env = readEnv();
 const SUPABASE_URL = env.VITE_SUPABASE_URL;
@@ -63,6 +67,7 @@ function extractMediaUrls(html) {
       return directPath ? `${MEDIA_BASE}${directPath}` : url;
     })
     .filter((url) => url.startsWith(`${MEDIA_BASE}${MEDIA_PATH}`))
+    .filter((url) => !EXCLUDED_MEDIA_FILENAMES.has(url.split("/").at(-1)))
     .filter((url) => /\.(jpe?g)$/i.test(url));
 
   const uniqueUrls = [...new Set(normalizedUrls)];
