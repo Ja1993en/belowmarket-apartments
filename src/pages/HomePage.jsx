@@ -213,7 +213,7 @@ export default function HomePage() {
                                     onChange={(event) => setSearchTerm(event.target.value)}
                                     placeholder="Enter city, ZIP, property, or special"
                                     autoComplete="off"
-                                    className="bma-focus-ring h-16 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-[#102426]"
+                                    className="bma-focus-ring h-16 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-black"
                                 />
                             </div>
 
