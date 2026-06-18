@@ -1326,11 +1326,6 @@ function SearchResultCard({
   const showNetEffectiveRent = priceSummary.hasRentSpecial;
   const dealScore = getSearchDealScore(property, priceSummary);
   const transparencyBadges = getSearchTransparencyBadges(property, priceSummary);
-  const monthlyBreakdown = getSearchMonthlyBreakdown(
-    property,
-    priceSummary,
-    displayFloorPlans
-  );
   const cardHref = `/properties/${property.id}`;
   const showGoldHoverBar = isMapHighlighted && propertyHasStrongMapDeal(property);
 
@@ -1393,20 +1388,6 @@ function SearchResultCard({
           </p>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#f5f8f1] p-3">
-          <MiniBreakdown
-            label={showNetEffectiveRent ? "After special" : "Listed rent"}
-            value={monthlyBreakdown.afterSpecial}
-          />
-          <MiniBreakdown
-            label={showNetEffectiveRent ? "Listed rent" : "Starting rent"}
-            value={
-              showNetEffectiveRent
-                ? monthlyBreakdown.listedRent
-                : monthlyBreakdown.startingRent
-            }
-          />
-        </div>
         {showNetEffectiveRent && (
           <p className="mt-2 text-[11px] font-bold leading-snug text-[#526260]">
             After special spreads the concession across the lease. Your bill may still be based on listed rent plus required fees.
@@ -1494,15 +1475,6 @@ function loadMapboxGl() {
     mapboxScript.addEventListener("error", reject, { once: true });
     document.head.appendChild(mapboxScript);
   });
-}
-
-function MiniBreakdown({ label, value }) {
-  return (
-    <div>
-      <p className="text-[10px] font-black uppercase text-[#526260]">{label}</p>
-      <p className="mt-1 truncate text-sm font-black text-[#102426]">{value}</p>
-    </div>
-  );
 }
 
 async function resolveMappableProperties(properties) {
@@ -2158,42 +2130,6 @@ function getSearchTransparencyBadges(property, priceSummary) {
   if (property?.yearBuilt) badges.push(`Built ${property.yearBuilt}`);
 
   return badges.slice(0, 3);
-}
-
-function getSearchMonthlyBreakdown(
-  property,
-  priceSummary,
-  floorPlans = getSearchFloorPlans(property)
-) {
-  const pricedFloorPlan = getFirstPricedSearchFloorPlan(floorPlans) || floorPlans[0] || {};
-  const baseRent =
-    pricedFloorPlan.startingRent ||
-    pricedFloorPlan.rent ||
-    property?.startingRent ||
-    property?.rent ||
-    priceSummary.normalRentLabel;
-  const startingRent = formatSearchRentValue(baseRent);
-  const listedRent = priceSummary.normalRentLabel || formatSearchRentValue(baseRent);
-  const afterSpecial = priceSummary.hasRentSpecial
-    ? priceSummary.effectiveRentLabel
-    : listedRent;
-
-  return {
-    afterSpecial: afterSpecial || "Ask property",
-    listedRent: listedRent || "Ask property",
-    startingRent: startingRent || listedRent || "Ask property",
-  };
-}
-
-function formatSearchRentValue(value) {
-  if (typeof value === "number") return formatCurrency(value);
-
-  const currencyValue = parseCurrency(value);
-  if (currencyValue && !String(value).includes("$")) {
-    return formatCurrency(currencyValue);
-  }
-
-  return value || "";
 }
 
 function getFirstPricedSearchFloorPlan(floorPlans) {
