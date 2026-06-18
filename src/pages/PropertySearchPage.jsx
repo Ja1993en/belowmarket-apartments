@@ -1374,7 +1374,7 @@ function SearchResultCard({
         <div className="mt-3 flex items-end justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[11px] font-black uppercase text-[#1f6f63]">
-              {showNetEffectiveRent ? "Net Effective" : "Normal Rent"}
+              {showNetEffectiveRent ? "After Special" : "Listed Rent"}
             </p>
             <p className="mt-1 truncate text-xl font-black text-[#102426]">
               {showNetEffectiveRent
@@ -1383,7 +1383,7 @@ function SearchResultCard({
             </p>
             {showNetEffectiveRent && (
               <p className="mt-1 text-xs font-bold text-[#526260]">
-                Normal rent: {priceSummary.normalRentLabel}
+                Listed rent: {priceSummary.normalRentLabel}
               </p>
             )}
           </div>
@@ -1394,9 +1394,24 @@ function SearchResultCard({
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#f5f8f1] p-3">
-          <MiniBreakdown label="Monthly due" value={monthlyBreakdown.monthlyDue} />
-          <MiniBreakdown label="Base rent" value={monthlyBreakdown.baseRent} />
+          <MiniBreakdown
+            label={showNetEffectiveRent ? "After special" : "Listed rent"}
+            value={monthlyBreakdown.afterSpecial}
+          />
+          <MiniBreakdown
+            label={showNetEffectiveRent ? "Listed rent" : "Starting rent"}
+            value={
+              showNetEffectiveRent
+                ? monthlyBreakdown.listedRent
+                : monthlyBreakdown.startingRent
+            }
+          />
         </div>
+        {showNetEffectiveRent && (
+          <p className="mt-2 text-[11px] font-bold leading-snug text-[#526260]">
+            After special spreads the concession across the lease. Your bill may still be based on listed rent plus required fees.
+          </p>
+        )}
 
         {hasSpecial && (
           <p className="mt-3 flex items-center gap-2 rounded-xl bg-[#fff8e6] px-3 py-2 text-sm font-black text-[#102426] ring-1 ring-[#f2d08a]">
@@ -2151,25 +2166,34 @@ function getSearchMonthlyBreakdown(
   floorPlans = getSearchFloorPlans(property)
 ) {
   const pricedFloorPlan = getFirstPricedSearchFloorPlan(floorPlans) || floorPlans[0] || {};
-  const requiredFees =
-    property?.requiredMonthlyFees ||
-    property?.monthlyFees ||
-    pricedFloorPlan.requiredMonthlyFees ||
-    "";
   const baseRent =
     pricedFloorPlan.startingRent ||
     pricedFloorPlan.rent ||
     property?.startingRent ||
     property?.rent ||
     priceSummary.normalRentLabel;
-  const monthlyDue = priceSummary.hasRentSpecial
-    ? priceSummary.normalRentLabel
-    : priceSummary.effectiveRentLabel;
+  const startingRent = formatSearchRentValue(baseRent);
+  const listedRent = priceSummary.normalRentLabel || formatSearchRentValue(baseRent);
+  const afterSpecial = priceSummary.hasRentSpecial
+    ? priceSummary.effectiveRentLabel
+    : listedRent;
 
   return {
-    monthlyDue: requiredFees ? `${monthlyDue} + fees` : monthlyDue,
-    baseRent: baseRent || "Ask property",
+    afterSpecial: afterSpecial || "Ask property",
+    listedRent: listedRent || "Ask property",
+    startingRent: startingRent || listedRent || "Ask property",
   };
+}
+
+function formatSearchRentValue(value) {
+  if (typeof value === "number") return formatCurrency(value);
+
+  const currencyValue = parseCurrency(value);
+  if (currencyValue && !String(value).includes("$")) {
+    return formatCurrency(currencyValue);
+  }
+
+  return value || "";
 }
 
 function getFirstPricedSearchFloorPlan(floorPlans) {
