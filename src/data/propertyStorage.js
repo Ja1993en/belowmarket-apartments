@@ -15,6 +15,53 @@ export async function getAllProperties() {
   return (data || []).map(mapSupabaseProperty);
 }
 
+export async function getPublicPropertySummaries({ includeFloorPlans = false } = {}) {
+  const selectFields = [
+    "id",
+    "name",
+    "status",
+    "city",
+    "state",
+    "zipcode",
+    "management_company_id",
+    "area:data->area",
+    "address:data->address",
+    "manager:data->manager",
+    "managementCompany:data->managementCompany",
+    "image:data->image",
+    "imageUrl:data->imageUrl",
+    "photoUrl:data->photoUrl",
+    "rent:data->rent",
+    "effectiveRent:data->effectiveRent",
+    "marketRent:data->marketRent",
+    "savings:data->savings",
+    "belowMarketPercent:data->belowMarketPercent",
+    "requiredMonthlyFees:data->requiredMonthlyFees",
+    "totalMonthlyRent:data->totalMonthlyRent",
+    "special:data->special",
+    "bedrooms:data->bedrooms",
+    "yearBuilt:data->yearBuilt",
+    "latitude:data->latitude",
+    "longitude:data->longitude",
+    "coordinates:data->coordinates",
+    "mapAccuracy:data->mapAccuracy",
+  ];
+
+  if (includeFloorPlans) {
+    selectFields.push("floorPlans:data->floorPlans");
+  }
+
+  const { data, error } = await supabase
+    .from("properties")
+    .select(selectFields.join(","))
+    .eq("status", "Live")
+    .order("updated_at", { ascending: false });
+
+  if (error) throw error;
+
+  return (data || []).map(mapSupabasePropertySummary);
+}
+
 export async function getAnyPropertyById(propertyId) {
   if (!propertyId) return null;
 
@@ -289,6 +336,41 @@ function mapSupabaseProperty(row) {
     state: data.state || row.state || "",
     zipcode: data.zipcode || row.zipcode || "",
     managementCompanyId: data.managementCompanyId || row.management_company_id || "",
+  };
+}
+
+function mapSupabasePropertySummary(row) {
+  return {
+    id: row.id,
+    name: row.name || "",
+    status: row.status || "Draft",
+    city: row.city || "",
+    state: row.state || "",
+    zipcode: row.zipcode || "",
+    managementCompanyId: row.management_company_id || "",
+    area: row.area || "",
+    address: row.address || "",
+    manager: row.manager || "",
+    managementCompany: row.managementCompany || "",
+    image: row.image || "",
+    imageUrl: row.imageUrl || "",
+    photoUrl: row.photoUrl || "",
+    photos: [],
+    rent: row.rent || "",
+    effectiveRent: row.effectiveRent || "",
+    marketRent: row.marketRent || "",
+    savings: row.savings || "",
+    belowMarketPercent: row.belowMarketPercent || "",
+    requiredMonthlyFees: row.requiredMonthlyFees || "",
+    totalMonthlyRent: row.totalMonthlyRent || "",
+    special: row.special || "",
+    bedrooms: Array.isArray(row.bedrooms) ? row.bedrooms : [],
+    yearBuilt: row.yearBuilt || "",
+    latitude: row.latitude || "",
+    longitude: row.longitude || "",
+    coordinates: Array.isArray(row.coordinates) ? row.coordinates : null,
+    mapAccuracy: row.mapAccuracy || "",
+    floorPlans: Array.isArray(row.floorPlans) ? row.floorPlans : [],
   };
 }
 

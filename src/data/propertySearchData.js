@@ -96,13 +96,39 @@ export function getPropertyPrimaryImage(property) {
     .map(getPhotoImageUrl)
     .find(Boolean);
 
-  return (
+  return optimizePropertyImageUrl(
     uploadedPhotoUrl ||
     property?.image ||
     property?.imageUrl ||
     property?.photoUrl ||
     DEFAULT_PROPERTY_IMAGE
   );
+}
+
+export function optimizePropertyImageUrl(imageUrl, width = 900) {
+  const url = String(imageUrl || "");
+
+  if (!url) return "";
+
+  if (url.includes("lh3.googleusercontent.com")) {
+    return url.replace(/=(?:s|w|h)\d+(?:-rw)?$/i, `=s${width}-rw`);
+  }
+
+  if (url.includes("images.unsplash.com")) {
+    try {
+      const parsedUrl = new URL(url);
+      parsedUrl.searchParams.set("auto", "format");
+      parsedUrl.searchParams.set("fit", parsedUrl.searchParams.get("fit") || "crop");
+      parsedUrl.searchParams.set("w", String(width));
+      parsedUrl.searchParams.set("q", "75");
+
+      return parsedUrl.toString();
+    } catch {
+      return url;
+    }
+  }
+
+  return url;
 }
 
 function getSuggestionCandidates(property) {

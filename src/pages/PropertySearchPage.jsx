@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Building2, MapPin, Navigation, Search, Tag } from "lucide-react";
 import CompareSavedOptionsPanel from "../components/propertySearch/CompareSavedOptionsPanel";
-import { getAllProperties } from "../data/propertyStorage";
+import { getPublicPropertySummaries } from "../data/propertyStorage";
 import {
   clearCompareSelections,
   getCompareFloorPlanItemKey,
@@ -267,7 +267,7 @@ export default function PropertySearchPage() {
   useEffect(() => {
     let isMounted = true;
 
-    getAllProperties()
+    getPublicPropertySummaries({ includeFloorPlans: true })
       .then((savedProperties) => {
         if (!isMounted) return;
 
@@ -278,7 +278,7 @@ export default function PropertySearchPage() {
         console.error(error);
         if (isMounted) {
           setAllProperties([]);
-          setPropertyLoadError("Could not load live properties from Supabase.");
+          setPropertyLoadError("Could not load live property summaries from Supabase.");
         }
       });
 

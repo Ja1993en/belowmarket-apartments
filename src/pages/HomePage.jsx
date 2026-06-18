@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 
-import { getAllProperties } from "../data/propertyStorage";
+import { getPublicPropertySummaries } from "../data/propertyStorage";
 import {
     getPropertyPrimaryImage,
     getPropertySearchSuggestions,
@@ -70,7 +70,7 @@ export default function HomePage() {
     useEffect(() => {
         let isMounted = true;
 
-        getAllProperties()
+        getPublicPropertySummaries()
             .then((savedProperties) => {
                 if (!isMounted) return;
 
@@ -81,7 +81,7 @@ export default function HomePage() {
                 console.error(error);
                 if (isMounted) {
                     setProperties([]);
-                    setPropertyLoadError("Could not load live properties from Supabase.");
+                    setPropertyLoadError("Could not load live property summaries from Supabase.");
                 }
             });
 
@@ -213,7 +213,7 @@ export default function HomePage() {
                                     onChange={(event) => setSearchTerm(event.target.value)}
                                     placeholder="Enter city, ZIP, property, or special"
                                     autoComplete="off"
-                                    className="bma-focus-ring h-16 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-black"
+                                    className="bma-focus-ring h-16 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-white"
                                     style={{ color: "#000000", caretColor: "#000000" }}
                                 />
                             </div>
@@ -1187,6 +1187,8 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                 <img
                     src={primaryImage}
                     alt={property.name}
+                    loading="lazy"
+                    decoding="async"
                     className="aspect-[4/3] w-full object-cover"
                 />
                 {badgeLabel && (
