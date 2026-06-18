@@ -214,6 +214,7 @@ export default function HomePage() {
                                     placeholder="Enter city, ZIP, property, or special"
                                     autoComplete="off"
                                     className="bma-focus-ring h-16 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-black"
+                                    style={{ color: "#000000", caretColor: "#000000" }}
                                 />
                             </div>
 
