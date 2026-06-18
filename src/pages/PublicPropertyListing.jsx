@@ -4564,7 +4564,7 @@ function FloorPlanCard({
                     <button
                         type="button"
                         onClick={() => setIsExpanded((currentValue) => !currentValue)}
-                        className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                        className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                     >
                         {isExpanded ? "Hide Details" : "View Details"}
                     </button>
