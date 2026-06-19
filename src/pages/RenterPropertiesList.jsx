@@ -16,7 +16,10 @@ import {
 } from "../data/leadStorage";
 
 import { getAllProperties } from "../data/propertyStorage";
-import { getPropertyPrimaryImage } from "../data/propertySearchData";
+import {
+  getFloorPlanCardImage,
+  getPropertyPrimaryImage,
+} from "../data/propertySearchData";
 
 export default function RenterPropertiesList() {
   const { token } = useParams();
@@ -560,6 +563,8 @@ function RecommendedPropertyCard({
       <img
         src={primaryImage}
         alt={property.name}
+        loading="lazy"
+        decoding="async"
         className="h-56 w-full object-cover"
       />
 
@@ -611,8 +616,10 @@ function RecommendedPropertyCard({
                 >
                   <div className="flex gap-3">
                     <img
-                      src={floorPlanItem.image || primaryImage}
+                      src={getFloorPlanCardImage(floorPlanItem, primaryImage)}
                       alt={`${floorPlanItem.floorPlanName} floor plan`}
+                      loading="lazy"
+                      decoding="async"
                       className="h-16 w-20 shrink-0 rounded-xl object-cover"
                     />
 

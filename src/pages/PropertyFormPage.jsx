@@ -1681,6 +1681,8 @@ function createStorageSafePhotoPayload(propertyPayload) {
       ...floorPlan,
       photos: [],
       image: "",
+      cardImage: "",
+      thumbnailImage: "",
     };
   });
 
@@ -1688,6 +1690,8 @@ function createStorageSafePhotoPayload(propertyPayload) {
     ...propertyPayload,
     photos: propertyPhotos,
     image: getPhotoImageUrl(propertyPhotos[0]) || "",
+    cardImage: propertyPayload.cardImage || propertyPhotos[0]?.cardUrl || propertyPhotos[0]?.thumbnailUrl || "",
+    thumbnailImage: propertyPayload.thumbnailImage || propertyPhotos[0]?.thumbnailUrl || propertyPhotos[0]?.cardUrl || "",
     floorPlans,
   };
 }
@@ -1725,6 +1729,8 @@ function createDraftFromProperty(property) {
     status: property.status || "Draft",
     special: property.special || "",
     image: property.image || "",
+    cardImage: property.cardImage || "",
+    thumbnailImage: property.thumbnailImage || "",
     photos: normalizePropertyPhotos(property),
     floorPlans: normalizeFloorPlansForDraft(property),
     bedrooms: (property.bedrooms || []).join(", "),
@@ -1939,6 +1945,8 @@ function normalizeFloorPlansForDraft(property) {
           floorPlan.image ||
           (floorPlan.photos || []).map(getPhotoImageUrl).find(Boolean) ||
           "",
+        cardImage: floorPlan.cardImage || "",
+        thumbnailImage: floorPlan.thumbnailImage || "",
         photos: normalizeFloorPlanPhotos(floorPlan, index),
         availability: floorPlan.availability || floorPlan.available || "",
         availableUnits: normalizeAvailableUnitsForDraft(
@@ -2295,6 +2303,8 @@ function normalizePropertyPhotos(property) {
       id: photo.id || `${property.id}-photo-${index}`,
       name: photo.name || `Photo ${index + 1}`,
       url: photo.url,
+      cardUrl: photo.cardUrl || "",
+      thumbnailUrl: photo.thumbnailUrl || "",
       category: photo.category || "Property",
     }));
   }
@@ -2305,6 +2315,8 @@ function normalizePropertyPhotos(property) {
         id: `${property.id}-primary-photo`,
         name: `${property.name} primary photo`,
         url: property.image,
+        cardUrl: property.cardImage || "",
+        thumbnailUrl: property.thumbnailImage || "",
         category: "Property",
       },
     ];
@@ -2319,6 +2331,8 @@ function normalizeFloorPlanPhotos(floorPlan, index) {
       id: photo.id || `${floorPlan.id || `floor-plan-${index}`}-photo-${photoIndex}`,
       name: photo.name || `Floor plan photo ${photoIndex + 1}`,
       url: photo.url,
+      cardUrl: photo.cardUrl || "",
+      thumbnailUrl: photo.thumbnailUrl || "",
       category: photo.category || "Floor Plan",
     }));
   }
@@ -2329,6 +2343,8 @@ function normalizeFloorPlanPhotos(floorPlan, index) {
         id: `${floorPlan.id || `floor-plan-${index}`}-primary-photo`,
         name: `${floorPlan.name || `Floor Plan ${index + 1}`} primary photo`,
         url: floorPlan.image,
+        cardUrl: floorPlan.cardImage || "",
+        thumbnailUrl: floorPlan.thumbnailImage || "",
         category: "Floor Plan",
       },
     ];

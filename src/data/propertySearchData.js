@@ -92,11 +92,47 @@ export function getPhotoImageUrl(photo) {
 }
 
 export function getPropertyPrimaryImage(property) {
+  return getPropertyCardImage(property, 900);
+}
+
+export function getPropertyCardImage(property, width = 900) {
+  const uploadedPhotoUrl = (property?.photos || [])
+    .map((photo) => photo?.cardUrl || photo?.thumbnailUrl || getPhotoImageUrl(photo))
+    .find(Boolean);
+
+  return optimizePropertyImageUrl(
+    property?.cardImage ||
+    property?.thumbnailImage ||
+    uploadedPhotoUrl ||
+    property?.image ||
+    property?.imageUrl ||
+    property?.photoUrl ||
+    DEFAULT_PROPERTY_IMAGE,
+    width
+  );
+}
+
+export function getFloorPlanCardImage(floorPlan, fallbackImage = "", width = 700) {
+  const uploadedPhotoUrl = (floorPlan?.photos || [])
+    .map((photo) => photo?.cardUrl || photo?.thumbnailUrl || getPhotoImageUrl(photo))
+    .find(Boolean);
+
+  return optimizePropertyImageUrl(
+    floorPlan?.cardImage ||
+    floorPlan?.thumbnailImage ||
+    uploadedPhotoUrl ||
+    floorPlan?.image ||
+    fallbackImage,
+    width
+  );
+}
+
+export function getPropertyFullImage(property) {
   const uploadedPhotoUrl = (property?.photos || [])
     .map(getPhotoImageUrl)
     .find(Boolean);
 
-  return optimizePropertyImageUrl(
+  return (
     uploadedPhotoUrl ||
     property?.image ||
     property?.imageUrl ||

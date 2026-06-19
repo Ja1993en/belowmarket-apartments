@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient";
+import { optimizePropertyImageUrl } from "./propertySearchData";
 
 const PROPERTY_PHOTOS_BUCKET = "property-photos";
 const DEFAULT_PROPERTY_IMAGE =
@@ -29,6 +30,8 @@ export async function getPublicPropertySummaries({ includeFloorPlans = false } =
     "manager:data->manager",
     "managementCompany:data->managementCompany",
     "image:data->image",
+    "cardImage:data->cardImage",
+    "thumbnailImage:data->thumbnailImage",
     "imageUrl:data->imageUrl",
     "photoUrl:data->photoUrl",
     "rent:data->rent",
@@ -261,9 +264,30 @@ async function preparePropertyForSupabase(
           getPhotoImageUrl(floorPlanPhotos[0]) ||
           getStoredImageUrl(floorPlan.image) ||
           "",
+        cardImage: getCardImageUrl(
+          getPhotoCardUrl(floorPlanPhotos[0]) ||
+          getPhotoImageUrl(floorPlanPhotos[0]) ||
+          getStoredImageUrl(floorPlan.cardImage) ||
+          getStoredImageUrl(floorPlan.thumbnailImage) ||
+          getStoredImageUrl(floorPlan.image),
+          700
+        ),
+        thumbnailImage: getCardImageUrl(
+          getPhotoThumbnailUrl(floorPlanPhotos[0]) ||
+          getPhotoCardUrl(floorPlanPhotos[0]) ||
+          getPhotoImageUrl(floorPlanPhotos[0]) ||
+          getStoredImageUrl(floorPlan.thumbnailImage) ||
+          getStoredImageUrl(floorPlan.cardImage) ||
+          getStoredImageUrl(floorPlan.image),
+          480
+        ),
       };
     })
   );
+  const primaryPropertyImage =
+    getPhotoImageUrl(photos[0]) ||
+    getStoredImageUrl(propertyDraft.image) ||
+    DEFAULT_PROPERTY_IMAGE;
 
   return {
     id: String(propertyId),
@@ -295,10 +319,24 @@ async function preparePropertyForSupabase(
     belowMarketPercent: propertyDraft.belowMarketPercent,
     status: propertyDraft.status || "Draft",
     special: propertyDraft.special,
-    image:
+    image: primaryPropertyImage,
+    cardImage: getCardImageUrl(
+      getPhotoCardUrl(photos[0]) ||
       getPhotoImageUrl(photos[0]) ||
-      getStoredImageUrl(propertyDraft.image) ||
-      DEFAULT_PROPERTY_IMAGE,
+      getStoredImageUrl(propertyDraft.cardImage) ||
+      getStoredImageUrl(propertyDraft.thumbnailImage) ||
+      primaryPropertyImage,
+      900
+    ),
+    thumbnailImage: getCardImageUrl(
+      getPhotoThumbnailUrl(photos[0]) ||
+      getPhotoCardUrl(photos[0]) ||
+      getPhotoImageUrl(photos[0]) ||
+      getStoredImageUrl(propertyDraft.thumbnailImage) ||
+      getStoredImageUrl(propertyDraft.cardImage) ||
+      primaryPropertyImage,
+      480
+    ),
     photos,
     floorPlans,
     bedrooms: propertyDraft.bedrooms || [],
@@ -353,6 +391,8 @@ function mapSupabasePropertySummary(row) {
     manager: row.manager || "",
     managementCompany: row.managementCompany || "",
     image: row.image || "",
+    cardImage: row.cardImage || "",
+    thumbnailImage: row.thumbnailImage || "",
     imageUrl: row.imageUrl || "",
     photoUrl: row.photoUrl || "",
     photos: [],
@@ -498,11 +538,20 @@ async function uploadPhoto(photo, index, options) {
 }
 
 function sanitizePhoto(photo, fallbackUrl = "") {
+  const imageUrl = fallbackUrl || getPhotoImageUrl(photo);
+  const cardUrl = getStoredImageUrl(photo?.cardUrl) || getCardImageUrl(imageUrl, 900);
+  const thumbnailUrl =
+    getStoredImageUrl(photo?.thumbnailUrl) ||
+    getStoredImageUrl(photo?.thumbUrl) ||
+    getCardImageUrl(cardUrl || imageUrl, 480);
+
   return {
     id: photo?.id || `photo-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     name: photo?.name || "Property photo",
     category: photo?.category || "Property",
-    url: fallbackUrl,
+    url: imageUrl,
+    cardUrl,
+    thumbnailUrl,
     originalSize: photo?.originalSize,
     storedSize: photo?.storedSize,
     storagePath: photo?.storagePath,
@@ -517,6 +566,18 @@ function getPhotoImageUrl(photo) {
     photo?.previewUrl,
     photo?.image,
   ].find(Boolean) || "";
+}
+
+function getPhotoCardUrl(photo) {
+  return [photo?.cardUrl, photo?.thumbnailUrl, photo?.thumbUrl].find(Boolean) || "";
+}
+
+function getPhotoThumbnailUrl(photo) {
+  return [photo?.thumbnailUrl, photo?.thumbUrl, photo?.cardUrl].find(Boolean) || "";
+}
+
+function getCardImageUrl(imageUrl, width) {
+  return optimizePropertyImageUrl(getStoredImageUrl(imageUrl), width);
 }
 
 function getStoredImageUrl(imageUrl) {

@@ -3,7 +3,10 @@ import { Link, useParams } from "react-router-dom";
 import { CheckCircle2, Copy, ExternalLink, MessageSquare, Search, Send } from "lucide-react";
 import { getAnyLeadById, updateLocalLead } from "../data/leadStorage";
 import { getAllProperties } from "../data/propertyStorage";
-import { getPropertyPrimaryImage } from "../data/propertySearchData";
+import {
+  getFloorPlanCardImage,
+  getPropertyPrimaryImage,
+} from "../data/propertySearchData";
 import {
   getCompareFloorPlanItemKey,
   getCompareFloorPlanItems,
@@ -624,6 +627,8 @@ export default function SendPropertiesPage() {
                         <img
                           src={primaryImage}
                           alt={property.name}
+                          loading="lazy"
+                          decoding="async"
                           className="h-32 w-full rounded-2xl object-cover md:w-44"
                         />
 
@@ -726,8 +731,13 @@ export default function SendPropertiesPage() {
                                 >
                                   <div className="flex gap-3">
                                     <img
-                                      src={floorPlanItem.image || getPropertyPrimaryImage(property)}
+                                      src={getFloorPlanCardImage(
+                                        floorPlanItem,
+                                        getPropertyPrimaryImage(property)
+                                      )}
                                       alt={`${floorPlanItem.floorPlanName} floor plan`}
+                                      loading="lazy"
+                                      decoding="async"
                                       className="h-16 w-20 shrink-0 rounded-xl object-cover"
                                     />
 
@@ -1053,7 +1063,7 @@ function getPropertyFloorPlanRecommendationItems(property) {
       effectiveRent: plan.effectiveRent || "",
       special: specialLabel,
       available: plan.availability || plan.available || "",
-      image: plan.image || getPropertyPrimaryImage(property),
+      image: getFloorPlanCardImage(plan, getPropertyPrimaryImage(property)),
     };
   });
 }
