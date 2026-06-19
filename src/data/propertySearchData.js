@@ -241,10 +241,21 @@ function getPropertySpecialLabels(property) {
 }
 
 function normalizeSearchValue(value) {
-  return String(value || "")
+  const normalizedValue = String(value || "")
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+
+  return normalizeSearchAliases(normalizedValue);
+}
+
+function normalizeSearchAliases(value) {
+  if (!value) return "";
+
+  return value
+    .split(" ")
+    .map((token) => (token === "texas" ? "tx" : token))
+    .join(" ");
 }

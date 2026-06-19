@@ -244,6 +244,7 @@ export default function PropertySearchPage() {
     () => filteredProperties.slice(0, visiblePropertyCount),
     [filteredProperties, visiblePropertyCount]
   );
+  const visibleResultCount = visibleFilteredProperties.length;
   const hasMoreFilteredProperties =
     visiblePropertyCount < filteredProperties.length;
   const selectedMapPropertyIsVisible =
@@ -758,6 +759,18 @@ export default function PropertySearchPage() {
             setActiveTab={setActiveCompareTab}
           />
         )}
+
+        <div className="mt-6 flex flex-col justify-between gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-[#d7e6df] sm:flex-row sm:items-center">
+          <p className="text-sm font-black text-[#102426]">
+            Showing {visibleResultCount} of {filteredProperties.length} listing
+            {filteredProperties.length === 1 ? "" : "s"}
+          </p>
+          {hasMoreFilteredProperties && (
+            <p className="text-xs font-bold text-[#526260]">
+              More matches are available below.
+            </p>
+          )}
+        </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visibleFilteredProperties.map((property) => (
