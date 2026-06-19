@@ -43,7 +43,7 @@ const BED_FILTER_OPTIONS = [
 ];
 const mapboxGeocodeRequests = new Map();
 const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
-const INITIAL_PROPERTY_CARD_LIMIT = 18;
+const PROPERTY_RESULTS_PER_PAGE = 18;
 const MAP_GEOCODE_BATCH_SIZE = 6;
 
 function getFloorPlansRoute(propertyId) {
@@ -74,6 +74,36 @@ function createPriceFilterOptions() {
   return ranges;
 }
 
+function getPaginationPages(currentPage, totalPages) {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pageSet = new Set([
+    1,
+    totalPages,
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+  ]);
+  const pages = [...pageSet]
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((firstPage, secondPage) => firstPage - secondPage);
+  const paginationItems = [];
+
+  pages.forEach((page, index) => {
+    const previousPage = pages[index - 1];
+
+    if (previousPage && page - previousPage > 1) {
+      paginationItems.push(`ellipsis-${previousPage}-${page}`);
+    }
+
+    paginationItems.push(page);
+  });
+
+  return paginationItems;
+}
+
 export default function PropertySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchFromUrl = searchParams.get("search") || "";
@@ -94,10 +124,9 @@ export default function PropertySearchPage() {
   const [activeCompareTab, setActiveCompareTab] = useState("Properties");
   const [hoveredMapPropertyId, setHoveredMapPropertyId] = useState("");
   const [selectedMapPropertyId, setSelectedMapPropertyId] = useState("");
-  const [visiblePropertyCount, setVisiblePropertyCount] = useState(
-    INITIAL_PROPERTY_CARD_LIMIT
-  );
+  const [currentResultsPage, setCurrentResultsPage] = useState(1);
   const resultCardRefs = useRef(new Map());
+  const resultsTopRef = useRef(null);
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
     () =>
@@ -240,18 +269,35 @@ export default function PropertySearchPage() {
     floorPlanDetailRows.length > 0 ? "floorPlans" : "properties";
   const hasCompareItems =
     compareFloorPlanRows.length > 0 || propertyCompareRows.length > 0;
+  const totalResultsPages = Math.max(
+    1,
+    Math.ceil(filteredProperties.length / PROPERTY_RESULTS_PER_PAGE)
+  );
+  const safeResultsPage = Math.min(currentResultsPage, totalResultsPages);
+  const visibleResultStartIndex =
+    filteredProperties.length > 0
+      ? (safeResultsPage - 1) * PROPERTY_RESULTS_PER_PAGE
+      : 0;
   const visibleFilteredProperties = useMemo(
-    () => filteredProperties.slice(0, visiblePropertyCount),
-    [filteredProperties, visiblePropertyCount]
+    () =>
+      filteredProperties.slice(
+        visibleResultStartIndex,
+        visibleResultStartIndex + PROPERTY_RESULTS_PER_PAGE
+      ),
+    [filteredProperties, visibleResultStartIndex]
   );
   const visibleResultCount = visibleFilteredProperties.length;
-  const hasMoreFilteredProperties =
-    visiblePropertyCount < filteredProperties.length;
+  const visibleResultEndIndex = visibleResultStartIndex + visibleResultCount;
+  const hasMultipleResultsPages = totalResultsPages > 1;
   const selectedMapPropertyIsVisible =
     selectedMapPropertyId &&
     filteredProperties.some((property) => property.id === selectedMapPropertyId);
   const highlightedMapPropertyId =
     hoveredMapPropertyId || (selectedMapPropertyIsVisible ? selectedMapPropertyId : "");
+  const paginationPages = useMemo(
+    () => getPaginationPages(safeResultsPage, totalResultsPages),
+    [safeResultsPage, totalResultsPages]
+  );
 
   const handleMapPropertySelect = useCallback((propertyId) => {
     setSelectedMapPropertyId(propertyId);
@@ -264,6 +310,20 @@ export default function PropertySearchPage() {
       });
     }, 0);
   }, []);
+  const handleResultsPageChange = useCallback(
+    (nextPage) => {
+      const pageNumber = Math.max(1, Math.min(nextPage, totalResultsPages));
+
+      setCurrentResultsPage(pageNumber);
+      window.setTimeout(() => {
+        resultsTopRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 0);
+    },
+    [totalResultsPages]
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -289,7 +349,7 @@ export default function PropertySearchPage() {
   }, []);
 
   useEffect(() => {
-    setVisiblePropertyCount(INITIAL_PROPERTY_CARD_LIMIT);
+    setCurrentResultsPage(1);
   }, [
     searchFromUrl,
     selectedArea,
@@ -760,14 +820,21 @@ export default function PropertySearchPage() {
           />
         )}
 
-        <div className="mt-6 flex flex-col justify-between gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-[#d7e6df] sm:flex-row sm:items-center">
+        <div
+          ref={resultsTopRef}
+          className="mt-6 flex flex-col justify-between gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-[#d7e6df] sm:flex-row sm:items-center"
+        >
           <p className="text-sm font-black text-[#102426]">
-            Showing {visibleResultCount} of {filteredProperties.length} listing
+            Showing{" "}
+            {filteredProperties.length > 0
+              ? `${visibleResultStartIndex + 1}-${visibleResultEndIndex}`
+              : "0"}{" "}
+            of {filteredProperties.length} listing
             {filteredProperties.length === 1 ? "" : "s"}
           </p>
-          {hasMoreFilteredProperties && (
+          {hasMultipleResultsPages && (
             <p className="text-xs font-bold text-[#526260]">
-              More matches are available below.
+              Page {safeResultsPage} of {totalResultsPages}
             </p>
           )}
         </div>
@@ -799,21 +866,49 @@ export default function PropertySearchPage() {
           ))}
         </div>
 
-        {hasMoreFilteredProperties && (
-          <div className="mt-6 flex justify-center">
+        {hasMultipleResultsPages && (
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             <button
               type="button"
-              onClick={() =>
-                setVisiblePropertyCount((currentCount) =>
-                  Math.min(
-                    currentCount + INITIAL_PROPERTY_CARD_LIMIT,
-                    filteredProperties.length
-                  )
-                )
-              }
-              className="rounded-2xl bg-[#173f3f] px-6 py-3 text-sm font-black text-white hover:bg-[#102426]"
+              onClick={() => handleResultsPageChange(safeResultsPage - 1)}
+              disabled={safeResultsPage === 1}
+              className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] disabled:cursor-not-allowed disabled:text-[#9aa7a4] disabled:hover:bg-white"
             >
-              Show more properties
+              Previous
+            </button>
+
+            {paginationPages.map((pageItem) =>
+              String(pageItem).includes("ellipsis") ? (
+                <span
+                  key={pageItem}
+                  className="px-2 text-sm font-black text-[#526260]"
+                >
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={pageItem}
+                  type="button"
+                  onClick={() => handleResultsPageChange(pageItem)}
+                  aria-current={pageItem === safeResultsPage ? "page" : undefined}
+                  className={`h-10 min-w-10 rounded-xl px-3 text-sm font-black ring-1 ${
+                    pageItem === safeResultsPage
+                      ? "bg-[#173f3f] text-white ring-[#173f3f]"
+                      : "bg-white text-[#173f3f] ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                  }`}
+                >
+                  {pageItem}
+                </button>
+              )
+            )}
+
+            <button
+              type="button"
+              onClick={() => handleResultsPageChange(safeResultsPage + 1)}
+              disabled={safeResultsPage === totalResultsPages}
+              className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] disabled:cursor-not-allowed disabled:text-[#9aa7a4] disabled:hover:bg-white"
+            >
+              Next
             </button>
           </div>
         )}
