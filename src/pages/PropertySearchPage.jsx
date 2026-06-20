@@ -419,27 +419,24 @@ export default function PropertySearchPage() {
 
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
-      <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white px-4 py-4 shadow-sm">
+      <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white px-4 py-2 shadow-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center">
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#173f3f] text-xs font-black text-[#f2b84b]">
               BMA
-            </span>
-            <span className="font-black text-[#102426]">
-              Below Market Apartments
             </span>
           </Link>
 
           <Link
             to="/start"
-            className="rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+            className="ml-auto rounded-2xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
           >
             Find Apartment Locator
           </Link>
         </div>
       </header>
 
-      <section className="sticky top-[73px] z-30 border-b border-[#d7e6df] bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+      <section className="sticky top-[57px] z-30 border-b border-[#d7e6df] bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
         <div className="mx-auto max-w-6xl">
           <form
             onSubmit={submitSearch}
