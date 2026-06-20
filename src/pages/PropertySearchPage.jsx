@@ -419,30 +419,28 @@ export default function PropertySearchPage() {
 
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
-      <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white px-4 py-2 shadow-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link to="/" className="flex items-center">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#173f3f] text-xs font-black text-[#f2b84b]">
-              BMA
-            </span>
-          </Link>
-
-          <Link
-            to="/start"
-            className="ml-auto rounded-2xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
-          >
-            Find Apartment Locator
-          </Link>
-        </div>
-      </header>
-
-      <section className="sticky top-[57px] z-30 border-b border-[#d7e6df] bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+      <section className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white/95 px-3 py-2 shadow-sm backdrop-blur">
         <div className="mx-auto max-w-6xl">
           <form
             onSubmit={submitSearch}
             className="relative rounded-2xl border border-[#d7e6df] bg-white p-2 shadow-sm"
           >
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+            <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
+              <div className="flex items-center gap-2 xl:shrink-0">
+                <Link to="/" className="flex items-center">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#173f3f] text-xs font-black text-[#f2b84b]">
+                    BMA
+                  </span>
+                </Link>
+
+                <Link
+                  to="/start"
+                  className="ml-auto rounded-2xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black text-[#102426] hover:bg-[#f9d783] xl:hidden"
+                >
+                  Find Apartment Locator
+                </Link>
+              </div>
+
               <div className="relative min-w-0 flex-1">
                 <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#2d7dd2]" />
                 <input
@@ -451,7 +449,7 @@ export default function PropertySearchPage() {
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="City, state, address, or special"
                   autoComplete="off"
-                  className="h-14 w-full rounded-xl border border-[#b8d9d0] bg-white pl-12 pr-4 text-base font-bold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                  className="h-12 w-full rounded-xl border border-[#b8d9d0] bg-white pl-12 pr-4 text-base font-bold text-[#102426] outline-none focus:border-[#2d7dd2]"
                 />
               </div>
 
@@ -634,10 +632,17 @@ export default function PropertySearchPage() {
 
               <button
                 type="submit"
-                className="h-14 rounded-xl bg-[#173f3f] px-7 text-sm font-black text-white hover:bg-[#102426]"
+                className="h-12 rounded-xl bg-[#173f3f] px-7 text-sm font-black text-white hover:bg-[#102426]"
               >
                 Search
               </button>
+
+              <Link
+                to="/start"
+                className="hidden h-12 shrink-0 items-center rounded-2xl bg-[#f2b84b] px-4 text-sm font-black text-[#102426] hover:bg-[#f9d783] xl:flex"
+              >
+                Find Apartment Locator
+              </Link>
             </div>
 
             {suggestions.length > 0 && searchTerm.trim() !== searchFromUrl.trim() && (
