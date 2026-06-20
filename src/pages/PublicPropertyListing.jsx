@@ -3242,9 +3242,11 @@ function PropertyLocationMap({
     nearbyPlaces,
     onNearbyPlacesChange,
 }) {
+    const mapSectionRef = useRef(null);
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
     const markersRef = useRef([]);
+    const [shouldLoadMap, setShouldLoadMap] = useState(false);
     const [mapboxGl, setMapboxGl] = useState(null);
     const [mapError, setMapError] = useState(
         MAPBOX_TOKEN ? "" : "Map token is missing."
@@ -3252,9 +3254,33 @@ function PropertyLocationMap({
     const [propertyCoordinates, setPropertyCoordinates] = useState(null);
 
     useEffect(() => {
+        const mapSection = mapSectionRef.current;
+        if (!mapSection) return undefined;
+
+        if (!("IntersectionObserver" in window)) {
+            setShouldLoadMap(true);
+            return undefined;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setShouldLoadMap(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: "900px 0px" }
+        );
+
+        observer.observe(mapSection);
+
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
         let isMounted = true;
 
-        if (!MAPBOX_TOKEN) return undefined;
+        if (!MAPBOX_TOKEN || !shouldLoadMap) return undefined;
 
         loadMapboxGl()
             .then((loadedMapboxGl) => {
@@ -3273,10 +3299,12 @@ function PropertyLocationMap({
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [shouldLoadMap]);
 
     useEffect(() => {
         let isMounted = true;
+
+        if (!shouldLoadMap) return undefined;
 
         resolvePropertyCoordinates(property)
             .then((coordinates) => {
@@ -3294,11 +3322,14 @@ function PropertyLocationMap({
         return () => {
             isMounted = false;
         };
-    }, [property]);
+    }, [property, shouldLoadMap]);
 
     useEffect(() => {
         let isMounted = true;
 
+        if (!shouldLoadMap || !propertyCoordinates) return undefined;
+
+        const nearbyPlacesTimer = window.setTimeout(() => {
         resolveNearbyPlaces(propertyCoordinates)
             .then((places) => {
                 if (isMounted) {
@@ -3311,11 +3342,13 @@ function PropertyLocationMap({
                     onNearbyPlacesChange([]);
                 }
             });
+        }, 900);
 
         return () => {
             isMounted = false;
+            window.clearTimeout(nearbyPlacesTimer);
         };
-    }, [onNearbyPlacesChange, propertyCoordinates]);
+    }, [onNearbyPlacesChange, propertyCoordinates, shouldLoadMap]);
 
     useEffect(() => {
         if (!mapboxGl || !propertyCoordinates || !mapContainerRef.current) return;
@@ -3434,8 +3467,16 @@ function PropertyLocationMap({
     }
 
     return (
-        <div className="mt-5 overflow-hidden rounded-3xl border border-[#d7e6df] bg-[#dcebe4]">
-            <div ref={mapContainerRef} className="h-[420px] w-full md:h-[480px]" />
+        <div ref={mapSectionRef} className="mt-5 overflow-hidden rounded-3xl border border-[#d7e6df] bg-[#dcebe4]">
+            {shouldLoadMap ? (
+                <div ref={mapContainerRef} className="h-[420px] w-full md:h-[480px]" />
+            ) : (
+                <div className="flex h-[420px] w-full items-center justify-center bg-[#dcebe4] md:h-[480px]">
+                    <p className="rounded-full bg-white px-5 py-3 text-sm font-black text-[#173f3f] shadow-sm">
+                        Map loading as you scroll
+                    </p>
+                </div>
+            )}
             <div className="grid gap-2 border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 <MapLegendItem color="bg-[#f2b84b]" label="Property" />
                 <MapLegendItem color="bg-[#2d7dd2]" label="Walmart" />
