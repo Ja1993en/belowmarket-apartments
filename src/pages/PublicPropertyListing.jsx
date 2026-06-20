@@ -8,7 +8,7 @@ import {
     hasPreciseStreetAddress,
     isReliableGeocodeResult,
 } from "../data/propertySearchData";
-import { getAllProperties, getAnyPropertyById } from "../data/propertyStorage";
+import { getAnyPropertyById, getPublicPropertySummaries } from "../data/propertyStorage";
 import {
     clearCompareSelections,
     getCompareFloorPlanItemKey,
@@ -801,7 +801,7 @@ export default function PublicPropertyListing() {
     useEffect(() => {
         let isMounted = true;
 
-        getAllProperties()
+        getPublicPropertySummaries()
             .then((savedProperties) => {
                 if (isMounted) setCompareProperties(savedProperties);
             })
