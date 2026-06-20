@@ -126,6 +126,7 @@ export default function PropertySearchPage() {
   const [selectedMapPropertyId, setSelectedMapPropertyId] = useState("");
   const [currentResultsPage, setCurrentResultsPage] = useState(1);
   const resultCardRefs = useRef(new Map());
+  const resultsTopRef = useRef(null);
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
     () =>
@@ -315,9 +316,9 @@ export default function PropertySearchPage() {
 
       setCurrentResultsPage(pageNumber);
       window.setTimeout(() => {
-        window.scrollTo({
-          top: 0,
+        resultsTopRef.current?.scrollIntoView({
           behavior: "smooth",
+          block: "start",
         });
       }, 0);
     },
@@ -819,7 +820,10 @@ export default function PropertySearchPage() {
           />
         )}
 
-        <div className="mt-6 flex flex-col justify-between gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-[#d7e6df] sm:flex-row sm:items-center">
+        <div
+          ref={resultsTopRef}
+          className="mt-6 flex flex-col justify-between gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-[#d7e6df] sm:flex-row sm:items-center"
+        >
           <p className="text-sm font-black text-[#102426]">
             Showing{" "}
             {filteredProperties.length > 0
