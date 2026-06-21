@@ -1496,6 +1496,8 @@ export default function PublicPropertyListing() {
                                 <img
                                     src={propertyGalleryImages[0].url}
                                     alt={property.name}
+                                    fetchPriority="high"
+                                    decoding="async"
                                     className="h-full w-full object-cover"
                                 />
 
@@ -1526,6 +1528,8 @@ export default function PublicPropertyListing() {
                                 <img
                                     src={image.url}
                                     alt={`${image.category} photo`}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="h-full w-full object-cover"
                                 />
 
@@ -1761,6 +1765,8 @@ export default function PublicPropertyListing() {
                                                                                 <img
                                                                                     src={getPropertyPrimaryImage(compareProperty)}
                                                                                     alt={compareProperty.name}
+                                                                                    loading="lazy"
+                                                                                    decoding="async"
                                                                                     className="h-14 w-14 shrink-0 rounded-xl object-cover"
                                                                                 />
 
@@ -2534,6 +2540,7 @@ export default function PublicPropertyListing() {
                             <img
                                 src={selectedGalleryPhoto.url}
                                 alt={`${selectedGalleryPhoto.category} selected`}
+                                decoding="async"
                                 className="h-[420px] w-full object-cover"
                             />
 
@@ -2558,6 +2565,8 @@ export default function PublicPropertyListing() {
                                     <img
                                         src={image.url}
                                         alt={`${image.category} photo`}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="h-72 w-full object-cover"
                                     />
 
@@ -2608,6 +2617,8 @@ export default function PublicPropertyListing() {
                                     <img
                                         src={selectedFloorPlan.image}
                                         alt={`${selectedFloorPlan.name} floor plan`}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="mt-5 h-64 w-full rounded-3xl object-cover"
                                     />
                                 )}
@@ -4162,6 +4173,8 @@ function ComparedFloorPlanCard({
                 <img
                     src={item.image || fallbackImage || DEFAULT_PROPERTY_IMAGE}
                     alt={`${item.floorPlanName} floor plan`}
+                    loading="lazy"
+                    decoding="async"
                     className="h-20 w-24 shrink-0 rounded-xl bg-[#f5f8f1] object-cover"
                 />
 
@@ -4318,6 +4331,8 @@ function CompareDetailsTable({ rows, onRequestFloorPlan }) {
                                     <img
                                         src={row.image}
                                         alt={`${row.title} floor plan`}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="h-16 w-16 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
                                     />
                                 )}
@@ -4389,6 +4404,8 @@ function CompareDetailsTable({ rows, onRequestFloorPlan }) {
                                             <img
                                                 src={row.image}
                                                 alt={`${row.title} floor plan`}
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="h-14 w-14 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
                                             />
                                         )}
@@ -4534,6 +4551,8 @@ function FloorPlanCard({
                         <img
                             src={image}
                             alt={imageAlt}
+                            loading="lazy"
+                            decoding="async"
                             className="h-full w-full object-cover"
                         />
                     ) : (
@@ -4655,6 +4674,8 @@ function FloorPlanCard({
                                     <img
                                         src={image}
                                         alt={`${name} expanded floor plan`}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="h-full w-full object-cover"
                                     />
                                 ) : (
