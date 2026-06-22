@@ -1228,7 +1228,7 @@ function MapboxSearchMap({
               onClick={() => selectAreaRadius(radiusMiles)}
               className={`px-3 py-3 text-sm font-black ${
                 areaRadiusMiles === radiusMiles
-                  ? "bg-[#173f3f] text-white"
+                  ? "bg-[#173f3f] !text-white hover:!text-white"
                   : "text-[#173f3f] hover:bg-[#f5f8f1]"
               }`}
             >
