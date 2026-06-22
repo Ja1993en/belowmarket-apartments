@@ -1528,7 +1528,7 @@ function SearchResultCard({
             onClick={onToggleSaved}
             className={`rounded-xl px-3 py-2.5 text-sm font-black ${
               isSaved
-                ? "bg-[#173f3f] text-white"
+                ? "bg-[#173f3f] !text-white hover:!text-white"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
             }`}
           >
