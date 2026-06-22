@@ -632,7 +632,7 @@ export default function PropertySearchPage() {
 
               <button
                 type="submit"
-                className="h-12 rounded-xl bg-[#173f3f] px-7 text-sm font-black text-white hover:bg-[#102426]"
+                className="h-12 rounded-xl bg-[#173f3f] px-7 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
               >
                 Search
               </button>
@@ -1522,17 +1522,11 @@ function SearchResultCard({
           ))}
         </div>
 
-        <div className="mt-3 flex items-center gap-2">
-          <Link
-            to={cardHref}
-            className="flex-1 rounded-xl bg-[#173f3f] px-3 py-2.5 text-center text-sm font-black text-white hover:bg-[#102426]"
-          >
-            View Deal
-          </Link>
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={onToggleSaved}
-            className={`shrink-0 rounded-xl px-3 py-2.5 text-sm font-black ${
+            className={`rounded-xl px-3 py-2.5 text-sm font-black ${
               isSaved
                 ? "bg-[#173f3f] text-white"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
@@ -1543,7 +1537,7 @@ function SearchResultCard({
           <button
             type="button"
             onClick={onToggleCompare}
-            className={`shrink-0 rounded-xl px-3 py-2.5 text-sm font-black ${
+            className={`rounded-xl px-3 py-2.5 text-sm font-black ${
               isCompared
                 ? "bg-[#f2b84b] text-[#102426]"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
