@@ -1013,7 +1013,7 @@ export default function PublicPropertyListing() {
     const [floorPlanSort, setFloorPlanSort] = useState("recommended");
     const [activeFloorPlanFilter, setActiveFloorPlanFilter] = useState("All");
     const [floorPlanPage, setFloorPlanPage] = useState(1);
-    const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(true);
+    const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(false);
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
     const [showSidebarError, setShowSidebarError] = useState(false);
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
@@ -1026,6 +1026,16 @@ export default function PublicPropertyListing() {
     const [isFloorPlanComparePromptDismissed, setIsFloorPlanComparePromptDismissed] = useState(false);
     const compareListRef = useRef(null);
     {/* Usestate end*/ }
+
+    const changeFloorPlanPage = (nextPage) => {
+        setFloorPlanPage(nextPage);
+        window.setTimeout(() => {
+            floorPlansSectionRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        }, 0);
+    };
 
     const filteredGalleryImages =
         activePhotoCategory === "All"
@@ -1423,7 +1433,7 @@ export default function PublicPropertyListing() {
 
                     <Link
                         to="/properties"
-                        className="mt-6 inline-block rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                        className="mt-6 inline-block rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                     >
                         Back to Search
                     </Link>
@@ -1570,7 +1580,7 @@ export default function PublicPropertyListing() {
                                         }
                                         className={`rounded-2xl px-5 py-3 text-sm font-black ${
                                             isPropertySaved
-                                                ? "bg-[#173f3f] text-white"
+                                                ? "bg-[#173f3f] !text-white hover:!text-white"
                                                 : "bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
                                         }`}
                                     >
@@ -1591,7 +1601,7 @@ export default function PublicPropertyListing() {
 
                                     <a
                                         href="#floor-plans"
-                                        className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-black text-white hover:bg-[#102426]"
+                                        className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
                                     >
                                         Request Tour
                                     </a>
@@ -1622,7 +1632,7 @@ export default function PublicPropertyListing() {
                                                         setIsCompareBoardOpen((currentValue) => !currentValue);
                                                         setActiveCompareTab("Summary");
                                                     }}
-                                                    className="w-fit rounded-2xl bg-[#173f3f] px-4 py-2 text-sm font-bold text-white hover:bg-[#102426]"
+                                                    className="w-fit rounded-2xl bg-[#173f3f] px-4 py-2 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                                                 >
                                                     {isCompareBoardOpen ? "Hide Compare" : "View Compare"}
                                                 </button>
@@ -1682,7 +1692,7 @@ export default function PublicPropertyListing() {
                                                             onClick={() => setActiveCompareTab(tab)}
                                                             className={`rounded-full px-4 py-2 text-sm font-black ${
                                                                 activeCompareTab === tab
-                                                                    ? "bg-[#173f3f] text-white"
+                                                                    ? "bg-[#173f3f] !text-white hover:!text-white"
                                                                     : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
                                                             }`}
                                                         >
@@ -1901,7 +1911,7 @@ export default function PublicPropertyListing() {
                                     </h2>
 
                                     <p className="mt-2 text-[#526260]">
-                                        View available layouts, pricing, and unit availability.
+                                        Available layouts first, with unavailable layouts hidden by default.
                                     </p>
 
                                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
@@ -1914,7 +1924,7 @@ export default function PublicPropertyListing() {
                                                         setFloorPlanPage(1);
                                                     }}
                                                     className={`rounded-full px-4 py-2 text-sm font-bold ${activeFloorPlanFilter === filter
-                                                        ? "bg-[#173f3f] text-white"
+                                                        ? "bg-[#173f3f] !text-white hover:!text-white"
                                                         : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
                                                         }`}
                                                 >
@@ -1983,7 +1993,7 @@ export default function PublicPropertyListing() {
                                                 }}
                                                 className={`rounded-full px-4 py-2 text-sm font-black ${
                                                     showUnavailableFloorPlans
-                                                        ? "bg-[#173f3f] text-white"
+                                                        ? "bg-[#173f3f] !text-white hover:!text-white"
                                                         : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
                                                 }`}
                                             >
@@ -2038,7 +2048,7 @@ export default function PublicPropertyListing() {
                                                 <button
                                                     type="button"
                                                     onClick={handleViewFloorPlanCompareBoard}
-                                                    className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-black text-white hover:bg-[#102426]"
+                                                    className="rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
                                                 >
                                                     View compare
                                                 </button>
@@ -2114,7 +2124,7 @@ export default function PublicPropertyListing() {
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    setFloorPlanPage((currentPage) =>
+                                                    changeFloorPlanPage((currentPage) =>
                                                         Math.max(currentPage - 1, 1)
                                                     )
                                                 }
@@ -2158,10 +2168,10 @@ export default function PublicPropertyListing() {
 
                                                             <button
                                                                 type="button"
-                                                                onClick={() => setFloorPlanPage(pageNumber)}
+                                                                onClick={() => changeFloorPlanPage(pageNumber)}
                                                                 className={`h-10 min-w-10 rounded-full px-3 text-sm font-black ${
                                                                     currentFloorPlanPage === pageNumber
-                                                                        ? "bg-[#173f3f] text-white"
+                                                                        ? "bg-[#173f3f] !text-white hover:!text-white"
                                                                         : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
                                                                 }`}
                                                             >
@@ -2174,7 +2184,7 @@ export default function PublicPropertyListing() {
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    setFloorPlanPage((currentPage) =>
+                                                    changeFloorPlanPage((currentPage) =>
                                                         Math.min(currentPage + 1, totalFloorPlanPages)
                                                     )
                                                 }
@@ -2527,7 +2537,7 @@ export default function PublicPropertyListing() {
                                 key={category}
                                 onClick={() => setActivePhotoCategory(category)}
                                 className={`rounded-full px-4 py-2 text-sm font-bold shadow-md ${activePhotoCategory === category
-                                    ? "bg-[#173f3f] text-white"
+                                    ? "bg-[#173f3f] !text-white hover:!text-white"
                                     : "bg-white text-[#173f3f]"
                                     }`}
                             >
@@ -4222,7 +4232,7 @@ function ComparedFloorPlanCard({
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <Link
                     to={`/properties/${item.propertyId}`}
-                    className="rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black text-white hover:bg-[#102426]"
+                    className="rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black !text-white hover:bg-[#102426] hover:!text-white"
                 >
                     View property
                 </Link>
@@ -4465,7 +4475,7 @@ function CompareDetailsAction({ row, onRequestFloorPlan }) {
             <button
                 type="button"
                 onClick={() => onRequestFloorPlan(row.floorPlan)}
-                className="shrink-0 rounded-xl bg-[#173f3f] px-3 py-2 text-xs font-black text-white hover:bg-[#102426]"
+                className="shrink-0 rounded-xl bg-[#173f3f] px-3 py-2 text-xs font-black !text-white hover:bg-[#102426] hover:!text-white"
             >
                 Request tour
             </button>
@@ -4784,7 +4794,7 @@ function FloorPlanCard({
                                     <button
                                         type="button"
                                         onClick={onViewDetails}
-                                        className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                                        className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                                     >
                                         Request Tour
                                     </button>
