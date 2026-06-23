@@ -2327,6 +2327,66 @@ export default function PublicPropertyListing() {
 
 
                                 <div className="mt-8 space-y-6">
+                                    <section
+                                        id="location"
+                                        className="scroll-mt-32 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm"
+                                    >
+                                        <div className="border-b border-[#edf4ef] p-5 md:flex md:items-start md:justify-between md:gap-5">
+                                            <div>
+                                                <p className="text-sm font-black text-[#1f6f63]">
+                                                    Location
+                                                </p>
+                                                <h2 className="mt-2 text-2xl font-black text-[#102426]">
+                                                    Map and nearby essentials
+                                                </h2>
+                                                <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
+                                                    {addressLabel}
+                                                </p>
+                                            </div>
+
+                                            <a
+                                                href="#request-info"
+                                                className="mt-4 inline-flex rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] md:mt-0"
+                                            >
+                                                Ask about this area
+                                            </a>
+                                        </div>
+
+                                        <div className="p-4 md:p-5">
+                                            <div className="overflow-hidden rounded-2xl border border-[#d7e6df]">
+                                                <PropertyLocationMap
+                                                    property={property}
+                                                    addressLabel={addressLabel}
+                                                    nearbyPlaces={nearbyPlaces}
+                                                    onNearbyPlacesChange={setNearbyPlaces}
+                                                />
+                                            </div>
+
+                                            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                                                <NearbyItem
+                                                    label="Walmart"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "walmart")}
+                                                />
+                                                <NearbyItem
+                                                    label="Target"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "target")}
+                                                />
+                                                <NearbyItem
+                                                    label="LA Fitness"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "laFitness")}
+                                                />
+                                                <NearbyItem
+                                                    label="Planet Fitness"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "planetFitness")}
+                                                />
+                                                <NearbyItem
+                                                    label="Kroger"
+                                                    value={getNearbyPlaceName(nearbyPlaces, "kroger")}
+                                                />
+                                            </div>
+                                        </div>
+                                    </section>
+
                                     <SchoolSnapshotCard schoolSnapshot={schoolSnapshot} />
 
                                     <section className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
@@ -2350,47 +2410,6 @@ export default function PublicPropertyListing() {
                             <div
                                 className="mt-8 flex flex-col gap-4 lg:mt-0"
                             >
-                                <div id="location" className="order-3 scroll-mt-32 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
-                                    <div className="p-4">
-                                        <h2 className="text-xl font-black text-[#102426]">
-                                            Location
-                                        </h2>
-                                        <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
-                                            {addressLabel}
-                                        </p>
-                                    </div>
-                                    <div className="px-4 pb-4">
-                                        <PropertyLocationMap
-                                            property={property}
-                                            addressLabel={addressLabel}
-                                            nearbyPlaces={nearbyPlaces}
-                                            onNearbyPlacesChange={setNearbyPlaces}
-                                        />
-                                    </div>
-                                    <div className="border-t border-[#edf4ef] p-4">
-                                        <h3 className="text-sm font-black uppercase text-[#1f6f63]">
-                                            Nearby
-                                        </h3>
-                                        <div className="mt-3 grid gap-2">
-                                            <NearbyItem
-                                                label="Kroger"
-                                                value={getNearbyPlaceName(nearbyPlaces, "kroger")}
-                                                compact
-                                            />
-                                            <NearbyItem
-                                                label="Target"
-                                                value={getNearbyPlaceName(nearbyPlaces, "target")}
-                                                compact
-                                            />
-                                            <NearbyItem
-                                                label="LA Fitness"
-                                                value={getNearbyPlaceName(nearbyPlaces, "laFitness")}
-                                                compact
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div className="order-2 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
                                     <p className="text-xs font-black uppercase text-[#1f6f63]">
                                         Ask before touring
