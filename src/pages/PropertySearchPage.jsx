@@ -845,7 +845,7 @@ export default function PropertySearchPage() {
         )}
 
         <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)] xl:items-start">
-          <div className="min-w-0">
+          <div className="order-2 min-w-0 xl:order-1">
             <div
               ref={resultsTopRef}
               className="rounded-xl border border-[#d7e6df] bg-white p-4 shadow-sm"
@@ -964,7 +964,7 @@ export default function PropertySearchPage() {
             )}
           </div>
 
-          <div className="xl:sticky xl:top-28">
+          <div className="order-1 xl:sticky xl:top-28 xl:order-2">
             <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
               <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
                 <div>
