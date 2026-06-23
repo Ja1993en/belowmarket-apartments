@@ -1552,39 +1552,6 @@ export default function PublicPropertyListing() {
         },
     ];
 
-    const getSnapshotMetricValue = (label, fallback = "Confirm") =>
-        renterValueToolkit.snapshotMetrics.find((metric) => metric.label === label)?.value || fallback;
-
-    const dealSummaryMetrics = [
-        {
-            label: "Listed rent",
-            value: getSnapshotMetricValue("Normal rent", startingRentLabel),
-            helper: "Before specials and required add-ons",
-        },
-        {
-            label: "Effective rent",
-            value: getSnapshotMetricValue("Effective value", effectiveRentLabel),
-            helper: hasPropertySpecial ? "Estimated value after the listed special" : "No active special applied",
-        },
-        {
-            label: "Current special",
-            value: propertySpecialLabel,
-            helper: "Confirm terms before applying",
-        },
-        {
-            label: "Availability",
-            value: `${availableFloorPlans.length} plan${availableFloorPlans.length === 1 ? "" : "s"}`,
-            helper: availableUnitCount > 0
-                ? `${availableUnitCount} listed unit${availableUnitCount === 1 ? "" : "s"}`
-                : "Ask for exact units",
-        },
-        {
-            label: "Fees",
-            value: getSnapshotMetricValue("Fees"),
-            helper: "Monthly add-ons to verify",
-        },
-    ];
-
     return (
 
         <main className="min-h-screen bg-[#f5f8f1] pb-32 text-[#102426] md:pb-32">
@@ -1692,34 +1659,34 @@ export default function PublicPropertyListing() {
                         )}
                     </div>
 
-                    <aside className="flex flex-col gap-3 rounded-2xl border border-[#d7e6df] bg-white p-5 shadow-xl">
+                    <aside className="flex flex-col gap-3 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
                         <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                                <p className="truncate text-sm font-black text-[#526260]">
+                                <p className="truncate text-xs font-black uppercase text-[#526260]">
                                     {heroManagementLabel}
                                 </p>
 
-                                <h1 className="mt-2 text-2xl font-black leading-tight text-[#102426] xl:text-3xl">
+                                <h1 className="mt-1 text-2xl font-black leading-tight text-[#102426]">
                                     {property.name}
                                 </h1>
 
-                                <p className="mt-2 text-sm font-bold leading-5 text-[#526260]">
+                                <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
                                     {addressLabel}
                                     {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
                                 </p>
                             </div>
 
-                            <div className="shrink-0 rounded-2xl bg-[#173f3f] px-4 py-3 text-center text-white">
+                            <div className="shrink-0 rounded-xl bg-[#f5f8f1] px-3 py-2 text-center ring-1 ring-[#d7e6df]">
                                 <p className="text-[10px] font-black uppercase text-[#f2b84b]">
                                     Score
                                 </p>
-                                <p className="mt-1 text-2xl font-black leading-none">
+                                <p className="mt-0.5 text-xl font-black leading-none text-[#102426]">
                                     {renterValueToolkit.dealScore}
                                 </p>
                             </div>
                         </div>
 
-                        <div className={`flex gap-3 rounded-2xl p-3 ring-1 ${
+                        <div className={`flex gap-3 rounded-xl p-3 ring-1 ${
                             hasPropertySpecial
                                 ? "bg-[#fff8e6] ring-[#f2d08a]"
                                 : "bg-[#f5f8f1] ring-[#d7e6df]"
@@ -1733,25 +1700,22 @@ export default function PublicPropertyListing() {
                                 }`}>
                                     Current special
                                 </p>
-                                <p className="mt-1 text-base font-black text-[#102426]">
+                                <p className="mt-1 text-sm font-black text-[#102426]">
                                     {propertySpecialLabel}
-                                </p>
-                                <p className="mt-1 text-xs font-semibold leading-5 text-[#526260]">
-                                    Shown separately from normal rent so renters know what to confirm.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            {renterValueToolkit.snapshotMetrics.slice(0, 4).map((metric) => (
+                        <div className="grid grid-cols-3 gap-2">
+                            {renterValueToolkit.snapshotMetrics.slice(0, 3).map((metric) => (
                                 <div
                                     key={metric.label}
-                                    className="rounded-xl border border-[#d7e6df] bg-[#f8fbf8] p-2.5"
+                                    className="rounded-lg border border-[#d7e6df] bg-[#f8fbf8] p-2"
                                 >
                                     <p className="text-[10px] font-black uppercase text-[#526260]">
                                         {metric.label}
                                     </p>
-                                    <p className="mt-1 truncate text-base font-black text-[#102426]">
+                                    <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
                                         {metric.value}
                                     </p>
                                 </div>
@@ -1819,37 +1783,6 @@ export default function PublicPropertyListing() {
                         </a>
                     ))}
                 </nav>
-
-                <section className="mt-4 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
-                    <div className="flex flex-col gap-3 border-b border-[#edf4ef] bg-[#102426] p-4 text-white lg:flex-row lg:items-center lg:justify-between">
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-wide text-[#f2b84b]">
-                                Deal summary
-                            </p>
-                            <h2 className="mt-1 text-lg font-black leading-tight">
-                                Rent, special, availability, and fees at a glance.
-                            </h2>
-                        </div>
-
-                        <a
-                            href="#request-info"
-                            className="w-fit rounded-xl bg-[#f2b84b] px-4 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
-                        >
-                            Verify this deal
-                        </a>
-                    </div>
-
-                    <div className="grid divide-y divide-[#edf4ef] md:grid-cols-5 md:divide-x md:divide-y-0">
-                        {dealSummaryMetrics.map((metric) => (
-                            <DealSummaryMetric
-                                key={metric.label}
-                                label={metric.label}
-                                value={metric.value}
-                                helper={metric.helper}
-                            />
-                        ))}
-                    </div>
-                </section>
 
                 <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
                     <div className="min-w-0">
@@ -2473,193 +2406,136 @@ export default function PublicPropertyListing() {
                                     </div>
                                 </div>
 
-                                <div id="request-info" className="order-1 scroll-mt-32 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-36">
-                                    <div className="bg-[#102426] p-4 text-white">
-                                        <p className="text-[10px] font-black uppercase tracking-wide text-[#f2b84b]">
-                                            Free renter service
-                                        </p>
+                                <div id="request-info" className="order-1 scroll-mt-32 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm lg:sticky lg:top-36">
+                                    <p className="text-[10px] font-black uppercase tracking-wide text-[#1f6f63]">
+                                        Free locator help
+                                    </p>
 
-                                        <h2 className="mt-1 text-lg font-black leading-tight">
-                                            Verify this deal
-                                        </h2>
+                                    <h2 className="mt-1 text-xl font-black leading-tight text-[#102426]">
+                                        Get help with this apartment
+                                    </h2>
 
-                                        <p className="mt-1 text-xs font-semibold leading-5 text-white/80">
-                                            Get the special, fees, and exact availability checked before touring.
-                                        </p>
+                                    <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
+                                        We can verify the special, fees, and exact availability before you tour.
+                                    </p>
 
-                                        <div className="mt-3 grid grid-cols-3 gap-1.5">
-                                            <LeadStepCard number="1" label="Choose" />
-                                            <LeadStepCard number="2" label="Fit" />
-                                            <LeadStepCard number="3" label="Send" />
-                                        </div>
-                                    </div>
-
-                                    <div className="p-4">
-                                        <div className={`rounded-xl px-3 py-2.5 text-xs font-bold ${
+                                    <div className={`mt-3 rounded-xl px-3 py-2.5 text-xs font-bold ${
                                             hasPropertySpecial
                                                 ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
                                                 : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
                                         }`}>
-                                            {hasPropertySpecial
-                                                ? `This listing shows ${propertySpecialLabel}. We can help verify how it is applied.`
-                                                : "This listing does not show a special yet. We can help confirm current pricing and fees."}
-                                        </div>
-
-                                        <div className="mt-4">
-                                            <p className="text-xs font-black uppercase text-[#526260]">
-                                                What do you want help with first?
-                                            </p>
-
-                                            <div className="mt-2 grid gap-2">
-                                                {locatorIntentOptions.map((option) => (
-                                                    <LocatorIntentOption
-                                                        key={option.value}
-                                                        title={option.title}
-                                                        description={option.description}
-                                                        selected={leadForm.assistanceNeed === option.value}
-                                                        onClick={() =>
-                                                            setLeadForm({
-                                                                ...leadForm,
-                                                                assistanceNeed: option.value,
-                                                            })
-                                                        }
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-4 rounded-xl bg-[#f8fbf8] p-3 ring-1 ring-[#d7e6df]">
-                                            <p className="text-xs font-black uppercase text-[#526260]">
-                                                Your apartment fit
-                                            </p>
-
-                                            <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-                                                <select
-                                                    value={leadForm.moveInDate}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            moveInDate: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full rounded-lg border border-[#d7e6df] bg-white px-3 py-2.5 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
-                                                >
-                                                    <option value="">Move-in timeline</option>
-                                                    <option value="Immediately">Immediately</option>
-                                                    <option value="Within 30 Days">Within 30 Days</option>
-                                                    <option value="Within 60 Days">Within 60 Days</option>
-                                                    <option value="Within 90 Days">Within 90 Days</option>
-                                                    <option value="Just Browsing">Just Browsing</option>
-                                                </select>
-
-                                                <select
-                                                    value={leadForm.bedroomsNeeded}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            bedroomsNeeded: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full rounded-lg border border-[#d7e6df] bg-white px-3 py-2.5 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
-                                                >
-                                                    <option value="">Bedrooms needed</option>
-                                                    <option value="Studio">Studio</option>
-                                                    <option value="1 Bedroom">1 Bedroom</option>
-                                                    <option value="2 Bedroom">2 Bedroom</option>
-                                                    <option value="3 Bedroom">3 Bedroom</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-4">
-                                            <p className="text-xs font-black uppercase text-[#526260]">
-                                                Where should we send the answer?
-                                            </p>
-
-                                            <div className="mt-2 space-y-2">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Your name *"
-                                                    value={leadForm.name}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            name: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full rounded-lg border border-[#d7e6df] px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
-                                                />
-
-                                                <input
-                                                    type="tel"
-                                                    placeholder="Phone number *"
-                                                    value={leadForm.phone}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            phone: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full rounded-lg border border-[#d7e6df] px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
-                                                />
-
-                                                <select
-                                                    value={leadForm.contactMethod}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            contactMethod: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full rounded-lg border border-[#d7e6df] bg-white px-3 py-2.5 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
-                                                >
-                                                    <option value="">Best way to contact you</option>
-                                                    <option value="Text">Text me</option>
-                                                    <option value="Call">Call me</option>
-                                                    <option value="Email">Email me</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-4 rounded-xl border border-[#d7e6df] bg-white p-3">
-                                            <p className="text-xs font-black uppercase text-[#526260]">
-                                                We will help verify
-                                            </p>
-
-                                            <div className="mt-2 grid gap-2">
-                                                <LeadStep number="1" text="Whether the special is still active for the exact unit." />
-                                                <LeadStep number="2" text="Required monthly add-ons, parking, utilities, and move-in fees." />
-                                                <LeadStep number="3" text="Comparable nearby deals before you spend time touring." />
-                                            </div>
-                                        </div>
-
-                                        {showSidebarError && (
-                                            <p className="mt-3 text-sm font-semibold text-[#e4572e]">
-                                                Add your name and phone so we can send the answer.
-                                            </p>
-                                        )}
-
-                                        <button
-                                            onClick={handleFloorPlanLeadSubmit}
-                                            disabled={leadSubmitted}
-                                            className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-black ${leadSubmitted
-                                                ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
-                                                : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
-                                                }`}
-                                        >
-                                            {leadSubmitted ? "Request Sent" : "Text me this info"}
-                                        </button>
-
-                                        <div className="mt-3 grid grid-cols-3 gap-1.5 text-center text-[10px] font-black text-[#526260]">
-                                            <span className="rounded-lg bg-[#f5f8f1] px-1.5 py-1.5 ring-1 ring-[#d7e6df]">No cost</span>
-                                            <span className="rounded-lg bg-[#f5f8f1] px-1.5 py-1.5 ring-1 ring-[#d7e6df]">Specials</span>
-                                            <span className="rounded-lg bg-[#f5f8f1] px-1.5 py-1.5 ring-1 ring-[#d7e6df]">Text</span>
-                                        </div>
-
-                                        <p className="mt-3 text-[11px] leading-5 text-[#7b8b88]">
-                                            By submitting, renters agree to be contacted about availability, pricing, leasing specials, and apartment locator services.
-                                        </p>
+                                        {hasPropertySpecial
+                                            ? `Listed special: ${propertySpecialLabel}`
+                                            : "Ask us to confirm current pricing and availability."}
                                     </div>
+
+                                    <div className="mt-3 grid grid-cols-2 gap-2">
+                                        {locatorIntentOptions.map((option) => (
+                                            <button
+                                                key={option.value}
+                                                type="button"
+                                                onClick={() =>
+                                                    setLeadForm({
+                                                        ...leadForm,
+                                                        assistanceNeed: option.value,
+                                                    })
+                                                }
+                                                className={`rounded-lg px-3 py-2 text-left text-xs font-black ${
+                                                    leadForm.assistanceNeed === option.value
+                                                        ? "bg-[#173f3f] !text-white hover:!text-white"
+                                                        : "bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
+                                                }`}
+                                            >
+                                                {option.title}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="mt-3 grid gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Your name *"
+                                            value={leadForm.name}
+                                            onChange={(e) =>
+                                                setLeadForm({
+                                                    ...leadForm,
+                                                    name: e.target.value,
+                                                })
+                                            }
+                                            className="w-full rounded-lg border border-[#d7e6df] px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
+                                        />
+
+                                        <input
+                                            type="tel"
+                                            placeholder="Phone number *"
+                                            value={leadForm.phone}
+                                            onChange={(e) =>
+                                                setLeadForm({
+                                                    ...leadForm,
+                                                    phone: e.target.value,
+                                                })
+                                            }
+                                            className="w-full rounded-lg border border-[#d7e6df] px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
+                                        />
+
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <select
+                                                value={leadForm.moveInDate}
+                                                onChange={(e) =>
+                                                    setLeadForm({
+                                                        ...leadForm,
+                                                        moveInDate: e.target.value,
+                                                    })
+                                                }
+                                                className="w-full rounded-lg border border-[#d7e6df] bg-white px-3 py-2.5 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                                            >
+                                                <option value="">Move-in</option>
+                                                <option value="Immediately">Immediately</option>
+                                                <option value="Within 30 Days">Within 30 Days</option>
+                                                <option value="Within 60 Days">Within 60 Days</option>
+                                                <option value="Within 90 Days">Within 90 Days</option>
+                                                <option value="Just Browsing">Just Browsing</option>
+                                            </select>
+
+                                            <select
+                                                value={leadForm.bedroomsNeeded}
+                                                onChange={(e) =>
+                                                    setLeadForm({
+                                                        ...leadForm,
+                                                        bedroomsNeeded: e.target.value,
+                                                    })
+                                                }
+                                                className="w-full rounded-lg border border-[#d7e6df] bg-white px-3 py-2.5 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                                            >
+                                                <option value="">Beds</option>
+                                                <option value="Studio">Studio</option>
+                                                <option value="1 Bedroom">1 Bedroom</option>
+                                                <option value="2 Bedroom">2 Bedroom</option>
+                                                <option value="3 Bedroom">3 Bedroom</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {showSidebarError && (
+                                        <p className="mt-3 text-sm font-semibold text-[#e4572e]">
+                                            Add your name and phone so we can send the answer.
+                                        </p>
+                                    )}
+
+                                    <button
+                                        onClick={handleFloorPlanLeadSubmit}
+                                        disabled={leadSubmitted}
+                                        className={`mt-3 w-full rounded-xl px-4 py-3 text-sm font-black ${leadSubmitted
+                                            ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
+                                            : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
+                                            }`}
+                                    >
+                                        {leadSubmitted ? "Request Sent" : "Text me this info"}
+                                    </button>
+
+                                    <p className="mt-3 text-[11px] font-semibold leading-5 text-[#7b8b88]">
+                                        No cost to renters. We use your info only to follow up about this property and nearby options.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -3286,80 +3162,6 @@ function TourChecklistItem({ text }) {
         <div className="flex gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
             <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#f2b84b]" />
             <p className="text-xs font-bold leading-5 text-[#526260]">{text}</p>
-        </div>
-    );
-}
-
-function LeadStep({ number, text }) {
-    return (
-        <div className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#173f3f] text-xs font-black text-[#f2b84b]">
-                {number}
-            </span>
-            <p className="text-xs font-bold leading-5 text-[#526260]">{text}</p>
-        </div>
-    );
-}
-
-function LeadStepCard({ number, label }) {
-    return (
-        <div className="rounded-lg bg-white/10 px-2 py-2 text-center ring-1 ring-white/15">
-            <p className="mx-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#f2b84b] text-[10px] font-black text-[#102426]">
-                {number}
-            </p>
-            <p className="mt-1 text-[10px] font-black text-white">
-                {label}
-            </p>
-        </div>
-    );
-}
-
-function LocatorIntentOption({ title, description, selected, onClick }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={`group flex w-full items-start gap-2.5 rounded-xl p-2.5 text-left transition ${
-                selected
-                    ? "bg-[#173f3f] text-white shadow-sm"
-                    : "bg-[#f5f8f1] text-[#102426] ring-1 ring-[#d7e6df] hover:bg-[#e8f0eb]"
-            }`}
-        >
-            <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                selected
-                    ? "border-[#f2b84b] bg-[#f2b84b] text-[#102426]"
-                    : "border-[#9db2ab] bg-white text-transparent group-hover:border-[#173f3f]"
-            }`}>
-                <span className="text-[9px] font-black">✓</span>
-            </span>
-            <span className="min-w-0">
-                <span className={`block text-xs font-black ${
-                    selected ? "text-white" : "text-[#102426]"
-                }`}>
-                    {title}
-                </span>
-                <span className={`mt-0.5 block text-[11px] font-semibold leading-4 ${
-                    selected ? "text-white/80" : "text-[#526260]"
-                }`}>
-                    {description}
-                </span>
-            </span>
-        </button>
-    );
-}
-
-function DealSummaryMetric({ label, value, helper }) {
-    return (
-        <div className="p-3">
-            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
-                {label}
-            </p>
-            <p className="mt-0.5 truncate text-base font-black text-[#102426]">
-                {value}
-            </p>
-            <p className="mt-0.5 text-[11px] font-semibold leading-4 text-[#526260]">
-                {helper}
-            </p>
         </div>
     );
 }
