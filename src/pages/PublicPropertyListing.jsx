@@ -1527,6 +1527,29 @@ export default function PublicPropertyListing() {
         ? Math.max(...selectedFloorPlan.availableUnits.map((unit) => unit.requestCount || 0))
         : 0;
 
+    const locatorIntentOptions = [
+        {
+            value: "Confirm this special",
+            title: "Confirm the special",
+            description: "Verify the concession, credit timing, and whether it applies to base rent.",
+        },
+        {
+            value: "Check availability",
+            title: "Check exact availability",
+            description: "Confirm the floor plan, unit, move-in date, and current price before touring.",
+        },
+        {
+            value: "Compare similar properties",
+            title: "Compare better deals",
+            description: "Find nearby options with stronger specials, better pricing, or a better fit.",
+        },
+        {
+            value: "Schedule a tour",
+            title: "Plan the tour step",
+            description: "Get help deciding if this property is worth touring and what to ask first.",
+        },
+    ];
+
     return (
 
         <main className="min-h-screen bg-[#f5f8f1] pb-32 text-[#102426] md:pb-32">
@@ -1705,7 +1728,7 @@ export default function PublicPropertyListing() {
                                 href="#request-info"
                                 className="rounded-xl bg-[#173f3f] px-4 py-3 text-center text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
                             >
-                                Request info
+                                Get locator help
                             </a>
                             <button
                                 type="button"
@@ -1739,7 +1762,7 @@ export default function PublicPropertyListing() {
                         ["Floor plans", "#floor-plans"],
                         ["Map", "#location"],
                         ["Photos", "#photos"],
-                        ["Fees", "#request-info"],
+                        ["Locator help", "#request-info"],
                         ["Schools", "#schools"],
                     ].map(([label, href], index) => (
                         <a
@@ -2385,216 +2408,240 @@ export default function PublicPropertyListing() {
                                     </div>
                                 </div>
 
-                                <div className="rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-xl">
-                                    <p className="text-xs font-black uppercase text-[#1f6f63]">
-                                        Free renter help
-                                    </p>
-
-                                    <h2 className="mt-2 text-2xl font-black leading-tight text-[#102426]">
-                                        Get help from a locator
-                                    </h2>
-
-                                    <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
-                                        Tell us what you need. We’ll help confirm the special, real monthly cost, and similar deals before you tour.
-                                    </p>
-                                    <p className={`mt-3 rounded-2xl px-4 py-3 text-sm font-bold ${
-                                        hasPropertySpecial
-                                            ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
-                                            : "bg-[#f5f8f1] text-[#526260]"
-                                    }`}>
-                                        {hasPropertySpecial
-                                            ? `Ask about ${propertySpecialLabel}.`
-                                            : "Ask for current pricing, fees, and availability."}
-                                    </p>
-
-                                    <div className="mt-4 grid grid-cols-2 gap-2">
-                                        {[
-                                            "Confirm this special",
-                                            "Check availability",
-                                            "Compare similar properties",
-                                            "Schedule a tour",
-                                        ].map((need) => (
-                                            <button
-                                                key={need}
-                                                type="button"
-                                                onClick={() =>
-                                                    setLeadForm({
-                                                        ...leadForm,
-                                                        assistanceNeed: need,
-                                                    })
-                                                }
-                                                className={`rounded-2xl px-3 py-3 text-left text-xs font-black leading-4 ${
-                                                    leadForm.assistanceNeed === need
-                                                        ? "bg-[#173f3f] !text-white hover:!text-white"
-                                                        : "bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
-                                                }`}
-                                            >
-                                                {need}
-                                            </button>
-                                        ))}
-                                    </div>
-
-                                    <div className="mt-4 space-y-3">
-                                        <input
-                                            type="text"
-                                            placeholder="Your name *"
-                                            value={leadForm.name}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    name: e.target.value,
-                                                })
-                                            }
-                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        />
-
-                                        <input
-                                            type="tel"
-                                            placeholder="Phone number *"
-                                            value={leadForm.phone}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    phone: e.target.value,
-                                                })
-                                            }
-                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        />
-
-                                        <input
-                                            type="email"
-                                            placeholder="Email address *"
-                                            value={leadForm.email}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    email: e.target.value,
-                                                })
-                                            }
-                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        />
-
-                                        <select
-                                            value={leadForm.moveInDate}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    moveInDate: e.target.value,
-                                                })
-                                            }
-                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        >
-                                            <option value="">Desired move-in date</option>
-                                            <option value="Immediately">Immediately</option>
-                                            <option value="Within 30 Days">Within 30 Days</option>
-                                            <option value="Within 60 Days">Within 60 Days</option>
-                                            <option value="Within 90 Days">Within 90 Days</option>
-                                            <option value="Just Browsing">Just Browsing</option>
-                                        </select>
-
-                                        <select
-                                            value={leadForm.bedroomsNeeded}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    bedroomsNeeded: e.target.value,
-                                                })
-                                            }
-                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        >
-                                            <option value="">Bedrooms Needed</option>
-                                            <option value="Studio">Studio</option>
-                                            <option value="1 Bedroom">1 Bedroom</option>
-                                            <option value="2 Bedroom">2 Bedroom</option>
-                                            <option value="3 Bedroom">3 Bedroom</option>
-                                        </select>
-
-                                        <select
-                                            value={leadForm.budget}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    budget: e.target.value,
-                                                })
-                                            }
-                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        >
-                                            <option value="">Monthly budget</option>
-                                            <option value="Under $1,200">Under $1,200</option>
-                                            <option value="$1,200 - $1,500">$1,200 - $1,500</option>
-                                            <option value="$1,500 - $1,800">$1,500 - $1,800</option>
-                                            <option value="$1,800 - $2,200">$1,800 - $2,200</option>
-                                            <option value="$2,200+">$2,200+</option>
-                                        </select>
-
-                                        <select
-                                            value={leadForm.tourPreference}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    tourPreference: e.target.value,
-                                                })
-                                            }
-                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        >
-                                            <option value="">Tour preference</option>
-                                            <option value="In-person tour">In-person tour</option>
-                                            <option value="Virtual tour">Virtual tour</option>
-                                            <option value="Send pricing first">Send pricing first</option>
-                                        </select>
-
-                                        <select
-                                            value={leadForm.contactMethod}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    contactMethod: e.target.value,
-                                                })
-                                            }
-                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        >
-                                            <option value="">Preferred contact method</option>
-                                            <option value="Text">Text me</option>
-                                            <option value="Call">Call me</option>
-                                            <option value="Email">Email me</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-                                        <p className="text-sm font-black text-[#102426]">
-                                            What happens next
+                                <div className="overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-xl">
+                                    <div className="bg-[#102426] p-5 text-white">
+                                        <p className="text-xs font-black uppercase tracking-wide text-[#f2b84b]">
+                                            Free renter service
                                         </p>
 
-                                        <div className="mt-3 grid gap-2">
-                                            <LeadStep number="1" text="We confirm current availability and the exact special." />
-                                            <LeadStep number="2" text="You get the real rent basis, fees, and move-in cost questions answered." />
-                                            <LeadStep number="3" text="If it fits, we help line up the next tour step." />
+                                        <h2 className="mt-2 text-2xl font-black leading-tight">
+                                            Get a verified answer before you tour
+                                        </h2>
+
+                                        <p className="mt-2 text-sm font-semibold leading-6 text-white/80">
+                                            Tell us what matters most. A locator can help confirm the special, real monthly cost, unit availability, and similar deals.
+                                        </p>
+
+                                        <div className="mt-4 grid grid-cols-3 gap-2">
+                                            <LeadStepCard number="1" label="Need" />
+                                            <LeadStepCard number="2" label="Fit" />
+                                            <LeadStepCard number="3" label="Contact" />
                                         </div>
                                     </div>
 
-                                    {showSidebarError && (
-                                        <p className="mt-3 text-sm font-semibold text-[#e4572e]">
-                                            * Required fields: Name, Phone, Email
+                                    <div className="p-5">
+                                        <div className={`rounded-2xl px-4 py-3 text-sm font-bold ${
+                                            hasPropertySpecial
+                                                ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+                                                : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
+                                        }`}>
+                                            {hasPropertySpecial
+                                                ? `This listing shows ${propertySpecialLabel}. We can help verify how it is applied.`
+                                                : "This listing does not show a special yet. We can help confirm current pricing and fees."}
+                                        </div>
+
+                                        <div className="mt-5">
+                                            <p className="text-sm font-black text-[#102426]">
+                                                What do you want help with first?
+                                            </p>
+
+                                            <div className="mt-3 grid gap-2">
+                                                {locatorIntentOptions.map((option) => (
+                                                    <LocatorIntentOption
+                                                        key={option.value}
+                                                        title={option.title}
+                                                        description={option.description}
+                                                        selected={leadForm.assistanceNeed === option.value}
+                                                        onClick={() =>
+                                                            setLeadForm({
+                                                                ...leadForm,
+                                                                assistanceNeed: option.value,
+                                                            })
+                                                        }
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-5 rounded-2xl bg-[#f8fbf8] p-4 ring-1 ring-[#d7e6df]">
+                                            <p className="text-sm font-black text-[#102426]">
+                                                Your apartment fit
+                                            </p>
+
+                                            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                                                <select
+                                                    value={leadForm.moveInDate}
+                                                    onChange={(e) =>
+                                                        setLeadForm({
+                                                            ...leadForm,
+                                                            moveInDate: e.target.value,
+                                                        })
+                                                    }
+                                                    className="w-full rounded-xl border border-[#d7e6df] bg-white px-4 py-3 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                                                >
+                                                    <option value="">Move-in timeline</option>
+                                                    <option value="Immediately">Immediately</option>
+                                                    <option value="Within 30 Days">Within 30 Days</option>
+                                                    <option value="Within 60 Days">Within 60 Days</option>
+                                                    <option value="Within 90 Days">Within 90 Days</option>
+                                                    <option value="Just Browsing">Just Browsing</option>
+                                                </select>
+
+                                                <select
+                                                    value={leadForm.bedroomsNeeded}
+                                                    onChange={(e) =>
+                                                        setLeadForm({
+                                                            ...leadForm,
+                                                            bedroomsNeeded: e.target.value,
+                                                        })
+                                                    }
+                                                    className="w-full rounded-xl border border-[#d7e6df] bg-white px-4 py-3 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                                                >
+                                                    <option value="">Bedrooms needed</option>
+                                                    <option value="Studio">Studio</option>
+                                                    <option value="1 Bedroom">1 Bedroom</option>
+                                                    <option value="2 Bedroom">2 Bedroom</option>
+                                                    <option value="3 Bedroom">3 Bedroom</option>
+                                                </select>
+
+                                                <select
+                                                    value={leadForm.budget}
+                                                    onChange={(e) =>
+                                                        setLeadForm({
+                                                            ...leadForm,
+                                                            budget: e.target.value,
+                                                        })
+                                                    }
+                                                    className="w-full rounded-xl border border-[#d7e6df] bg-white px-4 py-3 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                                                >
+                                                    <option value="">Monthly budget</option>
+                                                    <option value="Under $1,200">Under $1,200</option>
+                                                    <option value="$1,200 - $1,500">$1,200 - $1,500</option>
+                                                    <option value="$1,500 - $1,800">$1,500 - $1,800</option>
+                                                    <option value="$1,800 - $2,200">$1,800 - $2,200</option>
+                                                    <option value="$2,200+">$2,200+</option>
+                                                </select>
+
+                                                <select
+                                                    value={leadForm.tourPreference}
+                                                    onChange={(e) =>
+                                                        setLeadForm({
+                                                            ...leadForm,
+                                                            tourPreference: e.target.value,
+                                                        })
+                                                    }
+                                                    className="w-full rounded-xl border border-[#d7e6df] bg-white px-4 py-3 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                                                >
+                                                    <option value="">Tour preference</option>
+                                                    <option value="In-person tour">In-person tour</option>
+                                                    <option value="Virtual tour">Virtual tour</option>
+                                                    <option value="Send pricing first">Send pricing first</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-5">
+                                            <p className="text-sm font-black text-[#102426]">
+                                                Where should we send the answer?
+                                            </p>
+
+                                            <div className="mt-3 space-y-3">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Your name *"
+                                                    value={leadForm.name}
+                                                    onChange={(e) =>
+                                                        setLeadForm({
+                                                            ...leadForm,
+                                                            name: e.target.value,
+                                                        })
+                                                    }
+                                                    className="w-full rounded-xl border border-[#d7e6df] px-4 py-3 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
+                                                />
+
+                                                <input
+                                                    type="tel"
+                                                    placeholder="Phone number *"
+                                                    value={leadForm.phone}
+                                                    onChange={(e) =>
+                                                        setLeadForm({
+                                                            ...leadForm,
+                                                            phone: e.target.value,
+                                                        })
+                                                    }
+                                                    className="w-full rounded-xl border border-[#d7e6df] px-4 py-3 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
+                                                />
+
+                                                <input
+                                                    type="email"
+                                                    placeholder="Email address *"
+                                                    value={leadForm.email}
+                                                    onChange={(e) =>
+                                                        setLeadForm({
+                                                            ...leadForm,
+                                                            email: e.target.value,
+                                                        })
+                                                    }
+                                                    className="w-full rounded-xl border border-[#d7e6df] px-4 py-3 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
+                                                />
+
+                                                <select
+                                                    value={leadForm.contactMethod}
+                                                    onChange={(e) =>
+                                                        setLeadForm({
+                                                            ...leadForm,
+                                                            contactMethod: e.target.value,
+                                                        })
+                                                    }
+                                                    className="w-full rounded-xl border border-[#d7e6df] bg-white px-4 py-3 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                                                >
+                                                    <option value="">Best way to contact you</option>
+                                                    <option value="Text">Text me</option>
+                                                    <option value="Call">Call me</option>
+                                                    <option value="Email">Email me</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-5 rounded-2xl border border-[#d7e6df] bg-white p-4">
+                                            <p className="text-sm font-black text-[#102426]">
+                                                We will help verify
+                                            </p>
+
+                                            <div className="mt-3 grid gap-2">
+                                                <LeadStep number="1" text="Whether the special is still active for the exact unit." />
+                                                <LeadStep number="2" text="Required monthly add-ons, parking, utilities, and move-in fees." />
+                                                <LeadStep number="3" text="Comparable nearby deals before you spend time touring." />
+                                            </div>
+                                        </div>
+
+                                        {showSidebarError && (
+                                            <p className="mt-3 text-sm font-semibold text-[#e4572e]">
+                                                Add your name, phone, and email so we can send the answer.
+                                            </p>
+                                        )}
+
+                                        <button
+                                            onClick={handleFloorPlanLeadSubmit}
+                                            disabled={leadSubmitted}
+                                            className={`mt-5 w-full rounded-2xl px-5 py-4 text-sm font-black ${leadSubmitted
+                                                ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
+                                                : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
+                                                }`}
+                                        >
+                                            {leadSubmitted ? "Request Sent" : "Get my apartment help"}
+                                        </button>
+
+                                        <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[11px] font-black text-[#526260]">
+                                            <span className="rounded-xl bg-[#f5f8f1] px-2 py-2 ring-1 ring-[#d7e6df]">No renter cost</span>
+                                            <span className="rounded-xl bg-[#f5f8f1] px-2 py-2 ring-1 ring-[#d7e6df]">Specials checked</span>
+                                            <span className="rounded-xl bg-[#f5f8f1] px-2 py-2 ring-1 ring-[#d7e6df]">Fee questions ready</span>
+                                        </div>
+
+                                        <p className="mt-4 text-xs leading-5 text-[#7b8b88]">
+                                            By submitting, renters agree to be contacted about availability, pricing, leasing specials, and apartment locator services.
                                         </p>
-                                    )}
-                                    <button
-                                        onClick={handleFloorPlanLeadSubmit}
-                                        disabled={leadSubmitted}
-                                        className={`mt-5 w-full rounded-2xl px-5 py-3 text-sm font-black ${leadSubmitted
-                                            ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
-                                            : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
-                                            }`}
-                                    >
-                                        {leadSubmitted ? "Request Sent" : "Get Locator Help"}
-                                    </button>
-                                    <div className="mt-4 space-y-2 text-sm font-semibold text-[#526260]">
-                                        <p>✓ No cost to renters</p>
-                                        <p>✓ Access to active leasing specials</p>
-                                        <p>✓ Help comparing below-market options</p>
                                     </div>
-                                    <p className="mt-4 text-xs leading-5 text-[#7b8b88]">
-                                        By submitting, renters agree to be contacted about availability, pricing, and leasing specials.
-                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -3182,7 +3229,7 @@ export default function PublicPropertyListing() {
                         }
                         className="flex-1 rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426]"
                     >
-                        Request Information
+                        Get Locator Help
                     </button>
 
                     <a
@@ -3233,6 +3280,53 @@ function LeadStep({ number, text }) {
             </span>
             <p className="text-xs font-bold leading-5 text-[#526260]">{text}</p>
         </div>
+    );
+}
+
+function LeadStepCard({ number, label }) {
+    return (
+        <div className="rounded-2xl bg-white/10 px-3 py-3 text-center ring-1 ring-white/15">
+            <p className="mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-[#f2b84b] text-xs font-black text-[#102426]">
+                {number}
+            </p>
+            <p className="mt-2 text-xs font-black text-white">
+                {label}
+            </p>
+        </div>
+    );
+}
+
+function LocatorIntentOption({ title, description, selected, onClick }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={`group flex w-full items-start gap-3 rounded-2xl p-3 text-left transition ${
+                selected
+                    ? "bg-[#173f3f] text-white shadow-sm"
+                    : "bg-[#f5f8f1] text-[#102426] ring-1 ring-[#d7e6df] hover:bg-[#e8f0eb]"
+            }`}
+        >
+            <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                selected
+                    ? "border-[#f2b84b] bg-[#f2b84b] text-[#102426]"
+                    : "border-[#9db2ab] bg-white text-transparent group-hover:border-[#173f3f]"
+            }`}>
+                <span className="text-[10px] font-black">✓</span>
+            </span>
+            <span className="min-w-0">
+                <span className={`block text-sm font-black ${
+                    selected ? "text-white" : "text-[#102426]"
+                }`}>
+                    {title}
+                </span>
+                <span className={`mt-1 block text-xs font-semibold leading-5 ${
+                    selected ? "text-white/80" : "text-[#526260]"
+                }`}>
+                    {description}
+                </span>
+            </span>
+        </button>
     );
 }
 
