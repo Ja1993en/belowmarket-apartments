@@ -4612,10 +4612,7 @@ function CompactFloorPlanRow({
     });
     const displayRent = formatFloorPlanMetricValue(rent) || "Contact";
     const displayEffectiveRent = formatFloorPlanMetricValue(effectiveRent) || displayRent;
-    const detailId = `floor-plan-${String(name || "layout")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")}-details`;
+    const detailId = `floor-plan-${getFloorPlanNameSlug(name)}-details`;
 
     return (
         <div className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
