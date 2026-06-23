@@ -1517,35 +1517,99 @@ export default function PublicPropertyListing() {
 
     return (
 
-        <main className="min-h-screen bg-[#f5f8f1] p-6 pb-32 text-[#102426] md:pb-32">
-            <div className="mx-auto max-w-7xl space-y-8">
+        <main className="min-h-screen bg-[#f5f8f1] pb-32 text-[#102426] md:pb-32">
+            <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white/95 shadow-sm backdrop-blur">
+                <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6">
+                    <Link to="/" className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#173f3f] text-xs font-black text-[#f2b84b]">
+                            BMA
+                        </span>
+                        <span className="truncate font-black text-[#102426]">
+                            Below Market Apartments
+                        </span>
+                    </Link>
+
+                    <div className="hidden items-center gap-5 text-sm font-black text-[#526260] md:flex">
+                        <a href="#floor-plans" className="hover:text-[#173f3f]">
+                            Floor plans
+                        </a>
+                        <a href="#location" className="hover:text-[#173f3f]">
+                            Map
+                        </a>
+                        <button
+                            type="button"
+                            onClick={() => setShowGallery(true)}
+                            className="font-black hover:text-[#173f3f]"
+                        >
+                            Photos
+                        </button>
+                    </div>
+
+                    <a
+                        href="#request-info"
+                        className="rounded-xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                    >
+                        Find Locator
+                    </a>
+                </div>
+            </header>
+
+            <div className="mx-auto max-w-7xl px-4 py-5 md:px-6 md:py-6">
                 <Link
                     to="/properties"
-                    className="inline-block rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                    className="inline-flex items-center gap-2 text-sm font-black text-[#173f3f] hover:text-[#102426]"
                 >
-                    Back to Search
+                    ← Back to Dallas apartments
                 </Link>
-                <div className="rounded-3xl bg-white shadow-sm ring-1 ring-[#d7e6df]">                    <div className="grid gap-3 p-3 lg:grid-cols-[2fr_1fr]">
-                    <div className="relative h-[280px] overflow-hidden rounded-2xl md:h-[340px]">
+
+                <section className="mt-4 grid items-start gap-5 lg:grid-cols-[minmax(0,1.35fr)_390px]">
+                    <div className="grid min-h-[420px] gap-2 overflow-hidden rounded-2xl md:grid-cols-[1.45fr_.9fr] md:grid-rows-2">
                         {hasPropertyGalleryImages ? (
                             <>
-                                <img
-                                    src={propertyGalleryImages[0].url}
-                                    alt={property.name}
-                                    fetchPriority="high"
-                                    decoding="async"
-                                    className="h-full w-full object-cover"
-                                />
-
                                 <button
+                                    type="button"
                                     onClick={() => setShowGallery(true)}
-                                    className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-sm font-black text-[#102426] shadow-md"
+                                    className="relative min-h-[280px] overflow-hidden bg-[#dcebe4] text-left md:row-span-2"
                                 >
-                                    View {propertyGalleryImages.length} Photos
+                                    <img
+                                        src={propertyGalleryImages[0].url}
+                                        alt={property.name}
+                                        fetchPriority="high"
+                                        decoding="async"
+                                        className="!h-full w-full object-cover"
+                                    />
                                 </button>
+
+                                {[1, 2].map((photoIndex) => {
+                                    const image = propertyGalleryImages[photoIndex] || propertyGalleryImages[0];
+                                    const isLastTile = photoIndex === 2;
+
+                                    return (
+                                        <button
+                                            key={`${image.url}-${photoIndex}`}
+                                            type="button"
+                                            onClick={() => setShowGallery(true)}
+                                            className="relative hidden min-h-[206px] overflow-hidden bg-[#dcebe4] text-left md:block"
+                                        >
+                                            <img
+                                                src={image.url}
+                                                alt={`${image.category} photo`}
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="!h-full w-full object-cover"
+                                            />
+
+                                            {isLastTile && (
+                                                <span className="absolute bottom-4 right-4 rounded-xl bg-[#102426]/95 px-4 py-3 text-sm font-black text-white shadow-lg">
+                                                    View {propertyGalleryImages.length} photos
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
                             </>
                         ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-[#e8efe9] p-8 text-center">
+                            <div className="flex min-h-[420px] items-center justify-center bg-[#e8efe9] p-8 text-center md:col-span-2">
                                 <div>
                                     <p className="text-lg font-black text-[#102426]">
                                         Photos coming soon
@@ -1558,80 +1622,136 @@ export default function PublicPropertyListing() {
                         )}
                     </div>
 
-                    <div className="hidden h-[340px] grid-rows-3 gap-3 lg:grid">
-                        {propertyGalleryImages.slice(1, 4).map((image, index) => (
-                            <div key={image.url} className="relative overflow-hidden rounded-2xl">
-                                <img
-                                    src={image.url}
-                                    alt={`${image.category} photo`}
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="h-full w-full object-cover"
-                                />
-
-                                {index === 2 && (
-                                    <button
-                                        onClick={() => setShowGallery(true)}
-                                        className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-black text-white"
-                                    >
-                                        View All Photos
-                                    </button>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                    <div className="p-6">
-                        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_340px]">
+                    <aside className="flex flex-col gap-3 rounded-2xl border border-[#d7e6df] bg-white p-5 shadow-xl">
+                        <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                                <p className="text-sm font-bold text-[#526260]">
+                                <p className="truncate text-sm font-black text-[#526260]">
                                     {managementLabel}
                                 </p>
 
-                                <h1 className="mt-2 text-4xl font-black text-[#102426]">
+                                <h1 className="mt-2 text-2xl font-black leading-tight text-[#102426] xl:text-3xl">
                                     {property.name}
                                 </h1>
 
-                                <p className="mt-2 text-[#526260]">
-                                    {addressLabel} • Starting at {startingRentLabel}
+                                <p className="mt-2 text-sm font-bold leading-5 text-[#526260]">
+                                    {addressLabel}
                                     {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
                                 </p>
+                            </div>
 
-                                <div className="mt-5 flex flex-wrap gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setSavedPropertyIds(toggleSavedPropertyId(property.id))
-                                        }
-                                        className={`rounded-2xl px-5 py-3 text-sm font-black ${
-                                            isPropertySaved
-                                                ? "bg-[#173f3f] !text-white hover:!text-white"
-                                                : "bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
-                                        }`}
-                                    >
-                                        {isPropertySaved ? "Saved Property" : "Save Property"}
-                                    </button>
+                            <div className="shrink-0 rounded-2xl bg-[#173f3f] px-4 py-3 text-center text-white">
+                                <p className="text-[10px] font-black uppercase text-[#f2b84b]">
+                                    Score
+                                </p>
+                                <p className="mt-1 text-2xl font-black leading-none">
+                                    {renterValueToolkit.dealScore}
+                                </p>
+                            </div>
+                        </div>
 
-                                    <button
-                                        type="button"
-                                        onClick={handleTogglePropertyCompare}
-                                        className={`rounded-2xl px-5 py-3 text-sm font-black ${
-                                            isPropertyCompared
-                                                ? "bg-[#f2b84b] text-[#102426]"
-                                                : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
-                                        }`}
-                                    >
-                                        {isPropertyCompared ? "Added to Compare" : "Compare Property"}
-                                    </button>
+                        <div className={`flex gap-3 rounded-2xl p-3 ring-1 ${
+                            hasPropertySpecial
+                                ? "bg-[#fff8e6] ring-[#f2d08a]"
+                                : "bg-[#f5f8f1] ring-[#d7e6df]"
+                        }`}>
+                            <span className={`w-2 shrink-0 rounded-full ${
+                                hasPropertySpecial ? "bg-[#f2b84b]" : "bg-[#d7e6df]"
+                            }`} />
+                            <div>
+                                <p className={`text-xs font-black uppercase ${
+                                    hasPropertySpecial ? "text-[#8a5b0a]" : "text-[#526260]"
+                                }`}>
+                                    Current special
+                                </p>
+                                <p className="mt-1 text-base font-black text-[#102426]">
+                                    {propertySpecialLabel}
+                                </p>
+                                <p className="mt-1 text-xs font-semibold leading-5 text-[#526260]">
+                                    Shown separately from normal rent so renters know what to confirm.
+                                </p>
+                            </div>
+                        </div>
 
-                                    <a
-                                        href="#floor-plans"
-                                        className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
-                                    >
-                                        Request Tour
-                                    </a>
+                        <div className="grid grid-cols-2 gap-3">
+                            {renterValueToolkit.snapshotMetrics.slice(0, 4).map((metric) => (
+                                <div
+                                    key={metric.label}
+                                    className="rounded-xl border border-[#d7e6df] bg-[#f8fbf8] p-2.5"
+                                >
+                                    <p className="text-[10px] font-black uppercase text-[#526260]">
+                                        {metric.label}
+                                    </p>
+                                    <p className="mt-1 truncate text-base font-black text-[#102426]">
+                                        {metric.value}
+                                    </p>
                                 </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-auto grid grid-cols-2 gap-3">
+                            <a
+                                href="#request-info"
+                                className="rounded-xl bg-[#173f3f] px-4 py-3 text-center text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+                            >
+                                Request info
+                            </a>
+                            <button
+                                type="button"
+                                onClick={handleTogglePropertyCompare}
+                                className={`rounded-xl px-4 py-3 text-sm font-black ${
+                                    isPropertyCompared
+                                        ? "bg-[#f2b84b] text-[#102426]"
+                                        : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
+                                }`}
+                            >
+                                {isPropertyCompared ? "Added" : "Compare"}
+                            </button>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setSavedPropertyIds(toggleSavedPropertyId(property.id))}
+                            className={`rounded-xl px-4 py-3 text-sm font-black ${
+                                isPropertySaved
+                                    ? "bg-[#173f3f] !text-white hover:!text-white"
+                                    : "bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
+                            }`}
+                        >
+                            {isPropertySaved ? "Saved Property" : "Save Property"}
+                        </button>
+                    </aside>
+                </section>
+
+                <nav className="sticky top-[68px] z-30 mt-5 flex gap-2 overflow-x-auto rounded-2xl border border-[#d7e6df] bg-white/95 p-2 shadow-lg backdrop-blur">
+                    {[
+                        ["Floor plans", "#floor-plans"],
+                        ["Map", "#location"],
+                        ["Photos", "#photos"],
+                        ["Fees", "#request-info"],
+                        ["Schools", "#schools"],
+                    ].map(([label, href], index) => (
+                        <a
+                            key={label}
+                            href={href}
+                            onClick={(event) => {
+                                if (href === "#photos") {
+                                    event.preventDefault();
+                                    setShowGallery(true);
+                                }
+                            }}
+                            className={`shrink-0 rounded-xl px-4 py-3 text-sm font-black ${
+                                index === 0
+                                    ? "bg-[#173f3f] !text-white hover:!text-white"
+                                    : "text-[#526260] hover:bg-[#f5f8f1] hover:text-[#173f3f]"
+                            }`}
+                        >
+                            {label}
+                        </a>
+                    ))}
+                </nav>
+
+                <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_345px]">
+                    <div className="min-w-0">
 
                                 {shouldShowCompareList && (
                                     <div
@@ -1922,7 +2042,7 @@ export default function PublicPropertyListing() {
                                 <div
                                     id="floor-plans"
                                     ref={floorPlansSectionRef}
-                                    className="mt-8 scroll-mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm"
+                                    className="mt-8 scroll-mt-32 rounded-2xl border border-[#d7e6df] bg-white p-6 shadow-sm"
                                 >                                <h2 className="text-2xl font-black text-[#102426]">
                                         Floor Plans
                                     </h2>
@@ -2081,7 +2201,7 @@ export default function PublicPropertyListing() {
                                         </div>
                                     )}
 
-                                    <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                                    <div className="mt-5 grid gap-3">
                                         {visibleFloorPlans.map((plan) => {
                                             const compareFloorPlanItem = getFloorPlanCompareItem(property, plan);
                                             const isFloorPlanCompared = compareFloorPlanKeys.has(
@@ -2257,7 +2377,7 @@ export default function PublicPropertyListing() {
 
                                 {/*Location*/}
                                 <div className="mt-8 space-y-6">
-                                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.45fr)]">
+                                    <div id="location" className="grid scroll-mt-32 gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.45fr)]">
                                         <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
                                             <h2 className="text-2xl font-black text-[#102426]">
                                                 Location
@@ -2328,9 +2448,47 @@ export default function PublicPropertyListing() {
 
                             <div
                                 id="request-info"
-                                className="mt-8 lg:mt-0"
+                                className="mt-8 space-y-4 lg:mt-0"
                             >
-                                <div className="sticky top-6 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-xl">
+                                <div className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-36">
+                                    <div className="p-4">
+                                        <h2 className="text-xl font-black text-[#102426]">
+                                            Location
+                                        </h2>
+                                        <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
+                                            {addressLabel}
+                                        </p>
+                                    </div>
+                                    <div className="px-4 pb-4">
+                                        <PropertyLocationMap
+                                            property={property}
+                                            addressLabel={addressLabel}
+                                            nearbyPlaces={nearbyPlaces}
+                                            onNearbyPlacesChange={setNearbyPlaces}
+                                        />
+                                    </div>
+                                    <div className="border-t border-[#edf4ef] p-4">
+                                        <h3 className="text-sm font-black uppercase text-[#1f6f63]">
+                                            Nearby
+                                        </h3>
+                                        <div className="mt-3 grid gap-2">
+                                            <NearbyItem
+                                                label="Kroger"
+                                                value={getNearbyPlaceName(nearbyPlaces, "kroger")}
+                                            />
+                                            <NearbyItem
+                                                label="Target"
+                                                value={getNearbyPlaceName(nearbyPlaces, "target")}
+                                            />
+                                            <NearbyItem
+                                                label="LA Fitness"
+                                                value={getNearbyPlaceName(nearbyPlaces, "laFitness")}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-xl">
                                     <p className="text-sm font-bold text-[#526260]">
                                         Interested in this property?
                                     </p>
@@ -2508,15 +2666,7 @@ export default function PublicPropertyListing() {
                                     </p>
                                 </div>
                             </div>
-
-
-
-
-
                         </div>
-
-                    </div>
-                </div>
             </div>
             {showGallery && hasPropertyGalleryImages && (
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-4 md:p-6">
@@ -3147,7 +3297,7 @@ function getCleanNearbyPlaceLabel(place) {
 
 function SchoolSnapshotCard({ schoolSnapshot }) {
     return (
-        <div className="rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
+        <div id="schools" className="scroll-mt-32 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                     <p className="text-sm font-black text-[#1f6f63]">
@@ -4564,15 +4714,15 @@ function FloorPlanCard({
     const imageAlt = image ? `${name} floor plan` : "Floor plan image not listed";
 
     return (
-        <div className="flex min-h-[410px] flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md">
-            <div className="flex min-h-[170px] items-center justify-center bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+        <div className="grid gap-3 overflow-hidden rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid-cols-[116px_minmax(0,1fr)_minmax(180px,auto)] md:items-center">
+            <div className="flex h-28 items-center justify-center rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] md:h-[92px]">
                 {image ? (
                     <img
                         src={image}
                         alt={imageAlt}
                         loading="lazy"
                         decoding="async"
-                        className="max-h-40 w-full object-contain"
+                        className="max-h-full w-full object-contain"
                     />
                 ) : (
                     <span className="px-2 text-center text-[10px] font-black uppercase leading-4 text-[#526260]">
@@ -4581,7 +4731,7 @@ function FloorPlanCard({
                 )}
             </div>
 
-            <div className="flex flex-1 flex-col p-4">
+            <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                     <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${availabilityBadgeClass}`}>
                         {availabilityBadgeLabel}
@@ -4606,18 +4756,33 @@ function FloorPlanCard({
                     {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
                 </p>
 
-            <div className="mt-4 grid grid-cols-2 gap-2">
-                <FloorPlanMetric label="Normal rent" value={displayRentValue} />
-
-                <FloorPlanMetric label="Estimated rent" value={displayEffectiveValue} highlight={hasSpecial} />
+                <p className="mt-2 truncate text-xs font-black text-[#8a5b0a]">
+                    {hasSpecial ? specialLabel : "No special listed"}
+                </p>
             </div>
 
-            <p className="mt-3 truncate rounded-lg bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#526260] ring-1 ring-[#d7e6df]">
-                {hasSpecial ? specialLabel : "No special listed"}
-            </p>
+            <div className="grid gap-3 md:text-right">
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
+                    <div>
+                        <p className="text-[10px] font-black uppercase text-[#526260]">
+                            Estimated rent
+                        </p>
+                        <p className={`mt-1 text-lg font-black ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
+                            {displayEffectiveValue}
+                        </p>
+                    </div>
 
-            <div className="mt-auto pt-3">
-                <div className="grid gap-2 sm:grid-cols-2">
+                    <div>
+                        <p className="text-[10px] font-black uppercase text-[#526260]">
+                            Normal rent
+                        </p>
+                        <p className="mt-1 text-sm font-black text-[#102426]">
+                            {displayRentValue}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-3 md:grid-cols-1">
                     <button
                         type="button"
                         onClick={onToggleCompare}
@@ -4627,7 +4792,7 @@ function FloorPlanCard({
                                 : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
                         }`}
                     >
-                        {isCompared ? "Added" : "Compare Floor Plan"}
+                        {isCompared ? "Added" : "Compare"}
                     </button>
 
                     <button
@@ -4638,22 +4803,21 @@ function FloorPlanCard({
                     >
                         {isExpanded ? "Hide Details" : "View Details"}
                     </button>
-                </div>
 
-                <button
-                    type="button"
-                    onClick={onCheckAvailability}
-                    className="mt-2 w-full rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
-                >
-                    Check Availability
-                </button>
+                    <button
+                        type="button"
+                        onClick={onCheckAvailability}
+                        className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
+                    >
+                        Request info
+                    </button>
+                </div>
 
                 {isCompared && (
                     <p className="mt-3 rounded-lg bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
                         Added to compare. Select more layouts or compare from search.
                     </p>
                 )}
-            </div>
             </div>
 
             {isExpanded && (
