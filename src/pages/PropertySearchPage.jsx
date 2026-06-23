@@ -1571,7 +1571,7 @@ function SearchResultCard({
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
-      <Link to={cardHref} className="relative block h-[220px] bg-[#dcebe4] md:h-auto md:min-h-[248px] md:self-stretch">
+      <Link to={cardHref} className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[248px] md:self-stretch">
         {showGoldHoverBar && (
           <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
         )}
