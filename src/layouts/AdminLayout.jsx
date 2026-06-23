@@ -44,7 +44,7 @@ export default function AdminLayout() {
   if (isCheckingAccess) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f5f8f1] p-6 text-center text-[#102426]">
-        <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#d7e6df]">
+        <div className="bma-panel p-6">
           <p className="text-sm font-black uppercase text-[#1f6f63]">
             Admin Portal
           </p>
@@ -66,9 +66,9 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-[#f5f8f1] text-[#102426]">
       <div className="flex">
-        <aside className="hidden min-h-screen w-72 bg-[#102426] p-6 text-white md:block">
+        <aside className="bma-brand-panel hidden min-h-screen w-72 p-6 text-white md:block">
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-[#f2b84b] p-3 text-[#102426]">
+            <div className="rounded-lg bg-[#f2b84b] p-3 text-[#102426]">
               <Building2 className="h-6 w-6" />
             </div>
 
@@ -87,7 +87,7 @@ export default function AdminLayout() {
         </aside>
 
         <main className="min-h-screen flex-1">
-          <header className="flex items-center justify-between border-b border-[#d7e6df] bg-white/95 px-6 py-4 shadow-sm backdrop-blur">
+          <header className="bma-topbar flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-3">
               <Menu className="h-6 w-6 text-[#173f3f] md:hidden" />
               <div>
@@ -101,7 +101,7 @@ export default function AdminLayout() {
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#173f3f] px-4 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+              className="bma-btn-primary"
             >
               <LogOut className="h-4 w-4" />
               Logout
@@ -122,7 +122,7 @@ function NavItem({ to, icon: Icon, label }) {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition ${
+        `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold transition ${
           isActive
             ? "bg-[#f2b84b] text-[#102426]"
             : "text-[#d7ece6] hover:bg-white/10 hover:text-white"

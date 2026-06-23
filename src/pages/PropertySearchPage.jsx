@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Building2, MapPin, Navigation, Search, Tag } from "lucide-react";
+import { Building2, MapPin, Navigation, Search } from "lucide-react";
 import CompareSavedOptionsPanel from "../components/propertySearch/CompareSavedOptionsPanel";
 import { getPublicPropertySummaries } from "../data/propertyStorage";
 import {
@@ -419,23 +419,23 @@ export default function PropertySearchPage() {
 
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
-      <section className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white/95 px-3 py-2 shadow-sm backdrop-blur">
-        <div className="mx-auto max-w-6xl">
+      <section className="bma-topbar sticky top-0 z-40 px-3 py-2">
+        <div className="bma-shell">
           <form
             onSubmit={submitSearch}
-            className="relative rounded-2xl border border-[#d7e6df] bg-white p-2 shadow-sm"
+            className="bma-card relative p-2"
           >
             <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
               <div className="flex items-center gap-2 xl:shrink-0">
                 <Link to="/" className="flex items-center">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#173f3f] text-xs font-black text-[#f2b84b]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#173f3f] text-xs font-black text-[#f2b84b]">
                     BMA
                   </span>
                 </Link>
 
                 <Link
                   to="/start"
-                  className="ml-auto rounded-2xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black text-[#102426] hover:bg-[#f9d783] xl:hidden"
+                  className="bma-btn-gold ml-auto xl:hidden"
                 >
                   Find Apartment Locator
                 </Link>
@@ -449,7 +449,7 @@ export default function PropertySearchPage() {
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="City, state, address, or special"
                   autoComplete="off"
-                  className="h-12 w-full rounded-xl border border-[#b8d9d0] bg-white pl-12 pr-4 text-base font-bold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                  className="bma-focus-ring h-12 w-full rounded-lg border border-[#b8d9d0] bg-white pl-12 pr-4 text-base font-bold text-[#102426] outline-none"
                 />
               </div>
 
@@ -462,7 +462,7 @@ export default function PropertySearchPage() {
                       setIsBedsFilterOpen(false);
                       setIsSpecialFilterOpen(false);
                     }}
-                    className={`h-11 rounded-xl border px-4 text-sm font-black ${
+                    className={`h-11 rounded-lg border px-4 text-sm font-black ${
                       selectedPriceRange
                         ? "border-[#2d7dd2] bg-[#eef5ff] text-[#174a7c]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
@@ -472,7 +472,7 @@ export default function PropertySearchPage() {
                   </button>
 
                   {isPriceFilterOpen && (
-                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-64 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl">
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-64 overflow-hidden rounded-lg border border-[#d7e6df] bg-white shadow-2xl">
                       <div className="border-b border-[#edf4ef] px-4 py-3">
                         <p className="text-xs font-black uppercase text-[#526260]">
                           Monthly budget
@@ -527,7 +527,7 @@ export default function PropertySearchPage() {
                       setIsPriceFilterOpen(false);
                       setIsSpecialFilterOpen(false);
                     }}
-                    className={`h-11 rounded-xl border px-4 text-sm font-black ${
+                    className={`h-11 rounded-lg border px-4 text-sm font-black ${
                       selectedBedroomFilter
                         ? "border-[#1f6f63] bg-[#e7f3ee] text-[#1f6f63]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
@@ -537,7 +537,7 @@ export default function PropertySearchPage() {
                   </button>
 
                   {isBedsFilterOpen && (
-                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-44 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl">
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-44 overflow-hidden rounded-lg border border-[#d7e6df] bg-white shadow-2xl">
                       {BED_FILTER_OPTIONS.map((option) => (
                         <button
                           key={option.value}
@@ -582,7 +582,7 @@ export default function PropertySearchPage() {
                       setIsPriceFilterOpen(false);
                       setIsBedsFilterOpen(false);
                     }}
-                    className={`h-11 rounded-xl border px-4 text-sm font-black ${
+                    className={`h-11 rounded-lg border px-4 text-sm font-black ${
                       selectedSpecialWeeks
                         ? "border-[#f2b84b] bg-[#fff8e6] text-[#8a5b0a]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
@@ -592,7 +592,7 @@ export default function PropertySearchPage() {
                   </button>
 
                   {isSpecialFilterOpen && (
-                    <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-56 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl">
+                    <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-56 overflow-hidden rounded-lg border border-[#d7e6df] bg-white shadow-2xl">
                       {SPECIAL_FILTER_OPTIONS.map((option) => (
                         <button
                           key={option.weeks}
@@ -632,21 +632,21 @@ export default function PropertySearchPage() {
 
               <button
                 type="submit"
-                className="h-12 rounded-xl bg-[#173f3f] px-7 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+                className="bma-btn-primary h-12 px-7"
               >
                 Search
               </button>
 
               <Link
                 to="/start"
-                className="hidden h-12 shrink-0 items-center rounded-2xl bg-[#f2b84b] px-4 text-sm font-black text-[#102426] hover:bg-[#f9d783] xl:flex"
+                className="bma-btn-gold hidden h-12 shrink-0 xl:flex"
               >
                 Find Apartment Locator
               </Link>
             </div>
 
             {suggestions.length > 0 && searchTerm.trim() !== searchFromUrl.trim() && (
-              <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-50 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl lg:right-auto lg:w-[min(560px,calc(100%-1rem))]">
+              <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-50 overflow-hidden rounded-lg border border-[#d7e6df] bg-white shadow-2xl lg:right-auto lg:w-[min(560px,calc(100%-1rem))]">
                 {suggestions.map((suggestion) => (
                   <button
                     key={`${suggestion.type}-${suggestion.value}`}
@@ -762,7 +762,7 @@ export default function PropertySearchPage() {
       </section>
 
       <section className="border-b border-[#d7e6df] bg-white">
-        <div className="relative h-[320px] overflow-hidden md:h-[380px] lg:h-[430px]">
+        <div className="bma-map-surface relative h-[320px] rounded-none border-x-0 md:h-[380px] lg:h-[430px]">
           <SearchMap
             properties={filteredProperties}
             mappableProperties={mappableFilteredProperties}
@@ -777,7 +777,7 @@ export default function PropertySearchPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-6">
+      <section className="bma-shell-narrow px-0 py-6">
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
           <div>
             <p className="text-sm font-black text-[#1f6f63]">
@@ -792,7 +792,7 @@ export default function PropertySearchPage() {
           </div>
           <Link
             to="/start"
-            className="w-fit rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+            className="bma-btn-gold w-fit"
           >
             Get matched
           </Link>
@@ -824,7 +824,7 @@ export default function PropertySearchPage() {
 
         <div
           ref={resultsTopRef}
-          className="mt-6 flex flex-col justify-between gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-[#d7e6df] sm:flex-row sm:items-center"
+          className="bma-card mt-6 flex flex-col justify-between gap-2 px-4 py-3 sm:flex-row sm:items-center"
         >
           <p className="text-sm font-black text-[#102426]">
             Showing{" "}
@@ -916,7 +916,7 @@ export default function PropertySearchPage() {
         )}
 
         {filteredProperties.length === 0 && (
-          <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-8 text-center shadow-sm">
+          <div className="bma-card mt-6 p-8 text-center">
             <h2 className="text-2xl font-black text-[#102426]">
               No matching properties yet
             </h2>
@@ -1399,7 +1399,7 @@ function FallbackSearchMap({ properties }) {
 
       {visiblePins.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center px-4">
-          <div className="rounded-3xl bg-white/95 p-6 text-center shadow-xl ring-1 ring-[#d7e6df]">
+          <div className="bma-panel bg-white/95 p-6 text-center">
             <Building2 className="mx-auto h-8 w-8 text-[#1f6f63]" />
             <p className="mt-2 text-lg font-black text-[#102426]">
               No properties on this map
@@ -1442,7 +1442,7 @@ function SearchResultCard({
   return (
     <article
       ref={cardRef}
-      className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md ${
+      className={`overflow-hidden rounded-lg bg-white shadow-sm ring-1 transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md ${
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
@@ -1456,7 +1456,7 @@ function SearchResultCard({
             decoding="async"
             className="aspect-[16/9] w-full object-cover"
           />
-          <div className="absolute left-3 top-3 rounded-xl bg-[#173f3f] px-2.5 py-2 text-white shadow-lg">
+          <div className="absolute left-3 top-3 rounded-lg bg-[#173f3f] px-2.5 py-2 text-white shadow-lg">
             <p className="text-[10px] font-black uppercase tracking-[0.08em] text-[#f9d783]">
               Deal Score
             </p>
@@ -1465,7 +1465,7 @@ function SearchResultCard({
         </div>
       </Link>
 
-      <div className="p-3">
+      <div className="p-4">
         <Link to={cardHref} className="block">
           <p className="truncate text-base font-black text-[#102426]">
             {property.name}
@@ -1476,40 +1476,28 @@ function SearchResultCard({
           </p>
         </Link>
 
-        <div className="mt-3 flex items-end justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[11px] font-black uppercase text-[#1f6f63]">
-              {showNetEffectiveRent ? "After Special" : "Listed Rent"}
-            </p>
-            <p className="mt-1 truncate text-xl font-black text-[#102426]">
-              {showNetEffectiveRent
-                ? priceSummary.effectiveRentLabel
-                : priceSummary.normalRentLabel}
-            </p>
-            {showNetEffectiveRent && (
-              <p className="mt-1 text-xs font-bold text-[#526260]">
-                Listed rent: {priceSummary.normalRentLabel}
-              </p>
-            )}
-          </div>
-
+        <div className="mt-3 flex items-center justify-between gap-2">
           <p className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
             {getBedsLabel(property, displayFloorPlans)}
           </p>
+          {hasSpecial && (
+            <p className="rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+              {priceSummary.specialLabel}
+            </p>
+          )}
         </div>
 
-        {showNetEffectiveRent && (
-          <p className="mt-2 text-[11px] font-bold leading-snug text-[#526260]">
-            After special spreads the concession across the lease. Your bill may still be based on listed rent plus required fees.
-          </p>
-        )}
-
-        {hasSpecial && (
-          <p className="mt-3 flex items-center gap-2 rounded-xl bg-[#fff8e6] px-3 py-2 text-sm font-black text-[#102426] ring-1 ring-[#f2d08a]">
-            <Tag className="h-4 w-4 shrink-0 text-[#8a5b0a]" />
-            <span className="truncate">{priceSummary.specialLabel}</span>
-          </p>
-        )}
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <SearchRentMetric
+            label="Normal rent"
+            value={priceSummary.normalRentLabel}
+          />
+          <SearchRentMetric
+            label={showNetEffectiveRent ? "Estimated rent" : "Current rent"}
+            value={showNetEffectiveRent ? priceSummary.effectiveRentLabel : priceSummary.normalRentLabel}
+            highlight={showNetEffectiveRent}
+          />
+        </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
           {transparencyBadges.map((badge) => (
@@ -1526,7 +1514,7 @@ function SearchResultCard({
           <button
             type="button"
             onClick={onToggleSaved}
-            className={`rounded-xl px-3 py-2.5 text-sm font-black ${
+            className={`rounded-lg px-3 py-2.5 text-sm font-black ${
               isSaved
                 ? "bg-[#173f3f] !text-white hover:!text-white"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
@@ -1537,7 +1525,7 @@ function SearchResultCard({
           <button
             type="button"
             onClick={onToggleCompare}
-            className={`rounded-xl px-3 py-2.5 text-sm font-black ${
+            className={`rounded-lg px-3 py-2.5 text-sm font-black ${
               isCompared
                 ? "bg-[#f2b84b] text-[#102426]"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
@@ -1548,6 +1536,21 @@ function SearchResultCard({
         </div>
       </div>
     </article>
+  );
+}
+
+function SearchRentMetric({ label, value, highlight = false }) {
+  return (
+    <div
+      className={`rounded-lg p-3 ring-1 ${
+        highlight
+          ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
+          : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
+      }`}
+    >
+      <p className="text-[10px] font-black uppercase">{label}</p>
+      <p className="mt-1 truncate text-lg font-black text-[#102426]">{value}</p>
+    </div>
   );
 }
 

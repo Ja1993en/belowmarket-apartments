@@ -4564,75 +4564,64 @@ function FloorPlanCard({
     const imageAlt = image ? `${name} floor plan` : "Floor plan image not listed";
 
     return (
-        <div className="flex min-h-[315px] flex-col justify-between rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#d7e6df]">
-            <div className="flex min-w-0 gap-4">
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#f5f8f1] ring-1 ring-[#d7e6df]">
-                    {image ? (
-                        <img
-                            src={image}
-                            alt={imageAlt}
-                            loading="lazy"
-                            decoding="async"
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <span className="px-2 text-center text-[10px] font-black uppercase leading-4 text-[#526260]">
-                            Image pending
-                        </span>
-                    )}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${availabilityBadgeClass}`}>
-                            {availabilityBadgeLabel}
-                        </span>
-
-                        <span
-                            className={`inline-flex max-w-full rounded-full px-2.5 py-1 text-[11px] font-black ${
-                                hasSpecial
-                                    ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
-                                    : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
-                            }`}
-                        >
-                            <span className="truncate">{specialLabel}</span>
-                        </span>
-                    </div>
-
-                    <p className="mt-2 truncate text-lg font-black text-[#102426]">
-                        {name}
-                    </p>
-
-                    <p className="mt-1 text-sm font-semibold text-[#526260]">
-                        {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft} sq ft
-                    </p>
-                </div>
+        <div className="flex min-h-[410px] flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md">
+            <div className="flex min-h-[170px] items-center justify-center bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                {image ? (
+                    <img
+                        src={image}
+                        alt={imageAlt}
+                        loading="lazy"
+                        decoding="async"
+                        className="max-h-40 w-full object-contain"
+                    />
+                ) : (
+                    <span className="px-2 text-center text-[10px] font-black uppercase leading-4 text-[#526260]">
+                        Image pending
+                    </span>
+                )}
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-2">
+            <div className="flex flex-1 flex-col p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${availabilityBadgeClass}`}>
+                        {availabilityBadgeLabel}
+                    </span>
+
+                    <span
+                        className={`inline-flex max-w-full rounded-full px-2.5 py-1 text-[11px] font-black ${
+                            hasSpecial
+                                ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+                                : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
+                        }`}
+                    >
+                        <span className="truncate">{specialLabel}</span>
+                    </span>
+                </div>
+
+                <p className="mt-3 truncate text-lg font-black text-[#102426]">
+                    {name}
+                </p>
+
+                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                    {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
+                </p>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
                 <FloorPlanMetric label="Normal rent" value={displayRentValue} />
 
                 <FloorPlanMetric label="Estimated rent" value={displayEffectiveValue} highlight={hasSpecial} />
             </div>
 
-            <p className="mt-3 rounded-2xl bg-[#f5f8f1] px-3 py-2 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
-                {hasSpecial
-                    ? "Estimated using the listed special over a 12-month lease. Confirm fees before applying."
-                    : "No special is listed for this layout. Confirm current pricing, fees, and availability before applying."}
+            <p className="mt-3 truncate rounded-lg bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#526260] ring-1 ring-[#d7e6df]">
+                {hasSpecial ? specialLabel : "No special listed"}
             </p>
 
-            <div className="mt-3 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
-                <div className="min-w-0 text-center sm:text-left">
-                    <span className="text-xs font-bold text-[#526260]">
-                        Compare fees and exact unit pricing before applying
-                    </span>
-                </div>
-
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <div className="mt-auto pt-3">
+                <div className="grid gap-2 sm:grid-cols-2">
                     <button
                         type="button"
                         onClick={onToggleCompare}
-                        className={`rounded-xl px-4 py-3 text-sm font-bold ${
+                        className={`rounded-lg px-4 py-3 text-sm font-bold ${
                             isCompared
                                 ? "bg-[#f2b84b] text-[#102426]"
                                 : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
@@ -4644,7 +4633,7 @@ function FloorPlanCard({
                     <button
                         type="button"
                         onClick={() => setIsExpanded((currentValue) => !currentValue)}
-                        className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
+                        className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                         style={{ color: "#ffffff" }}
                     >
                         {isExpanded ? "Hide Details" : "View Details"}
@@ -4654,16 +4643,17 @@ function FloorPlanCard({
                 <button
                     type="button"
                     onClick={onCheckAvailability}
-                    className="mt-2 w-full rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
+                    className="mt-2 w-full rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                 >
                     Check Availability
                 </button>
 
                 {isCompared && (
-                    <p className="mt-3 rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+                    <p className="mt-3 rounded-lg bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
                         Added to compare. Select more layouts or compare from search.
                     </p>
                 )}
+            </div>
             </div>
 
             {isExpanded && (

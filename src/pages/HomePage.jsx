@@ -141,11 +141,11 @@ export default function HomePage() {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageFaqSchema) }}
             />
-            <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
-                <div className="mx-auto flex max-w-[1500px] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <header className="bma-topbar sticky top-0 z-40 px-4 py-3">
+                <div className="bma-shell flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex items-center justify-between gap-4">
                         <Link to="/" className="flex items-center gap-3">
-                            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#173f3f] text-sm font-black text-[#f2b84b]">
+                            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#173f3f] text-sm font-black text-[#f2b84b]">
                                 BMA
                             </span>
                             <span>
@@ -160,7 +160,7 @@ export default function HomePage() {
 
                         <Link
                             to="/start"
-                            className="rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] lg:hidden"
+                            className="bma-btn-gold lg:hidden"
                         >
                             Locator
                         </Link>
@@ -169,14 +169,14 @@ export default function HomePage() {
                     <nav className="hidden items-center gap-3 lg:flex">
                         <Link
                             to="/start"
-                            className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                            className="bma-btn-gold"
                         >
                             Find Apartment Locator
                         </Link>
 
                         <Link
                             to="/admin/dashboard"
-                            className="rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                            className="bma-btn-primary"
                         >
                             Admin Portal
                         </Link>
@@ -198,10 +198,7 @@ export default function HomePage() {
                         Search by city, ZIP, property name, manager, or special.
                     </p>
 
-                    <form
-                        onSubmit={submitSearch}
-                        className="relative mx-auto mt-8 max-w-3xl rounded-3xl border border-white/20 bg-white p-2 shadow-2xl shadow-[#102426]/25"
-                    >
+                    <form onSubmit={submitSearch} className="bma-panel relative mx-auto mt-8 max-w-3xl p-2">
                         <div className="bma-value-stripe mb-2 h-2 rounded-full" />
                         <div className="flex flex-col gap-2 sm:flex-row">
                             <div className="relative min-w-0 flex-1">
@@ -213,14 +210,14 @@ export default function HomePage() {
                                     onChange={(event) => setSearchTerm(event.target.value)}
                                     placeholder="Enter city, ZIP, property, or special"
                                     autoComplete="off"
-                                    className="bma-focus-ring h-16 w-full rounded-2xl border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-white"
+                                    className="bma-focus-ring h-16 w-full rounded-lg border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-[#102426]"
                                     style={{ color: "#000000", caretColor: "#000000" }}
                                 />
                             </div>
 
                             <button
                                 type="submit"
-                                className="h-16 rounded-2xl bg-[#f2b84b] px-8 text-base font-black text-[#102426] hover:bg-[#f9d783]"
+                                className="bma-btn-gold h-16 px-8 text-base"
                             >
                                 Search
                             </button>
@@ -230,14 +227,14 @@ export default function HomePage() {
                             <button
                                 type="button"
                                 onClick={() => setSearchTerm("")}
-                                className="mt-2 rounded-2xl px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                                className="mt-2 rounded-lg px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
                             >
                                 Clear search
                             </button>
                         )}
 
                         {searchSuggestions.length > 0 && (
-                            <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-30 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white text-left shadow-2xl">
+                            <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-30 overflow-hidden rounded-lg border border-[#d7e6df] bg-white text-left shadow-2xl">
                                 {searchSuggestions.map((suggestion) => (
                                     <button
                                         key={`${suggestion.type}-${suggestion.value}`}
@@ -266,7 +263,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <section className="mx-auto max-w-[1500px] px-4 py-6">
+            <section className="bma-shell px-0 py-6">
                 <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
                     <div>
                         <p className="text-sm font-black text-[#1f6f63]">
@@ -282,7 +279,7 @@ export default function HomePage() {
 
                     <Link
                         to="/start"
-                        className="w-fit rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                        className="bma-btn-primary w-fit"
                     >
                         Get matched
                     </Link>
@@ -305,7 +302,7 @@ export default function HomePage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="mt-5 rounded-3xl border border-dashed border-[#d7e6df] bg-white p-8 text-center shadow-sm">
+                    <div className="bma-card mt-5 border-dashed p-8 text-center">
                         <p className="text-xl font-black text-[#102426]">
                             No live Dallas deals yet
                         </p>
@@ -314,14 +311,14 @@ export default function HomePage() {
                         </p>
                         <Link
                             to="/admin/properties/new"
-                            className="mt-5 inline-flex rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
+                            className="bma-btn-primary mt-5"
                         >
                             Add Property
                         </Link>
                     </div>
                 )}
 
-                <section className="mt-8 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm">
+                <section className="bma-panel mt-8 overflow-hidden">
                     <div
                         className="grid min-w-0"
                         style={{
@@ -330,7 +327,7 @@ export default function HomePage() {
                                 : "minmax(0, 1fr)",
                         }}
                     >
-                        <div className="min-w-0 bg-[#173f3f] p-6 text-white md:p-8">
+                        <div className="bma-brand-panel min-w-0 p-6 text-white md:p-8">
                             <p className="text-sm font-black text-[#f2b84b]">
                                 Our mission
                             </p>
@@ -364,7 +361,7 @@ export default function HomePage() {
                                 ))}
                             </div>
 
-                            <div className="min-w-0 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                            <div className="min-w-0 rounded-lg bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
                                 <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                                     <div>
                                         <p className="text-sm font-black text-[#1f6f63]">
@@ -376,7 +373,7 @@ export default function HomePage() {
                                     </div>
                                     <Link
                                         to="/start"
-                                        className="w-fit rounded-2xl bg-[#f2b84b] px-4 py-2 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                                        className="bma-btn-gold w-fit"
                                     >
                                         Get matched
                                     </Link>
@@ -398,7 +395,7 @@ export default function HomePage() {
             </section>
 
             <footer className="border-t border-[#d7e6df] bg-white px-4 py-6">
-                <div className="mx-auto flex max-w-[1500px] flex-col gap-3 text-sm font-bold text-[#526260] md:flex-row md:items-center md:justify-between">
+                <div className="bma-shell flex flex-col gap-3 text-sm font-bold text-[#526260] md:flex-row md:items-center md:justify-between">
                     <p>Below Market Apartments</p>
                     <div className="flex flex-wrap gap-4">
                         <Link to="/about" className="hover:text-[#173f3f]">
@@ -1181,7 +1178,7 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
     return (
         <Link
             to={cardHref}
-            className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md"
+            className="bma-card group overflow-hidden transition hover:-translate-y-1 hover:border-[#f2b84b] hover:shadow-md"
         >
             <div className="relative">
                 <img
@@ -1192,13 +1189,13 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     className="aspect-[4/3] w-full object-cover"
                 />
                 {badgeLabel && (
-                    <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-black text-[#17623b] shadow-sm">
+                    <span className="bma-chip bma-chip-gold absolute left-3 top-3 shadow-sm">
                         {badgeLabel}
                     </span>
                 )}
             </div>
 
-            <div className="p-3">
+            <div className="p-4">
                 <p className="truncate text-base font-black text-[#102426] group-hover:text-[#1f6f63]">
                     {property.name}
                 </p>
@@ -1209,21 +1206,21 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     {bedsLabel}
                 </p>
 
-                <div className="mt-3 flex items-end justify-between gap-3">
-                    <div className="min-w-0">
-                        <p className="text-[11px] font-black uppercase text-[#1f6f63]">
-                            {primaryRentCaption}
+                <div className={`mt-3 grid gap-2 ${showNormalRent ? "grid-cols-2" : "grid-cols-1"}`}>
+                    <div className="rounded-lg bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
+                        <p className="text-[10px] font-black uppercase text-[#526260]">
+                            {showNormalRent ? "Estimated rent" : primaryRentCaption}
                         </p>
-                        <p className="mt-0.5 truncate text-xl font-black text-[#102426]">
+                        <p className="mt-1 truncate text-lg font-black text-[#102426]">
                             {primaryRentLabel}
                         </p>
                     </div>
                     {showNormalRent && (
-                        <div className="shrink-0 text-right">
-                            <p className="text-[11px] font-black uppercase text-[#526260]">
-                                Normal
+                        <div className="rounded-lg bg-white p-3 text-left ring-1 ring-[#d7e6df]">
+                            <p className="text-[10px] font-black uppercase text-[#526260]">
+                                Normal rent
                             </p>
-                            <p className="mt-0.5 text-sm font-black text-[#526260]">
+                            <p className="mt-1 truncate text-lg font-black text-[#102426]">
                                 {normalRentLabel}
                             </p>
                         </div>
@@ -1231,7 +1228,7 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                 </div>
 
                 {dealSummary.hasSpecial && (
-                    <div className="mt-3 rounded-xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+                    <div className="mt-3 rounded-lg bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
                         <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
                             Special
                         </p>
@@ -1251,7 +1248,7 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
 
 function MissionBenefit({ title, text }) {
     return (
-        <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
+        <div className="rounded-lg bg-white p-4 ring-1 ring-[#d7e6df]">
             <p className="text-sm font-black text-[#102426]">{title}</p>
             <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
                 {text}
@@ -1264,7 +1261,7 @@ function SeoFaqCard({ question, answer }) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className={`rounded-2xl bg-white p-4 ring-1 ${isOpen ? "ring-[#f2b84b]" : "ring-[#d7e6df]"}`}>
+        <div className={`rounded-lg bg-white p-4 ring-1 ${isOpen ? "ring-[#f2b84b]" : "ring-[#d7e6df]"}`}>
             <button
                 type="button"
                 onClick={() => setIsOpen((currentValue) => !currentValue)}

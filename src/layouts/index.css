@@ -10,6 +10,12 @@
   --bma-blue: #2d7dd2;
   --bma-mist: #f5f8f1;
   --bma-paper: #ffffff;
+  --bma-border: #d7e6df;
+  --bma-border-strong: #a9cfc2;
+  --bma-shadow: 0 16px 40px rgba(16, 36, 38, 0.08);
+  --bma-shadow-soft: 0 8px 22px rgba(16, 36, 38, 0.07);
+  --bma-radius: 8px;
+  --bma-radius-lg: 12px;
   color-scheme: light;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -37,7 +43,9 @@ body {
   min-height: 100vh;
   min-height: 100svh;
   margin: 0;
-  background: var(--bma-mist);
+  background:
+    linear-gradient(180deg, rgba(231, 243, 238, 0.64), rgba(245, 248, 241, 0) 360px),
+    var(--bma-mist);
   color: var(--bma-ink);
   overflow-x: hidden;
 }
@@ -203,11 +211,88 @@ table {
 
   .bma-brand-panel {
     background:
-      linear-gradient(135deg, rgba(31, 111, 99, 0.18), rgba(45, 125, 210, 0.12)),
-      var(--bma-evergreen);
+      linear-gradient(135deg, rgba(242, 184, 75, 0.13), transparent 34%),
+      linear-gradient(160deg, #173f3f 0%, #102426 72%);
   }
 
   .bma-value-stripe {
-    background: linear-gradient(90deg, var(--bma-gold), var(--bma-coral), var(--bma-blue));
+    background: linear-gradient(90deg, var(--bma-gold), #f9d783 42%, var(--bma-market));
+  }
+
+  .bma-shell {
+    width: min(1500px, calc(100vw - 32px));
+    margin-inline: auto;
+  }
+
+  .bma-shell-narrow {
+    width: min(1180px, calc(100vw - 32px));
+    margin-inline: auto;
+  }
+
+  .bma-topbar {
+    border-bottom: 1px solid rgba(215, 230, 223, 0.95);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 6px 20px rgba(16, 36, 38, 0.06);
+    backdrop-filter: blur(14px);
+  }
+
+  .bma-card {
+    border: 1px solid var(--bma-border);
+    border-radius: var(--bma-radius);
+    background: var(--bma-paper);
+    box-shadow: var(--bma-shadow-soft);
+  }
+
+  .bma-panel {
+    border: 1px solid var(--bma-border);
+    border-radius: var(--bma-radius-lg);
+    background: var(--bma-paper);
+    box-shadow: var(--bma-shadow);
+  }
+
+  .bma-btn-primary,
+  .bma-btn-gold,
+  .bma-btn-secondary,
+  .bma-btn-ghost {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-black leading-none no-underline transition;
+  }
+
+  .bma-btn-primary {
+    @apply bg-[#173f3f] text-white shadow-sm hover:bg-[#102426];
+  }
+
+  .bma-btn-gold {
+    @apply bg-[#f2b84b] text-[#102426] shadow-sm hover:bg-[#f9d783];
+  }
+
+  .bma-btn-secondary {
+    @apply border border-[#d7e6df] bg-[#e7f3ee] text-[#173f3f] hover:bg-[#d8efe6];
+  }
+
+  .bma-btn-ghost {
+    @apply border border-[#d7e6df] bg-white text-[#173f3f] hover:bg-[#f5f8f1];
+  }
+
+  .bma-chip {
+    @apply inline-flex min-h-7 items-center gap-1 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#173f3f];
+  }
+
+  .bma-chip-gold {
+    @apply bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a];
+  }
+
+  .bma-image-tile {
+    @apply overflow-hidden rounded-lg bg-[#dcebe4];
+  }
+
+  .bma-map-surface {
+    @apply overflow-hidden rounded-lg border border-[#d7e6df] bg-[#dcebe4] shadow-sm;
+  }
+}
+
+@media (max-width: 760px) {
+  .bma-shell,
+  .bma-shell-narrow {
+    width: min(100% - 24px, 1500px);
   }
 }

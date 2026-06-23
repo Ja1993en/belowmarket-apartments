@@ -360,7 +360,7 @@ export default function AdminDashboard() {
 
     return (
         <div className="mx-auto w-full max-w-7xl space-y-5 text-left">
-            <section className="overflow-hidden rounded-3xl bg-[#102426] text-white shadow-sm">
+            <section className="bma-brand-panel overflow-hidden rounded-lg text-white shadow-sm">
                 <div className="grid gap-5 p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
                     <div className="min-w-0">
                         <p className="text-sm font-black text-[#f2b84b]">
@@ -395,13 +395,13 @@ export default function AdminDashboard() {
                             type="button"
                             onClick={loadDashboardData}
                             disabled={isLoadingDashboard}
-                            className="min-h-12 rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
+                            className="bma-btn-gold min-h-12 disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
                         >
                             {isLoadingDashboard ? "Refreshing..." : "Refresh Dashboard"}
                         </button>
                         <Link
                             to="/admin/properties/new"
-                            className="flex min-h-12 items-center justify-center rounded-2xl bg-white/10 px-5 py-3 text-center text-sm font-bold text-white hover:bg-white/15"
+                            className="flex min-h-12 items-center justify-center rounded-lg bg-white/10 px-5 py-3 text-center text-sm font-bold text-white hover:bg-white/15"
                         >
                             Add Property
                         </Link>
@@ -409,14 +409,14 @@ export default function AdminDashboard() {
                 </div>
 
                 {dashboardError && (
-                    <p className="mx-5 mb-5 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] md:mx-6 md:mb-6">
+                    <p className="mx-5 mb-5 rounded-lg bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] md:mx-6 md:mb-6">
                         {dashboardError}
                     </p>
                 )}
             </section>
 
             {hasNoSupabaseLeads && (
-                <section className="rounded-3xl border border-dashed border-[#a9cfc2] bg-white p-5 shadow-sm">
+                <section className="bma-card border-dashed border-[#a9cfc2] p-5">
                     <p className="text-sm font-black text-[#102426]">
                         No Supabase leads yet.
                     </p>
@@ -457,7 +457,7 @@ export default function AdminDashboard() {
                         ))}
                     </div>
 
-                    <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                    <div className="rounded-lg bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
                         <p className="text-sm font-black text-[#102426]">
                             Recent conversion activity
                         </p>
@@ -861,7 +861,7 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
     const cardContent = (
         <>
             <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#e7f3ee]">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#e7f3ee]">
                     <Icon className="h-6 w-6 text-[#1f6f63]" />
                 </div>
 
@@ -880,7 +880,7 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
         return (
             <Link
                 to={to}
-                className="block min-h-[180px] min-w-0 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm hover:border-[#f2b84b] hover:shadow-md"
+                className="bma-card block min-h-[180px] min-w-0 p-5 hover:border-[#f2b84b] hover:shadow-md"
             >
                 {cardContent}
             </Link>
@@ -888,7 +888,7 @@ function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
     }
 
     return (
-        <div className="min-h-[180px] min-w-0 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
+        <div className="bma-card min-h-[180px] min-w-0 p-5">
             {cardContent}
         </div>
     );
@@ -911,7 +911,7 @@ function DashboardPanel({
     };
 
     return (
-        <section className={`min-w-0 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm md:p-6 ${className}`}>
+        <section className={`bma-panel min-w-0 p-5 md:p-6 ${className}`}>
             <div className="mb-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
                 <div className="min-w-0">
                     {eyebrow && (
@@ -932,7 +932,7 @@ function DashboardPanel({
                 {actionLabel && actionTo && (
                     <Link
                         to={actionTo}
-                        className={`flex min-h-11 w-fit items-center justify-center rounded-2xl px-4 py-3 text-sm font-bold ${actionClasses[actionStyle]}`}
+                        className={`flex min-h-11 w-fit items-center justify-center rounded-lg px-4 py-3 text-sm font-bold ${actionClasses[actionStyle]}`}
                     >
                         {actionLabel}
                     </Link>
