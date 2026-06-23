@@ -433,12 +433,6 @@ export default function PropertySearchPage() {
                   </span>
                 </Link>
 
-                <Link
-                  to="/start"
-                  className="bma-btn-gold ml-auto xl:hidden"
-                >
-                  Find Apartment Locator
-                </Link>
               </div>
 
               <div className="relative min-w-0 flex-1">
