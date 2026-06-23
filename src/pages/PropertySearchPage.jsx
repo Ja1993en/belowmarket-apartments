@@ -1613,24 +1613,6 @@ function SearchResultCard({
           </span>
         </div>
 
-        {hasSpecial && (
-          <div className="mt-3 rounded-lg border border-[#f2d08a] bg-[#fffaf0] px-3 py-2.5">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
-                Special
-              </p>
-              <p className="truncate text-sm font-black text-[#102426]">
-                {priceSummary.specialLabel}
-              </p>
-            </div>
-            {showNetEffectiveRent && (
-              <p className="mt-1 text-xs font-semibold text-[#684307]">
-                Estimated rent reflects this listed special.
-              </p>
-            )}
-          </div>
-        )}
-
         <div className="mt-4 grid grid-cols-2 gap-2">
           <SearchRentMetric
             label="Normal rent"
@@ -1647,6 +1629,12 @@ function SearchResultCard({
           <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df]">
             {floorPlanCount} matching floor plan{floorPlanCount === 1 ? "" : "s"}
           </span>
+          {hasSpecial && (
+            <span className="max-w-full rounded-full bg-[#fff8e6] px-3 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+              <span className="text-[#684307]">Special:</span>{" "}
+              <span className="break-words">{priceSummary.specialLabel}</span>
+            </span>
+          )}
           {transparencyBadges.map((badge) => (
             <span
               key={badge}
