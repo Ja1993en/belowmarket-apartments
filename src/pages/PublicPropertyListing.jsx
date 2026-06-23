@@ -1278,6 +1278,8 @@ export default function PublicPropertyListing() {
         moveInDate: "",
         contactMethod: "",
         bedroomsNeeded: "",
+        budget: "",
+        assistanceNeed: "Confirm this special",
         tourPreference: "",
         selectedUnit: "",
 
@@ -1290,6 +1292,8 @@ export default function PublicPropertyListing() {
         moveInDate: "",
         contactMethod: "",
         bedroomsNeeded: "",
+        budget: "",
+        assistanceNeed: "Confirm this special",
         tourPreference: "",
         selectedUnit,
     });
@@ -1397,7 +1401,11 @@ export default function PublicPropertyListing() {
             pageSource: "public_property_listing",
             createdAt: new Date().toISOString(),
             status: "new",
-            leadSource: leadForm.selectedUnit ? "unit_modal" : "floor_plan_modal",
+            leadSource: leadForm.selectedUnit
+                ? "unit_modal"
+                : selectedFloorPlan
+                    ? "floor_plan_modal"
+                    : "property_locator_form",
             floorPlan: selectedFloorPlan?.name,
             selectedUnit: leadForm.selectedUnit || null,
             selectedUnitRent: selectedUnitDetails?.rent || null,
@@ -2378,16 +2386,16 @@ export default function PublicPropertyListing() {
                                 </div>
 
                                 <div className="rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-xl">
-                                    <p className="text-sm font-bold text-[#526260]">
-                                        Interested in this property?
+                                    <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                        Free renter help
                                     </p>
 
-                                    <h2 className="mt-2 text-xl font-black text-[#102426]">
-                                        Request tour or pricing
+                                    <h2 className="mt-2 text-2xl font-black leading-tight text-[#102426]">
+                                        Get help from a locator
                                     </h2>
 
-                                    <p className="mt-2 text-sm text-[#526260]">
-                                        Call or text: 945-269-3768
+                                    <p className="mt-2 text-sm font-semibold leading-6 text-[#526260]">
+                                        Tell us what you need. We’ll help confirm the special, real monthly cost, and similar deals before you tour.
                                     </p>
                                     <p className={`mt-3 rounded-2xl px-4 py-3 text-sm font-bold ${
                                         hasPropertySpecial
@@ -2399,10 +2407,37 @@ export default function PublicPropertyListing() {
                                             : "Ask for current pricing, fees, and availability."}
                                     </p>
 
+                                    <div className="mt-4 grid grid-cols-2 gap-2">
+                                        {[
+                                            "Confirm this special",
+                                            "Check availability",
+                                            "Compare similar properties",
+                                            "Schedule a tour",
+                                        ].map((need) => (
+                                            <button
+                                                key={need}
+                                                type="button"
+                                                onClick={() =>
+                                                    setLeadForm({
+                                                        ...leadForm,
+                                                        assistanceNeed: need,
+                                                    })
+                                                }
+                                                className={`rounded-2xl px-3 py-3 text-left text-xs font-black leading-4 ${
+                                                    leadForm.assistanceNeed === need
+                                                        ? "bg-[#173f3f] !text-white hover:!text-white"
+                                                        : "bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
+                                                }`}
+                                            >
+                                                {need}
+                                            </button>
+                                        ))}
+                                    </div>
+
                                     <div className="mt-4 space-y-3">
                                         <input
                                             type="text"
-                                            placeholder="Your name"
+                                            placeholder="Your name *"
                                             value={leadForm.name}
                                             onChange={(e) =>
                                                 setLeadForm({
@@ -2415,7 +2450,7 @@ export default function PublicPropertyListing() {
 
                                         <input
                                             type="tel"
-                                            placeholder="Phone number"
+                                            placeholder="Phone number *"
                                             value={leadForm.phone}
                                             onChange={(e) =>
                                                 setLeadForm({
@@ -2428,7 +2463,7 @@ export default function PublicPropertyListing() {
 
                                         <input
                                             type="email"
-                                            placeholder="Email address"
+                                            placeholder="Email address *"
                                             value={leadForm.email}
                                             onChange={(e) =>
                                                 setLeadForm({
@@ -2475,6 +2510,24 @@ export default function PublicPropertyListing() {
                                         </select>
 
                                         <select
+                                            value={leadForm.budget}
+                                            onChange={(e) =>
+                                                setLeadForm({
+                                                    ...leadForm,
+                                                    budget: e.target.value,
+                                                })
+                                            }
+                                            className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
+                                        >
+                                            <option value="">Monthly budget</option>
+                                            <option value="Under $1,200">Under $1,200</option>
+                                            <option value="$1,200 - $1,500">$1,200 - $1,500</option>
+                                            <option value="$1,500 - $1,800">$1,500 - $1,800</option>
+                                            <option value="$1,800 - $2,200">$1,800 - $2,200</option>
+                                            <option value="$2,200+">$2,200+</option>
+                                        </select>
+
+                                        <select
                                             value={leadForm.tourPreference}
                                             onChange={(e) =>
                                                 setLeadForm({
@@ -2484,7 +2537,7 @@ export default function PublicPropertyListing() {
                                             }
                                             className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         >
-                                            <option value="">Tour Preference</option>
+                                            <option value="">Tour preference</option>
                                             <option value="In-person tour">In-person tour</option>
                                             <option value="Virtual tour">Virtual tour</option>
                                             <option value="Send pricing first">Send pricing first</option>
@@ -2500,7 +2553,7 @@ export default function PublicPropertyListing() {
                                             }
                                             className="w-full rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         >
-                                            <option value="">Preferred Contact Method</option>
+                                            <option value="">Preferred contact method</option>
                                             <option value="Text">Text me</option>
                                             <option value="Call">Call me</option>
                                             <option value="Email">Email me</option>
@@ -2532,7 +2585,7 @@ export default function PublicPropertyListing() {
                                             : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
                                             }`}
                                     >
-                                        {leadSubmitted ? "Availability Request Sent" : "Check Availability"}
+                                        {leadSubmitted ? "Request Sent" : "Get Locator Help"}
                                     </button>
                                     <div className="mt-4 space-y-2 text-sm font-semibold text-[#526260]">
                                         <p>✓ No cost to renters</p>
