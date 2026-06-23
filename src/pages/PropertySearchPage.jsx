@@ -1589,13 +1589,6 @@ function SearchResultCard({
             </p>
             <p className="text-lg font-black leading-none">{dealScore}</p>
           </div>
-          {hasSpecial && (
-            <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-[#102426]/92 px-3 py-2 text-white shadow-lg">
-              <p className="truncate text-xs font-black text-[#f9d783]">
-                {priceSummary.specialLabel}
-              </p>
-            </div>
-          )}
           {propertyHasStrongMapDeal(property) && (
             <div className="absolute right-3 top-3 rounded-full bg-[#f2b84b] px-3 py-1 text-[11px] font-black text-[#102426] shadow-lg">
               Top deal
@@ -1619,6 +1612,24 @@ function SearchResultCard({
             {getBedsLabel(property, displayFloorPlans)}
           </span>
         </div>
+
+        {hasSpecial && (
+          <div className="mt-3 rounded-lg border border-[#f2d08a] bg-[#fffaf0] px-3 py-2.5">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
+                Special
+              </p>
+              <p className="truncate text-sm font-black text-[#102426]">
+                {priceSummary.specialLabel}
+              </p>
+            </div>
+            {showNetEffectiveRent && (
+              <p className="mt-1 text-xs font-semibold text-[#684307]">
+                Estimated rent reflects this listed special.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <SearchRentMetric
