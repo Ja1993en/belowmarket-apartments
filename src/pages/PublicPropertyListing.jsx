@@ -1877,7 +1877,7 @@ export default function PublicPropertyListing() {
                     ))}
                 </nav>
 
-                <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
                     <div className="min-w-0">
 
                                 {shouldShowCompareList && (
@@ -2493,7 +2493,7 @@ export default function PublicPropertyListing() {
                             </div>
 
                             <div
-                                className="mt-8 flex flex-col gap-4 lg:mt-0"
+                                className="mt-8 flex flex-col gap-4 lg:mt-0 lg:min-h-full lg:self-stretch"
                             >
                                 <div className="order-2 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
                                     <p className="text-xs font-black uppercase text-[#1f6f63]">
