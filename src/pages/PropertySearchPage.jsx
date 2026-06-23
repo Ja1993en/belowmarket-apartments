@@ -1600,9 +1600,16 @@ function SearchResultCard({
       <div className="flex min-w-0 flex-col p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <Link to={cardHref} className="min-w-0">
-            <p className="truncate text-lg font-black text-[#102426]">
-              {property.name}
-            </p>
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <p className="min-w-0 truncate text-lg font-black text-[#102426]">
+                {property.name}
+              </p>
+              {hasSpecial && (
+                <span className="max-w-full truncate rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                  Special: {priceSummary.specialLabel}
+                </span>
+              )}
+            </div>
             <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260]">
               <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63]" />
               <span className="truncate">{addressLabel}</span>
@@ -1629,12 +1636,6 @@ function SearchResultCard({
           <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df]">
             {floorPlanCount} matching floor plan{floorPlanCount === 1 ? "" : "s"}
           </span>
-          {hasSpecial && (
-            <span className="max-w-full rounded-full bg-[#fff8e6] px-3 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-              <span className="text-[#684307]">Special:</span>{" "}
-              <span className="break-words">{priceSummary.specialLabel}</span>
-            </span>
-          )}
           {transparencyBadges.map((badge) => (
             <span
               key={badge}
