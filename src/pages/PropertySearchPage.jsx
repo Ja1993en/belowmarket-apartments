@@ -125,8 +125,10 @@ export default function PropertySearchPage() {
   const [hoveredMapPropertyId, setHoveredMapPropertyId] = useState("");
   const [selectedMapPropertyId, setSelectedMapPropertyId] = useState("");
   const [currentResultsPage, setCurrentResultsPage] = useState(1);
+  const [compareNotice, setCompareNotice] = useState("");
   const resultCardRefs = useRef(new Map());
   const resultsTopRef = useRef(null);
+  const comparePanelRef = useRef(null);
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
     () =>
@@ -269,6 +271,7 @@ export default function PropertySearchPage() {
     floorPlanDetailRows.length > 0 ? "floorPlans" : "properties";
   const hasCompareItems =
     compareFloorPlanRows.length > 0 || propertyCompareRows.length > 0;
+  const compareItemCount = compareFloorPlanRows.length + propertyCompareRows.length;
   const totalResultsPages = Math.max(
     1,
     Math.ceil(filteredProperties.length / PROPERTY_RESULTS_PER_PAGE)
@@ -417,8 +420,43 @@ export default function PropertySearchPage() {
     setSelectedArea(null);
   };
 
+  const scrollToComparePanel = useCallback(() => {
+    comparePanelRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, []);
+
+  const handleTogglePropertyCompare = useCallback(
+    (property) => {
+      const isAlreadyCompared = comparePropertyIds.includes(property.id);
+      const updatedCompareIds = toggleComparePropertyId(property.id);
+
+      setComparePropertyIds(updatedCompareIds);
+      setActiveCompareTab("Properties");
+
+      if (isAlreadyCompared) {
+        setCompareNotice(`${property.name} removed from compare.`);
+        return;
+      }
+
+      setCompareNotice(`${property.name} added. Open your compare list below.`);
+    },
+    [comparePropertyIds]
+  );
+
+  useEffect(() => {
+    if (!compareNotice) return undefined;
+
+    const noticeTimer = window.setTimeout(() => {
+      setCompareNotice("");
+    }, 4500);
+
+    return () => window.clearTimeout(noticeTimer);
+  }, [compareNotice]);
+
   return (
-    <main className="min-h-screen bg-[#f5f8f1] text-[#102426]">
+    <main className="min-h-screen bg-[#f5f8f1] pb-24 text-[#102426]">
       <section className="bma-topbar sticky top-0 z-40 px-3 py-2">
         <div className="bma-shell">
           <form
@@ -780,27 +818,30 @@ export default function PropertySearchPage() {
         </div>
 
         {hasCompareItems && (
-          <CompareSavedOptionsPanel
-            activeTab={activeCompareTab}
-            compareDetailMode={compareDetailMode}
-            compareDetailRows={compareDetailRows}
-            compareFloorPlanRows={compareFloorPlanRows}
-            formatBedroomLabel={formatBedroomLabel}
-            getSearchDealScore={getSearchDealScore}
-            onClearCompare={() => {
-              const clearedSelections = clearCompareSelections();
-              setComparePropertyIds(clearedSelections.propertyIds);
-              setCompareFloorPlanItems(clearedSelections.floorPlanItems);
-            }}
-            onRemoveFloorPlan={(row) =>
-              setCompareFloorPlanItems(removeCompareFloorPlanItem(row))
-            }
-            onRemoveProperty={(propertyId) =>
-              setComparePropertyIds(removeComparePropertyId(propertyId))
-            }
-            propertyCompareRows={propertyCompareRows}
-            setActiveTab={setActiveCompareTab}
-          />
+          <div ref={comparePanelRef} className="scroll-mt-32">
+            <CompareSavedOptionsPanel
+              activeTab={activeCompareTab}
+              compareDetailMode={compareDetailMode}
+              compareDetailRows={compareDetailRows}
+              compareFloorPlanRows={compareFloorPlanRows}
+              formatBedroomLabel={formatBedroomLabel}
+              getSearchDealScore={getSearchDealScore}
+              onClearCompare={() => {
+                const clearedSelections = clearCompareSelections();
+                setComparePropertyIds(clearedSelections.propertyIds);
+                setCompareFloorPlanItems(clearedSelections.floorPlanItems);
+                setCompareNotice("Compare list cleared.");
+              }}
+              onRemoveFloorPlan={(row) =>
+                setCompareFloorPlanItems(removeCompareFloorPlanItem(row))
+              }
+              onRemoveProperty={(propertyId) =>
+                setComparePropertyIds(removeComparePropertyId(propertyId))
+              }
+              propertyCompareRows={propertyCompareRows}
+              setActiveTab={setActiveCompareTab}
+            />
+          </div>
         )}
 
         <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)] xl:items-start">
@@ -859,9 +900,7 @@ export default function PropertySearchPage() {
                   onToggleSaved={() =>
                     setSavedPropertyIds(toggleSavedPropertyId(property.id))
                   }
-                  onToggleCompare={() =>
-                    setComparePropertyIds(toggleComparePropertyId(property.id))
-                  }
+                  onToggleCompare={() => handleTogglePropertyCompare(property)}
                 />
               ))}
             </div>
@@ -955,6 +994,20 @@ export default function PropertySearchPage() {
           </div>
         </div>
       </section>
+
+      {hasCompareItems && (
+        <CompareDock
+          compareItemCount={compareItemCount}
+          compareNotice={compareNotice}
+          onClearCompare={() => {
+            const clearedSelections = clearCompareSelections();
+            setComparePropertyIds(clearedSelections.propertyIds);
+            setCompareFloorPlanItems(clearedSelections.floorPlanItems);
+            setCompareNotice("Compare list cleared.");
+          }}
+          onViewCompare={scrollToComparePanel}
+        />
+      )}
     </main>
   );
 }
@@ -986,6 +1039,46 @@ function SearchMap({
       onPropertySelect={onPropertySelect}
       hoveredPropertyId={hoveredPropertyId}
     />
+  );
+}
+
+function CompareDock({
+  compareItemCount,
+  compareNotice,
+  onClearCompare,
+  onViewCompare,
+}) {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#d7e6df] bg-white/95 px-3 py-3 shadow-[0_-10px_30px_rgba(16,36,38,0.12)] backdrop-blur">
+      <div className="mx-auto flex w-[min(1180px,calc(100vw-24px))] flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-sm font-black text-[#102426]">
+            Compare list ready
+          </p>
+          <p className="mt-0.5 truncate text-xs font-bold text-[#526260]">
+            {compareNotice ||
+              `${compareItemCount} option${compareItemCount === 1 ? "" : "s"} selected. View them side by side before you tour.`}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-[1fr_auto] gap-2 sm:flex sm:items-center">
+          <button
+            type="button"
+            onClick={onViewCompare}
+            className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black text-white shadow-sm transition hover:bg-[#102426]"
+          >
+            View comparison ({compareItemCount})
+          </button>
+          <button
+            type="button"
+            onClick={onClearCompare}
+            className="rounded-lg bg-[#fff0ea] px-4 py-3 text-sm font-black text-[#e4572e] transition hover:bg-[#fde8df]"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1580,7 +1673,7 @@ function SearchResultCard({
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
             }`}
           >
-            {isCompared ? "Comparing" : "Compare"}
+            {isCompared ? "Added" : "Compare"}
           </button>
         </div>
       </div>

@@ -51,13 +51,13 @@ export default function CompareSavedOptionsPanel({
       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
         <div>
           <p className="text-sm font-black text-[#1f6f63]">
-            Compare saved options
+            Your compare list
           </p>
           <h2 className="mt-1 text-xl font-black text-[#102426] sm:text-2xl">
-            Side-by-side renter value
+            Compare apartments side by side
           </h2>
           <p className="mt-1 text-sm font-semibold text-[#526260]">
-            Start with properties, compare exact floor plans, then review the full detail table.
+            This is where every property you tap Compare will land. Review rent, specials, and floor plans before you tour.
           </p>
         </div>
         <button
