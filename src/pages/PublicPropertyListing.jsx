@@ -1551,6 +1551,38 @@ export default function PublicPropertyListing() {
             description: "Get help deciding if this property is worth touring and what to ask first.",
         },
     ];
+    const getSnapshotMetricValue = (label, fallback = "Confirm") =>
+        renterValueToolkit.snapshotMetrics.find((metric) => metric.label === label)?.value || fallback;
+    const listingSummaryCards = [
+        {
+            label: "Listed rent",
+            value: getSnapshotMetricValue("Normal rent", startingRentLabel),
+            note: "Before specials and required add-ons",
+        },
+        {
+            label: "Effective value",
+            value: getSnapshotMetricValue("Effective value", effectiveRentLabel || startingRentLabel),
+            note: hasPropertySpecial ? "Estimated after special" : "No active special applied",
+        },
+        {
+            label: "Current special",
+            value: propertySpecialLabel,
+            note: hasPropertySpecial ? "Confirm credit timing" : "Ask for current offers",
+            special: hasPropertySpecial,
+        },
+        {
+            label: "Availability",
+            value: `${availableFloorPlans.length} plan${availableFloorPlans.length === 1 ? "" : "s"}`,
+            note: availableUnitCount > 0
+                ? `${availableUnitCount} listed unit${availableUnitCount === 1 ? "" : "s"}`
+                : "Ask for exact units",
+        },
+        {
+            label: "Fees",
+            value: getSnapshotMetricValue("Fees"),
+            note: "Parking, utilities, admin/app",
+        },
+    ];
 
     return (
 
@@ -1599,41 +1631,44 @@ export default function PublicPropertyListing() {
                     ← Back to Dallas apartments
                 </Link>
 
-                <section className="mt-4 grid items-start gap-5 lg:grid-cols-[minmax(0,1.35fr)_390px]">
-                    <div className="grid min-h-[420px] gap-2 overflow-hidden rounded-2xl md:grid-cols-[1.45fr_.9fr] md:grid-rows-2">
-                        {hasPropertyGalleryImages ? (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowGallery(true)}
-                                    className="relative min-h-[280px] overflow-hidden bg-[#dcebe4] text-left md:row-span-2"
-                                >
-                                    <img
-                                        src={propertyGalleryImages[0].url}
-                                        alt={property.name}
-                                        fetchPriority="high"
-                                        decoding="async"
-                                        className="!h-full w-full object-cover"
-                                    />
-                                </button>
+                <section className="mt-4 overflow-hidden rounded-2xl bg-[#dcebe4] lg:grid lg:min-h-[420px] lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.9fr)] lg:gap-2">
+                    {hasPropertyGalleryImages ? (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => setShowGallery(true)}
+                                className="relative block h-[320px] w-full overflow-hidden bg-[#dcebe4] text-left lg:h-auto lg:min-h-[420px]"
+                            >
+                                <img
+                                    src={propertyGalleryImages[0].url}
+                                    alt={property.name}
+                                    fetchPriority="high"
+                                    decoding="async"
+                                    className="!h-full w-full object-cover"
+                                />
+                            </button>
 
-                                {[1, 2].map((photoIndex) => {
+                            <div className="hidden gap-2 lg:grid lg:grid-cols-2">
+                                {[1, 2, 3].map((photoIndex) => {
                                     const image = propertyGalleryImages[photoIndex] || propertyGalleryImages[0];
-                                    const isLastTile = photoIndex === 2;
+                                    const isWideTile = photoIndex === 1;
+                                    const isLastTile = photoIndex === 3;
 
                                     return (
                                         <button
                                             key={`${image.url}-${photoIndex}`}
                                             type="button"
                                             onClick={() => setShowGallery(true)}
-                                            className="relative hidden min-h-[206px] overflow-hidden bg-[#dcebe4] text-left md:block"
+                                            className={`relative overflow-hidden bg-[#dcebe4] text-left ${
+                                                isWideTile ? "col-span-2" : ""
+                                            }`}
                                         >
                                             <img
                                                 src={image.url}
                                                 alt={`${image.category} photo`}
                                                 loading="lazy"
                                                 decoding="async"
-                                                className="!h-full w-full object-cover"
+                                                className="!h-full min-h-[206px] w-full object-cover"
                                             />
 
                                             {isLastTile && (
@@ -1644,116 +1679,89 @@ export default function PublicPropertyListing() {
                                         </button>
                                     );
                                 })}
-                            </>
-                        ) : (
-                            <div className="flex min-h-[420px] items-center justify-center bg-[#e8efe9] p-8 text-center md:col-span-2">
-                                <div>
-                                    <p className="text-lg font-black text-[#102426]">
-                                        Photos coming soon
-                                    </p>
-                                    <p className="mt-2 text-sm font-semibold text-[#526260]">
-                                        This property does not have verified listing photos yet.
-                                    </p>
-                                </div>
                             </div>
-                        )}
+                        </>
+                    ) : (
+                        <div className="flex min-h-[420px] items-center justify-center bg-[#e8efe9] p-8 text-center lg:col-span-2">
+                            <div>
+                                <p className="text-lg font-black text-[#102426]">
+                                    Photos coming soon
+                                </p>
+                                <p className="mt-2 text-sm font-semibold text-[#526260]">
+                                    This property does not have verified listing photos yet.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </section>
+
+                <section className="grid gap-4 border-b border-[#d7e6df] py-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                    <div className="min-w-0">
+                        <p className="text-xs font-black uppercase text-[#526260]">
+                            {heroManagementLabel}
+                        </p>
+                        <h1 className="mt-1 text-3xl font-black leading-tight text-[#102426] md:text-4xl">
+                            {property.name}
+                        </h1>
+                        <p className="mt-2 text-sm font-bold leading-5 text-[#526260]">
+                            {addressLabel}
+                            {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
+                        </p>
                     </div>
 
-                    <aside className="flex flex-col gap-3 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0">
-                                <p className="truncate text-xs font-black uppercase text-[#526260]">
-                                    {heroManagementLabel}
-                                </p>
-
-                                <h1 className="mt-1 text-2xl font-black leading-tight text-[#102426]">
-                                    {property.name}
-                                </h1>
-
-                                <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
-                                    {addressLabel}
-                                    {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
-                                </p>
-                            </div>
-
-                            <div className="shrink-0 rounded-xl bg-[#f5f8f1] px-3 py-2 text-center ring-1 ring-[#d7e6df]">
-                                <p className="text-[10px] font-black uppercase text-[#f2b84b]">
-                                    Score
-                                </p>
-                                <p className="mt-0.5 text-xl font-black leading-none text-[#102426]">
-                                    {renterValueToolkit.dealScore}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className={`flex gap-3 rounded-xl p-3 ring-1 ${
-                            hasPropertySpecial
-                                ? "bg-[#fff8e6] ring-[#f2d08a]"
-                                : "bg-[#f5f8f1] ring-[#d7e6df]"
-                        }`}>
-                            <span className={`w-2 shrink-0 rounded-full ${
-                                hasPropertySpecial ? "bg-[#f2b84b]" : "bg-[#d7e6df]"
-                            }`} />
-                            <div>
-                                <p className={`text-xs font-black uppercase ${
-                                    hasPropertySpecial ? "text-[#8a5b0a]" : "text-[#526260]"
-                                }`}>
-                                    Current special
-                                </p>
-                                <p className="mt-1 text-sm font-black text-[#102426]">
-                                    {propertySpecialLabel}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-2">
-                            {renterValueToolkit.snapshotMetrics.slice(0, 3).map((metric) => (
-                                <div
-                                    key={metric.label}
-                                    className="rounded-lg border border-[#d7e6df] bg-[#f8fbf8] p-2"
-                                >
-                                    <p className="text-[10px] font-black uppercase text-[#526260]">
-                                        {metric.label}
-                                    </p>
-                                    <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
-                                        {metric.value}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="mt-auto grid grid-cols-2 gap-3">
-                            <a
-                                href="#request-info"
-                                className="rounded-xl bg-[#173f3f] px-4 py-3 text-center text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
-                            >
-                                Get locator help
-                            </a>
-                            <button
-                                type="button"
-                                onClick={handleTogglePropertyCompare}
-                                className={`rounded-xl px-4 py-3 text-sm font-black ${
-                                    isPropertyCompared
-                                        ? "bg-[#f2b84b] text-[#102426]"
-                                        : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
-                                }`}
-                            >
-                                {isPropertyCompared ? "Added" : "Compare"}
-                            </button>
-                        </div>
-
+                    <div className="flex flex-wrap gap-2 lg:justify-end">
                         <button
                             type="button"
                             onClick={() => setSavedPropertyIds(toggleSavedPropertyId(property.id))}
-                            className={`rounded-xl px-4 py-3 text-sm font-black ${
+                            className={`rounded-xl px-4 py-3 text-sm font-black ring-1 ring-[#d7e6df] ${
                                 isPropertySaved
                                     ? "bg-[#173f3f] !text-white hover:!text-white"
-                                    : "bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
+                                    : "bg-white text-[#173f3f] hover:bg-[#f5f8f1]"
                             }`}
                         >
-                            {isPropertySaved ? "Saved Property" : "Save Property"}
+                            {isPropertySaved ? "Saved" : "Save"}
                         </button>
-                    </aside>
+                        <button
+                            type="button"
+                            onClick={handleTogglePropertyCompare}
+                            className={`rounded-xl px-4 py-3 text-sm font-black ${
+                                isPropertyCompared
+                                    ? "bg-[#f2b84b] text-[#102426]"
+                                    : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                            }`}
+                        >
+                            {isPropertyCompared ? "Added" : "Compare"}
+                        </button>
+                        <a
+                            href="#request-info"
+                            className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+                        >
+                            Get Help
+                        </a>
+                    </div>
+                </section>
+
+                <section className="grid gap-3 py-4 sm:grid-cols-2 lg:grid-cols-5">
+                    {listingSummaryCards.map((card) => (
+                        <div
+                            key={card.label}
+                            className={`rounded-xl border p-3 ${
+                                card.special
+                                    ? "border-[#f2d08a] bg-[#fff8e6]"
+                                    : "border-[#d7e6df] bg-white"
+                            }`}
+                        >
+                            <p className="text-[10px] font-black uppercase text-[#526260]">
+                                {card.label}
+                            </p>
+                            <p className="mt-1 truncate text-lg font-black text-[#102426]">
+                                {card.value}
+                            </p>
+                            <p className="mt-1 text-xs font-bold leading-4 text-[#526260]">
+                                {card.note}
+                            </p>
+                        </div>
+                    ))}
                 </section>
 
                 <nav className="sticky top-[68px] z-30 mt-4 flex gap-1.5 overflow-x-auto rounded-xl border border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur">
@@ -2026,25 +2034,17 @@ export default function PublicPropertyListing() {
                                     ref={floorPlansSectionRef}
                                     className="mt-6 scroll-mt-32 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm md:p-5"
                                 >
-                                    <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
-                                        <div>
-                                            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
-                                                Choose the right layout
-                                            </p>
-                                            <h2 className="mt-1 text-xl font-black text-[#102426]">
-                                                Floor plans
-                                            </h2>
+                                    <div>
+                                        <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                            Available layouts
+                                        </p>
+                                        <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                                            Floor plans
+                                        </h2>
 
-                                            <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
-                                                Compare normal rent, estimated rent after special, availability, and exact layouts in one place.
-                                            </p>
-                                        </div>
-
-                                        <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[360px]">
-                                            <RenterClarityBadge label="Normal rent" value="Before specials" />
-                                            <RenterClarityBadge label="Estimated rent" value="Special spread out" />
-                                            <RenterClarityBadge label="Compare" value="Exact layouts" />
-                                        </div>
+                                        <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
+                                            Compare listed rent, estimated effective value, specials, and availability without leaving the page.
+                                        </p>
                                     </div>
 
                                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -3162,19 +3162,6 @@ function TourChecklistItem({ text }) {
         <div className="flex gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
             <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#f2b84b]" />
             <p className="text-xs font-bold leading-5 text-[#526260]">{text}</p>
-        </div>
-    );
-}
-
-function RenterClarityBadge({ label, value }) {
-    return (
-        <div className="rounded-lg bg-[#f5f8f1] px-2.5 py-2 ring-1 ring-[#d7e6df]">
-            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
-                {label}
-            </p>
-            <p className="mt-0.5 text-xs font-black text-[#102426]">
-                {value}
-            </p>
         </div>
     );
 }
@@ -4577,6 +4564,7 @@ function FloorPlanCard({
     sqft,
     rent,
     effectiveRent,
+    savings,
     available,
     availableUnits = [],
     image,
@@ -4586,14 +4574,12 @@ function FloorPlanCard({
     onToggleCompare,
     onCheckAvailability,
 }) {
-    const [isExpanded, setIsExpanded] = useState(false);
     const [hasImageError, setHasImageError] = useState(false);
     const hasSpecial = Boolean(special?.label);
     const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "No special listed";
     const sortedAvailableUnits = [...(availableUnits || [])]
         .filter((unit) => unit?.status !== "leased")
         .sort((a, b) => parseCurrency(a.rent) - parseCurrency(b.rent));
-    const visibleUnits = sortedAvailableUnits.slice(0, 3);
     const availableUnitCount = sortedAvailableUnits.length || getFloorPlanAvailableUnitCount({
         available,
         availableUnits,
@@ -4603,13 +4589,17 @@ function FloorPlanCard({
     const displayEffectiveRent = formatFloorPlanMetricValue(effectiveRent);
     const displayRentValue = displayRent || "Contact";
     const displayEffectiveValue = displayEffectiveRent || displayRentValue;
+    const normalRentNumber = parseCurrency(displayRentValue);
+    const effectiveRentNumber = parseCurrency(displayEffectiveValue);
+    const displaySavingsValue =
+        formatFloorPlanMetricValue(savings) ||
+        (hasSpecial && normalRentNumber > effectiveRentNumber
+            ? `${formatCurrency(normalRentNumber - effectiveRentNumber)}/mo`
+            : hasSpecial
+                ? "Verify"
+                : "None listed");
     const hasAvailableFloorPlanUnits =
         availableUnitCount > 0 || isFloorPlanAvailable({ available, availableUnits, status });
-    const availabilityBadgeClass = hasAvailableFloorPlanUnits
-        ? "bg-[#e7f3ee] text-[#1f6f63] ring-1 ring-[#a9cfc2]"
-        : status === "limited"
-            ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
-            : "bg-[#fff0ea] text-[#e4572e] ring-1 ring-[#f4c8b8]";
     const availabilityBadgeLabel = getFloorPlanAvailabilityBadgeLabel({
         available,
         availableUnitCount,
@@ -4619,8 +4609,8 @@ function FloorPlanCard({
     const imageAlt = shouldShowFloorPlanImage ? `${name} floor plan` : "Floor plan image not listed";
 
     return (
-        <div className="grid gap-3 overflow-hidden rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid-cols-[116px_minmax(0,1fr)_minmax(180px,auto)] md:items-center">
-            <div className="flex h-28 items-center justify-center rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] md:h-[92px]">
+        <div className="grid gap-3 rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] md:grid-cols-[122px_minmax(0,1fr)_178px] md:items-center">
+            <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl bg-[#f5f8f1] ring-1 ring-[#d7e6df] md:h-[92px]">
                 {shouldShowFloorPlanImage ? (
                     <img
                         src={image}
@@ -4628,7 +4618,7 @@ function FloorPlanCard({
                         loading="lazy"
                         decoding="async"
                         onError={() => setHasImageError(true)}
-                        className="max-h-full w-full object-contain"
+                        className="h-full w-full object-cover"
                     />
                 ) : (
                     <span className="px-2 text-center text-[10px] font-black uppercase leading-4 text-[#526260]">
@@ -4639,85 +4629,75 @@ function FloorPlanCard({
 
             <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${availabilityBadgeClass}`}>
-                        {availabilityBadgeLabel}
-                    </span>
+                    <h3 className="truncate text-lg font-black text-[#102426]">
+                        {name}
+                    </h3>
 
-                    <span
-                        className={`inline-flex max-w-full rounded-full px-2.5 py-1 text-[11px] font-black ${
-                            hasSpecial
-                                ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
-                                : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
-                        }`}
-                    >
-                        <span className="truncate">{specialLabel}</span>
-                    </span>
+                    {hasSpecial && (
+                        <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                            <span className="truncate">{specialLabel}</span>
+                        </span>
+                    )}
                 </div>
-
-                <p className="mt-3 truncate text-lg font-black text-[#102426]">
-                    {name}
-                </p>
 
                 <p className="mt-1 text-sm font-semibold text-[#526260]">
                     {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
                 </p>
 
-                <p className="mt-2 truncate text-xs font-black text-[#8a5b0a]">
-                    {hasSpecial ? specialLabel : "No special listed"}
-                </p>
-            </div>
-
-            <div className="grid gap-3 md:text-right">
-                <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
-                    <div>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="min-w-0">
                         <p className="text-[10px] font-black uppercase text-[#526260]">
-                            Estimated rent
+                            Listed
                         </p>
-                        <p className={`mt-1 text-lg font-black ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
+                        <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+                            {displayRentValue}
+                        </p>
+                    </div>
+
+                    <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase text-[#526260]">
+                            Effective
+                        </p>
+                        <p className={`mt-0.5 truncate text-sm font-black ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
                             {displayEffectiveValue}
                         </p>
                     </div>
 
-                    <div>
+                    <div className="min-w-0">
                         <p className="text-[10px] font-black uppercase text-[#526260]">
-                            Normal rent
+                            {hasSpecial ? "Savings" : "Special"}
                         </p>
-                        <p className="mt-1 text-sm font-black text-[#102426]">
-                            {displayRentValue}
+                        <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+                            {displaySavingsValue}
                         </p>
                     </div>
                 </div>
+            </div>
 
-                <div className="grid gap-2 sm:grid-cols-3 md:grid-cols-1">
-                    <button
-                        type="button"
-                        onClick={onToggleCompare}
-                        className={`rounded-lg px-4 py-3 text-sm font-bold ${
-                            isCompared
-                                ? "bg-[#f2b84b] text-[#102426]"
-                                : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
-                        }`}
-                    >
-                        {isCompared ? "Added" : "Compare"}
-                    </button>
+            <div className="grid gap-2 md:text-right">
+                <p className={`text-xs font-black ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
+                    {availabilityBadgeLabel}
+                </p>
 
-                    <button
-                        type="button"
-                        onClick={() => setIsExpanded((currentValue) => !currentValue)}
-                        className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
-                        style={{ color: "#ffffff" }}
-                    >
-                        {isExpanded ? "Hide Details" : "View Details"}
-                    </button>
+                <button
+                    type="button"
+                    onClick={onCheckAvailability}
+                    className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+                >
+                    Check availability
+                </button>
 
-                    <button
-                        type="button"
-                        onClick={onCheckAvailability}
-                        className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
-                    >
-                        Request info
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    onClick={onToggleCompare}
+                    className={`rounded-xl px-4 py-2.5 text-sm font-black ${
+                        isCompared
+                            ? "bg-[#f2b84b] text-[#102426]"
+                            : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                    }`}
+                >
+                    {isCompared ? "Added" : "Compare"}
+                </button>
 
                 {isCompared && (
                     <p className="mt-3 rounded-lg bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
@@ -4725,171 +4705,6 @@ function FloorPlanCard({
                     </p>
                 )}
             </div>
-
-            {isExpanded && (
-                <div
-                    className="fixed inset-0 z-50 flex items-end justify-center bg-[#102426]/70 p-3 backdrop-blur-sm sm:items-center sm:p-6"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label={`${name} floor plan details`}
-                >
-                    <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl">
-                        <div className="flex flex-col justify-between gap-3 border-b border-[#d7e6df] pb-4 sm:flex-row sm:items-start">
-                            <div>
-                                <p className="text-xs font-black uppercase text-[#1f6f63]">
-                                    Floor plan details
-                                </p>
-                                <h4 className="mt-1 text-2xl font-black text-[#102426]">
-                                    {name}
-                                </h4>
-                                <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                    {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
-                                </p>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() => setIsExpanded(false)}
-                                className="w-fit rounded-2xl bg-[#f5f8f1] px-4 py-2 text-sm font-black text-[#173f3f] hover:bg-[#d7e6df]"
-                            >
-                                Close
-                            </button>
-                        </div>
-
-                        <div className="mt-5 grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
-                            <div className="flex h-56 w-full items-center justify-center overflow-hidden rounded-2xl bg-[#f5f8f1] ring-1 ring-[#d7e6df]">
-                                {shouldShowFloorPlanImage ? (
-                                    <img
-                                        src={image}
-                                        alt={`${name} expanded floor plan`}
-                                        loading="lazy"
-                                        decoding="async"
-                                        onError={() => setHasImageError(true)}
-                                        className="h-full w-full object-cover"
-                                    />
-                                ) : (
-                                    <span className="px-4 text-center text-xs font-black uppercase leading-5 text-[#526260]">
-                                        Floor plan image pending
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="min-w-0">
-                                <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-                                    <FloorPlanMetric label="Normal rent" value={displayRentValue} />
-                                    <FloorPlanMetric
-                                        label="Estimated rent"
-                                        value={displayEffectiveValue}
-                                        highlight={hasSpecial}
-                                    />
-                                    <FloorPlanMetric label="Special" value={specialLabel} highlight={hasSpecial} />
-                                    <FloorPlanMetric label="Availability" value={availabilityBadgeLabel} />
-                                </div>
-
-                                <div
-                                    className={`mt-4 rounded-2xl p-3 ring-1 ${
-                                        hasSpecial
-                                            ? "bg-[#fff8e6] ring-[#f2d08a]"
-                                            : "bg-[#f5f8f1] ring-[#d7e6df]"
-                                    }`}
-                                >
-                                    <p
-                                        className={`text-xs font-black uppercase ${
-                                            hasSpecial ? "text-[#8a5b0a]" : "text-[#526260]"
-                                        }`}
-                                    >
-                                        Special
-                                    </p>
-                                    <p className="mt-1 text-sm font-black text-[#102426]">
-                                        {specialLabel}
-                                    </p>
-                                </div>
-
-                                <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-                                    <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-                                        <div>
-                                            <p className="text-sm font-black text-[#102426]">
-                                                Available units
-                                            </p>
-                                            <p className="mt-1 text-xs font-semibold text-[#526260]">
-                                                {availableUnitCount > 0
-                                                    ? `${availableUnitCount} unit${availableUnitCount === 1 ? "" : "s"} listed for this layout.`
-                                                    : "Ask your locator to confirm current availability."}
-                                            </p>
-                                        </div>
-
-                                        <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
-                                            {available || "Availability not listed"}
-                                        </span>
-                                    </div>
-
-                                    {visibleUnits.length > 0 ? (
-                                        <div className="mt-3 grid gap-2">
-                                            {visibleUnits.map((unit) => (
-                                                <div
-                                                    key={unit.unit || `${unit.rent}-${unit.available}`}
-                                                    className="flex flex-col justify-between gap-2 rounded-2xl bg-white p-3 sm:flex-row sm:items-center"
-                                                >
-                                                    <div>
-                                                        <p className="text-sm font-black text-[#102426]">
-                                                            Unit {unit.unit || "Available"}
-                                                        </p>
-                                                        <p className="mt-1 text-xs font-semibold text-[#526260]">
-                                                            {unit.available || "Availability not listed"}
-                                                        </p>
-                                                        {unit.currentSpecial && (
-                                                            <p className="mt-1 text-xs font-bold text-[#8a5b0a]">
-                                                                {cleanUnitSpecialLabel(unit.currentSpecial)}
-                                                            </p>
-                                                        )}
-                                                    </div>
-
-                                                    <p className="text-lg font-black text-[#102426]">
-                                                        {unit.rent || rent || "Contact"}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="mt-3 rounded-2xl bg-white p-3 text-sm font-semibold text-[#526260]">
-                                            Unit-level availability is not listed yet. Use Check Availability to confirm the latest options.
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                                    <button
-                                        type="button"
-                                        onClick={onToggleCompare}
-                                        className={`rounded-xl px-4 py-3 text-sm font-bold ${
-                                            isCompared
-                                                ? "bg-[#f2b84b] text-[#102426]"
-                                                : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
-                                        }`}
-                                    >
-                                        {isCompared ? "Added" : "Compare Floor Plan"}
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={onCheckAvailability}
-                                        className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
-                                    >
-                                        Check Availability
-                                    </button>
-                                </div>
-
-                                {isCompared && (
-                                    <p className="mt-3 rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
-                                        Added to compare. Select more layouts or compare from search.
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
         </div>
     );
 }
