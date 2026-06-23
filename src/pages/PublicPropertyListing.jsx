@@ -1636,28 +1636,6 @@ export default function PublicPropertyListing() {
         ? Math.max(...selectedFloorPlan.availableUnits.map((unit) => unit.requestCount || 0))
         : 0;
 
-    const locatorIntentOptions = [
-        {
-            value: "Confirm this special",
-            title: "Confirm the special",
-            description: "Verify the concession, credit timing, and whether it applies to base rent.",
-        },
-        {
-            value: "Check availability",
-            title: "Check exact availability",
-            description: "Confirm the floor plan, unit, move-in date, and current price before touring.",
-        },
-        {
-            value: "Compare similar properties",
-            title: "Compare better deals",
-            description: "Find nearby options with stronger specials, better pricing, or a better fit.",
-        },
-        {
-            value: "Schedule a tour",
-            title: "Plan the tour step",
-            description: "Get help deciding if this property is worth touring and what to ask first.",
-        },
-    ];
     const getSnapshotMetricValue = (label, fallback = "Confirm") =>
         renterValueToolkit.snapshotMetrics.find((metric) => metric.label === label)?.value || fallback;
     const listingSummaryCards = [
@@ -2553,28 +2531,6 @@ export default function PublicPropertyListing() {
                                         {hasPropertySpecial
                                             ? `Listed special: ${propertySpecialLabel}`
                                             : "Ask us to confirm current pricing and availability."}
-                                    </div>
-
-                                    <div className="mt-3 grid grid-cols-2 gap-2">
-                                        {locatorIntentOptions.map((option) => (
-                                            <button
-                                                key={option.value}
-                                                type="button"
-                                                onClick={() =>
-                                                    setLeadForm({
-                                                        ...leadForm,
-                                                        assistanceNeed: option.value,
-                                                    })
-                                                }
-                                                className={`rounded-lg px-3 py-2 text-left text-xs font-black ${
-                                                    leadForm.assistanceNeed === option.value
-                                                        ? "bg-[#173f3f] !text-white hover:!text-white"
-                                                        : "bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
-                                                }`}
-                                            >
-                                                {option.title}
-                                            </button>
-                                        ))}
                                     </div>
 
                                     <div className="mt-3 grid gap-2">
