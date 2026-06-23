@@ -423,13 +423,16 @@ export default function PropertySearchPage() {
         <div className="bma-shell">
           <form
             onSubmit={submitSearch}
-            className="bma-card relative p-2"
+            className="relative rounded-xl border border-[#d7e6df] bg-white p-2 shadow-sm"
           >
             <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
               <div className="flex items-center gap-2 xl:shrink-0">
-                <Link to="/" className="flex items-center">
+                <Link to="/" className="flex items-center gap-2">
                   <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#173f3f] text-xs font-black text-[#f2b84b]">
                     BMA
+                  </span>
+                  <span className="hidden text-sm font-black text-[#102426] md:block">
+                    Below Market Apartments
                   </span>
                 </Link>
 
@@ -443,7 +446,7 @@ export default function PropertySearchPage() {
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="City, state, address, or special"
                   autoComplete="off"
-                  className="bma-focus-ring h-12 w-full rounded-lg border border-[#b8d9d0] bg-white pl-12 pr-4 text-base font-bold text-[#102426] outline-none"
+                  className="bma-focus-ring h-12 w-full rounded-lg border border-[#b8d9d0] bg-[#f9fbf8] pl-12 pr-4 text-base font-bold text-[#102426] outline-none"
                 />
               </div>
 
@@ -626,14 +629,14 @@ export default function PropertySearchPage() {
 
               <button
                 type="submit"
-                className="bma-btn-primary h-12 px-7"
+                className="bma-btn-primary h-12 px-7 !text-white hover:!text-white"
               >
                 Search
               </button>
 
               <Link
                 to="/start"
-                className="bma-btn-gold hidden h-12 shrink-0 xl:flex"
+                className="bma-btn-gold !hidden h-12 shrink-0 xl:!flex"
               >
                 Find Apartment Locator
               </Link>
@@ -755,38 +758,22 @@ export default function PropertySearchPage() {
         </div>
       </section>
 
-      <section className="border-b border-[#d7e6df] bg-white">
-        <div className="bma-map-surface relative h-[320px] rounded-none border-x-0 md:h-[380px] lg:h-[430px]">
-          <SearchMap
-            properties={filteredProperties}
-            mappableProperties={mappableFilteredProperties}
-            selectedArea={selectedArea}
-            selectedBedroomFilter={selectedBedroomFilter}
-            selectedPriceRange={selectedPriceRange}
-            onAreaChange={setSelectedArea}
-            onPropertyHover={setHoveredMapPropertyId}
-            onPropertySelect={handleMapPropertySelect}
-            hoveredPropertyId={hoveredMapPropertyId}
-          />
-        </div>
-      </section>
-
-      <section className="bma-shell-narrow px-0 py-6">
-        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+      <section className="bma-shell py-5 lg:py-6">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className="text-sm font-black text-[#1f6f63]">
               Apartment results
             </p>
-            <h1 className="mt-1 text-3xl font-black text-[#102426]">
+            <h1 className="mt-1 text-3xl font-black leading-tight text-[#102426] lg:text-4xl">
               {searchFromUrl ? `${searchFromUrl} apartments` : "Apartments near you"}
             </h1>
-            <p className="mt-1 text-sm font-semibold text-[#526260]">
-              Search by city, state, property address, property name, ZIP, or special.
+            <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
+              Search by city, ZIP, property address, or active special. Compare normal rent, estimated effective rent, and specials before you tour.
             </p>
           </div>
           <Link
             to="/start"
-            className="bma-btn-gold w-fit"
+            className="bma-btn-gold w-fit shrink-0"
           >
             Get matched
           </Link>
@@ -816,109 +803,157 @@ export default function PropertySearchPage() {
           />
         )}
 
-        <div
-          ref={resultsTopRef}
-          className="bma-card mt-6 flex flex-col justify-between gap-2 px-4 py-3 sm:flex-row sm:items-center"
-        >
-          <p className="text-sm font-black text-[#102426]">
-            Showing{" "}
-            {filteredProperties.length > 0
-              ? `${visibleResultStartIndex + 1}-${visibleResultEndIndex}`
-              : "0"}{" "}
-            of {filteredProperties.length} listing
-            {filteredProperties.length === 1 ? "" : "s"}
-          </p>
-          {hasMultipleResultsPages && (
-            <p className="text-xs font-bold text-[#526260]">
-              Page {safeResultsPage} of {totalResultsPages}
-            </p>
-          )}
-        </div>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleFilteredProperties.map((property) => (
-            <SearchResultCard
-              key={property.id}
-              property={property}
-              isSaved={savedPropertyIds.includes(property.id)}
-              isCompared={comparePropertyIds.includes(property.id)}
-              isMapHighlighted={highlightedMapPropertyId === property.id}
-              selectedBedroomFilter={selectedBedroomFilter}
-              selectedPriceRange={selectedPriceRange}
-              cardRef={(node) => {
-                if (node) {
-                  resultCardRefs.current.set(property.id, node);
-                } else {
-                  resultCardRefs.current.delete(property.id);
-                }
-              }}
-              onToggleSaved={() =>
-                setSavedPropertyIds(toggleSavedPropertyId(property.id))
-              }
-              onToggleCompare={() =>
-                setComparePropertyIds(toggleComparePropertyId(property.id))
-              }
-            />
-          ))}
-        </div>
-
-        {hasMultipleResultsPages && (
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleResultsPageChange(safeResultsPage - 1)}
-              disabled={safeResultsPage === 1}
-              className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] disabled:cursor-not-allowed disabled:text-[#9aa7a4] disabled:hover:bg-white"
+        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)] xl:items-start">
+          <div className="min-w-0">
+            <div
+              ref={resultsTopRef}
+              className="rounded-xl border border-[#d7e6df] bg-white p-4 shadow-sm"
             >
-              Previous
-            </button>
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-sm font-black text-[#102426]">
+                    Showing{" "}
+                    {filteredProperties.length > 0
+                      ? `${visibleResultStartIndex + 1}-${visibleResultEndIndex}`
+                      : "0"}{" "}
+                    of {filteredProperties.length} listing
+                    {filteredProperties.length === 1 ? "" : "s"}
+                  </p>
+                  <p className="mt-1 text-xs font-bold text-[#526260]">
+                    Best deals and matching floor plans update when filters change.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full bg-[#e7f3ee] px-3 py-1.5 text-xs font-black text-[#1f6f63]">
+                    Transparent specials
+                  </span>
+                  <span className="rounded-full bg-[#fff8e6] px-3 py-1.5 text-xs font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                    8+ week deals highlighted
+                  </span>
+                  {hasMultipleResultsPages && (
+                    <span className="rounded-full bg-[#f5f8f1] px-3 py-1.5 text-xs font-black text-[#526260] ring-1 ring-[#d7e6df]">
+                      Page {safeResultsPage} of {totalResultsPages}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
 
-            {paginationPages.map((pageItem) =>
-              String(pageItem).includes("ellipsis") ? (
-                <span
-                  key={pageItem}
-                  className="px-2 text-sm font-black text-[#526260]"
-                >
-                  ...
-                </span>
-              ) : (
+            <div className="mt-4 grid gap-4">
+              {visibleFilteredProperties.map((property) => (
+                <SearchResultCard
+                  key={property.id}
+                  property={property}
+                  isSaved={savedPropertyIds.includes(property.id)}
+                  isCompared={comparePropertyIds.includes(property.id)}
+                  isMapHighlighted={highlightedMapPropertyId === property.id}
+                  selectedBedroomFilter={selectedBedroomFilter}
+                  selectedPriceRange={selectedPriceRange}
+                  cardRef={(node) => {
+                    if (node) {
+                      resultCardRefs.current.set(property.id, node);
+                    } else {
+                      resultCardRefs.current.delete(property.id);
+                    }
+                  }}
+                  onToggleSaved={() =>
+                    setSavedPropertyIds(toggleSavedPropertyId(property.id))
+                  }
+                  onToggleCompare={() =>
+                    setComparePropertyIds(toggleComparePropertyId(property.id))
+                  }
+                />
+              ))}
+            </div>
+
+            {hasMultipleResultsPages && (
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
                 <button
-                  key={pageItem}
                   type="button"
-                  onClick={() => handleResultsPageChange(pageItem)}
-                  aria-current={pageItem === safeResultsPage ? "page" : undefined}
-                  className={`h-10 min-w-10 rounded-xl px-3 text-sm font-black ring-1 ${
-                    pageItem === safeResultsPage
-                      ? "bg-[#173f3f] text-white ring-[#173f3f]"
-                      : "bg-white text-[#173f3f] ring-[#d7e6df] hover:bg-[#f5f8f1]"
-                  }`}
+                  onClick={() => handleResultsPageChange(safeResultsPage - 1)}
+                  disabled={safeResultsPage === 1}
+                  className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] disabled:cursor-not-allowed disabled:text-[#9aa7a4] disabled:hover:bg-white"
                 >
-                  {pageItem}
+                  Previous
                 </button>
-              )
+
+                {paginationPages.map((pageItem) =>
+                  String(pageItem).includes("ellipsis") ? (
+                    <span
+                      key={pageItem}
+                      className="px-2 text-sm font-black text-[#526260]"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={pageItem}
+                      type="button"
+                      onClick={() => handleResultsPageChange(pageItem)}
+                      aria-current={pageItem === safeResultsPage ? "page" : undefined}
+                      className={`h-10 min-w-10 rounded-xl px-3 text-sm font-black ring-1 ${
+                        pageItem === safeResultsPage
+                          ? "bg-[#173f3f] text-white ring-[#173f3f]"
+                          : "bg-white text-[#173f3f] ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                      }`}
+                    >
+                      {pageItem}
+                    </button>
+                  )
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => handleResultsPageChange(safeResultsPage + 1)}
+                  disabled={safeResultsPage === totalResultsPages}
+                  className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] disabled:cursor-not-allowed disabled:text-[#9aa7a4] disabled:hover:bg-white"
+                >
+                  Next
+                </button>
+              </div>
             )}
 
-            <button
-              type="button"
-              onClick={() => handleResultsPageChange(safeResultsPage + 1)}
-              disabled={safeResultsPage === totalResultsPages}
-              className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] disabled:cursor-not-allowed disabled:text-[#9aa7a4] disabled:hover:bg-white"
-            >
-              Next
-            </button>
+            {filteredProperties.length === 0 && (
+              <div className="bma-card mt-6 p-8 text-center">
+                <h2 className="text-2xl font-black text-[#102426]">
+                  No matching properties yet
+                </h2>
+                <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-[#526260]">
+                  Try a city, ZIP code, property address, or special like 6 weeks free.
+                </p>
+              </div>
+            )}
           </div>
-        )}
 
-        {filteredProperties.length === 0 && (
-          <div className="bma-card mt-6 p-8 text-center">
-            <h2 className="text-2xl font-black text-[#102426]">
-              No matching properties yet
-            </h2>
-            <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-[#526260]">
-              Try a city, ZIP code, property address, or special like 6 weeks free.
-            </p>
+          <div className="xl:sticky xl:top-28">
+            <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
+              <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
+                <div>
+                  <p className="text-sm font-black text-[#102426]">Map view</p>
+                  <p className="text-xs font-bold text-[#526260]">
+                    Hover pins to preview deals.
+                  </p>
+                </div>
+                <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+                  {mappableFilteredProperties.length} pins
+                </span>
+              </div>
+              <div className="bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[430px] xl:h-[calc(100vh-210px)] xl:min-h-[520px]">
+                <SearchMap
+                  properties={filteredProperties}
+                  mappableProperties={mappableFilteredProperties}
+                  selectedArea={selectedArea}
+                  selectedBedroomFilter={selectedBedroomFilter}
+                  selectedPriceRange={selectedPriceRange}
+                  onAreaChange={setSelectedArea}
+                  onPropertyHover={setHoveredMapPropertyId}
+                  onPropertySelect={handleMapPropertySelect}
+                  hoveredPropertyId={hoveredMapPropertyId}
+                />
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </section>
     </main>
   );
@@ -1432,68 +1467,82 @@ function SearchResultCard({
   const transparencyBadges = getSearchTransparencyBadges(property, priceSummary);
   const cardHref = `/properties/${property.id}`;
   const showGoldHoverBar = isMapHighlighted && propertyHasStrongMapDeal(property);
+  const floorPlanCount = displayFloorPlans.length;
+  const actionButtonClass =
+    "rounded-lg px-3 py-2.5 text-sm font-black transition";
 
   return (
     <article
       ref={cardRef}
-      className={`overflow-hidden rounded-lg bg-white shadow-sm ring-1 transition hover:-translate-y-1 hover:ring-[#f2b84b] hover:shadow-md ${
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md sm:grid sm:grid-cols-[210px_minmax(0,1fr)] ${
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
-      {showGoldHoverBar && <div className="h-1.5 bg-[#f2b84b]" />}
-      <Link to={cardHref} className="block">
-        <div className="relative">
+      <Link to={cardHref} className="relative block min-h-full bg-[#dcebe4]">
+        {showGoldHoverBar && (
+          <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
+        )}
+        <div className="relative h-full">
           <img
             src={getPropertyPrimaryImage(property)}
             alt={property.name}
             loading="lazy"
             decoding="async"
-            className="aspect-[16/9] w-full object-cover"
+            className="aspect-[16/10] w-full object-cover sm:h-full sm:min-h-[230px] sm:aspect-auto"
           />
-          <div className="absolute left-3 top-3 rounded-lg bg-[#173f3f] px-2.5 py-2 text-white shadow-lg">
-            <p className="text-[10px] font-black uppercase tracking-[0.08em] text-[#f9d783]">
-              Deal Score
+          <div className="absolute left-3 top-3 rounded-lg bg-white/95 px-2.5 py-2 text-[#102426] shadow-lg ring-1 ring-white/70">
+            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
+              Score
             </p>
-            <p className="text-lg font-black">{dealScore}/100</p>
+            <p className="text-lg font-black leading-none">{dealScore}</p>
           </div>
+          {hasSpecial && (
+            <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-[#102426]/92 px-3 py-2 text-white shadow-lg">
+              <p className="truncate text-xs font-black text-[#f9d783]">
+                {priceSummary.specialLabel}
+              </p>
+            </div>
+          )}
+          {propertyHasStrongMapDeal(property) && (
+            <div className="absolute right-3 top-3 rounded-full bg-[#f2b84b] px-3 py-1 text-[11px] font-black text-[#102426] shadow-lg">
+              Top deal
+            </div>
+          )}
         </div>
       </Link>
 
-      <div className="p-4">
-        <Link to={cardHref} className="block">
-          <p className="truncate text-base font-black text-[#102426]">
-            {property.name}
-          </p>
-          <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260]">
-            <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63]" />
-            <span className="truncate">{addressLabel}</span>
-          </p>
-        </Link>
-
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <p className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
-            {getBedsLabel(property, displayFloorPlans)}
-          </p>
-          {hasSpecial && (
-            <p className="rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-              {priceSummary.specialLabel}
+      <div className="flex min-w-0 flex-col p-4 sm:p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <Link to={cardHref} className="min-w-0">
+            <p className="truncate text-lg font-black text-[#102426]">
+              {property.name}
             </p>
-          )}
+            <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260]">
+              <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63]" />
+              <span className="truncate">{addressLabel}</span>
+            </p>
+          </Link>
+          <span className="w-fit shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+            {getBedsLabel(property, displayFloorPlans)}
+          </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="mt-4 grid grid-cols-2 gap-2">
           <SearchRentMetric
             label="Normal rent"
             value={priceSummary.normalRentLabel}
           />
           <SearchRentMetric
-            label={showNetEffectiveRent ? "Estimated rent" : "Current rent"}
+            label={showNetEffectiveRent ? "Estimated rent" : "Same as rent"}
             value={showNetEffectiveRent ? priceSummary.effectiveRentLabel : priceSummary.normalRentLabel}
             highlight={showNetEffectiveRent}
           />
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df]">
+            {floorPlanCount} matching floor plan{floorPlanCount === 1 ? "" : "s"}
+          </span>
           {transparencyBadges.map((badge) => (
             <span
               key={badge}
@@ -1504,11 +1553,17 @@ function SearchResultCard({
           ))}
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="mt-auto grid grid-cols-3 gap-2 pt-4">
+          <Link
+            to={cardHref}
+            className="col-span-3 rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] sm:col-span-1"
+          >
+            View details
+          </Link>
           <button
             type="button"
             onClick={onToggleSaved}
-            className={`rounded-lg px-3 py-2.5 text-sm font-black ${
+            className={`${actionButtonClass} ${
               isSaved
                 ? "bg-[#173f3f] !text-white hover:!text-white"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
@@ -1519,7 +1574,7 @@ function SearchResultCard({
           <button
             type="button"
             onClick={onToggleCompare}
-            className={`rounded-lg px-3 py-2.5 text-sm font-black ${
+            className={`${actionButtonClass} ${
               isCompared
                 ? "bg-[#f2b84b] text-[#102426]"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
