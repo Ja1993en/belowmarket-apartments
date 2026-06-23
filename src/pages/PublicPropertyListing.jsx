@@ -1385,7 +1385,9 @@ export default function PublicPropertyListing() {
     };
 
     const handleFloorPlanLeadSubmit = () => {
-        if (!leadForm.name || !leadForm.phone || !leadForm.email) {
+        const isFloorPlanRequest = Boolean(selectedFloorPlan);
+
+        if (!leadForm.name || !leadForm.phone || (isFloorPlanRequest && !leadForm.email)) {
             setShowSidebarError(true);
             return;
         }
@@ -1547,6 +1549,39 @@ export default function PublicPropertyListing() {
             value: "Schedule a tour",
             title: "Plan the tour step",
             description: "Get help deciding if this property is worth touring and what to ask first.",
+        },
+    ];
+
+    const getSnapshotMetricValue = (label, fallback = "Confirm") =>
+        renterValueToolkit.snapshotMetrics.find((metric) => metric.label === label)?.value || fallback;
+
+    const dealSummaryMetrics = [
+        {
+            label: "Listed rent",
+            value: getSnapshotMetricValue("Normal rent", startingRentLabel),
+            helper: "Before specials and required add-ons",
+        },
+        {
+            label: "Effective rent",
+            value: getSnapshotMetricValue("Effective value", effectiveRentLabel),
+            helper: hasPropertySpecial ? "Estimated value after the listed special" : "No active special applied",
+        },
+        {
+            label: "Current special",
+            value: propertySpecialLabel,
+            helper: "Confirm terms before applying",
+        },
+        {
+            label: "Availability",
+            value: `${availableFloorPlans.length} plan${availableFloorPlans.length === 1 ? "" : "s"}`,
+            helper: availableUnitCount > 0
+                ? `${availableUnitCount} listed unit${availableUnitCount === 1 ? "" : "s"}`
+                : "Ask for exact units",
+        },
+        {
+            label: "Fees",
+            value: getSnapshotMetricValue("Fees"),
+            helper: "Monthly add-ons to verify",
         },
     ];
 
@@ -1784,6 +1819,37 @@ export default function PublicPropertyListing() {
                         </a>
                     ))}
                 </nav>
+
+                <section className="mt-5 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm">
+                    <div className="flex flex-col gap-4 border-b border-[#edf4ef] bg-[#102426] p-5 text-white lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <p className="text-xs font-black uppercase tracking-wide text-[#f2b84b]">
+                                Deal command center
+                            </p>
+                            <h2 className="mt-1 text-2xl font-black leading-tight">
+                                Know the rent, special, and next question before you tour.
+                            </h2>
+                        </div>
+
+                        <a
+                            href="#request-info"
+                            className="w-fit rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                        >
+                            Verify this deal
+                        </a>
+                    </div>
+
+                    <div className="grid divide-y divide-[#edf4ef] md:grid-cols-5 md:divide-x md:divide-y-0">
+                        {dealSummaryMetrics.map((metric) => (
+                            <DealSummaryMetric
+                                key={metric.label}
+                                label={metric.label}
+                                value={metric.value}
+                                helper={metric.helper}
+                            />
+                        ))}
+                    </div>
+                </section>
 
                 <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_345px]">
                     <div className="min-w-0">
@@ -2349,10 +2415,9 @@ export default function PublicPropertyListing() {
                             </div>
 
                             <div
-                                id="request-info"
-                                className="mt-8 space-y-4 lg:mt-0"
+                                className="mt-8 flex flex-col gap-4 lg:mt-0"
                             >
-                                <div className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-36">
+                                <div id="location" className="order-3 scroll-mt-32 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
                                     <div className="p-4">
                                         <h2 className="text-xl font-black text-[#102426]">
                                             Location
@@ -2393,7 +2458,7 @@ export default function PublicPropertyListing() {
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
+                                <div className="order-2 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
                                     <p className="text-xs font-black uppercase text-[#1f6f63]">
                                         Ask before touring
                                     </p>
@@ -2408,24 +2473,24 @@ export default function PublicPropertyListing() {
                                     </div>
                                 </div>
 
-                                <div className="overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-xl">
+                                <div id="request-info" className="order-1 scroll-mt-32 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-xl lg:sticky lg:top-36">
                                     <div className="bg-[#102426] p-5 text-white">
                                         <p className="text-xs font-black uppercase tracking-wide text-[#f2b84b]">
                                             Free renter service
                                         </p>
 
                                         <h2 className="mt-2 text-2xl font-black leading-tight">
-                                            Get a verified answer before you tour
+                                            Want a locator to verify this deal?
                                         </h2>
 
                                         <p className="mt-2 text-sm font-semibold leading-6 text-white/80">
-                                            Tell us what matters most. A locator can help confirm the special, real monthly cost, unit availability, and similar deals.
+                                            Get the special, fees, exact availability, and next best question checked before you spend time touring.
                                         </p>
 
                                         <div className="mt-4 grid grid-cols-3 gap-2">
-                                            <LeadStepCard number="1" label="Need" />
+                                            <LeadStepCard number="1" label="Choose" />
                                             <LeadStepCard number="2" label="Fit" />
-                                            <LeadStepCard number="3" label="Contact" />
+                                            <LeadStepCard number="3" label="Send" />
                                         </div>
                                     </div>
 
@@ -2503,40 +2568,6 @@ export default function PublicPropertyListing() {
                                                     <option value="2 Bedroom">2 Bedroom</option>
                                                     <option value="3 Bedroom">3 Bedroom</option>
                                                 </select>
-
-                                                <select
-                                                    value={leadForm.budget}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            budget: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-white px-4 py-3 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
-                                                >
-                                                    <option value="">Monthly budget</option>
-                                                    <option value="Under $1,200">Under $1,200</option>
-                                                    <option value="$1,200 - $1,500">$1,200 - $1,500</option>
-                                                    <option value="$1,500 - $1,800">$1,500 - $1,800</option>
-                                                    <option value="$1,800 - $2,200">$1,800 - $2,200</option>
-                                                    <option value="$2,200+">$2,200+</option>
-                                                </select>
-
-                                                <select
-                                                    value={leadForm.tourPreference}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            tourPreference: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-white px-4 py-3 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
-                                                >
-                                                    <option value="">Tour preference</option>
-                                                    <option value="In-person tour">In-person tour</option>
-                                                    <option value="Virtual tour">Virtual tour</option>
-                                                    <option value="Send pricing first">Send pricing first</option>
-                                                </select>
                                             </div>
                                         </div>
 
@@ -2567,19 +2598,6 @@ export default function PublicPropertyListing() {
                                                         setLeadForm({
                                                             ...leadForm,
                                                             phone: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full rounded-xl border border-[#d7e6df] px-4 py-3 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
-                                                />
-
-                                                <input
-                                                    type="email"
-                                                    placeholder="Email address *"
-                                                    value={leadForm.email}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            email: e.target.value,
                                                         })
                                                     }
                                                     className="w-full rounded-xl border border-[#d7e6df] px-4 py-3 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
@@ -2617,7 +2635,7 @@ export default function PublicPropertyListing() {
 
                                         {showSidebarError && (
                                             <p className="mt-3 text-sm font-semibold text-[#e4572e]">
-                                                Add your name, phone, and email so we can send the answer.
+                                                Add your name and phone so we can send the answer.
                                             </p>
                                         )}
 
@@ -2629,13 +2647,13 @@ export default function PublicPropertyListing() {
                                                 : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
                                                 }`}
                                         >
-                                            {leadSubmitted ? "Request Sent" : "Get my apartment help"}
+                                            {leadSubmitted ? "Request Sent" : "Text me this info"}
                                         </button>
 
                                         <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[11px] font-black text-[#526260]">
                                             <span className="rounded-xl bg-[#f5f8f1] px-2 py-2 ring-1 ring-[#d7e6df]">No renter cost</span>
                                             <span className="rounded-xl bg-[#f5f8f1] px-2 py-2 ring-1 ring-[#d7e6df]">Specials checked</span>
-                                            <span className="rounded-xl bg-[#f5f8f1] px-2 py-2 ring-1 ring-[#d7e6df]">Fee questions ready</span>
+                                            <span className="rounded-xl bg-[#f5f8f1] px-2 py-2 ring-1 ring-[#d7e6df]">Text friendly</span>
                                         </div>
 
                                         <p className="mt-4 text-xs leading-5 text-[#7b8b88]">
@@ -3327,6 +3345,22 @@ function LocatorIntentOption({ title, description, selected, onClick }) {
                 </span>
             </span>
         </button>
+    );
+}
+
+function DealSummaryMetric({ label, value, helper }) {
+    return (
+        <div className="p-4">
+            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
+                {label}
+            </p>
+            <p className="mt-1 truncate text-xl font-black text-[#102426]">
+                {value}
+            </p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-[#526260]">
+                {helper}
+            </p>
+        </div>
     );
 }
 
