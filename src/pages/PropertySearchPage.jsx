@@ -1581,7 +1581,7 @@ function SearchResultCard({
             alt={property.name}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover"
+            className="absolute inset-0 !h-full w-full object-cover"
           />
           <div className="absolute left-3 top-3 rounded-lg bg-white/95 px-2.5 py-2 text-[#102426] shadow-lg ring-1 ring-white/70">
             <p className="text-[10px] font-black uppercase text-[#1f6f63]">
