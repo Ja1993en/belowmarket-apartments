@@ -1014,6 +1014,8 @@ export default function PublicPropertyListing() {
     const [activeFloorPlanFilter, setActiveFloorPlanFilter] = useState("All");
     const [floorPlanPage, setFloorPlanPage] = useState(1);
     const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(false);
+    const [floorPlanLayoutMode, setFloorPlanLayoutMode] = useState("compact");
+    const [expandedCompactFloorPlanName, setExpandedCompactFloorPlanName] = useState("");
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
     const [showSidebarError, setShowSidebarError] = useState(false);
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
@@ -1999,26 +2001,46 @@ export default function PublicPropertyListing() {
                                             )}
                                         </div>
 
-                                        {unavailableFloorPlans.length > 0 && (
+                                        <div className="flex flex-wrap gap-2">
                                             <button
                                                 type="button"
-                                                onClick={() => {
-                                                    setShowUnavailableFloorPlans(
-                                                        (currentValue) => !currentValue
-                                                    );
-                                                    setFloorPlanPage(1);
-                                                }}
+                                                onClick={() =>
+                                                    setFloorPlanLayoutMode((currentMode) =>
+                                                        currentMode === "compact" ? "cards" : "compact"
+                                                    )
+                                                }
                                                 className={`rounded-full px-4 py-2 text-sm font-black ${
-                                                    showUnavailableFloorPlans
-                                                        ? "bg-[#173f3f] !text-white hover:!text-white"
-                                                        : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
+                                                    floorPlanLayoutMode === "compact"
+                                                        ? "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
+                                                        : "bg-[#173f3f] !text-white hover:!text-white"
                                                 }`}
                                             >
-                                                {showUnavailableFloorPlans
-                                                    ? "Hide unavailable"
-                                                    : "View unavailable"}
+                                                {floorPlanLayoutMode === "compact"
+                                                    ? "Undo layout change"
+                                                    : "Use compact list"}
                                             </button>
-                                        )}
+
+                                            {unavailableFloorPlans.length > 0 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setShowUnavailableFloorPlans(
+                                                            (currentValue) => !currentValue
+                                                        );
+                                                        setFloorPlanPage(1);
+                                                    }}
+                                                    className={`rounded-full px-4 py-2 text-sm font-black ${
+                                                        showUnavailableFloorPlans
+                                                            ? "bg-[#173f3f] !text-white hover:!text-white"
+                                                            : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
+                                                    }`}
+                                                >
+                                                    {showUnavailableFloorPlans
+                                                        ? "Hide unavailable"
+                                                        : "View unavailable"}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
 
 
@@ -2081,12 +2103,47 @@ export default function PublicPropertyListing() {
                                         </div>
                                     )}
 
-                                    <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                                    <div className={floorPlanLayoutMode === "compact" ? "mt-5 space-y-3" : "mt-5 grid gap-3 lg:grid-cols-2"}>
                                         {visibleFloorPlans.map((plan) => {
                                             const compareFloorPlanItem = getFloorPlanCompareItem(property, plan);
                                             const isFloorPlanCompared = compareFloorPlanKeys.has(
                                                 getCompareFloorPlanItemKey(compareFloorPlanItem)
                                             );
+
+                                            if (floorPlanLayoutMode === "compact") {
+                                                return (
+                                                    <CompactFloorPlanRow
+                                                        key={plan.name}
+                                                        name={plan.name}
+                                                        beds={plan.beds}
+                                                        baths={plan.baths}
+                                                        sqft={plan.sqft}
+                                                        rent={plan.rent}
+                                                        effectiveRent={plan.effectiveRent}
+                                                        available={plan.available}
+                                                        availableUnits={plan.availableUnits}
+                                                        image={plan.image}
+                                                        status={plan.status}
+                                                        special={plan.special}
+                                                        isCompared={isFloorPlanCompared}
+                                                        isExpanded={expandedCompactFloorPlanName === plan.name}
+                                                        onToggleDetails={() =>
+                                                            setExpandedCompactFloorPlanName((currentName) =>
+                                                                currentName === plan.name ? "" : plan.name
+                                                            )
+                                                        }
+                                                        onToggleCompare={() =>
+                                                            handleToggleFloorPlanCompare(
+                                                                compareFloorPlanItem,
+                                                                isFloorPlanCompared
+                                                            )
+                                                        }
+                                                        onCheckAvailability={() =>
+                                                            openFloorPlanAvailabilityRequest(plan)
+                                                        }
+                                                    />
+                                                );
+                                            }
 
                                             return (
                                                 <FloorPlanCard
@@ -4513,6 +4570,226 @@ function CompareDetailMetric({ label, value, highlight = false }) {
         >
             <p className="text-[10px] font-black uppercase">{label}</p>
             <p className="mt-1 truncate text-xs font-black">{value}</p>
+        </div>
+    );
+}
+
+function CompactFloorPlanRow({
+    name,
+    beds,
+    baths,
+    sqft,
+    rent,
+    effectiveRent,
+    available,
+    availableUnits = [],
+    image,
+    status,
+    special,
+    isCompared,
+    isExpanded,
+    onToggleDetails,
+    onToggleCompare,
+    onCheckAvailability,
+}) {
+    const hasSpecial = Boolean(special?.label);
+    const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "No special";
+    const sortedAvailableUnits = [...(availableUnits || [])]
+        .filter((unit) => unit?.status !== "leased")
+        .sort((a, b) => parseCurrency(a.rent) - parseCurrency(b.rent));
+    const visibleUnits = sortedAvailableUnits.slice(0, 3);
+    const availableUnitCount = sortedAvailableUnits.length || getFloorPlanAvailableUnitCount({
+        available,
+        availableUnits,
+        status,
+    }) || 0;
+    const hasAvailableFloorPlanUnits =
+        availableUnitCount > 0 || isFloorPlanAvailable({ available, availableUnits, status });
+    const availabilityBadgeLabel = getFloorPlanAvailabilityBadgeLabel({
+        available,
+        availableUnitCount,
+        hasAvailableFloorPlanUnits,
+    });
+    const displayRent = formatFloorPlanMetricValue(rent) || "Contact";
+    const displayEffectiveRent = formatFloorPlanMetricValue(effectiveRent) || displayRent;
+    const detailId = `floor-plan-${getFloorPlanNameSlug(name)}-details`;
+
+    return (
+        <div className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
+            <div className="grid gap-3 p-3 md:grid-cols-[minmax(0,1.4fr)_minmax(210px,0.8fr)_auto] md:items-center md:p-4">
+                <div className="flex min-w-0 gap-3">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#f5f8f1] ring-1 ring-[#d7e6df]">
+                        {image ? (
+                            <img
+                                src={image}
+                                alt={`${name} floor plan`}
+                                loading="lazy"
+                                decoding="async"
+                                className="h-full w-full object-contain p-1"
+                            />
+                        ) : (
+                            <span className="text-[10px] font-black uppercase text-[#526260]">
+                                Plan
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded-full bg-[#e7f3ee] px-2.5 py-1 text-[11px] font-black text-[#1f6f63] ring-1 ring-[#a9cfc2]">
+                                {availabilityBadgeLabel}
+                            </span>
+
+                            <span
+                                className={`max-w-full rounded-full px-2.5 py-1 text-[11px] font-black ${
+                                    hasSpecial
+                                        ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+                                        : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
+                                }`}
+                            >
+                                <span className="block truncate">{specialLabel}</span>
+                            </span>
+                        </div>
+
+                        <p className="mt-2 truncate text-lg font-black text-[#102426]">
+                            {name}
+                        </p>
+
+                        <p className="mt-1 text-sm font-semibold text-[#526260]">
+                            {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
+                        </p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#f5f8f1] p-2 ring-1 ring-[#d7e6df]">
+                    <FloorPlanMetric label="Normal rent" value={displayRent} />
+                    <FloorPlanMetric label="Estimated rent" value={displayEffectiveRent} highlight={hasSpecial} />
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-3 md:w-[330px] md:grid-cols-1 lg:grid-cols-3 lg:justify-self-end">
+                    <button
+                        type="button"
+                        onClick={onToggleCompare}
+                        className={`rounded-xl px-3 py-2.5 text-sm font-black ${
+                            isCompared
+                                ? "bg-[#f2b84b] text-[#102426]"
+                                : "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a] hover:bg-[#f9d783]"
+                        }`}
+                    >
+                        {isCompared ? "Added" : "Compare"}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onToggleDetails}
+                        aria-expanded={isExpanded}
+                        aria-controls={detailId}
+                        className="rounded-xl bg-[#173f3f] px-3 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+                    >
+                        {isExpanded ? "Hide" : "View Details"}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onCheckAvailability}
+                        className="rounded-xl bg-[#173f3f] px-3 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+                    >
+                        Check Availability
+                    </button>
+                </div>
+            </div>
+
+            {isExpanded && (
+                <div id={detailId} className="border-t border-[#d7e6df] bg-[#f5f8f1] p-4">
+                    <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
+                        <div className="flex h-52 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-[#d7e6df]">
+                            {image ? (
+                                <img
+                                    src={image}
+                                    alt={`${name} expanded floor plan`}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="h-full w-full object-contain p-3"
+                                />
+                            ) : (
+                                <span className="px-4 text-center text-xs font-black uppercase leading-5 text-[#526260]">
+                                    Floor plan image pending
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="min-w-0">
+                            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+                                <FloorPlanMetric label="Normal rent" value={displayRent} />
+                                <FloorPlanMetric label="Estimated rent" value={displayEffectiveRent} highlight={hasSpecial} />
+                                <FloorPlanMetric label="Special" value={specialLabel} highlight={hasSpecial} />
+                                <FloorPlanMetric label="Availability" value={availabilityBadgeLabel} />
+                            </div>
+
+                            <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+                                {hasSpecial
+                                    ? "Estimated rent spreads the listed special across the lease. Confirm whether fees, parking, and utilities change the monthly amount due."
+                                    : "No special is listed for this layout. Confirm current pricing, fees, and exact availability before applying."}
+                            </p>
+
+                            <div className="mt-3 rounded-2xl bg-white p-3 ring-1 ring-[#d7e6df]">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <p className="text-sm font-black text-[#102426]">
+                                            Available units
+                                        </p>
+                                        <p className="mt-1 text-xs font-semibold text-[#526260]">
+                                            {availableUnitCount > 0
+                                                ? `${availableUnitCount} unit${availableUnitCount === 1 ? "" : "s"} listed for this layout.`
+                                                : "Ask your locator to confirm the latest unit availability."}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={onCheckAvailability}
+                                        className="rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+                                    >
+                                        Check Availability
+                                    </button>
+                                </div>
+
+                                {visibleUnits.length > 0 && (
+                                    <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                                        {visibleUnits.map((unit) => (
+                                            <div
+                                                key={unit.unit || `${unit.rent}-${unit.available}`}
+                                                className="rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]"
+                                            >
+                                                <p className="text-sm font-black text-[#102426]">
+                                                    Unit {unit.unit || "Available"}
+                                                </p>
+                                                <p className="mt-1 text-xs font-semibold text-[#526260]">
+                                                    {unit.available || "Availability not listed"}
+                                                </p>
+                                                <p className="mt-2 text-lg font-black text-[#102426]">
+                                                    {unit.rent || rent || "Contact"}
+                                                </p>
+                                                {unit.currentSpecial && (
+                                                    <p className="mt-1 text-xs font-bold text-[#8a5b0a]">
+                                                        {cleanUnitSpecialLabel(unit.currentSpecial)}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {sortedAvailableUnits.length > visibleUnits.length && (
+                                    <p className="mt-3 text-xs font-bold text-[#526260]">
+                                        Showing the first {visibleUnits.length} units. Use Check Availability to confirm the full list.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
