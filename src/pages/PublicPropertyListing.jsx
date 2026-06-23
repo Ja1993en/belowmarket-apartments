@@ -23,6 +23,10 @@ import {
     toggleComparePropertyId,
     toggleSavedPropertyId,
 } from "../data/renterPreferenceStorage";
+import { saveLocalLead } from "../data/leadStorage";
+import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
+import { saveSupabaseLead } from "../data/supabaseLeadStorage";
+import { isLocalFallbackEnabled } from "../data/supabaseClient";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
@@ -1020,6 +1024,8 @@ export default function PublicPropertyListing() {
     const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(false);
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
     const [showSidebarError, setShowSidebarError] = useState(false);
+    const [leadFormError, setLeadFormError] = useState("");
+    const [isSubmittingLead, setIsSubmittingLead] = useState(false);
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
     const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
     const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
@@ -1282,6 +1288,7 @@ export default function PublicPropertyListing() {
         assistanceNeed: "Confirm this special",
         tourPreference: "",
         selectedUnit: "",
+        smsConsent: false,
 
     });
 
@@ -1296,6 +1303,7 @@ export default function PublicPropertyListing() {
         assistanceNeed: "Confirm this special",
         tourPreference: "",
         selectedUnit,
+        smsConsent: false,
     });
 
     const openFloorPlanAvailabilityRequest = (plan, selectedUnit = "") => {
@@ -1384,16 +1392,64 @@ export default function PublicPropertyListing() {
         return "property";
     };
 
-    const handleFloorPlanLeadSubmit = () => {
+    const handleFloorPlanLeadSubmit = async () => {
         const isFloorPlanRequest = Boolean(selectedFloorPlan);
+        const leadBedrooms =
+            leadForm.bedroomsNeeded ||
+            (selectedFloorPlan
+                ? formatBedroomLabel(selectedFloorPlan.beds, selectedFloorPlan.name)
+                : "");
+        const leadBudget = leadForm.budget.trim();
+        const leadMoveIn = leadForm.moveInDate.trim();
+        const leadArea =
+            property?.marketArea ||
+            property?.neighborhood ||
+            property?.city ||
+            addressLabel ||
+            "Dallas";
 
-        if (!leadForm.name || !leadForm.phone || (isFloorPlanRequest && !leadForm.email)) {
+        if (
+            !leadForm.name.trim() ||
+            !leadForm.phone.trim() ||
+            !leadForm.email.trim() ||
+            !leadBedrooms ||
+            !leadBudget ||
+            !leadMoveIn
+        ) {
             setShowSidebarError(true);
+            setLeadFormError(
+                "Add name, phone, email, bedrooms, budget, and move-in timing so this lead appears correctly in admin."
+            );
+            return;
+        }
+
+        if (!leadForm.smsConsent) {
+            setShowSidebarError(true);
+            setLeadFormError("Please agree to receive text messages before submitting.");
             return;
         }
 
         setShowSidebarError(false);
+        setLeadFormError("");
 
+        const createdAt = new Date().toISOString();
+        const sourcePropertyId = property?.id || propertyId;
+        const sourcePropertyName = property?.name || propertyId;
+        const selectedSpecialLabel =
+            selectedFloorPlan?.special?.label ||
+            (hasPropertySpecial ? propertySpecialLabel : "");
+        const leadNotes = [
+            `Request: ${leadForm.assistanceNeed}`,
+            `Interested property: ${sourcePropertyName}`,
+            addressLabel ? `Address: ${addressLabel}` : null,
+            isFloorPlanRequest ? `Floor plan: ${selectedFloorPlan.name}` : null,
+            leadForm.selectedUnit ? `Selected unit: ${leadForm.selectedUnit}` : null,
+            selectedUnitDetails?.rent ? `Selected unit rent: ${selectedUnitDetails.rent}` : null,
+            selectedSpecialLabel ? `Special to confirm: ${selectedSpecialLabel}` : null,
+            leadForm.contactMethod ? `Preferred contact: ${leadForm.contactMethod}` : null,
+        ]
+            .filter(Boolean)
+            .join("\n");
 
         const leadData = {
             ...leadForm,
@@ -1453,8 +1509,59 @@ export default function PublicPropertyListing() {
 
         };
 
-        console.table(leadData);
-        setLeadSubmitted(true);
+        const adminLeadPayload = {
+            id: `property-lead-${Date.now()}`,
+            name: leadForm.name.trim(),
+            phone: leadForm.phone.trim(),
+            email: leadForm.email.trim(),
+            preference: `${leadBedrooms} - ${leadArea} - ${leadBudget} budget`,
+            bedrooms: leadBedrooms,
+            budget: leadBudget,
+            moveIn: leadMoveIn,
+            status: "New Lead",
+            quality: leadForm.selectedUnit || selectedFloorPlan ? "High Intent" : "New",
+            priority: leadForm.selectedUnit ? "High" : selectedFloorPlan ? "High" : "Medium",
+            source: selectedFloorPlan ? "Property floor plan page" : "Property listing page",
+            sourcePropertyId,
+            sourcePropertyName,
+            assignedTo: "Unassigned",
+            lastTouch: "Just now",
+            notes: leadNotes,
+            recommendedPropertyIds: [sourcePropertyId].filter(Boolean),
+            token: `lead-${Date.now()}`,
+            contactMethod: leadForm.contactMethod || "Text",
+            createdAt,
+            landingPage: `${window.location.pathname}${window.location.search}`,
+            referrer: document.referrer || "",
+        };
+
+        try {
+            setIsSubmittingLead(true);
+            const savedLead = await saveSupabaseLead(adminLeadPayload);
+
+            saveLeadEventInBackground({
+                leadId: savedLead.id,
+                eventType: "lead_submitted",
+                propertyId: sourcePropertyId,
+                propertyName: sourcePropertyName,
+                metadata: leadData,
+            });
+
+            setLeadSubmitted(true);
+        } catch (error) {
+            console.error(error);
+
+            if (isLocalFallbackEnabled) {
+                saveLocalLead(adminLeadPayload);
+                setLeadSubmitted(true);
+                return;
+            }
+
+            setShowSidebarError(true);
+            setLeadFormError("Could not save this request. Please try again.");
+        } finally {
+            setIsSubmittingLead(false);
+        }
     };
 
     const [leadSubmitted, setLeadSubmitted] = useState(false);
@@ -2425,7 +2532,7 @@ export default function PublicPropertyListing() {
                                     </div>
                                 </div>
 
-                                <div id="request-info" className="order-1 scroll-mt-32 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm lg:sticky lg:top-36">
+                                <div id="request-info" className="order-1 scroll-mt-32 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm lg:sticky lg:top-28 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
                                     <p className="text-[10px] font-black uppercase tracking-wide text-[#1f6f63]">
                                         Free locator help
                                     </p>
@@ -2497,6 +2604,19 @@ export default function PublicPropertyListing() {
                                             className="w-full rounded-lg border border-[#d7e6df] px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
                                         />
 
+                                        <input
+                                            type="email"
+                                            placeholder="Email address *"
+                                            value={leadForm.email}
+                                            onChange={(e) =>
+                                                setLeadForm({
+                                                    ...leadForm,
+                                                    email: e.target.value,
+                                                })
+                                            }
+                                            className="w-full rounded-lg border border-[#d7e6df] px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
+                                        />
+
                                         <div className="grid grid-cols-2 gap-2">
                                             <select
                                                 value={leadForm.moveInDate}
@@ -2508,7 +2628,7 @@ export default function PublicPropertyListing() {
                                                 }
                                                 className="w-full rounded-lg border border-[#d7e6df] bg-white px-3 py-2.5 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
                                             >
-                                                <option value="">Move-in</option>
+                                                <option value="">Move-in *</option>
                                                 <option value="Immediately">Immediately</option>
                                                 <option value="Within 30 Days">Within 30 Days</option>
                                                 <option value="Within 60 Days">Within 60 Days</option>
@@ -2526,30 +2646,83 @@ export default function PublicPropertyListing() {
                                                 }
                                                 className="w-full rounded-lg border border-[#d7e6df] bg-white px-3 py-2.5 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
                                             >
-                                                <option value="">Beds</option>
+                                                <option value="">Beds *</option>
                                                 <option value="Studio">Studio</option>
-                                                <option value="1 Bedroom">1 Bedroom</option>
-                                                <option value="2 Bedroom">2 Bedroom</option>
-                                                <option value="3 Bedroom">3 Bedroom</option>
+                                                <option value="1 Bed">1 Bed</option>
+                                                <option value="2 Bed">2 Bed</option>
+                                                <option value="3 Bed">3 Bed</option>
                                             </select>
                                         </div>
+
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Budget *"
+                                                value={leadForm.budget}
+                                                onChange={(e) =>
+                                                    setLeadForm({
+                                                        ...leadForm,
+                                                        budget: e.target.value,
+                                                    })
+                                                }
+                                                className="w-full rounded-lg border border-[#d7e6df] px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#2d7dd2]"
+                                            />
+
+                                            <select
+                                                value={leadForm.contactMethod}
+                                                onChange={(e) =>
+                                                    setLeadForm({
+                                                        ...leadForm,
+                                                        contactMethod: e.target.value,
+                                                    })
+                                                }
+                                                className="w-full rounded-lg border border-[#d7e6df] bg-white px-3 py-2.5 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                                            >
+                                                <option value="">Contact</option>
+                                                <option value="Text">Text me</option>
+                                                <option value="Call">Call me</option>
+                                                <option value="Email">Email me</option>
+                                            </select>
+                                        </div>
+
+                                        <label className="flex gap-2 rounded-xl bg-[#f5f8f1] p-3 text-[11px] font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+                                            <input
+                                                type="checkbox"
+                                                checked={leadForm.smsConsent}
+                                                onChange={(e) =>
+                                                    setLeadForm({
+                                                        ...leadForm,
+                                                        smsConsent: e.target.checked,
+                                                    })
+                                                }
+                                                className="mt-1 h-4 w-4 shrink-0 accent-[#173f3f]"
+                                            />
+                                            <span>
+                                                I agree to receive texts from Below Market Apartments about this property, recommendations, tours, and follow-up. Reply STOP to opt out.
+                                            </span>
+                                        </label>
                                     </div>
 
                                     {showSidebarError && (
                                         <p className="mt-3 text-sm font-semibold text-[#e4572e]">
-                                            Add your name and phone so we can send the answer.
+                                            {leadFormError || "Add the required info so we can send the answer."}
                                         </p>
                                     )}
 
                                     <button
+                                        type="button"
                                         onClick={handleFloorPlanLeadSubmit}
-                                        disabled={leadSubmitted}
+                                        disabled={isSubmittingLead || leadSubmitted}
                                         className={`mt-3 w-full rounded-xl px-4 py-3 text-sm font-black ${leadSubmitted
                                             ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
                                             : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
                                             }`}
                                     >
-                                        {leadSubmitted ? "Request Sent" : "Text me this info"}
+                                        {isSubmittingLead
+                                            ? "Sending..."
+                                            : leadSubmitted
+                                                ? "Request Sent"
+                                                : "Text me this info"}
                                     </button>
 
                                     <p className="mt-3 text-[11px] font-semibold leading-5 text-[#7b8b88]">
@@ -3005,7 +3178,7 @@ export default function PublicPropertyListing() {
                                         Your contact info
                                     </p>
                                     <p className="mt-1 text-xs font-semibold text-[#526260]">
-                                        Name, phone, and email are required so we can confirm pricing and availability.
+                                        Name, phone, email, budget, and move-in timing are required so this request appears correctly in admin.
                                     </p>
 
                                     <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -3050,6 +3223,20 @@ export default function PublicPropertyListing() {
                                             className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2] md:col-span-2"
                                         />
 
+                                        <input
+                                            name="budget"
+                                            type="text"
+                                            placeholder="Budget *"
+                                            value={leadForm.budget}
+                                            onChange={(e) =>
+                                                setLeadForm({
+                                                    ...leadForm,
+                                                    budget: e.target.value,
+                                                })
+                                            }
+                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
+                                        />
+
                                         <select
                                             name="moveInDate"
                                             value={leadForm.moveInDate}
@@ -3059,14 +3246,38 @@ export default function PublicPropertyListing() {
                                                     moveInDate: e.target.value,
                                                 })
                                             }
-                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2] md:col-span-2"
+                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         >
-                                            <option value="">Move-in timeline (optional)</option>                                        <option value="Immediately">Immediately</option>
+                                            <option value="">Move-in timeline *</option>
+                                            <option value="Immediately">Immediately</option>
                                             <option value="Within 30 Days">Within 30 Days</option>
                                             <option value="Within 60 Days">Within 60 Days</option>
                                             <option value="Within 90 Days">Within 90 Days</option>
                                             <option value="More Than 90 Days">More Than 90 Days</option>
                                         </select>
+
+                                        <select
+                                            name="bedroomsNeeded"
+                                            value={leadForm.bedroomsNeeded}
+                                            onChange={(e) =>
+                                                setLeadForm({
+                                                    ...leadForm,
+                                                    bedroomsNeeded: e.target.value,
+                                                })
+                                            }
+                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
+                                        >
+                                            <option value="">
+                                                {selectedFloorPlan
+                                                    ? `Use ${formatBedroomLabel(selectedFloorPlan.beds, selectedFloorPlan.name)}`
+                                                    : "Bedrooms *"}
+                                            </option>
+                                            <option value="Studio">Studio</option>
+                                            <option value="1 Bed">1 Bed</option>
+                                            <option value="2 Bed">2 Bed</option>
+                                            <option value="3 Bed">3 Bed</option>
+                                        </select>
+
                                         <select
                                             name="contactMethod"
                                             value={leadForm.contactMethod}
@@ -3076,7 +3287,7 @@ export default function PublicPropertyListing() {
                                                     contactMethod: e.target.value,
                                                 })
                                             }
-                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2] md:col-span-2"
+                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
                                         >
                                             <option value="">Preferred contact (optional)</option>
                                             <option value="Text">Text me</option>
@@ -3084,6 +3295,29 @@ export default function PublicPropertyListing() {
                                             <option value="Email">Email me</option>
                                         </select>
                                     </div>
+
+                                    <label className="mt-4 flex gap-3 rounded-2xl bg-[#f5f8f1] p-4 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+                                        <input
+                                            type="checkbox"
+                                            checked={leadForm.smsConsent}
+                                            onChange={(e) =>
+                                                setLeadForm({
+                                                    ...leadForm,
+                                                    smsConsent: e.target.checked,
+                                                })
+                                            }
+                                            className="mt-1 h-4 w-4 shrink-0 accent-[#173f3f]"
+                                        />
+                                        <span>
+                                            I agree to receive recurring text messages from Below Market Apartments about apartment search help, property recommendations, tour coordination, and follow-up. Reply HELP for help or STOP to opt out.
+                                        </span>
+                                    </label>
+
+                                    {showSidebarError && (
+                                        <p className="mt-3 text-sm font-semibold text-[#e4572e]">
+                                            {leadFormError || "Add the required info so we can check availability."}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4">
                                     <p className="text-sm font-semibold text-[#173f3f]">
@@ -3108,18 +3342,21 @@ export default function PublicPropertyListing() {
                                 )}
 
                                 <button
+                                    type="button"
                                     onClick={handleFloorPlanLeadSubmit}
-                                    disabled={leadSubmitted}
+                                    disabled={isSubmittingLead || leadSubmitted}
                                     className={`mt-6 w-full rounded-2xl px-5 py-3 text-sm font-black ${leadSubmitted
                                         ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
                                         : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
                                         }`}
                                 >
-                                    {leadSubmitted
-                                        ? "Availability Request Sent"
-                                        : leadForm.selectedUnit
-                                            ? `Check Unit ${leadForm.selectedUnit} Availability`
-                                            : `Check ${selectedFloorPlan.name} Availability`}
+                                    {isSubmittingLead
+                                        ? "Sending..."
+                                        : leadSubmitted
+                                            ? "Availability Request Sent"
+                                            : leadForm.selectedUnit
+                                                ? `Check Unit ${leadForm.selectedUnit} Availability`
+                                                : `Check ${selectedFloorPlan.name} Availability`}
                                 </button>
 
 
