@@ -1567,11 +1567,11 @@ function SearchResultCard({
   return (
     <article
       ref={cardRef}
-      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md sm:grid sm:grid-cols-[210px_minmax(0,1fr)] ${
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md sm:grid sm:grid-cols-[210px_minmax(0,1fr)] sm:items-stretch ${
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
-      <Link to={cardHref} className="relative block h-[220px] bg-[#dcebe4] sm:h-full sm:min-h-[260px]">
+      <Link to={cardHref} className="relative block h-[220px] bg-[#dcebe4] sm:h-auto sm:min-h-[260px] sm:self-stretch">
         {showGoldHoverBar && (
           <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
         )}
