@@ -825,6 +825,10 @@ export default function PublicPropertyListing() {
         : "No active special listed";
     const managementLabel =
         property?.managementCompany || property?.manager || "Property management not listed";
+    const heroManagementLabel =
+        managementLabel === "Property management not listed"
+            ? "Verified Dallas listing"
+            : `Managed by ${managementLabel}`;
     const schoolSnapshot = getPropertySchoolSnapshot(property);
     const propertyPhotoImages = useMemo(
         () =>
@@ -1626,7 +1630,7 @@ export default function PublicPropertyListing() {
                         <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
                                 <p className="truncate text-sm font-black text-[#526260]">
-                                    {managementLabel}
+                                    {heroManagementLabel}
                                 </p>
 
                                 <h1 className="mt-2 text-2xl font-black leading-tight text-[#102426] xl:text-3xl">
@@ -1986,70 +1990,32 @@ export default function PublicPropertyListing() {
                                     </div>
                                 )}
 
-
-                                {hasPropertySpecial && (
-                                    <div className="mt-5 rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">
-                                        <p className="text-sm font-bold text-[#8a5b0a]">
-                                            Current Special
-                                        </p>
-
-                                        <p className="mt-1 font-black text-[#102426]">
-                                            {propertySpecialLabel}
-                                        </p>
-
-                                        <p className="mt-2 text-sm font-semibold text-[#7a432e]">
-                                            Specials are shown separately so renters can compare the normal rent and the estimated effective rent.
-                                        </p>
-                                    </div>
-                                )}
-
-                                <div className="mt-6 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
-                                    <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
-                                        <div className="flex shrink-0 items-center justify-between gap-3 rounded-xl bg-[#173f3f] px-4 py-3 text-white lg:w-[150px]">
-                                            <span className="text-xs font-black uppercase text-[#f9d783]">
-                                                Score
-                                            </span>
-                                            <span className="text-xl font-black">
-                                                {renterValueToolkit.dealScore}
-                                            </span>
-                                        </div>
-
-                                        <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                                            {renterValueToolkit.snapshotMetrics.map((metric) => (
-                                                <div key={metric.label} className="min-w-0">
-                                                    <p className="text-[10px] font-black uppercase text-[#526260]">
-                                                        {metric.label}
-                                                    </p>
-                                                    <p className="mt-1 truncate text-sm font-black text-[#102426]">
-                                                        {metric.value}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="border-t border-[#d7e6df] bg-[#f5f8f1] px-4 py-3">
-                                        <p className="text-xs font-black uppercase text-[#1f6f63]">
-                                            Before you tour
-                                        </p>
-                                        <p className="mt-1 text-sm font-semibold leading-6 text-[#526260]">
-                                            Ask if the special applies to base rent, how the credit is applied, and what monthly fees or move-in costs are required.
-                                        </p>
-                                    </div>
-                                </div>
-
                                 {/*Floor Plans*/}
                                 <div
                                     id="floor-plans"
                                     ref={floorPlansSectionRef}
                                     className="mt-8 scroll-mt-32 rounded-2xl border border-[#d7e6df] bg-white p-6 shadow-sm"
-                                >                                <h2 className="text-2xl font-black text-[#102426]">
-                                        Floor Plans
-                                    </h2>
+                                >
+                                    <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+                                        <div>
+                                            <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                                Choose the right layout
+                                            </p>
+                                            <h2 className="mt-1 text-2xl font-black text-[#102426]">
+                                                Floor plans
+                                            </h2>
 
-                                    <p className="mt-2 text-[#526260]">
-                                        Available layouts first, with unavailable layouts hidden by default.
-                                    </p>
+                                            <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
+                                                Compare normal rent, estimated rent after special, availability, and exact layouts in one place.
+                                            </p>
+                                        </div>
+
+                                        <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[420px]">
+                                            <RenterClarityBadge label="Normal rent" value="Before specials" />
+                                            <RenterClarityBadge label="Estimated rent" value="Special spread out" />
+                                            <RenterClarityBadge label="Compare" value="Exact layouts" />
+                                        </div>
+                                    </div>
 
                                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                                         <div className="flex flex-wrap gap-2">
@@ -2330,102 +2296,7 @@ export default function PublicPropertyListing() {
 
 
 
-                                {/*Amenities*/}
-                                <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                                    <h2 className="text-2xl font-black text-[#102426]">
-                                        Amenities
-                                    </h2>
-
-                                    <p className="mt-2 text-[#526260]">
-                                        Features and conveniences available at this property.
-                                    </p>
-
-                                    <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-                                        {amenities.map((amenity) => (
-                                            <AmenityItem key={amenity} label={amenity} />
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/*Neighborhood*/}
-                                <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                                    <h2 className="text-2xl font-black text-[#102426]">
-                                        Neighborhood Highlights
-                                    </h2>
-
-                                    <p className="mt-2 text-[#526260]">
-                                        What renters may like about living near this property.
-                                    </p>
-
-                                    <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
-                                        <HighlightCard
-                                            title="Walkable Area"
-                                            text="Close to coffee shops, restaurants, and daily essentials."
-                                        />
-
-                                        <HighlightCard
-                                            title="Easy Commute"
-                                            text="Quick access to Downtown Dallas, Uptown, and major highways."
-                                        />
-
-                                        <HighlightCard
-                                            title="Lifestyle Value"
-                                            text="Strong location with competitive pricing and active leasing specials."
-                                        />
-                                    </div>
-                                </div>
-
-                                {/*Location*/}
                                 <div className="mt-8 space-y-6">
-                                    <div id="location" className="grid scroll-mt-32 gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.45fr)]">
-                                        <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                                            <h2 className="text-2xl font-black text-[#102426]">
-                                                Location
-                                            </h2>
-
-                                            <p className="mt-2 text-[#526260]">
-                                                {addressLabel}
-                                            </p>
-
-                                            <PropertyLocationMap
-                                                property={property}
-                                                addressLabel={addressLabel}
-                                                nearbyPlaces={nearbyPlaces}
-                                                onNearbyPlacesChange={setNearbyPlaces}
-                                            />
-                                        </div>
-
-                                        <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
-                                            <h2 className="text-2xl font-black text-[#102426]">
-                                                Nearby
-                                            </h2>
-
-                                            <div className="mt-5 space-y-3">
-                                                <NearbyItem
-                                                    label="Walmart"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "walmart")}
-                                                />
-                                                <NearbyItem
-                                                    label="Target"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "target")}
-                                                />
-                                                <NearbyItem
-                                                    label="LA Fitness"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "laFitness")}
-                                                />
-                                                <NearbyItem
-                                                    label="Planet Fitness"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "planetFitness")}
-                                                />
-                                                <NearbyItem
-                                                    label="Kroger"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "kroger")}
-                                                />
-                                                <NearbyItem label="Property" value="Gold BMA pin" />
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <SchoolSnapshotCard schoolSnapshot={schoolSnapshot} />
 
                                     <section className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
@@ -2475,16 +2346,34 @@ export default function PublicPropertyListing() {
                                             <NearbyItem
                                                 label="Kroger"
                                                 value={getNearbyPlaceName(nearbyPlaces, "kroger")}
+                                                compact
                                             />
                                             <NearbyItem
                                                 label="Target"
                                                 value={getNearbyPlaceName(nearbyPlaces, "target")}
+                                                compact
                                             />
                                             <NearbyItem
                                                 label="LA Fitness"
                                                 value={getNearbyPlaceName(nearbyPlaces, "laFitness")}
+                                                compact
                                             />
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
+                                    <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                        Ask before touring
+                                    </p>
+                                    <h3 className="mt-1 text-lg font-black text-[#102426]">
+                                        Confirm the real monthly cost
+                                    </h3>
+                                    <div className="mt-3 grid gap-2">
+                                        <TourChecklistItem text="Does the special apply to base rent only?" />
+                                        <TourChecklistItem text="How is the credit applied to the account?" />
+                                        <TourChecklistItem text="What monthly fees are required?" />
+                                        <TourChecklistItem text="Is the exact unit still available?" />
                                     </div>
                                 </div>
 
@@ -2618,26 +2507,15 @@ export default function PublicPropertyListing() {
                                         </select>
                                     </div>
 
-                                    <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4">
-                                        <p className="text-sm font-bold text-[#102426]">
-                                            Helping Dallas renters find better deals
+                                    <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                                        <p className="text-sm font-black text-[#102426]">
+                                            What happens next
                                         </p>
 
-                                        <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-                                            <div>
-                                                <p className="text-lg font-black text-[#102426]">500+</p>
-                                                <p className="text-xs text-[#526260]">Renters Helped</p>
-                                            </div>
-
-                                            <div>
-                                                <p className="text-lg font-black text-[#102426]">$250k+</p>
-                                                <p className="text-xs text-[#526260]">Savings Found</p>
-                                            </div>
-
-                                            <div>
-                                                <p className="text-lg font-black text-[#102426]">4.9★</p>
-                                                <p className="text-xs text-[#526260]">Client Rating</p>
-                                            </div>
+                                        <div className="mt-3 grid gap-2">
+                                            <LeadStep number="1" text="We confirm current availability and the exact special." />
+                                            <LeadStep number="2" text="You get the real rent basis, fees, and move-in cost questions answered." />
+                                            <LeadStep number="3" text="If it fits, we help line up the next tour step." />
                                         </div>
                                     </div>
 
@@ -3267,11 +3145,53 @@ export default function PublicPropertyListing() {
     );
 }
 
-function NearbyItem({ label, value }) {
+function NearbyItem({ label, value, compact = false }) {
+    if (compact) {
+        return (
+            <div className="flex items-start justify-between gap-3 border-b border-[#edf4ef] pb-2 last:border-b-0 last:pb-0">
+                <p className="shrink-0 text-sm font-black text-[#102426]">{label}</p>
+                <p className="text-right text-xs font-semibold leading-5 text-[#526260]">{value}</p>
+            </div>
+        );
+    }
+
     return (
         <div className="grid gap-1 rounded-2xl bg-[#f5f8f1] p-4">
             <p className="font-bold text-[#102426]">{label}</p>
             <p className="text-sm font-semibold leading-5 text-[#526260]">{value}</p>
+        </div>
+    );
+}
+
+function TourChecklistItem({ text }) {
+    return (
+        <div className="flex gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
+            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#f2b84b]" />
+            <p className="text-xs font-bold leading-5 text-[#526260]">{text}</p>
+        </div>
+    );
+}
+
+function LeadStep({ number, text }) {
+    return (
+        <div className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#173f3f] text-xs font-black text-[#f2b84b]">
+                {number}
+            </span>
+            <p className="text-xs font-bold leading-5 text-[#526260]">{text}</p>
+        </div>
+    );
+}
+
+function RenterClarityBadge({ label, value }) {
+    return (
+        <div className="rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
+            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
+                {label}
+            </p>
+            <p className="mt-0.5 text-xs font-black text-[#102426]">
+                {value}
+            </p>
         </div>
     );
 }
@@ -4684,6 +4604,7 @@ function FloorPlanCard({
     onCheckAvailability,
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [hasImageError, setHasImageError] = useState(false);
     const hasSpecial = Boolean(special?.label);
     const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "No special listed";
     const sortedAvailableUnits = [...(availableUnits || [])]
@@ -4711,17 +4632,19 @@ function FloorPlanCard({
         availableUnitCount,
         hasAvailableFloorPlanUnits,
     });
-    const imageAlt = image ? `${name} floor plan` : "Floor plan image not listed";
+    const shouldShowFloorPlanImage = Boolean(image && !hasImageError);
+    const imageAlt = shouldShowFloorPlanImage ? `${name} floor plan` : "Floor plan image not listed";
 
     return (
         <div className="grid gap-3 overflow-hidden rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df] transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid-cols-[116px_minmax(0,1fr)_minmax(180px,auto)] md:items-center">
             <div className="flex h-28 items-center justify-center rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] md:h-[92px]">
-                {image ? (
+                {shouldShowFloorPlanImage ? (
                     <img
                         src={image}
                         alt={imageAlt}
                         loading="lazy"
                         decoding="async"
+                        onError={() => setHasImageError(true)}
                         className="max-h-full w-full object-contain"
                     />
                 ) : (
@@ -4852,12 +4775,13 @@ function FloorPlanCard({
 
                         <div className="mt-5 grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
                             <div className="flex h-56 w-full items-center justify-center overflow-hidden rounded-2xl bg-[#f5f8f1] ring-1 ring-[#d7e6df]">
-                                {image ? (
+                                {shouldShowFloorPlanImage ? (
                                     <img
                                         src={image}
                                         alt={`${name} expanded floor plan`}
                                         loading="lazy"
                                         decoding="async"
+                                        onError={() => setHasImageError(true)}
                                         className="h-full w-full object-cover"
                                     />
                                 ) : (
