@@ -1567,11 +1567,11 @@ function SearchResultCard({
   return (
     <article
       ref={cardRef}
-      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md ${
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid md:grid-cols-[250px_minmax(0,1fr)] md:items-stretch ${
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
-      <Link to={cardHref} className="relative block h-[220px] bg-[#dcebe4] sm:h-[260px]">
+      <Link to={cardHref} className="relative block h-[220px] bg-[#dcebe4] md:h-auto md:min-h-[248px] md:self-stretch">
         {showGoldHoverBar && (
           <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
         )}
@@ -1597,8 +1597,8 @@ function SearchResultCard({
         </div>
       </Link>
 
-      <div className="flex min-w-0 flex-col p-4 sm:p-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex min-w-0 flex-col p-4">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
           <Link to={cardHref} className="min-w-0">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <p className="min-w-0 truncate text-lg font-black text-[#102426]">
@@ -1620,7 +1620,7 @@ function SearchResultCard({
           </span>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <SearchRentMetric
             label="Normal rent"
             value={priceSummary.normalRentLabel}
@@ -1646,7 +1646,7 @@ function SearchResultCard({
           ))}
         </div>
 
-        <div className="mt-auto grid grid-cols-3 gap-2 pt-4">
+        <div className="mt-auto grid grid-cols-3 gap-2 pt-3">
           <Link
             to={cardHref}
             className="col-span-3 rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] sm:col-span-1"
@@ -1684,14 +1684,14 @@ function SearchResultCard({
 function SearchRentMetric({ label, value, highlight = false }) {
   return (
     <div
-      className={`rounded-lg p-3 ring-1 ${
+      className={`rounded-lg px-3 py-2.5 ring-1 ${
         highlight
           ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
           : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
       }`}
     >
       <p className="text-[10px] font-black uppercase">{label}</p>
-      <p className="mt-1 truncate text-lg font-black text-[#102426]">{value}</p>
+      <p className="mt-1 truncate text-base font-black text-[#102426]">{value}</p>
     </div>
   );
 }
