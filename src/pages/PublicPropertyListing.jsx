@@ -1285,7 +1285,6 @@ export default function PublicPropertyListing() {
         contactMethod: "",
         bedroomsNeeded: "",
         budget: "",
-        assistanceNeed: "Confirm this special",
         tourPreference: "",
         selectedUnit: "",
         smsConsent: false,
@@ -1300,7 +1299,6 @@ export default function PublicPropertyListing() {
         contactMethod: "",
         bedroomsNeeded: "",
         budget: "",
-        assistanceNeed: "Confirm this special",
         tourPreference: "",
         selectedUnit,
         smsConsent: false,
@@ -1439,7 +1437,6 @@ export default function PublicPropertyListing() {
             selectedFloorPlan?.special?.label ||
             (hasPropertySpecial ? propertySpecialLabel : "");
         const leadNotes = [
-            `Request: ${leadForm.assistanceNeed}`,
             `Interested property: ${sourcePropertyName}`,
             addressLabel ? `Address: ${addressLabel}` : null,
             isFloorPlanRequest ? `Floor plan: ${selectedFloorPlan.name}` : null,
