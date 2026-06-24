@@ -1670,17 +1670,17 @@ export default function PublicPropertyListing() {
 
         <main className="min-h-screen bg-[#f5f8f1] pb-32 text-[#102426] md:pb-32">
             <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white/95 shadow-sm backdrop-blur">
-                <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6">
-                    <Link to="/" className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#173f3f] text-xs font-black text-[#f2b84b]">
+                <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 py-2 md:px-6">
+                    <Link to="/" className="flex min-w-0 items-center gap-2.5">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] text-[11px] font-black text-[#f2b84b]">
                             BMA
                         </span>
-                        <span className="truncate font-black text-[#102426]">
+                        <span className="hidden truncate text-sm font-black text-[#102426] sm:block">
                             Below Market Apartments
                         </span>
                     </Link>
 
-                    <div className="hidden items-center gap-5 text-sm font-black text-[#526260] md:flex">
+                    <div className="hidden items-center gap-4 text-xs font-black text-[#526260] md:flex">
                         <a href="#floor-plans" className="hover:text-[#173f3f]">
                             Floor plans
                         </a>
@@ -1698,7 +1698,7 @@ export default function PublicPropertyListing() {
 
                     <a
                         href="#request-info"
-                        className="rounded-xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                        className="rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
                     >
                         Find Locator
                     </a>
@@ -2477,7 +2477,7 @@ export default function PublicPropertyListing() {
                                     </div>
                                 </div>
 
-                                <div id="request-info" className="order-1 scroll-mt-32 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+                                <div id="request-info" className="order-1 scroll-mt-24 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-16 lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto">
                                     <div className="h-2 bg-[#f2b84b]" />
 
                                     <div className="p-5">
