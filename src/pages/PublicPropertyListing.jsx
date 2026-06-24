@@ -1791,36 +1791,6 @@ export default function PublicPropertyListing() {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 lg:justify-end">
-                        <button
-                            type="button"
-                            onClick={() => setSavedPropertyIds(toggleSavedPropertyId(property.id))}
-                            className={`rounded-xl px-4 py-3 text-sm font-black ring-1 ring-[#d7e6df] ${
-                                isPropertySaved
-                                    ? "bg-[#173f3f] !text-white hover:!text-white"
-                                    : "bg-white text-[#173f3f] hover:bg-[#f5f8f1]"
-                            }`}
-                        >
-                            {isPropertySaved ? "Saved" : "Save"}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleTogglePropertyCompare}
-                            className={`rounded-xl px-4 py-3 text-sm font-black ${
-                                isPropertyCompared
-                                    ? "bg-[#f2b84b] text-[#102426]"
-                                    : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
-                            }`}
-                        >
-                            {isPropertyCompared ? "Added" : "Compare"}
-                        </button>
-                        <a
-                            href="#request-info"
-                            className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
-                        >
-                            Get Help
-                        </a>
-                    </div>
                 </section>
 
                 <section className="grid gap-3 py-4 sm:grid-cols-2 lg:grid-cols-5">
