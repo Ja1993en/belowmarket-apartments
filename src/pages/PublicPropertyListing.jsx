@@ -1680,22 +1680,6 @@ export default function PublicPropertyListing() {
                         </span>
                     </Link>
 
-                    <div className="hidden items-center gap-4 text-xs font-black text-[#526260] md:flex">
-                        <a href="#floor-plans" className="hover:text-[#173f3f]">
-                            Floor plans
-                        </a>
-                        <a href="#location" className="hover:text-[#173f3f]">
-                            Map
-                        </a>
-                        <button
-                            type="button"
-                            onClick={() => setShowGallery(true)}
-                            className="font-black hover:text-[#173f3f]"
-                        >
-                            Photos
-                        </button>
-                    </div>
-
                     <a
                         href="#request-info"
                         className="rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
