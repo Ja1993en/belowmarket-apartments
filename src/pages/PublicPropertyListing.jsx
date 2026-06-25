@@ -2357,26 +2357,31 @@ export default function PublicPropertyListing() {
                                                 onNearbyPlacesChange={setNearbyPlaces}
                                             />
 
-                                            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                                            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
                                                 <NearbyItem
                                                     label="Walmart"
                                                     value={getNearbyPlaceName(nearbyPlaces, "walmart")}
+                                                    compact
                                                 />
                                                 <NearbyItem
                                                     label="Target"
                                                     value={getNearbyPlaceName(nearbyPlaces, "target")}
+                                                    compact
                                                 />
                                                 <NearbyItem
                                                     label="LA Fitness"
                                                     value={getNearbyPlaceName(nearbyPlaces, "laFitness")}
+                                                    compact
                                                 />
                                                 <NearbyItem
                                                     label="Planet Fitness"
                                                     value={getNearbyPlaceName(nearbyPlaces, "planetFitness")}
+                                                    compact
                                                 />
                                                 <NearbyItem
                                                     label="Kroger"
                                                     value={getNearbyPlaceName(nearbyPlaces, "kroger")}
+                                                    compact
                                                 />
                                             </div>
                                         </div>
@@ -3353,10 +3358,12 @@ function PropertyCompareDock({
 
 function NearbyItem({ label, value, compact = false }) {
     if (compact) {
+        const compactValue = getCompactNearbyValue(label, value);
+
         return (
-            <div className="flex items-start justify-between gap-3 border-b border-[#edf4ef] pb-2 last:border-b-0 last:pb-0">
-                <p className="shrink-0 text-sm font-black text-[#102426]">{label}</p>
-                <p className="text-right text-xs font-semibold leading-5 text-[#526260]">{value}</p>
+            <div className="flex min-w-0 items-center justify-between gap-3 rounded-xl bg-[#f5f8f1] px-3 py-2">
+                <p className="shrink-0 text-xs font-black text-[#102426]">{label}</p>
+                <p className="truncate text-right text-xs font-semibold text-[#526260]">{compactValue}</p>
             </div>
         );
     }
@@ -3367,6 +3374,14 @@ function NearbyItem({ label, value, compact = false }) {
             <p className="text-sm font-semibold leading-5 text-[#526260]">{value}</p>
         </div>
     );
+}
+
+function getCompactNearbyValue(label, value) {
+    const textValue = String(value || "").trim();
+    if (!textValue) return "";
+
+    const labelPattern = new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*`, "i");
+    return textValue.replace(labelPattern, "").trim() || textValue;
 }
 
 function getNearbyPlaceName(nearbyPlaces, type) {
