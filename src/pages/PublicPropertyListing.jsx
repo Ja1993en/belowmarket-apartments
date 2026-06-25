@@ -2367,7 +2367,7 @@ export default function PublicPropertyListing() {
                                         id="location"
                                         className="scroll-mt-32 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm"
                                     >
-                                        <div className="border-b border-[#edf4ef] p-5 md:flex md:items-start md:justify-between md:gap-5">
+                                        <div className="border-b border-[#edf4ef] p-5 lg:flex lg:items-start lg:justify-between lg:gap-5">
                                             <div>
                                                 <p className="text-sm font-black text-[#1f6f63]">
                                                     Location
@@ -2382,7 +2382,7 @@ export default function PublicPropertyListing() {
 
                                             <a
                                                 href="#request-info"
-                                                className="mt-4 inline-flex rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] md:mt-0"
+                                                className="mt-4 inline-flex rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] lg:mt-0"
                                             >
                                                 Ask about this area
                                             </a>
@@ -3364,7 +3364,7 @@ function SchoolSnapshotCard({ schoolSnapshot }) {
                 </p>
             </div>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="mt-4 grid gap-3 lg:grid-cols-3">
                 {schoolSnapshot.schools.map((school) => (
                     <SchoolGradeItem key={`${school.level}-${school.name}`} school={school} />
                 ))}
@@ -4762,8 +4762,8 @@ function FloorPlanCard({
     const imageAlt = shouldShowFloorPlanImage ? `${name} floor plan` : "Floor plan image not listed";
 
     return (
-        <div className="grid gap-3 rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] md:grid-cols-[122px_minmax(0,1fr)_178px] md:items-center">
-            <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl bg-[#f5f8f1] ring-1 ring-[#d7e6df] md:h-[92px]">
+        <div className="grid gap-3 rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] lg:grid-cols-[122px_minmax(0,1fr)_178px] lg:items-center">
+            <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl bg-[#f5f8f1] ring-1 ring-[#d7e6df] lg:h-[92px]">
                 {shouldShowFloorPlanImage ? (
                     <img
                         src={image}
@@ -4827,7 +4827,7 @@ function FloorPlanCard({
                 </div>
             </div>
 
-            <div className="grid gap-2 md:text-right">
+            <div className="grid gap-2 lg:text-right">
                 <p className={`text-xs font-black ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
                     {availabilityBadgeLabel}
                 </p>
