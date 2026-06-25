@@ -27,6 +27,7 @@ import { saveLocalLead } from "../data/leadStorage";
 import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
+import { formatAvailability as formatAvailabilityLabel } from "../utils/displayFormatters";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
@@ -4932,23 +4933,6 @@ function getFloorPlanAvailabilityBadgeLabel({
     }
 
     return availableText || "Availability not listed";
-}
-
-function formatAvailabilityLabel(value) {
-    if (value === null || value === undefined) return "";
-
-    const textValue = String(value).trim();
-    if (!textValue) return "";
-
-    const availableCountMatch = textValue.match(
-        /^(\d+)(?:\s+available(?:\s+units?)?)?$/i
-    );
-
-    if (availableCountMatch) {
-        return `${Number(availableCountMatch[1])} available`;
-    }
-
-    return textValue.replace(/\s+available\s+units?$/i, " available");
 }
 
 function formatFloorPlanMetricValue(value) {

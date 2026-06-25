@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { getPropertyPrimaryImage } from "../../data/propertySearchData";
+import { formatAvailability as formatAvailabilityLabel } from "../../utils/displayFormatters";
 
 const COMPARE_TABS = [
   {
@@ -31,23 +32,6 @@ function rememberFloorPlanSectionTarget() {
   } catch {
     // Navigation still carries the query/hash target when session storage is unavailable.
   }
-}
-
-function formatAvailabilityLabel(value) {
-  if (value === null || value === undefined) return "";
-
-  const textValue = String(value).trim();
-  if (!textValue) return "";
-
-  const availableCountMatch = textValue.match(
-    /^(\d+)(?:\s+available(?:\s+units?)?)?$/i
-  );
-
-  if (availableCountMatch) {
-    return `${Number(availableCountMatch[1])} available`;
-  }
-
-  return textValue.replace(/\s+available\s+units?$/i, " available");
 }
 
 export default function CompareSavedOptionsPanel({
