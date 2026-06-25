@@ -2763,7 +2763,7 @@ export default function PublicPropertyListing() {
                             </div>
 
                             <div
-                                className="mt-8 flex flex-col gap-4 md:mt-0 md:min-h-full md:self-stretch"
+                                className="mt-8 hidden flex-col gap-4 md:mt-0 md:flex md:min-h-full md:self-stretch"
                             >
                                 <div id="request-info" className={`order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto ${intakeCardHeightClass}`}>
                                     <div className="h-1.5 bg-[#f2b84b]" />
