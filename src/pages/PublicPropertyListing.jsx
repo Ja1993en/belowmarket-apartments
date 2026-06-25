@@ -2127,6 +2127,7 @@ export default function PublicPropertyListing() {
                                         onRemove={() =>
                                             setCompareFloorPlanItems(removeCompareFloorPlanItem(item))
                                         }
+                                        onViewProperty={() => setIsCompareBoardOpen(false)}
                                     />
                                 );
                             })}
@@ -4631,6 +4632,7 @@ function ComparedFloorPlanCard({
     currentPropertyId,
     fallbackImage,
     onRemove,
+    onViewProperty,
 }) {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const isCurrentProperty = item.propertyId === currentPropertyId;
@@ -4717,6 +4719,10 @@ function ComparedFloorPlanCard({
             <div className="grid gap-2 sm:grid-cols-2">
                 <Link
                     to={`/properties/${item.propertyId}`}
+                    onClick={() => {
+                        setIsPreviewOpen(false);
+                        onViewProperty?.();
+                    }}
                     className="flex items-center justify-center rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black !text-white hover:bg-[#102426] hover:!text-white"
                 >
                     View property
