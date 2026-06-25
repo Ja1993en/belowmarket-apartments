@@ -2461,7 +2461,7 @@ export default function PublicPropertyListing() {
                                     </div>
                                 </div>
 
-                                <div id="request-info" className="order-1 scroll-mt-24 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-16 lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto">
+                                <div id="request-info" className="order-1 scroll-mt-14 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-14 lg:max-h-[calc(100vh-3.5rem)] lg:overflow-y-auto">
                                     <div className="h-2 bg-[#f2b84b]" />
 
                                     <div className="p-5">
