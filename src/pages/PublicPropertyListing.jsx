@@ -1097,7 +1097,7 @@ export default function PublicPropertyListing() {
             normalRent: item.rent || "Contact",
             effectiveRent: item.effectiveRent || item.rent || "Contact",
             special: item.special || "No special listed",
-            availability: item.available || "Availability not listed",
+            availability: formatAvailabilityLabel(item.available) || "Availability not listed",
             savings: getCompareSavingsLabel(item.rent, item.effectiveRent),
             image: item.image || matchingFloorPlan?.image || "",
             floorPlan: matchingFloorPlan,
@@ -4487,7 +4487,7 @@ function ComparedFloorPlanCard({
                 {item.special || "No special listed"}
             </p>
             <p className="mt-1 text-xs font-semibold text-[#526260]">
-                {item.available || "Availability not listed"}
+                {formatAvailabilityLabel(item.available) || "Availability not listed"}
             </p>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -4922,21 +4922,33 @@ function getFloorPlanAvailabilityBadgeLabel({
     hasAvailableFloorPlanUnits,
 }) {
     if (availableUnitCount > 0) {
-        return `${availableUnitCount} available unit${availableUnitCount === 1 ? "" : "s"}`;
+        return formatAvailabilityLabel(availableUnitCount);
     }
 
-    const availableText = String(available || "").trim();
-    const availableCountMatch = availableText.match(/^(\d+)(?:\s+available)?$/i);
-    if (availableCountMatch) {
-        const unitCount = Number(availableCountMatch[1]);
-        return `${unitCount} available unit${unitCount === 1 ? "" : "s"}`;
-    }
+    const availableText = formatAvailabilityLabel(available);
 
     if (hasAvailableFloorPlanUnits && /^available$/i.test(availableText)) {
-        return "Available units";
+        return "Available";
     }
 
     return availableText || "Availability not listed";
+}
+
+function formatAvailabilityLabel(value) {
+    if (value === null || value === undefined) return "";
+
+    const textValue = String(value).trim();
+    if (!textValue) return "";
+
+    const availableCountMatch = textValue.match(
+        /^(\d+)(?:\s+available(?:\s+units?)?)?$/i
+    );
+
+    if (availableCountMatch) {
+        return `${Number(availableCountMatch[1])} available`;
+    }
+
+    return textValue.replace(/\s+available\s+units?$/i, " available");
 }
 
 function formatFloorPlanMetricValue(value) {

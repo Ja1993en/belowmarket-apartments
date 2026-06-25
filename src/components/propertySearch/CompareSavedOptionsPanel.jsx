@@ -33,6 +33,23 @@ function rememberFloorPlanSectionTarget() {
   }
 }
 
+function formatAvailabilityLabel(value) {
+  if (value === null || value === undefined) return "";
+
+  const textValue = String(value).trim();
+  if (!textValue) return "";
+
+  const availableCountMatch = textValue.match(
+    /^(\d+)(?:\s+available(?:\s+units?)?)?$/i
+  );
+
+  if (availableCountMatch) {
+    return `${Number(availableCountMatch[1])} available`;
+  }
+
+  return textValue.replace(/\s+available\s+units?$/i, " available");
+}
+
 export default function CompareSavedOptionsPanel({
   activeTab,
   compareDetailMode,
@@ -208,7 +225,7 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, onRemove }) {
               View property
             </Link>
             <span className="rounded-xl bg-white px-3 py-2 text-center text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
-              {row.available || "Availability not listed"}
+              {formatAvailabilityLabel(row.available) || "Availability not listed"}
             </span>
           </div>
         </div>
@@ -339,10 +356,10 @@ function CompareDetailsTab({ rows, mode }) {
                       onClick={rememberFloorPlanSectionTarget}
                       className="font-black text-[#173f3f] underline decoration-[#f2b84b] decoration-2 underline-offset-4 hover:text-[#1f6f63]"
                     >
-                      {row.availability}
+                      {formatAvailabilityLabel(row.availability) || "Availability not listed"}
                     </Link>
                   ) : (
-                    row.availability
+                    formatAvailabilityLabel(row.availability) || "Availability not listed"
                   )}
                 </td>
                 <td className="px-4 py-4 align-top">
