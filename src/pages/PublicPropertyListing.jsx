@@ -1689,7 +1689,7 @@ export default function PublicPropertyListing() {
                 </div>
             </header>
 
-            <div className="mx-auto max-w-7xl px-4 py-5 md:px-6 md:py-6">
+            <div className="mx-auto max-w-7xl px-4 pb-5 pt-2 md:px-6 md:pb-6 md:pt-3">
                 <Link
                     to="/properties"
                     className="inline-flex items-center gap-2 text-sm font-black text-[#173f3f] hover:text-[#102426]"
@@ -1697,7 +1697,7 @@ export default function PublicPropertyListing() {
                     ← Back to Dallas apartments
                 </Link>
 
-                <section className="mt-4 overflow-hidden rounded-2xl bg-[#dcebe4] lg:grid lg:min-h-[420px] lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.9fr)] lg:gap-2">
+                <section className="mt-2 overflow-hidden rounded-2xl bg-[#dcebe4] lg:grid lg:min-h-[420px] lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.9fr)] lg:gap-2">
                     {hasPropertyGalleryImages ? (
                         <>
                             <button
