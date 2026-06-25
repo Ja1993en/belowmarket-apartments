@@ -1227,22 +1227,22 @@ export default function PublicPropertyListing() {
         setCompareMessage("Compare board cleared.");
     };
 
-    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3 xl:p-4";
-    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-2 xl:mt-3";
+    const intakePanelPaddingClass = shouldShowCompareList ? "p-3.5" : "p-3 xl:p-4";
+    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2.5" : "mt-2 xl:mt-3";
     const intakeGridSpacingClass = shouldShowCompareList
-        ? "mt-1.5 gap-1.5"
+        ? "mt-2 gap-2"
         : "mt-1.5 gap-1.5 xl:mt-2 xl:gap-2";
     const intakeFieldSizeClass = shouldShowCompareList
-        ? "md:py-1.5 lg:py-1.5 xl:py-1.5 xl:text-xs"
+        ? "md:py-1.5 lg:py-2 xl:py-2 xl:text-sm"
         : "md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm";
     const intakeConsentClass = shouldShowCompareList
-        ? "mt-2 p-2 text-[9px] leading-3"
+        ? "mt-2.5 p-2.5 text-[10px] leading-4"
         : "mt-2 p-2 text-[9px] leading-3 xl:mt-3 xl:p-2.5 xl:text-[10px] xl:leading-4";
     const intakeSubmitClass = shouldShowCompareList
-        ? "mt-2 py-2.5 text-xs"
+        ? "mt-2.5 py-3 text-sm"
         : "mt-2 py-2.5 text-xs xl:mt-3 xl:py-3 xl:text-sm";
     const intakeFinePrintClass = shouldShowCompareList
-        ? "mt-1.5 text-[9px] leading-3"
+        ? "mt-2 text-[10px] leading-4"
         : "mt-1.5 text-[9px] leading-3 xl:mt-2 xl:text-[10px] xl:leading-4";
 
     const filteredFloorPlans =
