@@ -1985,7 +1985,7 @@ export default function PublicPropertyListing() {
                         href="#request-info"
                         className="rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
                     >
-                        Find Locator
+                        Ask an Apartment Locator
                     </a>
                 </div>
             </header>
