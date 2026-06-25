@@ -2359,7 +2359,7 @@ export default function PublicPropertyListing() {
                     ))}
                 </section>
 
-                <nav className="sticky top-14 z-30 mb-3 flex gap-1.5 overflow-x-auto rounded-xl border border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur">
+                <nav className="sticky top-14 z-30 mb-3 flex gap-1.5 overflow-x-auto rounded-b-xl border border-t-0 border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur">
                     {[
                         ["Floor plans", "#floor-plans"],
                         ["Map", "#location"],
