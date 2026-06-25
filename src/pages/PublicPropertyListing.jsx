@@ -2032,7 +2032,7 @@ export default function PublicPropertyListing() {
                                                     }}
                                                     className="w-fit rounded-2xl bg-[#173f3f] px-4 py-2 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                                                 >
-                                                    View Compare
+                                                    View Comparison Chart
                                                 </button>
 
                                                 <button
