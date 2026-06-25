@@ -1703,6 +1703,7 @@ export default function PublicPropertyListing() {
                             <button
                                 type="button"
                                 onClick={() => setShowGallery(true)}
+                                aria-label={`View all ${propertyGalleryImages.length} photos for ${property.name}`}
                                 className="relative block h-[320px] w-full overflow-hidden bg-[#dcebe4] text-left lg:h-auto lg:min-h-[420px]"
                             >
                                 <img
@@ -1712,6 +1713,10 @@ export default function PublicPropertyListing() {
                                     decoding="async"
                                     className="!h-full w-full object-cover"
                                 />
+
+                                <span className="absolute bottom-4 right-4 inline-flex rounded-xl bg-[#102426]/95 px-4 py-3 text-sm font-black text-white shadow-lg ring-1 ring-white/30 lg:hidden">
+                                    View all photos
+                                </span>
                             </button>
 
                             <div className="hidden gap-2 lg:grid lg:grid-cols-2">
