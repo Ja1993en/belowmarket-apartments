@@ -3551,19 +3551,21 @@ function PropertyLocationMap({
 
         if (!shouldLoadMap || !propertyCoordinates) return undefined;
 
+        onNearbyPlacesChange([]);
+
         const nearbyPlacesTimer = window.setTimeout(() => {
-        resolveNearbyPlaces(propertyCoordinates)
-            .then((places) => {
-                if (isMounted) {
-                    onNearbyPlacesChange(places);
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-                if (isMounted) {
-                    onNearbyPlacesChange([]);
-                }
-            });
+            resolveNearbyPlaces(propertyCoordinates)
+                .then((places) => {
+                    if (isMounted) {
+                        onNearbyPlacesChange(places);
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                    if (isMounted) {
+                        onNearbyPlacesChange([]);
+                    }
+                });
         }, 900);
 
         return () => {
