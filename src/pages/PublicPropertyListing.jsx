@@ -2130,12 +2130,17 @@ export default function PublicPropertyListing() {
                                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#f5f8f1] px-4 py-3">
                                         <div>
                                             <p className="text-sm font-black text-[#102426]">
-                                                {availableFloorPlans.length} available floor plan
-                                                {availableFloorPlans.length === 1 ? "" : "s"}
-                                                {availableUnitCount > 0
-                                                    ? ` • ${availableUnitCount} available unit${availableUnitCount === 1 ? "" : "s"}`
-                                                    : ""}
+                                                {paginatedFloorPlans.length > 0
+                                                    ? `Showing ${floorPlanPageStart}-${floorPlanPageEnd} of ${paginatedFloorPlans.length} ${showUnavailableFloorPlans ? "total" : "available"} floor plan${paginatedFloorPlans.length === 1 ? "" : "s"}`
+                                                    : `${availableFloorPlans.length} available floor plan${availableFloorPlans.length === 1 ? "" : "s"}`}
                                             </p>
+
+                                            {availableUnitCount > 0 && !showUnavailableFloorPlans && (
+                                                <p className="mt-1 text-xs font-bold text-[#526260]">
+                                                    {availableUnitCount} available unit
+                                                    {availableUnitCount === 1 ? "" : "s"}
+                                                </p>
+                                            )}
 
                                             {unavailableFloorPlans.length > 0 && (
                                                 <p className="mt-1 text-xs font-bold text-[#526260]">
@@ -2188,18 +2193,6 @@ export default function PublicPropertyListing() {
                                         </div>
                                     )}
 
-
-                                    {paginatedFloorPlans.length > 0 && (
-                                        <p className="mt-3 text-sm font-semibold text-[#526260]">
-                                            Showing {floorPlanPageStart}-{floorPlanPageEnd} of{" "}
-                                            {paginatedFloorPlans.length}{" "}
-                                            {showUnavailableFloorPlans ? "total" : "available"} floor plan
-                                            {paginatedFloorPlans.length === 1 ? "" : "s"}
-                                            {availableUnitCount > 0 && !showUnavailableFloorPlans
-                                                ? ` covering ${availableUnitCount} available unit${availableUnitCount === 1 ? "" : "s"}`
-                                                : ""}
-                                        </p>
-                                    )}
 
                                     <div className="mt-5 grid gap-3">
                                         {visibleFloorPlans.map((plan) => {
