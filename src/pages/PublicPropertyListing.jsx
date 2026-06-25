@@ -2193,7 +2193,7 @@ export default function PublicPropertyListing() {
                                             onClick={() =>
                                                 setComparePropertyIds(removeComparePropertyId(compareProperty.id))
                                             }
-                                            className="mt-3 w-full rounded-xl bg-[#fff0ea] px-3 py-2 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                                            className="mt-3 w-full rounded-xl border border-[#f2b84b] bg-[#b42318] px-3 py-2 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
                                         >
                                             Remove from compare
                                         </button>
@@ -3690,7 +3690,7 @@ function CompareChartModal({
                         <button
                             type="button"
                             onClick={onClearCompare}
-                            className="rounded-xl bg-[#b42318] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+                            className="rounded-xl border border-[#f2b84b] bg-[#b42318] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
                         >
                             Clear all
                         </button>
@@ -4697,7 +4697,7 @@ function ComparedFloorPlanCard({
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="rounded-xl bg-[#fff0ea] px-3 py-2 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                    className="rounded-xl border border-[#f2b84b] bg-[#b42318] px-3 py-2 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
                 >
                     Remove
                 </button>
