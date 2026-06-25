@@ -1212,23 +1212,23 @@ export default function PublicPropertyListing() {
         setCompareMessage("Compare board cleared.");
     };
 
-    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-4 xl:p-5";
-    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-4";
+    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3.5 xl:p-4";
+    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-3";
     const intakeGridSpacingClass = shouldShowCompareList
         ? "mt-1.5 gap-1.5"
         : "mt-2 gap-2";
     const intakeFieldSizeClass = shouldShowCompareList
         ? "md:py-1.5 lg:py-1.5 xl:py-1.5 xl:text-sm"
-        : "md:py-2 lg:py-2.5 xl:py-3 xl:text-sm";
+        : "md:py-2 lg:py-2 xl:py-2.5 xl:text-sm";
     const intakeConsentClass = shouldShowCompareList
         ? "mt-2 p-2 text-[10px] leading-3"
-        : "mt-4 p-3 text-xs leading-4";
+        : "mt-3 p-2.5 text-[11px] leading-4";
     const intakeSubmitClass = shouldShowCompareList
         ? "mt-2 py-2.5 text-sm"
-        : "mt-4 py-3.5 text-sm";
+        : "mt-3 py-3 text-sm";
     const intakeFinePrintClass = shouldShowCompareList
         ? "mt-1.5 text-[10px] leading-3"
-        : "mt-3 text-xs leading-4";
+        : "mt-2 text-[10px] leading-4 xl:text-xs";
     const intakeCardHeightClass = shouldShowCompareList
         ? "md:min-h-[calc(100vh-12rem)]"
         : "md:min-h-[calc(100vh-8rem)]";
@@ -2432,15 +2432,15 @@ export default function PublicPropertyListing() {
                                             Free locator help
                                         </p>
 
-                                        <h2 className="mt-1 text-xl font-black leading-tight text-[#102426] xl:text-2xl">
+                                        <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
                                             Get verified pricing
                                         </h2>
 
-                                        <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
+                                        <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
                                             Confirm specials, fees, and availability before touring.
                                         </p>
 
-                                        <div className={`mt-3 truncate rounded-xl px-3 py-2 text-sm font-black ${
+                                        <div className={`mt-2.5 truncate rounded-xl px-3 py-2 text-xs font-black ${
                                                 hasPropertySpecial
                                                     ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
                                                     : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
@@ -2451,7 +2451,7 @@ export default function PublicPropertyListing() {
                                         </div>
 
                                         <div className={intakeSectionSpacingClass}>
-                                            <p className="text-sm font-black uppercase tracking-wide text-[#102426]">
+                                            <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
                                                 Contact
                                             </p>
 
@@ -2498,7 +2498,7 @@ export default function PublicPropertyListing() {
                                         </div>
 
                                         <div className={intakeSectionSpacingClass}>
-                                            <p className="text-sm font-black uppercase tracking-wide text-[#102426]">
+                                            <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
                                                 Search details
                                             </p>
 
