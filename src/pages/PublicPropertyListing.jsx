@@ -2487,12 +2487,6 @@ export default function PublicPropertyListing() {
                                                 </p>
                                             </div>
 
-                                            <a
-                                                href="#request-info"
-                                                className="mt-4 inline-flex rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783] lg:mt-0"
-                                            >
-                                                Ask about this area
-                                            </a>
                                         </div>
 
                                         <div className="p-4 md:p-5">
