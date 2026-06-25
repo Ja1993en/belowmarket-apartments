@@ -4119,7 +4119,7 @@ function PropertyLocationMap({
                     </p>
                 </div>
             )}
-            <div className="grid max-h-32 gap-2 overflow-y-auto border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div className="grid max-h-32 gap-2 overflow-y-auto border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 lg:grid-cols-3 xl:flex xl:flex-wrap xl:items-center xl:content-start">
                 <MapLegendItem
                     color="bg-[#f2b84b]"
                     label="Property"
@@ -4156,7 +4156,7 @@ function PropertyLocationMap({
 
 function MapLegendItem({ color, label, distance }) {
     return (
-        <div className="flex min-w-0 items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426]">
+        <div className="flex min-w-0 items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] xl:min-w-[150px] xl:flex-none">
             <span className={`h-3 w-3 shrink-0 rounded-full ${color}`} />
             <span className="min-w-0 flex-1 truncate">{label}</span>
             {distance && (
