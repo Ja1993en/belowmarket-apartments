@@ -4830,7 +4830,7 @@ function FloorPlanCard({
 
                 {isCompared && (
                     <p className="mt-1.5 text-xs font-bold leading-4 text-[#526260]">
-                        Added. Tap View comparison below.
+                        Tap View comparison below to open the chart.
                     </p>
                 )}
             </div>
