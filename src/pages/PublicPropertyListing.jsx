@@ -1157,7 +1157,6 @@ export default function PublicPropertyListing() {
     const handleViewCompareDock = () => {
         setIsCompareBoardOpen(true);
         setActiveCompareTab("Floor Plans");
-        scrollToCompareBoard();
     };
 
     const handleToggleFloorPlanCompare = (compareFloorPlanItem, isFloorPlanCompared) => {
@@ -1209,6 +1208,7 @@ export default function PublicPropertyListing() {
 
         setComparePropertyIds(clearedSelections.propertyIds);
         setCompareFloorPlanItems(clearedSelections.floorPlanItems);
+        setIsCompareBoardOpen(false);
         setCompareMessage("Compare board cleared.");
     };
 
@@ -1674,6 +1674,152 @@ export default function PublicPropertyListing() {
         },
     ];
 
+    const renderCompareTabs = () => (
+        <>
+            <div className="flex flex-wrap gap-2">
+                {["Floor Plans", "Properties", "Details"].map((tab) => (
+                    <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setActiveCompareTab(tab)}
+                        className={`rounded-full px-4 py-2 text-sm font-black ${
+                            activeCompareTab === tab
+                                ? "bg-[#173f3f] !text-white hover:!text-white"
+                                : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
+                        }`}
+                    >
+                        {tab}
+                    </button>
+                ))}
+            </div>
+
+            {activeCompareTab === "Floor Plans" && (
+                compareFloorPlanItems.length > 0 ? (
+                    <div className="mt-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-black text-[#102426]">
+                                Selected floor plans
+                            </p>
+                            <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#173f3f]">
+                                {compareFloorPlanItems.length} exact pick
+                                {compareFloorPlanItems.length === 1 ? "" : "s"}
+                            </span>
+                        </div>
+
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            {compareFloorPlanItems.map((item) => {
+                                const compareProperty = compareProperties.find(
+                                    (savedProperty) => savedProperty.id === item.propertyId
+                                );
+
+                                return (
+                                    <ComparedFloorPlanCard
+                                        key={getCompareFloorPlanItemKey(item)}
+                                        item={item}
+                                        currentPropertyId={property?.id}
+                                        fallbackImage={
+                                            compareProperty
+                                                ? getPropertyPrimaryImage(compareProperty)
+                                                : propertyPrimaryImage
+                                        }
+                                        onRemove={() =>
+                                            setCompareFloorPlanItems(removeCompareFloorPlanItem(item))
+                                        }
+                                    />
+                                );
+                            })}
+                        </div>
+                    </div>
+                ) : (
+                    <CompareEmptyState text="Choose exact floor plans below to compare specific layouts." />
+                )
+            )}
+
+            {activeCompareTab === "Properties" && (
+                propertyOnlyCompareProperties.length > 0 ? (
+                    <div className="mt-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-black text-[#102426]">
+                                Properties to compare
+                            </p>
+                            <span className="rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-black text-[#8a5b0a]">
+                                Choose a floor plan for more detail
+                            </span>
+                        </div>
+
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            {propertyOnlyCompareProperties.map((compareProperty) => {
+                                const isCurrentCompareProperty = compareProperty.id === property?.id;
+
+                                return (
+                                    <div
+                                        key={compareProperty.id}
+                                        className="rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]"
+                                    >
+                                        <Link
+                                            to={`/properties/${compareProperty.id}`}
+                                            className="flex min-w-0 gap-3 hover:opacity-90"
+                                        >
+                                            <img
+                                                src={getPropertyPrimaryImage(compareProperty)}
+                                                alt={compareProperty.name}
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                                            />
+
+                                            <span className="min-w-0">
+                                                <span className="block truncate text-sm font-black text-[#102426]">
+                                                    {compareProperty.name}
+                                                </span>
+                                                {isCurrentCompareProperty && (
+                                                    <span className="mt-1 inline-flex rounded-full bg-[#f2b84b] px-2 py-0.5 text-[10px] font-black uppercase text-[#102426]">
+                                                        Current page
+                                                    </span>
+                                                )}
+                                                <span className="mt-1 block truncate text-xs font-semibold text-[#526260]">
+                                                    {compareProperty.area || compareProperty.city || "Dallas area"}
+                                                </span>
+                                                <span className="mt-1 block truncate text-xs font-bold text-[#8a5b0a]">
+                                                    {compareProperty.special || "View deal details"}
+                                                </span>
+                                            </span>
+                                        </Link>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setComparePropertyIds(removeComparePropertyId(compareProperty.id))
+                                            }
+                                            className="mt-3 w-full rounded-xl bg-[#fff0ea] px-3 py-2 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                                        >
+                                            Remove from compare
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ) : (
+                    <CompareEmptyState text="Property-only cards will appear here before you choose exact floor plans." />
+                )
+            )}
+
+            {activeCompareTab === "Details" && (
+                floorPlanCompareRows.length > 0 ? (
+                    <CompareDetailsTable
+                        rows={floorPlanCompareRows}
+                        onRequestFloorPlan={(floorPlan) =>
+                            openFloorPlanAvailabilityRequest(floorPlan)
+                        }
+                    />
+                ) : (
+                    <CompareEmptyState text="Choose exact floor plans to unlock the side-by-side shortlist." />
+                )
+            )}
+        </>
+    );
+
     return (
 
         <main className="min-h-screen bg-[#f5f8f1] pb-32 text-[#102426] md:pb-32">
@@ -1872,7 +2018,7 @@ export default function PublicPropertyListing() {
                                                     Review your saved options side by side.
                                                 </h3>
                                                 <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                                    Open the board when you are ready to compare rent, specials, size, and availability.
+                                                    Open the chart when you are ready to compare rent, specials, size, and availability.
                                                 </p>
                                             </div>
 
@@ -1880,12 +2026,12 @@ export default function PublicPropertyListing() {
                                                 <button
                                                     type="button"
                                                     onClick={() => {
-                                                        setIsCompareBoardOpen((currentValue) => !currentValue);
+                                                        setIsCompareBoardOpen(true);
                                                         setActiveCompareTab("Floor Plans");
                                                     }}
                                                     className="w-fit rounded-2xl bg-[#173f3f] px-4 py-2 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                                                 >
-                                                    {isCompareBoardOpen ? "Hide Compare" : "View Compare"}
+                                                    View Compare
                                                 </button>
 
                                                 <button
@@ -1902,152 +2048,6 @@ export default function PublicPropertyListing() {
                                             <p className="mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
                                                 {compareMessage}
                                             </p>
-                                        )}
-
-                                        {isCompareBoardOpen && (
-                                            <>
-                                                <div className="mt-4 flex flex-wrap gap-2">
-                                                    {["Floor Plans", "Properties", "Details"].map((tab) => (
-                                                        <button
-                                                            key={tab}
-                                                            type="button"
-                                                            onClick={() => setActiveCompareTab(tab)}
-                                                            className={`rounded-full px-4 py-2 text-sm font-black ${
-                                                                activeCompareTab === tab
-                                                                    ? "bg-[#173f3f] !text-white hover:!text-white"
-                                                                    : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
-                                                            }`}
-                                                        >
-                                                            {tab}
-                                                        </button>
-                                                    ))}
-                                                </div>
-
-                                                {activeCompareTab === "Floor Plans" && (
-                                                    compareFloorPlanItems.length > 0 ? (
-                                                        <div className="mt-4">
-                                                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                                                <p className="text-sm font-black text-[#102426]">
-                                                                    Selected floor plans
-                                                                </p>
-                                                                <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#173f3f]">
-                                                                    {compareFloorPlanItems.length} exact pick
-                                                                    {compareFloorPlanItems.length === 1 ? "" : "s"}
-                                                                </span>
-                                                            </div>
-
-                                                            <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                                                {compareFloorPlanItems.map((item) => {
-                                                                    const compareProperty = compareProperties.find(
-                                                                        (savedProperty) => savedProperty.id === item.propertyId
-                                                                    );
-
-                                                                    return (
-                                                                        <ComparedFloorPlanCard
-                                                                            key={getCompareFloorPlanItemKey(item)}
-                                                                            item={item}
-                                                                            currentPropertyId={property?.id}
-                                                                            fallbackImage={
-                                                                                compareProperty
-                                                                                    ? getPropertyPrimaryImage(compareProperty)
-                                                                                    : propertyPrimaryImage
-                                                                            }
-                                                                            onRemove={() =>
-                                                                                setCompareFloorPlanItems(removeCompareFloorPlanItem(item))
-                                                                            }
-                                                                        />
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <CompareEmptyState text="Choose exact floor plans below to compare specific layouts." />
-                                                    )
-                                                )}
-
-                                                {activeCompareTab === "Properties" && (
-                                                    propertyOnlyCompareProperties.length > 0 ? (
-                                                        <div className="mt-4">
-                                                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                                                <p className="text-sm font-black text-[#102426]">
-                                                                    Properties to compare
-                                                                </p>
-                                                                <span className="rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-black text-[#8a5b0a]">
-                                                                    Choose a floor plan for more detail
-                                                                </span>
-                                                            </div>
-
-                                                            <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                                                {propertyOnlyCompareProperties.map((compareProperty) => {
-                                                                    const isCurrentCompareProperty = compareProperty.id === property?.id;
-
-                                                                    return (
-                                                                        <div
-                                                                            key={compareProperty.id}
-                                                                            className="rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]"
-                                                                        >
-                                                                            <Link
-                                                                                to={`/properties/${compareProperty.id}`}
-                                                                                className="flex min-w-0 gap-3 hover:opacity-90"
-                                                                            >
-                                                                                <img
-                                                                                    src={getPropertyPrimaryImage(compareProperty)}
-                                                                                    alt={compareProperty.name}
-                                                                                    loading="lazy"
-                                                                                    decoding="async"
-                                                                                    className="h-14 w-14 shrink-0 rounded-xl object-cover"
-                                                                                />
-
-                                                                                <span className="min-w-0">
-                                                                                    <span className="block truncate text-sm font-black text-[#102426]">
-                                                                                        {compareProperty.name}
-                                                                                    </span>
-                                                                                    {isCurrentCompareProperty && (
-                                                                                        <span className="mt-1 inline-flex rounded-full bg-[#f2b84b] px-2 py-0.5 text-[10px] font-black uppercase text-[#102426]">
-                                                                                            Current page
-                                                                                        </span>
-                                                                                    )}
-                                                                                    <span className="mt-1 block truncate text-xs font-semibold text-[#526260]">
-                                                                                        {compareProperty.area || compareProperty.city || "Dallas area"}
-                                                                                    </span>
-                                                                                    <span className="mt-1 block truncate text-xs font-bold text-[#8a5b0a]">
-                                                                                        {compareProperty.special || "View deal details"}
-                                                                                    </span>
-                                                                                </span>
-                                                                            </Link>
-
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    setComparePropertyIds(removeComparePropertyId(compareProperty.id))
-                                                                                }
-                                                                                className="mt-3 w-full rounded-xl bg-[#fff0ea] px-3 py-2 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
-                                                                            >
-                                                                                Remove from compare
-                                                                            </button>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <CompareEmptyState text="Property-only cards will appear here before you choose exact floor plans." />
-                                                    )
-                                                )}
-
-                                                {activeCompareTab === "Details" && (
-                                                    floorPlanCompareRows.length > 0 ? (
-                                                        <CompareDetailsTable
-                                                            rows={floorPlanCompareRows}
-                                                            onRequestFloorPlan={(floorPlan) =>
-                                                                openFloorPlanAvailabilityRequest(floorPlan)
-                                                            }
-                                                        />
-                                                    ) : (
-                                                        <CompareEmptyState text="Choose exact floor plans to unlock the side-by-side shortlist." />
-                                                    )
-                                                )}
-                                            </>
                                         )}
 
                                         {propertyOnlyCompareProperties.length === 1 && isPropertyCompared && compareFloorPlanItems.length === 0 && (
@@ -3239,6 +3239,22 @@ export default function PublicPropertyListing() {
                 </div>
             )}
 
+            {isCompareBoardOpen && shouldShowCompareList && (
+                <CompareChartModal
+                    compareItemCount={compareItemCount}
+                    onClearCompare={handleClearCompareBoard}
+                    onClose={() => setIsCompareBoardOpen(false)}
+                >
+                    {compareMessage && (
+                        <p className="mb-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                            {compareMessage}
+                        </p>
+                    )}
+
+                    {renderCompareTabs()}
+                </CompareChartModal>
+            )}
+
             {shouldShowCompareList && (
                 <PropertyCompareDock
                     compareItemCount={compareItemCount}
@@ -3249,6 +3265,57 @@ export default function PublicPropertyListing() {
             )}
 
         </main>
+    );
+}
+
+function CompareChartModal({
+    children,
+    compareItemCount,
+    onClearCompare,
+    onClose,
+}) {
+    return (
+        <div
+            className="fixed inset-0 z-[70] bg-[#102426]/60 px-3 py-4 backdrop-blur-sm sm:px-5"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Comparison chart"
+        >
+            <div className="mx-auto flex max-h-[calc(100vh-2rem)] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-[#d7e6df]">
+                <div className="flex flex-col gap-3 border-b border-[#d7e6df] bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                    <div className="min-w-0">
+                        <p className="text-xs font-black uppercase text-[#1f6f63]">
+                            Comparison chart
+                        </p>
+                        <h2 className="mt-1 text-xl font-black text-[#102426]">
+                            Compare {compareItemCount} selected option
+                            {compareItemCount === 1 ? "" : "s"}
+                        </h2>
+                    </div>
+
+                    <div className="grid grid-cols-[1fr_1fr] gap-2 sm:flex sm:shrink-0">
+                        <button
+                            type="button"
+                            onClick={onClearCompare}
+                            className="rounded-xl bg-[#b42318] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+                        >
+                            Clear all
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="rounded-xl bg-[#f5f8f1] px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+
+                <div className="overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
+                    {children}
+                </div>
+            </div>
+        </div>
     );
 }
 
