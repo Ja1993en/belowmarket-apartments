@@ -3703,51 +3703,40 @@ function PropertyLocationMap({
                 <MapLegendItem
                     color="bg-[#f2b84b]"
                     label="Property"
-                    detail={addressLabel}
                 />
                 <MapLegendItem
                     color="bg-[#2d7dd2]"
                     label="Walmart"
                     distance={getNearbyLegendDistance(nearbyPlaces, "walmart")}
-                    detail={getNearbyLegendDetail(nearbyPlaces, "walmart")}
                 />
                 <MapLegendItem
                     color="bg-[#e4572e]"
                     label="Target"
                     distance={getNearbyLegendDistance(nearbyPlaces, "target")}
-                    detail={getNearbyLegendDetail(nearbyPlaces, "target")}
                 />
                 <MapLegendItem
                     color="bg-[#173f3f]"
                     label="LA Fitness"
                     distance={getNearbyLegendDistance(nearbyPlaces, "laFitness")}
-                    detail={getNearbyLegendDetail(nearbyPlaces, "laFitness")}
                 />
                 <MapLegendItem
                     color="bg-[#8a5b0a]"
                     label="Planet Fitness"
                     distance={getNearbyLegendDistance(nearbyPlaces, "planetFitness")}
-                    detail={getNearbyLegendDetail(nearbyPlaces, "planetFitness")}
                 />
                 <MapLegendItem
                     color="bg-[#1f6f63]"
                     label="Kroger"
                     distance={getNearbyLegendDistance(nearbyPlaces, "kroger")}
-                    detail={getNearbyLegendDetail(nearbyPlaces, "kroger")}
                 />
             </div>
         </div>
     );
 }
 
-function MapLegendItem({ color, label, distance, detail }) {
+function MapLegendItem({ color, label, distance }) {
     return (
-        <div
-            className="flex min-w-0 items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426]"
-            title={detail ? `${label}: ${detail}` : label}
-            aria-label={detail ? `${label}: ${detail}` : label}
-            tabIndex={0}
-        >
+        <div className="flex min-w-0 items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426]">
             <span className={`h-3 w-3 shrink-0 rounded-full ${color}`} />
             <span className="min-w-0 flex-1 truncate">{label}</span>
             {distance && (
@@ -3765,14 +3754,6 @@ function getNearbyLegendDistance(nearbyPlaces, type) {
     if (!matchedPlace || !Number.isFinite(matchedPlace.distanceMiles)) return "";
 
     return `${matchedPlace.distanceMiles.toFixed(1)} mi`;
-}
-
-function getNearbyLegendDetail(nearbyPlaces, type) {
-    const matchedPlace = nearbyPlaces.find((place) => place.type === type);
-
-    if (!matchedPlace) return "No verified location within 10 miles";
-
-    return `${getCleanNearbyPlaceLabel(matchedPlace)} (${matchedPlace.distanceMiles.toFixed(1)} mi away)`;
 }
 
 function loadMapboxGl() {
