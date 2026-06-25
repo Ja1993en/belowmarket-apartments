@@ -1745,7 +1745,7 @@ export default function PublicPropertyListing() {
                                             />
 
                                             {isLastTile && (
-                                                <span className="absolute bottom-4 right-4 rounded-xl bg-[#102426]/95 px-4 py-3 text-sm font-black text-white shadow-lg">
+                                                <span className="absolute bottom-4 right-4 rounded-xl bg-white/95 px-4 py-3 text-sm font-black text-[#102426] shadow-[0_14px_34px_rgba(16,36,38,0.28)] ring-2 ring-[#f2d08a]">
                                                     View {propertyGalleryImages.length} photos
                                                 </span>
                                             )}
