@@ -32,12 +32,14 @@ import { formatAvailability as formatAvailabilityLabel } from "../utils/displayF
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
 const NEARBY_PLACE_RADIUS_MILES = 10;
-const NEARBY_PLACE_CACHE_VERSION = "v3";
+const NEARBY_PLACE_CACHE_VERSION = "v4";
+const NEARBY_PLACE_SUGGESTION_LIMIT = 10;
 const FLOOR_PLAN_PAGE_SIZE = 6;
 const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
 const NEARBY_PLACE_QUERIES = [
     {
         query: "Walmart",
+        queryVariants: ["Walmart", "Walmart Supercenter", "Walmart Neighborhood Market"],
         label: "Walmart",
         detail: "Closest Walmart found near this property",
         type: "walmart",
@@ -66,6 +68,7 @@ const NEARBY_PLACE_QUERIES = [
     },
     {
         query: "Kroger grocery store",
+        queryVariants: ["Kroger", "Kroger grocery store"],
         label: "Kroger",
         detail: "Closest Kroger found near this property",
         type: "kroger",
@@ -4008,43 +4011,32 @@ async function fetchNearbyPlaces(center, cacheKey) {
     const sessionToken = cacheKey;
     const resolvedPlaces = await Promise.all(
         NEARBY_PLACE_QUERIES.map(async (placeQuery) => {
-            const searchUrl = new URL(
-                "https://api.mapbox.com/search/searchbox/v1/suggest"
-            );
-            searchUrl.searchParams.set("q", placeQuery.query);
-            searchUrl.searchParams.set("access_token", MAPBOX_TOKEN);
-            searchUrl.searchParams.set(
-                "proximity",
-                `${center.longitude},${center.latitude}`
-            );
-            searchUrl.searchParams.set("session_token", sessionToken);
-            searchUrl.searchParams.set("types", "poi");
-            searchUrl.searchParams.set("country", "US");
-            searchUrl.searchParams.set("limit", "10");
-
-            const response = await fetch(searchUrl);
-            if (!response.ok) return null;
-
-            const searchResult = await response.json();
-            const matchingSuggestions = (searchResult.suggestions || [])
-                .filter((suggestion) => isNearbySuggestionResult(suggestion, placeQuery))
-                .sort(
-                    (firstSuggestion, secondSuggestion) =>
-                        getSuggestionDistanceMiles(firstSuggestion) -
-                        getSuggestionDistanceMiles(secondSuggestion)
-                );
-
+            const queryVariants = placeQuery.queryVariants || [placeQuery.query];
             const matchingPlaces = [];
+            const retrievedPlaceIds = new Set();
 
-            for (const suggestion of matchingSuggestions) {
-                const placeResult = await retrieveSearchBoxPlace(
-                    suggestion.mapbox_id,
-                    sessionToken
-                );
-                const place = getNearbyPlaceResult(placeResult, placeQuery, center);
+            for (const query of queryVariants) {
+                const matchingSuggestions = await fetchNearbyPlaceSuggestions({
+                    center,
+                    placeQuery,
+                    query,
+                    sessionToken,
+                });
 
-                if (place) {
-                    matchingPlaces.push(place);
+                for (const suggestion of matchingSuggestions) {
+                    if (retrievedPlaceIds.has(suggestion.mapbox_id)) continue;
+
+                    retrievedPlaceIds.add(suggestion.mapbox_id);
+
+                    const placeResult = await retrieveSearchBoxPlace(
+                        suggestion.mapbox_id,
+                        sessionToken
+                    );
+                    const place = getNearbyPlaceResult(placeResult, placeQuery, center);
+
+                    if (place) {
+                        matchingPlaces.push(place);
+                    }
                 }
             }
 
@@ -4056,6 +4048,36 @@ async function fetchNearbyPlaces(center, cacheKey) {
     setCachedNearbyPlaces(cacheKey, places);
 
     return places;
+}
+
+async function fetchNearbyPlaceSuggestions({
+    center,
+    placeQuery,
+    query,
+    sessionToken,
+}) {
+    const searchUrl = new URL(
+        "https://api.mapbox.com/search/searchbox/v1/suggest"
+    );
+    searchUrl.searchParams.set("q", query);
+    searchUrl.searchParams.set("access_token", MAPBOX_TOKEN);
+    searchUrl.searchParams.set(
+        "proximity",
+        `${center.longitude},${center.latitude}`
+    );
+    searchUrl.searchParams.set("session_token", sessionToken);
+    searchUrl.searchParams.set("types", "poi");
+    searchUrl.searchParams.set("country", "US");
+    searchUrl.searchParams.set("limit", String(NEARBY_PLACE_SUGGESTION_LIMIT));
+
+    const response = await fetch(searchUrl);
+    if (!response.ok) return [];
+
+    const searchResult = await response.json();
+
+    return (searchResult.suggestions || []).filter((suggestion) =>
+        isNearbySuggestionResult(suggestion, placeQuery)
+    );
 }
 
 function getClosestNearbyPlace(places) {
@@ -4153,13 +4175,6 @@ function hasNearbyPlaceKeyword(place, placeQuery) {
 
         return text.includes(normalizedKeyword) || compactText.includes(compactKeyword);
     });
-}
-
-function getSuggestionDistanceMiles(suggestion) {
-    const distanceMeters = Number(suggestion?.distance);
-    if (!Number.isFinite(distanceMeters)) return Number.POSITIVE_INFINITY;
-
-    return distanceMeters / 1609.344;
 }
 
 function getDistanceInMiles(firstPoint, secondPoint) {
