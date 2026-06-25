@@ -4000,7 +4000,7 @@ function PropertyLocationMap({
                 container: mapContainerRef.current,
                 style: "mapbox://styles/mapbox/streets-v12",
                 center: [propertyCoordinates.longitude, propertyCoordinates.latitude],
-                zoom: 14,
+                zoom: 13,
                 attributionControl: false,
             });
 
@@ -4011,7 +4011,7 @@ function PropertyLocationMap({
         } else {
             mapRef.current.flyTo({
                 center: [propertyCoordinates.longitude, propertyCoordinates.latitude],
-                zoom: 14,
+                zoom: 13,
                 duration: 500,
             });
         }
@@ -4070,6 +4070,13 @@ function PropertyLocationMap({
             hoverPopupBindings.push({ marker, popup: nearbyPopup });
             markersRef.current.push(marker);
         });
+
+        fitMapToPropertyAndNearbyPlaces(
+            mapboxGl,
+            mapRef.current,
+            propertyCoordinates,
+            nearbyPlaces
+        );
 
         const unbindHoverPopups = bindMapMarkerHoverPopups(
             mapRef.current,
@@ -4152,6 +4159,56 @@ function PropertyLocationMap({
             </div>
         </div>
     );
+}
+
+function fitMapToPropertyAndNearbyPlaces(
+    mapboxGl,
+    map,
+    propertyCoordinates,
+    nearbyPlaces
+) {
+    if (!map || !propertyCoordinates) return;
+
+    const mapBounds = new mapboxGl.LngLatBounds();
+
+    mapBounds.extend([
+        propertyCoordinates.longitude,
+        propertyCoordinates.latitude,
+    ]);
+
+    nearbyPlaces.forEach((place) => {
+        if (!Number.isFinite(place?.longitude) || !Number.isFinite(place?.latitude)) {
+            return;
+        }
+
+        mapBounds.extend([place.longitude, place.latitude]);
+    });
+
+    const hasNearbyPins = nearbyPlaces.length > 0;
+    const padding =
+        window.innerWidth < 640
+            ? 48
+            : {
+                top: 72,
+                bottom: 72,
+                left: 72,
+                right: 72,
+            };
+
+    if (!hasNearbyPins) {
+        map.flyTo({
+            center: [propertyCoordinates.longitude, propertyCoordinates.latitude],
+            zoom: 13,
+            duration: 500,
+        });
+        return;
+    }
+
+    map.fitBounds(mapBounds, {
+        padding,
+        maxZoom: 13,
+        duration: map.loaded() ? 500 : 0,
+    });
 }
 
 function MapLegendItem({ color, label, distance }) {
