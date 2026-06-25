@@ -2356,34 +2356,6 @@ export default function PublicPropertyListing() {
                                                 nearbyPlaces={nearbyPlaces}
                                                 onNearbyPlacesChange={setNearbyPlaces}
                                             />
-
-                                            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-                                                <NearbyItem
-                                                    label="Walmart"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "walmart")}
-                                                    compact
-                                                />
-                                                <NearbyItem
-                                                    label="Target"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "target")}
-                                                    compact
-                                                />
-                                                <NearbyItem
-                                                    label="LA Fitness"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "laFitness")}
-                                                    compact
-                                                />
-                                                <NearbyItem
-                                                    label="Planet Fitness"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "planetFitness")}
-                                                    compact
-                                                />
-                                                <NearbyItem
-                                                    label="Kroger"
-                                                    value={getNearbyPlaceName(nearbyPlaces, "kroger")}
-                                                    compact
-                                                />
-                                            </div>
                                         </div>
                                     </section>
 
@@ -3356,45 +3328,6 @@ function PropertyCompareDock({
     );
 }
 
-function NearbyItem({ label, value, compact = false }) {
-    if (compact) {
-        const compactValue = getCompactNearbyValue(label, value);
-
-        return (
-            <div className="flex min-w-0 items-center justify-between gap-3 rounded-xl bg-[#f5f8f1] px-3 py-2">
-                <p className="shrink-0 text-xs font-black text-[#102426]">{label}</p>
-                <p className="truncate text-right text-xs font-semibold text-[#526260]">{compactValue}</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="grid gap-1 rounded-2xl bg-[#f5f8f1] p-4">
-            <p className="font-bold text-[#102426]">{label}</p>
-            <p className="text-sm font-semibold leading-5 text-[#526260]">{value}</p>
-        </div>
-    );
-}
-
-function getCompactNearbyValue(label, value) {
-    const textValue = String(value || "").trim();
-    if (!textValue) return "";
-
-    const labelPattern = new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*`, "i");
-    return textValue.replace(labelPattern, "").trim() || textValue;
-}
-
-function getNearbyPlaceName(nearbyPlaces, type) {
-    const matchedPlace = nearbyPlaces.find((place) => place.type === type);
-    if (!matchedPlace) return "No verified location within 10 miles";
-
-    const distanceLabel = Number.isFinite(matchedPlace.distanceMiles)
-        ? ` (${matchedPlace.distanceMiles.toFixed(1)} mi away)`
-        : "";
-
-    return `${getCleanNearbyPlaceLabel(matchedPlace)}${distanceLabel}`;
-}
-
 function getCleanNearbyPlaceLabel(place) {
     if (place?.label) return place.label;
 
@@ -3767,24 +3700,61 @@ function PropertyLocationMap({
                 </div>
             )}
             <div className="grid max-h-32 gap-2 overflow-y-auto border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                <MapLegendItem color="bg-[#f2b84b]" label="Property" />
-                <MapLegendItem color="bg-[#2d7dd2]" label="Walmart" />
-                <MapLegendItem color="bg-[#e4572e]" label="Target" />
-                <MapLegendItem color="bg-[#173f3f]" label="LA Fitness" />
-                <MapLegendItem color="bg-[#8a5b0a]" label="Planet Fitness" />
-                <MapLegendItem color="bg-[#1f6f63]" label="Kroger" />
+                <MapLegendItem
+                    color="bg-[#f2b84b]"
+                    label="Property"
+                    detail={addressLabel}
+                />
+                <MapLegendItem
+                    color="bg-[#2d7dd2]"
+                    label="Walmart"
+                    detail={getNearbyLegendDetail(nearbyPlaces, "walmart")}
+                />
+                <MapLegendItem
+                    color="bg-[#e4572e]"
+                    label="Target"
+                    detail={getNearbyLegendDetail(nearbyPlaces, "target")}
+                />
+                <MapLegendItem
+                    color="bg-[#173f3f]"
+                    label="LA Fitness"
+                    detail={getNearbyLegendDetail(nearbyPlaces, "laFitness")}
+                />
+                <MapLegendItem
+                    color="bg-[#8a5b0a]"
+                    label="Planet Fitness"
+                    detail={getNearbyLegendDetail(nearbyPlaces, "planetFitness")}
+                />
+                <MapLegendItem
+                    color="bg-[#1f6f63]"
+                    label="Kroger"
+                    detail={getNearbyLegendDetail(nearbyPlaces, "kroger")}
+                />
             </div>
         </div>
     );
 }
 
-function MapLegendItem({ color, label }) {
+function MapLegendItem({ color, label, detail }) {
     return (
-        <div className="flex items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426]">
+        <div
+            className="flex items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426]"
+            title={detail ? `${label}: ${detail}` : label}
+            aria-label={detail ? `${label}: ${detail}` : label}
+            tabIndex={0}
+        >
             <span className={`h-3 w-3 rounded-full ${color}`} />
             {label}
         </div>
     );
+}
+
+function getNearbyLegendDetail(nearbyPlaces, type) {
+    const matchedPlace = nearbyPlaces.find((place) => place.type === type);
+
+    if (!matchedPlace) return "No verified location within 10 miles";
+
+    return `${getCleanNearbyPlaceLabel(matchedPlace)} (${matchedPlace.distanceMiles.toFixed(1)} mi away)`;
 }
 
 function loadMapboxGl() {
