@@ -1828,7 +1828,7 @@ export default function PublicPropertyListing() {
                     ))}
                 </nav>
 
-                <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-stretch">
+                <div className="mt-4 grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_320px] md:items-stretch xl:grid-cols-[minmax(0,1fr)_380px]">
                     <div className="min-w-0">
 
                                 {shouldShowCompareList && (
@@ -2444,9 +2444,9 @@ export default function PublicPropertyListing() {
                             </div>
 
                             <div
-                                className="mt-8 flex flex-col gap-4 lg:mt-0 lg:min-h-full lg:self-stretch"
+                                className="mt-8 flex flex-col gap-4 md:mt-0 md:min-h-full md:self-stretch"
                             >
-                                <div id="request-info" className="order-1 scroll-mt-[7rem] overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-[7rem] lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+                                <div id="request-info" className="order-1 scroll-mt-[7rem] overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto">
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
                                     <div className="p-4">
@@ -2477,7 +2477,7 @@ export default function PublicPropertyListing() {
                                                 Contact
                                             </p>
 
-                                            <div className="mt-2 grid gap-2 lg:grid-cols-2">
+                                            <div className="mt-2 grid gap-2 md:grid-cols-2">
                                                 <input
                                                     type="text"
                                                     placeholder="Your name *"
@@ -2514,7 +2514,7 @@ export default function PublicPropertyListing() {
                                                             email: e.target.value,
                                                         })
                                                     }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2.5 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] lg:col-span-2"
+                                                    className="w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2.5 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:col-span-2"
                                                 />
                                             </div>
                                         </div>
