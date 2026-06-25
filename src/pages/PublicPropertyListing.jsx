@@ -1853,15 +1853,20 @@ export default function PublicPropertyListing() {
                                         className="mt-4 rounded-3xl border border-[#d7e6df] bg-white p-4 shadow-sm"
                                     >
                                         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                                            <div>
-                                                <p className="text-xs font-black uppercase text-[#1f6f63]">
-                                                    Your compare board
-                                                </p>
-                                                <h3 className="mt-1 text-2xl font-black text-[#102426]">
-                                                    {compareItemCount} item{compareItemCount === 1 ? "" : "s"} comparing
+                                            <div className="min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                                        Compare board
+                                                    </p>
+                                                    <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#173f3f]">
+                                                        {compareItemCount} selected
+                                                    </span>
+                                                </div>
+                                                <h3 className="mt-2 text-xl font-black text-[#102426]">
+                                                    Review your saved options side by side.
                                                 </h3>
-                                                <p className="mt-2 text-xs font-black text-[#173f3f]">
-                                                    Compare up to {MAX_COMPARE_FLOOR_PLANS} floor plans and {MAX_COMPARE_PROPERTIES} properties.
+                                                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                                    Open the board when you are ready to compare rent, specials, size, and availability.
                                                 </p>
                                             </div>
 
@@ -1894,32 +1899,10 @@ export default function PublicPropertyListing() {
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                                            <CompareBoardStat
-                                                label="Floor plans"
-                                                value={compareFloorPlanItems.length}
-                                                tone="green"
-                                            />
-                                            <CompareBoardStat
-                                                label="Properties"
-                                                value={propertyOnlyCompareProperties.length}
-                                                tone="gold"
-                                            />
-                                            <CompareBoardStat
-                                                label="Total options"
-                                                value={compareItemCount}
-                                                tone="slate"
-                                            />
-                                        </div>
-
                                         {compareMessage && (
                                             <p className="mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
                                                 {compareMessage}
                                             </p>
-                                        )}
-
-                                        {!isCompareBoardOpen && (
-                                            <CompareSummaryPanel items={compareSummaryItems} compact />
                                         )}
 
                                         {isCompareBoardOpen && (
@@ -4465,24 +4448,9 @@ function ComparedFloorPlanCard({
     );
 }
 
-function CompareBoardStat({ label, value, tone }) {
-    const toneClasses = {
-        green: "bg-[#e7f3ee] text-[#173f3f]",
-        gold: "bg-[#fff8e6] text-[#8a5b0a]",
-        slate: "bg-[#f5f8f1] text-[#102426]",
-    };
-
+function CompareSummaryPanel({ items }) {
     return (
-        <div className={`rounded-2xl px-4 py-3 ${toneClasses[tone] || toneClasses.slate}`}>
-            <p className="text-[10px] font-black uppercase">{label}</p>
-            <p className="mt-1 text-2xl font-black">{value}</p>
-        </div>
-    );
-}
-
-function CompareSummaryPanel({ items, compact = false }) {
-    return (
-        <div className={`mt-4 grid gap-2 ${compact ? "sm:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-2 xl:grid-cols-4"}`}>
+        <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
             {items.map((item, index) => (
                 <div
                     key={item.label}
