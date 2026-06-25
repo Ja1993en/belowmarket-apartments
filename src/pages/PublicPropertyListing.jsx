@@ -4633,19 +4633,29 @@ function ComparedFloorPlanCard({
     onRemove,
 }) {
     const isCurrentProperty = item.propertyId === currentPropertyId;
+    const displayRent = formatFloorPlanMetricValue(item.rent) || "Contact";
+    const displayEffectiveRent =
+        formatFloorPlanMetricValue(item.effectiveRent) || displayRent;
+    const availabilityLabel =
+        formatAvailabilityLabel(item.available) || "Availability not listed";
+    const floorPlanDetails = [
+        formatBedroomLabel(item.beds, item.floorPlanName),
+        formatBathroomLabel(item.baths),
+        formatSquareFeetLabel(item.sqft),
+    ].filter(Boolean).join(" • ");
 
     return (
-        <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]">
-            <div className="flex gap-3">
+        <div className="flex h-full flex-col rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]">
+            <div className="flex min-h-[112px] gap-3">
                 <img
                     src={item.image || fallbackImage || DEFAULT_PROPERTY_IMAGE}
                     alt={`${item.floorPlanName} floor plan`}
                     loading="lazy"
                     decoding="async"
-                    className="h-20 w-24 shrink-0 rounded-xl bg-[#f5f8f1] object-cover"
+                    className="h-24 w-24 shrink-0 rounded-xl bg-[#f5f8f1] object-cover"
                 />
 
-                <div className="min-w-0">
+                <div className="grid min-w-0 flex-1 content-start">
                     <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[10px] font-black uppercase text-[#173f3f]">
                             Floor plan
@@ -4663,30 +4673,31 @@ function ComparedFloorPlanCard({
                     <p className="mt-1 truncate text-xs font-bold text-[#526260]">
                         at {item.propertyName}
                     </p>
-                    <p className="mt-2 text-xs font-semibold text-[#526260]">
-                        {formatBedroomLabel(item.beds, item.floorPlanName)} • {formatBathroomLabel(item.baths)} •{" "}
-                        {item.sqft || "Sq ft not listed"} sq ft
+                    <p className="mt-2 min-h-[32px] text-xs font-semibold leading-4 text-[#526260]">
+                        {floorPlanDetails}
                     </p>
                 </div>
             </div>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
-                <FloorPlanMetric label="Starting" value={item.rent || "Contact"} />
+                <FloorPlanMetric label="Starting" value={displayRent} />
                 <FloorPlanMetric
                     label="Effective"
-                    value={item.effectiveRent || item.rent || "Contact"}
+                    value={displayEffectiveRent}
                     highlight
                 />
             </div>
 
-            <p className="mt-3 truncate text-xs font-black text-[#8a5b0a]">
-                {item.special || "No special listed"}
-            </p>
-            <p className="mt-1 text-xs font-semibold text-[#526260]">
-                {formatAvailabilityLabel(item.available) || "Availability not listed"}
-            </p>
+            <div className="mt-3 min-h-[42px]">
+                <p className="truncate text-xs font-black text-[#8a5b0a]">
+                    {item.special || "No special listed"}
+                </p>
+                <p className="mt-1 truncate text-xs font-semibold text-[#526260]">
+                    {availabilityLabel}
+                </p>
+            </div>
 
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <div className="mt-auto grid gap-2 pt-3 sm:grid-cols-2">
                 <Link
                     to={`/properties/${item.propertyId}`}
                     className="rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black !text-white hover:bg-[#102426] hover:!text-white"
@@ -4704,6 +4715,15 @@ function ComparedFloorPlanCard({
             </div>
         </div>
     );
+}
+
+function formatSquareFeetLabel(value) {
+    const normalizedValue = String(value || "").trim();
+
+    if (!normalizedValue) return "Sq ft not listed";
+    if (/sq\s*ft|square/i.test(normalizedValue)) return normalizedValue;
+
+    return `${normalizedValue} sq ft`;
 }
 
 function CompareSummaryPanel({ items }) {
