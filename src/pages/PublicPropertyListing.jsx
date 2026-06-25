@@ -1716,7 +1716,7 @@ export default function PublicPropertyListing() {
 
                                 <span className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#102426]/75 via-[#102426]/25 to-transparent lg:hidden" />
 
-                                <span className="absolute bottom-4 left-4 right-4 inline-flex justify-center rounded-xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] shadow-[0_14px_34px_rgba(16,36,38,0.38)] ring-2 ring-white/85 sm:left-auto sm:right-4 sm:w-auto lg:hidden">
+                                <span className="absolute bottom-4 left-4 right-4 inline-flex justify-center rounded-xl bg-white/95 px-4 py-3 text-sm font-black text-[#102426] shadow-[0_14px_34px_rgba(16,36,38,0.38)] ring-2 ring-[#f2d08a] sm:left-auto sm:right-4 sm:w-auto lg:hidden">
                                     View all photos
                                 </span>
                             </button>
