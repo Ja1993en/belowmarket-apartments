@@ -925,6 +925,7 @@ export default function PublicPropertyListing() {
     const { propertyId } = useParams();
     const location = useLocation();
     const floorPlansSectionRef = useRef(null);
+    const propertyNavRef = useRef(null);
     const [property, setProperty] = useState(null);
     const [compareProperties, setCompareProperties] = useState([]);
     const [isLoadingProperty, setIsLoadingProperty] = useState(true);
@@ -1170,6 +1171,7 @@ export default function PublicPropertyListing() {
     const [floorPlanPage, setFloorPlanPage] = useState(1);
     const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(false);
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
+    const [isPropertyNavStuck, setIsPropertyNavStuck] = useState(false);
     const [showSidebarError, setShowSidebarError] = useState(false);
     const [showMobileIntakeModal, setShowMobileIntakeModal] = useState(false);
     const [leadFormError, setLeadFormError] = useState("");
@@ -1724,6 +1726,24 @@ export default function PublicPropertyListing() {
     };
 
     const [leadSubmitted, setLeadSubmitted] = useState(false);
+
+    useEffect(() => {
+        const updatePropertyNavState = () => {
+            const navElement = propertyNavRef.current;
+            if (!navElement) return;
+
+            setIsPropertyNavStuck(navElement.getBoundingClientRect().top <= 56);
+        };
+
+        updatePropertyNavState();
+        window.addEventListener("scroll", updatePropertyNavState, { passive: true });
+        window.addEventListener("resize", updatePropertyNavState);
+
+        return () => {
+            window.removeEventListener("scroll", updatePropertyNavState);
+            window.removeEventListener("resize", updatePropertyNavState);
+        };
+    }, []);
 
     useEffect(() => {
         if (!showMobileIntakeModal) return undefined;
@@ -2359,7 +2379,12 @@ export default function PublicPropertyListing() {
                     ))}
                 </section>
 
-                <nav className="sticky top-14 z-30 mb-3 flex gap-1.5 overflow-x-auto rounded-b-xl border border-t-0 border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur">
+                <nav
+                    ref={propertyNavRef}
+                    className={`sticky top-14 z-30 mb-3 flex gap-1.5 overflow-x-auto border border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur ${
+                        isPropertyNavStuck ? "rounded-b-xl border-t-0" : "rounded-xl"
+                    }`}
+                >
                     {[
                         ["Floor plans", "#floor-plans"],
                         ["Map", "#location"],
