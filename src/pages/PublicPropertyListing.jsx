@@ -1800,7 +1800,7 @@ export default function PublicPropertyListing() {
                     ))}
                 </section>
 
-                <nav className="sticky top-14 z-30 flex gap-1.5 overflow-x-auto rounded-xl border border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur">
+                <nav className="sticky top-14 z-30 mb-3 flex gap-1.5 overflow-x-auto rounded-xl border border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur">
                     {[
                         ["Floor plans", "#floor-plans"],
                         ["Map", "#location"],
@@ -2446,7 +2446,7 @@ export default function PublicPropertyListing() {
                             <div
                                 className="mt-8 flex flex-col gap-4 lg:mt-0 lg:min-h-full lg:self-stretch"
                             >
-                                <div id="request-info" className="order-1 scroll-mt-14 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-14 lg:max-h-[calc(100vh-3.5rem)] lg:overflow-y-auto">
+                                <div id="request-info" className="order-1 scroll-mt-[7rem] overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-[7rem] lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
                                     <div className="p-4">
