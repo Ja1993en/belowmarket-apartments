@@ -1164,6 +1164,12 @@ export default function PublicPropertyListing() {
         scrollToCompareBoard();
     };
 
+    const handleViewCompareDock = () => {
+        setIsCompareBoardOpen(true);
+        setActiveCompareTab("Summary");
+        scrollToCompareBoard();
+    };
+
     const handleToggleFloorPlanCompare = (compareFloorPlanItem, isFloorPlanCompared) => {
         if (!isFloorPlanCompared && compareFloorPlanItems.length >= MAX_COMPARE_FLOOR_PLANS) {
             setCompareMessage(
@@ -3281,6 +3287,15 @@ export default function PublicPropertyListing() {
                 </div>
             )}
 
+            {hasCompareItems && (
+                <PropertyCompareDock
+                    compareItemCount={compareItemCount}
+                    compareMessage={compareMessage}
+                    onClearCompare={handleClearCompareBoard}
+                    onViewCompare={handleViewCompareDock}
+                />
+            )}
+
             <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#d7e6df] bg-white p-3 shadow-lg xl:hidden">
                 <div className="flex gap-3">
                     <button
@@ -3307,6 +3322,46 @@ export default function PublicPropertyListing() {
                 </div>
             </div>
         </main>
+    );
+}
+
+function PropertyCompareDock({
+    compareItemCount,
+    compareMessage,
+    onClearCompare,
+    onViewCompare,
+}) {
+    return (
+        <div className="fixed inset-x-0 bottom-0 z-50 hidden border-t border-[#d7e6df] bg-white/95 px-3 py-3 shadow-[0_-10px_30px_rgba(16,36,38,0.12)] backdrop-blur xl:block">
+            <div className="mx-auto flex w-[min(1180px,calc(100vw-24px))] items-center justify-between gap-3">
+                <div className="min-w-0">
+                    <p className="text-sm font-black text-[#102426]">
+                        Compare list ready
+                    </p>
+                    <p className="mt-0.5 truncate text-xs font-bold text-[#526260]">
+                        {compareMessage ||
+                            `${compareItemCount} option${compareItemCount === 1 ? "" : "s"} selected. View them side by side before you tour.`}
+                    </p>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={onViewCompare}
+                        className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black text-white shadow-sm transition hover:bg-[#102426]"
+                    >
+                        View comparison ({compareItemCount})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onClearCompare}
+                        className="rounded-lg bg-[#fff0ea] px-4 py-3 text-sm font-black text-[#e4572e] transition hover:bg-[#fde8df]"
+                    >
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
 
