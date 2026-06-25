@@ -1212,32 +1212,29 @@ export default function PublicPropertyListing() {
         setCompareMessage("Compare board cleared.");
     };
 
-    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3 xl:p-4";
-    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-2 xl:mt-3";
+    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-4 xl:p-5";
+    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-4";
     const intakeGridSpacingClass = shouldShowCompareList
         ? "mt-1.5 gap-1.5"
-        : "mt-1.5 gap-1.5 xl:mt-2 xl:gap-2";
+        : "mt-2 gap-2";
     const intakeFieldSizeClass = shouldShowCompareList
         ? "md:py-1.5 lg:py-1.5 xl:py-1.5 xl:text-sm"
-        : "md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm";
+        : "md:py-2 lg:py-2.5 xl:py-3 xl:text-sm";
     const intakeConsentClass = shouldShowCompareList
         ? "mt-2 p-2 text-[10px] leading-3"
-        : "mt-2 p-2 text-[9px] leading-3 xl:mt-3 xl:p-2.5 xl:text-[10px] xl:leading-4";
+        : "mt-4 p-3 text-xs leading-4";
     const intakeSubmitClass = shouldShowCompareList
         ? "mt-2 py-2.5 text-sm"
-        : "mt-2 py-2.5 text-xs xl:mt-3 xl:py-3 xl:text-sm";
+        : "mt-4 py-3.5 text-sm";
     const intakeFinePrintClass = shouldShowCompareList
         ? "mt-1.5 text-[10px] leading-3"
-        : "mt-1.5 text-[9px] leading-3 xl:mt-2 xl:text-[10px] xl:leading-4";
+        : "mt-3 text-xs leading-4";
     const intakeCardHeightClass = shouldShowCompareList
         ? "md:min-h-[calc(100vh-12rem)]"
         : "md:min-h-[calc(100vh-8rem)]";
     const intakePanelLayoutClass = shouldShowCompareList
         ? "md:min-h-[calc(100vh-12.5rem)]"
         : "md:min-h-[calc(100vh-8.5rem)]";
-    const intakeVerificationClass = shouldShowCompareList
-        ? "mt-2 p-2 text-[10px] leading-3"
-        : "mt-auto p-3 text-xs leading-4";
 
     const filteredFloorPlans =
         activeFloorPlanFilter === "All"
@@ -2435,15 +2432,15 @@ export default function PublicPropertyListing() {
                                             Free locator help
                                         </p>
 
-                                        <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
+                                        <h2 className="mt-1 text-xl font-black leading-tight text-[#102426] xl:text-2xl">
                                             Get verified pricing
                                         </h2>
 
-                                        <p className="mt-1 text-[11px] font-semibold leading-4 text-[#526260] xl:text-xs">
+                                        <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
                                             Confirm specials, fees, and availability before touring.
                                         </p>
 
-                                        <div className={`mt-2 truncate rounded-xl px-3 py-1.5 text-[11px] font-black xl:mt-3 xl:py-2 xl:text-xs ${
+                                        <div className={`mt-3 truncate rounded-xl px-3 py-2 text-sm font-black ${
                                                 hasPropertySpecial
                                                     ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
                                                     : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
@@ -2454,7 +2451,7 @@ export default function PublicPropertyListing() {
                                         </div>
 
                                         <div className={intakeSectionSpacingClass}>
-                                            <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
+                                            <p className="text-sm font-black uppercase tracking-wide text-[#102426]">
                                                 Contact
                                             </p>
 
@@ -2469,7 +2466,7 @@ export default function PublicPropertyListing() {
                                                             name: e.target.value,
                                                         })
                                                     }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 />
 
                                                 <input
@@ -2482,7 +2479,7 @@ export default function PublicPropertyListing() {
                                                             phone: e.target.value,
                                                         })
                                                     }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 />
 
                                                 <input
@@ -2495,13 +2492,13 @@ export default function PublicPropertyListing() {
                                                             email: e.target.value,
                                                         })
                                                     }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:col-span-2 ${intakeFieldSizeClass}`}
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:col-span-2 ${intakeFieldSizeClass}`}
                                                 />
                                             </div>
                                         </div>
 
                                         <div className={intakeSectionSpacingClass}>
-                                            <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
+                                            <p className="text-sm font-black uppercase tracking-wide text-[#102426]">
                                                 Search details
                                             </p>
 
@@ -2514,7 +2511,7 @@ export default function PublicPropertyListing() {
                                                             moveInDate: e.target.value,
                                                         })
                                                     }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 >
                                                     <option value="">Move-in *</option>
                                                     <option value="Immediately">Immediately</option>
@@ -2532,7 +2529,7 @@ export default function PublicPropertyListing() {
                                                             bedroomsNeeded: e.target.value,
                                                         })
                                                     }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 >
                                                     <option value="">Beds *</option>
                                                     <option value="Studio">Studio</option>
@@ -2551,7 +2548,7 @@ export default function PublicPropertyListing() {
                                                             budget: e.target.value,
                                                         })
                                                     }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 />
 
                                                 <select
@@ -2562,7 +2559,7 @@ export default function PublicPropertyListing() {
                                                             contactMethod: e.target.value,
                                                         })
                                                     }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 >
                                                     <option value="">Contact</option>
                                                     <option value="Text">Text me</option>
@@ -2588,17 +2585,6 @@ export default function PublicPropertyListing() {
                                                 I agree to receive texts about this property. Reply STOP to opt out.
                                             </span>
                                         </label>
-
-                                        <div className={`rounded-xl bg-[#e7f3ee] font-semibold text-[#173f3f] ring-1 ring-[#a9cfc2] ${intakeVerificationClass}`}>
-                                            <p className="font-black uppercase tracking-wide">
-                                                What we verify
-                                            </p>
-                                            <div className="mt-2 grid gap-1.5">
-                                                <p>Current rent, specials, and available units.</p>
-                                                <p>Fees, lease terms, and move-in timing.</p>
-                                                <p>Best next step before you tour or apply.</p>
-                                            </div>
-                                        </div>
 
                                         {showSidebarError && (
                                             <p className="mt-2 text-xs font-semibold text-[#e4572e]">
