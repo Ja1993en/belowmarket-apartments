@@ -1822,7 +1822,6 @@ export default function PublicPropertyListing() {
                         ["Floor plans", "#floor-plans"],
                         ["Map", "#location"],
                         ["Photos", "#photos"],
-                        ["Locator help", "#request-info"],
                         ["Schools", "#schools"],
                     ].map(([label, href], index) => (
                         <a
