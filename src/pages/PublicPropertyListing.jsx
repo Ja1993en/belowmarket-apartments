@@ -1032,7 +1032,7 @@ export default function PublicPropertyListing() {
     const [compareFloorPlanItems, setCompareFloorPlanItems] = useState(getCompareFloorPlanItems);
     const [compareMessage, setCompareMessage] = useState("");
     const [isCompareBoardOpen, setIsCompareBoardOpen] = useState(false);
-    const [activeCompareTab, setActiveCompareTab] = useState("Summary");
+    const [activeCompareTab, setActiveCompareTab] = useState("Floor Plans");
     const compareListRef = useRef(null);
     {/* Usestate end*/ }
 
@@ -1156,7 +1156,7 @@ export default function PublicPropertyListing() {
 
     const handleViewCompareDock = () => {
         setIsCompareBoardOpen(true);
-        setActiveCompareTab("Summary");
+        setActiveCompareTab("Floor Plans");
         scrollToCompareBoard();
     };
 
@@ -1881,7 +1881,7 @@ export default function PublicPropertyListing() {
                                                     type="button"
                                                     onClick={() => {
                                                         setIsCompareBoardOpen((currentValue) => !currentValue);
-                                                        setActiveCompareTab("Summary");
+                                                        setActiveCompareTab("Floor Plans");
                                                     }}
                                                     className="w-fit rounded-2xl bg-[#173f3f] px-4 py-2 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                                                 >
@@ -1907,7 +1907,7 @@ export default function PublicPropertyListing() {
                                         {isCompareBoardOpen && (
                                             <>
                                                 <div className="mt-4 flex flex-wrap gap-2">
-                                                    {["Summary", "Floor Plans", "Properties", "Details"].map((tab) => (
+                                                    {["Floor Plans", "Properties", "Details"].map((tab) => (
                                                         <button
                                                             key={tab}
                                                             type="button"
@@ -1922,10 +1922,6 @@ export default function PublicPropertyListing() {
                                                         </button>
                                                     ))}
                                                 </div>
-
-                                                {activeCompareTab === "Summary" && (
-                                                    <CompareSummaryPanel items={compareSummaryItems} />
-                                                )}
 
                                                 {activeCompareTab === "Floor Plans" && (
                                                     compareFloorPlanItems.length > 0 ? (
