@@ -1647,12 +1647,6 @@ export default function PublicPropertyListing() {
             note: hasPropertySpecial ? "Estimated after special" : "No active special applied",
         },
         {
-            label: "Current special",
-            value: propertySpecialLabel,
-            note: hasPropertySpecial ? "Confirm credit timing" : "Ask for current offers",
-            special: hasPropertySpecial,
-        },
-        {
             label: "Availability",
             value: `${availableFloorPlans.length} plan${availableFloorPlans.length === 1 ? "" : "s"}`,
             note: availableUnitCount > 0
@@ -1776,15 +1770,23 @@ export default function PublicPropertyListing() {
                         <h1 className="mt-1 text-3xl font-black leading-tight text-[#102426] md:text-4xl">
                             {property.name}
                         </h1>
-                        <p className="mt-2 text-sm font-bold leading-5 text-[#526260]">
-                            {addressLabel}
-                            {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
-                        </p>
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm font-bold leading-5 text-[#526260]">
+                            <span>
+                                {addressLabel}
+                                {property.yearBuilt ? ` • Built ${property.yearBuilt}` : ""}
+                            </span>
+
+                            {hasPropertySpecial && (
+                                <span className="rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                    {propertySpecialLabel}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                 </section>
 
-                <section className="grid gap-3 py-4 sm:grid-cols-2 lg:grid-cols-5">
+                <section className="grid gap-3 py-4 sm:grid-cols-2 lg:grid-cols-4">
                     {listingSummaryCards.map((card) => (
                         <div
                             key={card.label}
