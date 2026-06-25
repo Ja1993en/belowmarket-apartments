@@ -32,8 +32,9 @@ import { formatAvailability as formatAvailabilityLabel } from "../utils/displayF
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
 const NEARBY_PLACE_RADIUS_MILES = 10;
-const NEARBY_PLACE_CACHE_VERSION = "v4";
+const NEARBY_PLACE_CACHE_VERSION = "v5";
 const NEARBY_PLACE_SUGGESTION_LIMIT = 10;
+const NEARBY_PLACE_RETRIEVE_LIMIT = 4;
 const FLOOR_PLAN_PAGE_SIZE = 6;
 const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
 const NEARBY_PLACE_QUERIES = [
@@ -4012,31 +4013,43 @@ async function fetchNearbyPlaces(center, cacheKey) {
     const resolvedPlaces = await Promise.all(
         NEARBY_PLACE_QUERIES.map(async (placeQuery) => {
             const queryVariants = placeQuery.queryVariants || [placeQuery.query];
+            const matchingSuggestions = [];
             const matchingPlaces = [];
-            const retrievedPlaceIds = new Set();
+            const seenSuggestionIds = new Set();
 
             for (const query of queryVariants) {
-                const matchingSuggestions = await fetchNearbyPlaceSuggestions({
+                const querySuggestions = await fetchNearbyPlaceSuggestions({
                     center,
                     placeQuery,
                     query,
                     sessionToken,
                 });
 
-                for (const suggestion of matchingSuggestions) {
-                    if (retrievedPlaceIds.has(suggestion.mapbox_id)) continue;
+                for (const suggestion of querySuggestions) {
+                    if (seenSuggestionIds.has(suggestion.mapbox_id)) continue;
 
-                    retrievedPlaceIds.add(suggestion.mapbox_id);
+                    seenSuggestionIds.add(suggestion.mapbox_id);
+                    matchingSuggestions.push(suggestion);
+                }
+            }
 
-                    const placeResult = await retrieveSearchBoxPlace(
-                        suggestion.mapbox_id,
-                        sessionToken
-                    );
-                    const place = getNearbyPlaceResult(placeResult, placeQuery, center);
+            const closestSuggestions = matchingSuggestions
+                .sort(
+                    (firstSuggestion, secondSuggestion) =>
+                        getSuggestionDistanceMiles(firstSuggestion) -
+                        getSuggestionDistanceMiles(secondSuggestion)
+                )
+                .slice(0, NEARBY_PLACE_RETRIEVE_LIMIT);
 
-                    if (place) {
-                        matchingPlaces.push(place);
-                    }
+            for (const suggestion of closestSuggestions) {
+                const placeResult = await retrieveSearchBoxPlace(
+                    suggestion.mapbox_id,
+                    sessionToken
+                );
+                const place = getNearbyPlaceResult(placeResult, placeQuery, center);
+
+                if (place) {
+                    matchingPlaces.push(place);
                 }
             }
 
@@ -4078,6 +4091,13 @@ async function fetchNearbyPlaceSuggestions({
     return (searchResult.suggestions || []).filter((suggestion) =>
         isNearbySuggestionResult(suggestion, placeQuery)
     );
+}
+
+function getSuggestionDistanceMiles(suggestion) {
+    const distanceMeters = Number(suggestion?.distance);
+    if (!Number.isFinite(distanceMeters)) return Number.POSITIVE_INFINITY;
+
+    return distanceMeters / 1609.344;
 }
 
 function getClosestNearbyPlace(places) {
