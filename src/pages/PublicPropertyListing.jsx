@@ -4649,7 +4649,7 @@ function ComparedFloorPlanCard({
     ].filter(Boolean).join(" • ");
 
     return (
-        <div className="grid h-full min-h-[340px] grid-rows-[120px_64px_64px_40px] gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]">
+        <div className="grid h-full min-h-[344px] grid-rows-[120px_64px_64px_44px] gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]">
             <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3 overflow-hidden">
                 <button
                     type="button"
@@ -4716,7 +4716,7 @@ function ComparedFloorPlanCard({
                 </p>
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-2">
                 <Link
                     to={`/properties/${item.propertyId}`}
                     onClick={() => {
