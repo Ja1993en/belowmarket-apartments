@@ -1800,7 +1800,7 @@ export default function PublicPropertyListing() {
                     ))}
                 </section>
 
-                <nav className="sticky top-[68px] z-30 mt-4 flex gap-1.5 overflow-x-auto rounded-xl border border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur">
+                <nav className="sticky top-14 z-30 flex gap-1.5 overflow-x-auto rounded-xl border border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur">
                     {[
                         ["Floor plans", "#floor-plans"],
                         ["Map", "#location"],
