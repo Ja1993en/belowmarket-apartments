@@ -1891,7 +1891,7 @@ export default function PublicPropertyListing() {
                                                 <button
                                                     type="button"
                                                     onClick={handleClearCompareBoard}
-                                                    className="w-fit rounded-2xl border border-[#f2b84b] bg-[#b42318] px-4 py-2 text-sm font-bold text-white hover:bg-[#8f1d15]"
+                                                    className="w-fit rounded-2xl border border-[#f2b84b] bg-[#b42318] px-4 py-2 text-sm font-bold !text-white hover:bg-[#8f1d15] hover:!text-white"
                                                 >
                                                     Clear all
                                                 </button>
