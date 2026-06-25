@@ -2598,7 +2598,7 @@ export default function PublicPropertyListing() {
                                             disabled={isSubmittingLead || leadSubmitted}
                                             className={`w-full rounded-xl px-4 font-black ${intakeSubmitClass} ${leadSubmitted
                                                 ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
-                                                : "bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white"
+                                                : "bg-[#f2b84b] !text-[#102426] hover:bg-[#dca33c] hover:!text-[#102426]"
                                                 }`}
                                         >
                                             {isSubmittingLead
