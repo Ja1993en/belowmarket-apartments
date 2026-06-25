@@ -1895,13 +1895,6 @@ export default function PublicPropertyListing() {
                                                 >
                                                     Clear all
                                                 </button>
-
-                                                <Link
-                                                    to="/properties"
-                                                    className="w-fit rounded-2xl bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f] hover:bg-[#d8efe6]"
-                                                >
-                                                    Back to search
-                                                </Link>
                                             </div>
                                         </div>
 
