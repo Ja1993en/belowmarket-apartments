@@ -1171,6 +1171,7 @@ export default function PublicPropertyListing() {
     const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(false);
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
     const [showSidebarError, setShowSidebarError] = useState(false);
+    const [showMobileIntakeModal, setShowMobileIntakeModal] = useState(false);
     const [leadFormError, setLeadFormError] = useState("");
     const [isSubmittingLead, setIsSubmittingLead] = useState(false);
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
@@ -1724,6 +1725,240 @@ export default function PublicPropertyListing() {
 
     const [leadSubmitted, setLeadSubmitted] = useState(false);
 
+    useEffect(() => {
+        if (!showMobileIntakeModal) return undefined;
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        const closeOnEscape = (event) => {
+            if (event.key === "Escape") {
+                setShowMobileIntakeModal(false);
+            }
+        };
+
+        window.addEventListener("keydown", closeOnEscape);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [showMobileIntakeModal]);
+
+    const renderLocatorIntakeCard = ({ id = undefined, isModal = false } = {}) => (
+        <div
+            id={id}
+            className={
+                isModal
+                    ? "flex max-h-[86vh] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl"
+                    : `order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto ${intakeCardHeightClass}`
+            }
+        >
+            <div className="h-1.5 bg-[#f2b84b]" />
+
+            <div
+                className={`${intakePanelPaddingClass} flex flex-1 flex-col overflow-y-auto ${intakePanelLayoutClass}`}
+            >
+                <div className="flex items-start justify-between gap-3">
+                    <div>
+                        <p className="text-[11px] font-black uppercase tracking-wide text-[#1f6f63]">
+                            Free locator help
+                        </p>
+
+                        <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
+                            Get verified pricing
+                        </h2>
+                    </div>
+
+                    {isModal && (
+                        <button
+                            type="button"
+                            onClick={() => setShowMobileIntakeModal(false)}
+                            className="rounded-lg bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]"
+                        >
+                            Close
+                        </button>
+                    )}
+                </div>
+
+                <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
+                    Confirm specials, fees, and availability before touring.
+                </p>
+
+                <div className={`mt-2.5 truncate rounded-xl px-3 py-2 text-xs font-black ${
+                    hasPropertySpecial
+                        ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+                        : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
+                }`}>
+                    {hasPropertySpecial
+                        ? `Listed special: ${propertySpecialLabel}`
+                        : "Ask us to confirm current pricing and availability."}
+                </div>
+
+                <div className={intakeSectionSpacingClass}>
+                    <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
+                        Contact
+                    </p>
+
+                    <div className={`grid md:grid-cols-2 ${intakeGridSpacingClass}`}>
+                        <input
+                            type="text"
+                            placeholder="Your name *"
+                            value={leadForm.name}
+                            onChange={(e) =>
+                                setLeadForm({
+                                    ...leadForm,
+                                    name: e.target.value,
+                                })
+                            }
+                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                        />
+
+                        <input
+                            type="tel"
+                            placeholder="Phone number *"
+                            value={leadForm.phone}
+                            onChange={(e) =>
+                                setLeadForm({
+                                    ...leadForm,
+                                    phone: e.target.value,
+                                })
+                            }
+                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                        />
+
+                        <input
+                            type="email"
+                            placeholder="Email address *"
+                            value={leadForm.email}
+                            onChange={(e) =>
+                                setLeadForm({
+                                    ...leadForm,
+                                    email: e.target.value,
+                                })
+                            }
+                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:col-span-2 ${intakeFieldSizeClass}`}
+                        />
+                    </div>
+                </div>
+
+                <div className={intakeSectionSpacingClass}>
+                    <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
+                        Search details
+                    </p>
+
+                    <div className={`grid grid-cols-2 ${intakeGridSpacingClass}`}>
+                        <select
+                            value={leadForm.moveInDate}
+                            onChange={(e) =>
+                                setLeadForm({
+                                    ...leadForm,
+                                    moveInDate: e.target.value,
+                                })
+                            }
+                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                        >
+                            <option value="">Move-in *</option>
+                            <option value="Immediately">Immediately</option>
+                            <option value="Within 30 Days">Within 30 Days</option>
+                            <option value="Within 60 Days">Within 60 Days</option>
+                            <option value="Within 90 Days">Within 90 Days</option>
+                            <option value="Just Browsing">Just Browsing</option>
+                        </select>
+
+                        <select
+                            value={leadForm.bedroomsNeeded}
+                            onChange={(e) =>
+                                setLeadForm({
+                                    ...leadForm,
+                                    bedroomsNeeded: e.target.value,
+                                })
+                            }
+                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                        >
+                            <option value="">Beds *</option>
+                            <option value="Studio">Studio</option>
+                            <option value="1 Bed">1 Bed</option>
+                            <option value="2 Bed">2 Bed</option>
+                            <option value="3 Bed">3 Bed</option>
+                        </select>
+
+                        <input
+                            type="text"
+                            placeholder="Budget *"
+                            value={leadForm.budget}
+                            onChange={(e) =>
+                                setLeadForm({
+                                    ...leadForm,
+                                    budget: e.target.value,
+                                })
+                            }
+                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                        />
+
+                        <select
+                            value={leadForm.contactMethod}
+                            onChange={(e) =>
+                                setLeadForm({
+                                    ...leadForm,
+                                    contactMethod: e.target.value,
+                                })
+                            }
+                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
+                        >
+                            <option value="">Contact</option>
+                            <option value="Text">Text me</option>
+                            <option value="Call">Call me</option>
+                            <option value="Email">Email me</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label className={`flex gap-2 rounded-xl bg-[#f5f8f1] font-semibold text-[#526260] ring-1 ring-[#d7e6df] ${intakeConsentClass}`}>
+                    <input
+                        type="checkbox"
+                        checked={leadForm.smsConsent}
+                        onChange={(e) =>
+                            setLeadForm({
+                                ...leadForm,
+                                smsConsent: e.target.checked,
+                            })
+                        }
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
+                    />
+                    <span>
+                        I agree to receive texts about this property. Reply STOP to opt out.
+                    </span>
+                </label>
+
+                {showSidebarError && (
+                    <p className="mt-2 text-xs font-semibold text-[#e4572e]">
+                        {leadFormError || "Add the required info so we can send the answer."}
+                    </p>
+                )}
+
+                <button
+                    type="button"
+                    onClick={handleFloorPlanLeadSubmit}
+                    disabled={isSubmittingLead || leadSubmitted}
+                    className={`w-full rounded-xl px-4 font-black ${intakeSubmitClass} ${leadSubmitted
+                        ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
+                        : "bg-[#f2b84b] !text-[#102426] hover:bg-[#dca33c] hover:!text-[#102426]"
+                    }`}
+                >
+                    {isSubmittingLead
+                        ? "Sending..."
+                        : leadSubmitted
+                            ? "Request Sent"
+                            : "Text me verified details"}
+                </button>
+
+                <p className={`font-semibold text-[#7b8b88] ${intakeFinePrintClass}`}>
+                    No cost to renters. We only follow up about this property and nearby options.
+                </p>
+            </div>
+        </div>
+    );
+
     if (!property || property.status !== "Live") {
         return (
             <main className="min-h-screen bg-[#f5f8f1] p-6 text-[#102426]">
@@ -1981,9 +2216,17 @@ export default function PublicPropertyListing() {
                         </span>
                     </Link>
 
+                    <button
+                        type="button"
+                        onClick={() => setShowMobileIntakeModal(true)}
+                        className="rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783] md:hidden"
+                    >
+                        Ask an Apartment Locator
+                    </button>
+
                     <a
                         href="#request-info"
-                        className="rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
+                        className="hidden rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783] md:inline-flex"
                     >
                         Ask an Apartment Locator
                     </a>
@@ -2714,6 +2957,22 @@ export default function PublicPropertyListing() {
                             </div>
                         </div>
             </div>
+            {showMobileIntakeModal && (
+                <div
+                    className="fixed inset-0 z-50 bg-[#102426]/70 p-3 backdrop-blur-sm md:hidden"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Ask an apartment locator"
+                    onClick={() => setShowMobileIntakeModal(false)}
+                >
+                    <div
+                        className="flex min-h-full items-center justify-center"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        {renderLocatorIntakeCard({ isModal: true })}
+                    </div>
+                </div>
+            )}
             {showGallery && hasPropertyGalleryImages && (
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-4 md:p-6">
                     <div className="mx-auto my-6 max-w-6xl rounded-3xl bg-white p-4 md:p-6">
