@@ -3287,7 +3287,7 @@ export default function PublicPropertyListing() {
                 </div>
             )}
 
-            {hasCompareItems && (
+            {shouldShowCompareList && (
                 <PropertyCompareDock
                     compareItemCount={compareItemCount}
                     compareMessage={compareMessage}
