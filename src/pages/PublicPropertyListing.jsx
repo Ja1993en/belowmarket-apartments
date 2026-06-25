@@ -3304,7 +3304,7 @@ function PropertyCompareDock({
                     <button
                         type="button"
                         onClick={onClearCompare}
-                        className="rounded-lg bg-[#fff0ea] px-4 py-3 text-sm font-black text-[#e4572e] transition hover:bg-[#fde8df]"
+                        className="rounded-lg bg-[#c9341c] px-4 py-3 text-sm font-black !text-white transition hover:bg-[#a92a18] hover:!text-white"
                     >
                         Clear
                     </button>
