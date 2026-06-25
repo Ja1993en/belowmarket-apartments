@@ -4645,29 +4645,32 @@ function ComparedFloorPlanCard({
     ].filter(Boolean).join(" • ");
 
     return (
-        <div className="flex h-full min-h-[326px] flex-col rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]">
-            <div className="grid min-h-[122px] grid-cols-[96px_minmax(0,1fr)] gap-3">
-                <img
-                    src={item.image || fallbackImage || DEFAULT_PROPERTY_IMAGE}
-                    alt={`${item.floorPlanName} floor plan`}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-24 w-24 rounded-xl bg-[#f5f8f1] object-cover"
-                />
+        <div className="grid h-full min-h-[340px] grid-rows-[120px_64px_64px_40px] gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]">
+            <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3 overflow-hidden">
+                <div className="relative h-24 w-24 overflow-hidden rounded-xl bg-[#f5f8f1]">
+                    <img
+                        src={item.image || fallbackImage || DEFAULT_PROPERTY_IMAGE}
+                        alt={`${item.floorPlanName} floor plan`}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover"
+                    />
 
-                <div className="flex min-w-0 flex-col">
-                    <div className="flex min-h-[22px] flex-wrap items-start gap-1.5 overflow-hidden">
+                    {isCurrentProperty && (
+                        <span className="absolute inset-x-1 bottom-1 rounded-lg bg-[#f2b84b] px-1.5 py-1 text-center text-[9px] font-black uppercase leading-none text-[#102426] shadow-sm">
+                            Current
+                        </span>
+                    )}
+                </div>
+
+                <div className="grid min-w-0 grid-rows-[22px_42px_36px]">
+                    <div className="overflow-hidden">
                         <span className="rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[10px] font-black uppercase text-[#173f3f]">
                             Floor plan
                         </span>
-                        {isCurrentProperty && (
-                            <span className="rounded-full bg-[#f2b84b] px-2 py-0.5 text-[10px] font-black uppercase text-[#102426]">
-                                Current page
-                            </span>
-                        )}
                     </div>
 
-                    <div className="mt-2 min-h-[38px]">
+                    <div className="min-w-0">
                         <p className="truncate text-sm font-black text-[#102426]">
                             {item.floorPlanName}
                         </p>
@@ -4676,13 +4679,13 @@ function ComparedFloorPlanCard({
                         </p>
                     </div>
 
-                    <p className="mt-auto min-h-[32px] text-xs font-semibold leading-4 text-[#526260]">
+                    <p className="line-clamp-2 text-xs font-semibold leading-4 text-[#526260]">
                         {floorPlanDetails}
                     </p>
                 </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
                 <FloorPlanMetric label="Starting" value={displayRent} />
                 <FloorPlanMetric
                     label="Effective"
@@ -4691,7 +4694,7 @@ function ComparedFloorPlanCard({
                 />
             </div>
 
-            <div className="mt-3 min-h-[48px] rounded-xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+            <div className="overflow-hidden rounded-xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
                 <p className="line-clamp-2 text-xs font-black leading-4 text-[#8a5b0a]">
                     {item.special || "No special listed"}
                 </p>
@@ -4700,10 +4703,10 @@ function ComparedFloorPlanCard({
                 </p>
             </div>
 
-            <div className="mt-auto grid gap-2 pt-3 sm:grid-cols-2">
+            <div className="grid gap-2 sm:grid-cols-2">
                 <Link
                     to={`/properties/${item.propertyId}`}
-                    className="rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black !text-white hover:bg-[#102426] hover:!text-white"
+                    className="flex items-center justify-center rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black !text-white hover:bg-[#102426] hover:!text-white"
                 >
                     View property
                 </Link>
@@ -4711,7 +4714,7 @@ function ComparedFloorPlanCard({
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="rounded-xl border border-[#f2b84b] bg-[#b42318] px-3 py-2 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+                    className="flex items-center justify-center rounded-xl border border-[#f2b84b] bg-[#b42318] px-3 py-2 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
                 >
                     Remove
                 </button>
