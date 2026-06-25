@@ -4645,18 +4645,18 @@ function ComparedFloorPlanCard({
     ].filter(Boolean).join(" • ");
 
     return (
-        <div className="flex h-full flex-col rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]">
-            <div className="flex min-h-[112px] gap-3">
+        <div className="flex h-full min-h-[326px] flex-col rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]">
+            <div className="grid min-h-[122px] grid-cols-[96px_minmax(0,1fr)] gap-3">
                 <img
                     src={item.image || fallbackImage || DEFAULT_PROPERTY_IMAGE}
                     alt={`${item.floorPlanName} floor plan`}
                     loading="lazy"
                     decoding="async"
-                    className="h-24 w-24 shrink-0 rounded-xl bg-[#f5f8f1] object-cover"
+                    className="h-24 w-24 rounded-xl bg-[#f5f8f1] object-cover"
                 />
 
-                <div className="grid min-w-0 flex-1 content-start">
-                    <div className="flex flex-wrap items-center gap-2">
+                <div className="flex min-w-0 flex-col">
+                    <div className="flex min-h-[22px] flex-wrap items-start gap-1.5 overflow-hidden">
                         <span className="rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[10px] font-black uppercase text-[#173f3f]">
                             Floor plan
                         </span>
@@ -4667,13 +4667,16 @@ function ComparedFloorPlanCard({
                         )}
                     </div>
 
-                    <p className="mt-2 truncate text-sm font-black text-[#102426]">
-                        {item.floorPlanName}
-                    </p>
-                    <p className="mt-1 truncate text-xs font-bold text-[#526260]">
-                        at {item.propertyName}
-                    </p>
-                    <p className="mt-2 min-h-[32px] text-xs font-semibold leading-4 text-[#526260]">
+                    <div className="mt-2 min-h-[38px]">
+                        <p className="truncate text-sm font-black text-[#102426]">
+                            {item.floorPlanName}
+                        </p>
+                        <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+                            at {item.propertyName}
+                        </p>
+                    </div>
+
+                    <p className="mt-auto min-h-[32px] text-xs font-semibold leading-4 text-[#526260]">
                         {floorPlanDetails}
                     </p>
                 </div>
@@ -4688,8 +4691,8 @@ function ComparedFloorPlanCard({
                 />
             </div>
 
-            <div className="mt-3 min-h-[42px]">
-                <p className="truncate text-xs font-black text-[#8a5b0a]">
+            <div className="mt-3 min-h-[48px] rounded-xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+                <p className="line-clamp-2 text-xs font-black leading-4 text-[#8a5b0a]">
                     {item.special || "No special listed"}
                 </p>
                 <p className="mt-1 truncate text-xs font-semibold text-[#526260]">
