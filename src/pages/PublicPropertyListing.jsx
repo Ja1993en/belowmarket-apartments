@@ -3324,8 +3324,8 @@ function PropertyCompareDock({
     onViewCompare,
 }) {
     return (
-        <div className="fixed inset-x-0 bottom-0 z-40 hidden border-t border-[#d7e6df] bg-white/95 px-3 py-3 shadow-[0_-10px_30px_rgba(16,36,38,0.12)] backdrop-blur xl:block">
-            <div className="mx-auto flex w-[min(1180px,calc(100vw-24px))] items-center justify-between gap-3">
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#d7e6df] bg-white/95 px-3 py-3 shadow-[0_-10px_30px_rgba(16,36,38,0.12)] backdrop-blur">
+            <div className="mx-auto flex w-[min(1180px,calc(100vw-24px))] flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                     <p className="text-sm font-black text-[#102426]">
                         Compare list ready
@@ -3336,7 +3336,7 @@ function PropertyCompareDock({
                     </p>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="grid grid-cols-[1fr_auto] gap-2 sm:flex sm:shrink-0 sm:items-center">
                     <button
                         type="button"
                         onClick={onViewCompare}
