@@ -1229,6 +1229,9 @@ export default function PublicPropertyListing() {
     const intakeFinePrintClass = shouldShowCompareList
         ? "mt-1.5 text-[10px] leading-3"
         : "mt-1.5 text-[9px] leading-3 xl:mt-2 xl:text-[10px] xl:leading-4";
+    const intakeCardHeightClass = shouldShowCompareList
+        ? "md:min-h-[calc(100vh-12rem)]"
+        : "md:min-h-[calc(100vh-8rem)]";
 
     const filteredFloorPlans =
         activeFloorPlanFilter === "All"
@@ -2418,7 +2421,7 @@ export default function PublicPropertyListing() {
                             <div
                                 className="mt-8 flex flex-col gap-4 md:mt-0 md:min-h-full md:self-stretch"
                             >
-                                <div id="request-info" className="order-1 scroll-mt-[7rem] overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto">
+                                <div id="request-info" className={`order-1 scroll-mt-[7rem] overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto ${intakeCardHeightClass}`}>
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
                                     <div className={intakePanelPaddingClass}>
