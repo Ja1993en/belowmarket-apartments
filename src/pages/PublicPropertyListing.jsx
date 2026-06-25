@@ -2446,21 +2446,6 @@ export default function PublicPropertyListing() {
                             <div
                                 className="mt-8 flex flex-col gap-4 lg:mt-0 lg:min-h-full lg:self-stretch"
                             >
-                                <div className="order-2 rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm">
-                                    <p className="text-xs font-black uppercase text-[#1f6f63]">
-                                        Ask before touring
-                                    </p>
-                                    <h3 className="mt-1 text-lg font-black text-[#102426]">
-                                        Confirm the real monthly cost
-                                    </h3>
-                                    <div className="mt-3 grid gap-2">
-                                        <TourChecklistItem text="Does the special apply to base rent only?" />
-                                        <TourChecklistItem text="How is the credit applied to the account?" />
-                                        <TourChecklistItem text="What monthly fees are required?" />
-                                        <TourChecklistItem text="Is the exact unit still available?" />
-                                    </div>
-                                </div>
-
                                 <div id="request-info" className="order-1 scroll-mt-14 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-14 lg:max-h-[calc(100vh-3.5rem)] lg:overflow-y-auto">
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
@@ -3330,15 +3315,6 @@ function NearbyItem({ label, value, compact = false }) {
         <div className="grid gap-1 rounded-2xl bg-[#f5f8f1] p-4">
             <p className="font-bold text-[#102426]">{label}</p>
             <p className="text-sm font-semibold leading-5 text-[#526260]">{value}</p>
-        </div>
-    );
-}
-
-function TourChecklistItem({ text }) {
-    return (
-        <div className="flex gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
-            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#f2b84b]" />
-            <p className="text-xs font-bold leading-5 text-[#526260]">{text}</p>
         </div>
     );
 }
