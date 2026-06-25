@@ -3313,31 +3313,6 @@ export default function PublicPropertyListing() {
                 />
             )}
 
-            <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#d7e6df] bg-white p-3 shadow-lg xl:hidden">
-                <div className="flex gap-3">
-                    <button
-                        onClick={() =>
-                            document
-                                .getElementById("request-info")
-                                ?.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "start",
-                                })
-                        }
-                        className="flex-1 rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426]"
-                    >
-                        Get Locator Help
-                    </button>
-
-                    <a
-                        href="tel:9452693768"
-                        onClick={() => handleCallTextClick("sticky_bottom_bar")}
-                        className="flex-1 rounded-2xl bg-[#f5f8f1] px-4 py-3 text-center text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df]"
-                    >
-                        Call / Text
-                    </a>
-                </div>
-            </div>
         </main>
     );
 }
