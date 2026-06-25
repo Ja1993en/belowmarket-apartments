@@ -64,7 +64,7 @@ export default function CompareSavedOptionsPanel({
         <button
           type="button"
           onClick={onClearCompare}
-          className="w-fit rounded-2xl bg-[#fff0ea] px-3 py-2.5 text-xs font-black text-[#e4572e] hover:bg-[#fde8df] sm:px-4 sm:py-3 sm:text-sm"
+          className="w-fit rounded-2xl border border-[#f2b84b] bg-[#b42318] px-3 py-2.5 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white sm:px-4 sm:py-3 sm:text-sm"
         >
           Clear compare
         </button>
@@ -175,7 +175,7 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, onRemove }) {
                 <button
                   type="button"
                   onClick={() => onRemove(row)}
-                  className="shrink-0 rounded-full bg-[#fff0ea] px-3 py-1 text-xs font-black text-[#e4572e] hover:bg-[#fde8df]"
+                  className="shrink-0 rounded-full border border-[#f2b84b] bg-[#b42318] px-3 py-1 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
                 >
                   Remove
                 </button>
@@ -235,7 +235,7 @@ function ComparePropertiesTab({ rows, getSearchDealScore, onRemove }) {
               <button
                 type="button"
                 onClick={() => onRemove(property.id)}
-                className="shrink-0 rounded-full bg-[#fff0ea] px-2 py-1 text-[10px] font-black text-[#e4572e] hover:bg-[#fde8df] sm:px-3 sm:text-xs"
+                className="shrink-0 rounded-full border border-[#f2b84b] bg-[#b42318] px-2 py-1 text-[10px] font-black !text-white hover:bg-[#8f1d15] hover:!text-white sm:px-3 sm:text-xs"
               >
                 Remove
               </button>
