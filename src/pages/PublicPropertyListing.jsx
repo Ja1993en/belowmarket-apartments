@@ -3349,7 +3349,7 @@ function PropertyCompareDock({
     onViewCompare,
 }) {
     return (
-        <div className="fixed inset-x-0 bottom-0 z-40 hidden border-t border-[#d7e6df] bg-white/95 px-3 py-3 shadow-[0_-10px_30px_rgba(16,36,38,0.12)] backdrop-blur xl:block">
+        <div className="fixed inset-x-0 bottom-0 z-40 hidden border-t border-[#d7e6df] bg-white/95 px-3 py-3 shadow-[0_-10px_30px_rgba(16,36,38,0.12)] backdrop-blur 2xl:block">
             <div className="mx-auto flex w-[min(1180px,calc(100vw-24px))] items-center justify-between gap-3">
                 <div className="min-w-0">
                     <p className="text-sm font-black text-[#102426]">
