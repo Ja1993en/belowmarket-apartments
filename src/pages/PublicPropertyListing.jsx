@@ -31,53 +31,195 @@ import { formatAvailability as formatAvailabilityLabel } from "../utils/displayF
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
-const NEARBY_PLACE_RADIUS_MILES = 10;
-const NEARBY_PLACE_CACHE_VERSION = "v5";
-const NEARBY_PLACE_SUGGESTION_LIMIT = 10;
-const NEARBY_PLACE_RETRIEVE_LIMIT = 4;
+const NEARBY_PLACE_RADIUS_MILES = 12;
 const FLOOR_PLAN_PAGE_SIZE = 6;
 const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
-const NEARBY_PLACE_QUERIES = [
+const NEARBY_PLACE_TYPES = [
     {
-        query: "Walmart",
-        queryVariants: ["Walmart", "Walmart Supercenter", "Walmart Neighborhood Market"],
         label: "Walmart",
-        detail: "Closest Walmart found near this property",
         type: "walmart",
-        keywords: ["walmart"],
     },
     {
-        query: "Target",
         label: "Target",
-        detail: "Closest Target found near this property",
         type: "target",
-        keywords: ["target"],
     },
     {
-        query: "LA Fitness",
         label: "LA Fitness",
-        detail: "Closest LA Fitness found near this property",
         type: "laFitness",
-        keywords: ["la fitness", "lafitness"],
     },
     {
-        query: "Planet Fitness",
         label: "Planet Fitness",
-        detail: "Closest Planet Fitness found near this property",
         type: "planetFitness",
-        keywords: ["planet fitness"],
     },
     {
-        query: "Kroger grocery store",
-        queryVariants: ["Kroger", "Kroger grocery store"],
         label: "Kroger",
-        detail: "Closest Kroger found near this property",
         type: "kroger",
-        keywords: ["kroger"],
     },
 ];
 const mapboxGeocodeRequests = new Map();
-const mapboxNearbyPlaceRequests = new Map();
+const NEARBY_PLACE_CATALOG = [
+    {
+        type: "walmart",
+        name: "Walmart Supercenter",
+        detail: "Retail Road, Dallas",
+        latitude: 32.8613,
+        longitude: -96.7614,
+    },
+    {
+        type: "walmart",
+        name: "Walmart Supercenter",
+        detail: "North Cockrell Hill Road, Dallas",
+        latitude: 32.7538,
+        longitude: -96.8906,
+    },
+    {
+        type: "walmart",
+        name: "Walmart Supercenter",
+        detail: "Webb Chapel Road, Dallas",
+        latitude: 32.8674,
+        longitude: -96.8712,
+    },
+    {
+        type: "walmart",
+        name: "Walmart Supercenter",
+        detail: "Market Place Boulevard, Irving",
+        latitude: 32.8369,
+        longitude: -96.9632,
+    },
+    {
+        type: "walmart",
+        name: "Walmart Supercenter",
+        detail: "North Garland Avenue, Garland",
+        latitude: 32.9613,
+        longitude: -96.6462,
+    },
+    {
+        type: "target",
+        name: "Target",
+        detail: "Cityplace Market, Dallas",
+        latitude: 32.8058,
+        longitude: -96.7857,
+    },
+    {
+        type: "target",
+        name: "Target",
+        detail: "Medallion Center, Dallas",
+        latitude: 32.8647,
+        longitude: -96.7522,
+    },
+    {
+        type: "target",
+        name: "Target",
+        detail: "Belt Line Road, Addison",
+        latitude: 32.9534,
+        longitude: -96.8531,
+    },
+    {
+        type: "target",
+        name: "Target",
+        detail: "West Airport Freeway, Irving",
+        latitude: 32.8364,
+        longitude: -96.9947,
+    },
+    {
+        type: "target",
+        name: "Target",
+        detail: "North Garland Avenue, Garland",
+        latitude: 32.9618,
+        longitude: -96.6478,
+    },
+    {
+        type: "laFitness",
+        name: "LA Fitness",
+        detail: "East Mockingbird Lane, Dallas",
+        latitude: 32.8374,
+        longitude: -96.7705,
+    },
+    {
+        type: "laFitness",
+        name: "LA Fitness",
+        detail: "Marsh Lane, Dallas",
+        latitude: 32.9142,
+        longitude: -96.8568,
+    },
+    {
+        type: "laFitness",
+        name: "LA Fitness",
+        detail: "North MacArthur Boulevard, Irving",
+        latitude: 32.8737,
+        longitude: -96.9598,
+    },
+    {
+        type: "laFitness",
+        name: "LA Fitness",
+        detail: "West Campbell Road, Richardson",
+        latitude: 32.9759,
+        longitude: -96.7686,
+    },
+    {
+        type: "planetFitness",
+        name: "Planet Fitness",
+        detail: "Ross Avenue, Dallas",
+        latitude: 32.8137,
+        longitude: -96.7714,
+    },
+    {
+        type: "planetFitness",
+        name: "Planet Fitness",
+        detail: "Buckner Boulevard, Dallas",
+        latitude: 32.7937,
+        longitude: -96.6865,
+    },
+    {
+        type: "planetFitness",
+        name: "Planet Fitness",
+        detail: "Frankford Road, Dallas",
+        latitude: 32.9991,
+        longitude: -96.8296,
+    },
+    {
+        type: "planetFitness",
+        name: "Planet Fitness",
+        detail: "North Belt Line Road, Irving",
+        latitude: 32.8559,
+        longitude: -96.9924,
+    },
+    {
+        type: "kroger",
+        name: "Kroger",
+        detail: "Cedar Springs Road, Dallas",
+        latitude: 32.8137,
+        longitude: -96.8079,
+    },
+    {
+        type: "kroger",
+        name: "Kroger",
+        detail: "East Mockingbird Lane, Dallas",
+        latitude: 32.8365,
+        longitude: -96.7703,
+    },
+    {
+        type: "kroger",
+        name: "Kroger",
+        detail: "Maple Avenue, Dallas",
+        latitude: 32.8182,
+        longitude: -96.8244,
+    },
+    {
+        type: "kroger",
+        name: "Kroger",
+        detail: "Preston Road, Dallas",
+        latitude: 32.9855,
+        longitude: -96.8048,
+    },
+    {
+        type: "kroger",
+        name: "Kroger",
+        detail: "North Garland Avenue, Garland",
+        latitude: 32.9631,
+        longitude: -96.6485,
+    },
+];
 const SCHOOL_DISTRICT_BY_ZIP = {
     75252: {
         district: "Plano ISD",
@@ -3495,7 +3637,7 @@ function PropertyLocationMap({
                     observer.disconnect();
                 }
             },
-            { rootMargin: "900px 0px" }
+            { rootMargin: "1600px 0px" }
         );
 
         observer.observe(mapSection);
@@ -3551,31 +3693,11 @@ function PropertyLocationMap({
     }, [property, shouldLoadMap]);
 
     useEffect(() => {
-        let isMounted = true;
-
         if (!shouldLoadMap || !propertyCoordinates) return undefined;
 
-        onNearbyPlacesChange([]);
+        onNearbyPlacesChange(resolveNearbyPlaces(propertyCoordinates));
 
-        const nearbyPlacesTimer = window.setTimeout(() => {
-            resolveNearbyPlaces(propertyCoordinates)
-                .then((places) => {
-                    if (isMounted) {
-                        onNearbyPlacesChange(places);
-                    }
-                })
-                .catch((error) => {
-                    console.error(error);
-                    if (isMounted) {
-                        onNearbyPlacesChange([]);
-                    }
-                });
-        }, 900);
-
-        return () => {
-            isMounted = false;
-            window.clearTimeout(nearbyPlacesTimer);
-        };
+        return undefined;
     }, [onNearbyPlacesChange, propertyCoordinates, shouldLoadMap]);
 
     useEffect(() => {
@@ -3954,150 +4076,22 @@ function setCachedCoordinates(cacheKey, coordinates) {
     }
 }
 
-function getNearbyPlacesCacheKey(center) {
-    return `bma-nearby:${NEARBY_PLACE_CACHE_VERSION}:${Math.round(center.latitude * 10000)}:${Math.round(
-        center.longitude * 10000
-    )}`;
-}
-
-function getCachedNearbyPlaces(cacheKey) {
-    try {
-        const cachedValue = localStorage.getItem(cacheKey);
-        if (!cachedValue) return null;
-
-        const places = JSON.parse(cachedValue);
-        if (!Array.isArray(places)) return null;
-
-        return places.filter(
-            (place) =>
-                place &&
-                Number.isFinite(Number(place.latitude)) &&
-                Number.isFinite(Number(place.longitude))
-        );
-    } catch {
-        return null;
-    }
-}
-
-function setCachedNearbyPlaces(cacheKey, places) {
-    if (!cacheKey) return;
-
-    try {
-        localStorage.setItem(cacheKey, JSON.stringify(places));
-    } catch (error) {
-        console.warn("Could not cache nearby map places.", error);
-    }
-}
-
-async function resolveNearbyPlaces(center) {
+function resolveNearbyPlaces(center) {
     if (!center) return [];
 
-    if (!MAPBOX_TOKEN) return [];
+    return NEARBY_PLACE_TYPES.map((placeType) => {
+        const matchingPlaces = NEARBY_PLACE_CATALOG.filter(
+            (place) => place.type === placeType.type
+        ).map((place) => ({
+            ...placeType,
+            ...place,
+            distanceMiles: getDistanceInMiles(center, place),
+        }));
 
-    const cacheKey = getNearbyPlacesCacheKey(center);
-    const cachedPlaces = getCachedNearbyPlaces(cacheKey);
-    if (cachedPlaces) return cachedPlaces;
-
-    if (mapboxNearbyPlaceRequests.has(cacheKey)) {
-        return mapboxNearbyPlaceRequests.get(cacheKey);
-    }
-
-    const nearbyPlacesRequest = fetchNearbyPlaces(center, cacheKey);
-    mapboxNearbyPlaceRequests.set(cacheKey, nearbyPlacesRequest);
-
-    return nearbyPlacesRequest;
-}
-
-async function fetchNearbyPlaces(center, cacheKey) {
-    const sessionToken = cacheKey;
-    const resolvedPlaces = await Promise.all(
-        NEARBY_PLACE_QUERIES.map(async (placeQuery) => {
-            const queryVariants = placeQuery.queryVariants || [placeQuery.query];
-            const matchingSuggestions = [];
-            const matchingPlaces = [];
-            const seenSuggestionIds = new Set();
-
-            for (const query of queryVariants) {
-                const querySuggestions = await fetchNearbyPlaceSuggestions({
-                    center,
-                    placeQuery,
-                    query,
-                    sessionToken,
-                });
-
-                for (const suggestion of querySuggestions) {
-                    if (seenSuggestionIds.has(suggestion.mapbox_id)) continue;
-
-                    seenSuggestionIds.add(suggestion.mapbox_id);
-                    matchingSuggestions.push(suggestion);
-                }
-            }
-
-            const closestSuggestions = matchingSuggestions
-                .sort(
-                    (firstSuggestion, secondSuggestion) =>
-                        getSuggestionDistanceMiles(firstSuggestion) -
-                        getSuggestionDistanceMiles(secondSuggestion)
-                )
-                .slice(0, NEARBY_PLACE_RETRIEVE_LIMIT);
-
-            for (const suggestion of closestSuggestions) {
-                const placeResult = await retrieveSearchBoxPlace(
-                    suggestion.mapbox_id,
-                    sessionToken
-                );
-                const place = getNearbyPlaceResult(placeResult, placeQuery, center);
-
-                if (place) {
-                    matchingPlaces.push(place);
-                }
-            }
-
-            return getClosestNearbyPlace(matchingPlaces);
-        })
+        return getClosestNearbyPlace(matchingPlaces);
+    }).filter(
+        (place) => place && place.distanceMiles <= NEARBY_PLACE_RADIUS_MILES
     );
-
-    const places = resolvedPlaces.filter(Boolean);
-    setCachedNearbyPlaces(cacheKey, places);
-
-    return places;
-}
-
-async function fetchNearbyPlaceSuggestions({
-    center,
-    placeQuery,
-    query,
-    sessionToken,
-}) {
-    const searchUrl = new URL(
-        "https://api.mapbox.com/search/searchbox/v1/suggest"
-    );
-    searchUrl.searchParams.set("q", query);
-    searchUrl.searchParams.set("access_token", MAPBOX_TOKEN);
-    searchUrl.searchParams.set(
-        "proximity",
-        `${center.longitude},${center.latitude}`
-    );
-    searchUrl.searchParams.set("session_token", sessionToken);
-    searchUrl.searchParams.set("types", "poi");
-    searchUrl.searchParams.set("country", "US");
-    searchUrl.searchParams.set("limit", String(NEARBY_PLACE_SUGGESTION_LIMIT));
-
-    const response = await fetch(searchUrl);
-    if (!response.ok) return [];
-
-    const searchResult = await response.json();
-
-    return (searchResult.suggestions || []).filter((suggestion) =>
-        isNearbySuggestionResult(suggestion, placeQuery)
-    );
-}
-
-function getSuggestionDistanceMiles(suggestion) {
-    const distanceMeters = Number(suggestion?.distance);
-    if (!Number.isFinite(distanceMeters)) return Number.POSITIVE_INFINITY;
-
-    return distanceMeters / 1609.344;
 }
 
 function getClosestNearbyPlace(places) {
@@ -4106,95 +4100,6 @@ function getClosestNearbyPlace(places) {
     return [...places].sort(
         (firstPlace, secondPlace) => firstPlace.distanceMiles - secondPlace.distanceMiles
     )[0];
-}
-
-async function retrieveSearchBoxPlace(mapboxId, sessionToken) {
-    if (!mapboxId) return null;
-
-    const retrieveUrl = new URL(
-        `https://api.mapbox.com/search/searchbox/v1/retrieve/${encodeURIComponent(mapboxId)}`
-    );
-    retrieveUrl.searchParams.set("access_token", MAPBOX_TOKEN);
-    retrieveUrl.searchParams.set("session_token", sessionToken);
-
-    const response = await fetch(retrieveUrl);
-    if (!response.ok) return null;
-
-    const retrieveResult = await response.json();
-
-    return retrieveResult.features?.[0] || null;
-}
-
-function getNearbyPlaceResult(feature, placeQuery, center) {
-    if (!feature) return null;
-
-    const properties = feature.properties || {};
-    const coordinates = getSearchBoxCoordinates(feature);
-
-    if (!coordinates) return null;
-
-    const distanceMiles = getDistanceInMiles(center, coordinates);
-    if (distanceMiles > NEARBY_PLACE_RADIUS_MILES) return null;
-
-    return {
-        ...placeQuery,
-        label: placeQuery.label,
-        mapboxName: properties.name || "",
-        detail:
-            properties.full_address ||
-            properties.place_formatted ||
-            placeQuery.detail,
-        placeId: properties.mapbox_id || feature.id,
-        distanceMiles,
-        latitude: coordinates.latitude,
-        longitude: coordinates.longitude,
-    };
-}
-
-function getSearchBoxCoordinates(feature) {
-    const propertyCoordinates = feature?.properties?.coordinates;
-    const longitude = Number(
-        propertyCoordinates?.longitude || feature?.geometry?.coordinates?.[0]
-    );
-    const latitude = Number(
-        propertyCoordinates?.latitude || feature?.geometry?.coordinates?.[1]
-    );
-
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-        return null;
-    }
-
-    return { latitude, longitude };
-}
-
-function isNearbySuggestionResult(suggestion, placeQuery) {
-    if (!suggestion?.mapbox_id || suggestion.feature_type !== "poi") {
-        return false;
-    }
-
-    return hasNearbyPlaceKeyword(suggestion, placeQuery);
-}
-
-function hasNearbyPlaceKeyword(place, placeQuery) {
-    const text = [
-        place.name,
-        place.name_preferred,
-        place.full_address,
-        place.place_formatted,
-        ...(place.brand || []),
-        ...(place.brand_id || []),
-    ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-    const compactText = text.replace(/[^a-z0-9]/g, "");
-
-    return placeQuery.keywords.some((keyword) => {
-        const normalizedKeyword = keyword.toLowerCase();
-        const compactKeyword = normalizedKeyword.replace(/[^a-z0-9]/g, "");
-
-        return text.includes(normalizedKeyword) || compactText.includes(compactKeyword);
-    });
 }
 
 function getDistanceInMiles(firstPoint, secondPoint) {
