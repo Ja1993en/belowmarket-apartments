@@ -3297,7 +3297,7 @@ function PropertyCompareDock({
                     <button
                         type="button"
                         onClick={onViewCompare}
-                        className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black text-white shadow-sm transition hover:bg-[#102426]"
+                        className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm transition hover:bg-[#102426] hover:!text-white"
                     >
                         View comparison ({compareItemCount})
                     </button>
