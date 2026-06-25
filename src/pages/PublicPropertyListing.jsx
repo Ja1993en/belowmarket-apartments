@@ -1844,7 +1844,7 @@ export default function PublicPropertyListing() {
                     ))}
                 </nav>
 
-                <div className="mt-4 grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_370px] md:items-stretch xl:grid-cols-[minmax(0,1fr)_400px]">
+                <div className="mt-4 grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_390px] md:items-stretch lg:grid-cols-[minmax(0,1fr)_430px] xl:grid-cols-[minmax(0,1fr)_480px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
                     <div className="min-w-0">
 
                                 {shouldShowCompareList && (
