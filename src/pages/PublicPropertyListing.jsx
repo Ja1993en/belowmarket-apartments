@@ -2350,14 +2350,12 @@ export default function PublicPropertyListing() {
                                         </div>
 
                                         <div className="p-4 md:p-5">
-                                            <div className="overflow-hidden rounded-2xl border border-[#d7e6df]">
-                                                <PropertyLocationMap
-                                                    property={property}
-                                                    addressLabel={addressLabel}
-                                                    nearbyPlaces={nearbyPlaces}
-                                                    onNearbyPlacesChange={setNearbyPlaces}
-                                                />
-                                            </div>
+                                            <PropertyLocationMap
+                                                property={property}
+                                                addressLabel={addressLabel}
+                                                nearbyPlaces={nearbyPlaces}
+                                                onNearbyPlacesChange={setNearbyPlaces}
+                                            />
 
                                             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                                                 <NearbyItem
@@ -3729,7 +3727,7 @@ function PropertyLocationMap({
 
     if (mapError) {
         return (
-            <div className="mt-5 flex h-80 items-center justify-center rounded-3xl bg-[#d7e6df]">
+            <div className="flex h-80 items-center justify-center rounded-2xl border border-[#d7e6df] bg-[#d7e6df]">
                 <div className="px-6 text-center">
                     <p className="text-lg font-black text-[#173f3f]">
                         Map could not load
@@ -3743,7 +3741,7 @@ function PropertyLocationMap({
     }
 
     return (
-        <div ref={mapSectionRef} className="mt-5 overflow-hidden rounded-3xl border border-[#d7e6df] bg-[#dcebe4]">
+        <div ref={mapSectionRef} className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-[#dcebe4]">
             {shouldLoadMap ? (
                 <div ref={mapContainerRef} className="h-[420px] w-full md:h-[480px]" />
             ) : (
