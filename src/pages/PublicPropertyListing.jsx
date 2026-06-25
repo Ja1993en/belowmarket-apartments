@@ -1232,6 +1232,12 @@ export default function PublicPropertyListing() {
     const intakeCardHeightClass = shouldShowCompareList
         ? "md:min-h-[calc(100vh-12rem)]"
         : "md:min-h-[calc(100vh-8rem)]";
+    const intakePanelLayoutClass = shouldShowCompareList
+        ? "md:min-h-[calc(100vh-12.5rem)]"
+        : "md:min-h-[calc(100vh-8.5rem)]";
+    const intakeVerificationClass = shouldShowCompareList
+        ? "mt-2 p-2 text-[10px] leading-3"
+        : "mt-auto p-3 text-xs leading-4";
 
     const filteredFloorPlans =
         activeFloorPlanFilter === "All"
@@ -2421,10 +2427,10 @@ export default function PublicPropertyListing() {
                             <div
                                 className="mt-8 flex flex-col gap-4 md:mt-0 md:min-h-full md:self-stretch"
                             >
-                                <div id="request-info" className={`order-1 scroll-mt-[7rem] overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto ${intakeCardHeightClass}`}>
+                                <div id="request-info" className={`order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto ${intakeCardHeightClass}`}>
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
-                                    <div className={intakePanelPaddingClass}>
+                                    <div className={`${intakePanelPaddingClass} flex flex-1 flex-col ${intakePanelLayoutClass}`}>
                                         <p className="text-[11px] font-black uppercase tracking-wide text-[#1f6f63]">
                                             Free locator help
                                         </p>
@@ -2582,6 +2588,17 @@ export default function PublicPropertyListing() {
                                                 I agree to receive texts about this property. Reply STOP to opt out.
                                             </span>
                                         </label>
+
+                                        <div className={`rounded-xl bg-[#e7f3ee] font-semibold text-[#173f3f] ring-1 ring-[#a9cfc2] ${intakeVerificationClass}`}>
+                                            <p className="font-black uppercase tracking-wide">
+                                                What we verify
+                                            </p>
+                                            <div className="mt-2 grid gap-1.5">
+                                                <p>Current rent, specials, and available units.</p>
+                                                <p>Fees, lease terms, and move-in timing.</p>
+                                                <p>Best next step before you tour or apply.</p>
+                                            </div>
+                                        </div>
 
                                         {showSidebarError && (
                                             <p className="mt-2 text-xs font-semibold text-[#e4572e]">
