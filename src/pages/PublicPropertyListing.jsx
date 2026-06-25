@@ -34,6 +34,19 @@ const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
 const NEARBY_PLACE_RADIUS_MILES = 12;
 const FLOOR_PLAN_PAGE_SIZE = 6;
 const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
+
+function getFloorPlansRoute(propertyId) {
+    return `/properties/${propertyId}?section=floor-plans#floor-plans`;
+}
+
+function rememberFloorPlanSectionTarget() {
+    try {
+        window.sessionStorage?.setItem(FLOOR_PLAN_SCROLL_TARGET_KEY, "floor-plans");
+    } catch {
+        // The URL still carries the section target if session storage is unavailable.
+    }
+}
+
 const NEARBY_PLACE_TYPES = [
     {
         label: "Walmart",
@@ -4718,8 +4731,9 @@ function ComparedFloorPlanCard({
 
             <div className="grid grid-cols-2 gap-2">
                 <Link
-                    to={`/properties/${item.propertyId}`}
+                    to={getFloorPlansRoute(item.propertyId)}
                     onClick={() => {
+                        rememberFloorPlanSectionTarget();
                         setIsPreviewOpen(false);
                         onViewProperty?.();
                     }}
