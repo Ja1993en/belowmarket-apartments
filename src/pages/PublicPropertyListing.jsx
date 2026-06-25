@@ -1227,6 +1227,23 @@ export default function PublicPropertyListing() {
         setCompareMessage("Compare board cleared.");
     };
 
+    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3 xl:p-4";
+    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-2 xl:mt-3";
+    const intakeGridSpacingClass = shouldShowCompareList
+        ? "mt-1.5 gap-1.5"
+        : "mt-1.5 gap-1.5 xl:mt-2 xl:gap-2";
+    const intakeFieldSizeClass = shouldShowCompareList
+        ? "md:py-1.5 lg:py-1.5 xl:py-1.5 xl:text-xs"
+        : "md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm";
+    const intakeConsentClass = shouldShowCompareList
+        ? "mt-2 p-2 text-[9px] leading-3"
+        : "mt-2 p-2 text-[9px] leading-3 xl:mt-3 xl:p-2.5 xl:text-[10px] xl:leading-4";
+    const intakeSubmitClass = shouldShowCompareList
+        ? "mt-2 py-2.5 text-xs"
+        : "mt-2 py-2.5 text-xs xl:mt-3 xl:py-3 xl:text-sm";
+    const intakeFinePrintClass = shouldShowCompareList
+        ? "mt-1.5 text-[9px] leading-3"
+        : "mt-1.5 text-[9px] leading-3 xl:mt-2 xl:text-[10px] xl:leading-4";
 
     const filteredFloorPlans =
         activeFloorPlanFilter === "All"
@@ -2464,7 +2481,7 @@ export default function PublicPropertyListing() {
                                 <div id="request-info" className="order-1 scroll-mt-[7rem] overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto">
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
-                                    <div className="p-3 xl:p-4">
+                                    <div className={intakePanelPaddingClass}>
                                         <p className="text-[11px] font-black uppercase tracking-wide text-[#1f6f63]">
                                             Free locator help
                                         </p>
@@ -2487,12 +2504,12 @@ export default function PublicPropertyListing() {
                                                 : "Ask us to confirm current pricing and availability."}
                                         </div>
 
-                                        <div className="mt-2 xl:mt-3">
+                                        <div className={intakeSectionSpacingClass}>
                                             <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
                                                 Contact
                                             </p>
 
-                                            <div className="mt-1.5 grid gap-1.5 md:grid-cols-2 xl:mt-2 xl:gap-2">
+                                            <div className={`grid md:grid-cols-2 ${intakeGridSpacingClass}`}>
                                                 <input
                                                     type="text"
                                                     placeholder="Your name *"
@@ -2503,7 +2520,7 @@ export default function PublicPropertyListing() {
                                                             name: e.target.value,
                                                         })
                                                     }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm"
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 />
 
                                                 <input
@@ -2516,7 +2533,7 @@ export default function PublicPropertyListing() {
                                                             phone: e.target.value,
                                                         })
                                                     }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm"
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 />
 
                                                 <input
@@ -2529,17 +2546,17 @@ export default function PublicPropertyListing() {
                                                             email: e.target.value,
                                                         })
                                                     }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:col-span-2 md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm"
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:col-span-2 ${intakeFieldSizeClass}`}
                                                 />
                                             </div>
                                         </div>
 
-                                        <div className="mt-2 xl:mt-3">
+                                        <div className={intakeSectionSpacingClass}>
                                             <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
                                                 Search details
                                             </p>
 
-                                            <div className="mt-1.5 grid grid-cols-2 gap-1.5 xl:mt-2 xl:gap-2">
+                                            <div className={`grid grid-cols-2 ${intakeGridSpacingClass}`}>
                                                 <select
                                                     value={leadForm.moveInDate}
                                                     onChange={(e) =>
@@ -2548,7 +2565,7 @@ export default function PublicPropertyListing() {
                                                             moveInDate: e.target.value,
                                                         })
                                                     }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm"
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 >
                                                     <option value="">Move-in *</option>
                                                     <option value="Immediately">Immediately</option>
@@ -2566,7 +2583,7 @@ export default function PublicPropertyListing() {
                                                             bedroomsNeeded: e.target.value,
                                                         })
                                                     }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm"
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 >
                                                     <option value="">Beds *</option>
                                                     <option value="Studio">Studio</option>
@@ -2585,7 +2602,7 @@ export default function PublicPropertyListing() {
                                                             budget: e.target.value,
                                                         })
                                                     }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm"
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 />
 
                                                 <select
@@ -2596,7 +2613,7 @@ export default function PublicPropertyListing() {
                                                             contactMethod: e.target.value,
                                                         })
                                                     }
-                                                    className="w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] md:py-1.5 lg:py-2 xl:py-2.5 xl:text-sm"
+                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-xs font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 >
                                                     <option value="">Contact</option>
                                                     <option value="Text">Text me</option>
@@ -2606,7 +2623,7 @@ export default function PublicPropertyListing() {
                                             </div>
                                         </div>
 
-                                        <label className="mt-2 flex gap-2 rounded-xl bg-[#f5f8f1] p-2 text-[9px] font-semibold leading-3 text-[#526260] ring-1 ring-[#d7e6df] xl:mt-3 xl:p-2.5 xl:text-[10px] xl:leading-4">
+                                        <label className={`flex gap-2 rounded-xl bg-[#f5f8f1] font-semibold text-[#526260] ring-1 ring-[#d7e6df] ${intakeConsentClass}`}>
                                             <input
                                                 type="checkbox"
                                                 checked={leadForm.smsConsent}
@@ -2633,7 +2650,7 @@ export default function PublicPropertyListing() {
                                             type="button"
                                             onClick={handleFloorPlanLeadSubmit}
                                             disabled={isSubmittingLead || leadSubmitted}
-                                            className={`mt-2 w-full rounded-xl px-4 py-2.5 text-xs font-black xl:mt-3 xl:py-3 xl:text-sm ${leadSubmitted
+                                            className={`w-full rounded-xl px-4 font-black ${intakeSubmitClass} ${leadSubmitted
                                                 ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
                                                 : "bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white"
                                                 }`}
@@ -2645,7 +2662,7 @@ export default function PublicPropertyListing() {
                                                     : "Text me verified details"}
                                         </button>
 
-                                        <p className="mt-1.5 text-[9px] font-semibold leading-3 text-[#7b8b88] xl:mt-2 xl:text-[10px] xl:leading-4">
+                                        <p className={`font-semibold text-[#7b8b88] ${intakeFinePrintClass}`}>
                                             No cost to renters. We only follow up about this property and nearby options.
                                         </p>
                                     </div>
