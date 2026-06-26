@@ -5162,8 +5162,8 @@ function FloorPlanCard({
 
     return (
         <>
-        <div className="grid gap-4 rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] sm:grid-cols-[104px_minmax(0,1fr)] sm:items-start sm:p-4 md:grid-cols-[112px_minmax(0,1fr)_164px] md:items-stretch lg:grid-cols-[122px_minmax(0,1fr)_178px] lg:items-center lg:gap-3 lg:p-3">
-            <div className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-[#d7e6df] sm:h-28 sm:aspect-auto sm:p-1.5 md:h-full md:min-h-[132px] lg:h-[92px] lg:min-h-0 lg:bg-[#f5f8f1] lg:p-0">
+        <div className="rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] sm:p-4 lg:p-3">
+            <div className="float-left mr-3 mb-2 flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-28 sm:w-28 lg:h-[92px] lg:w-[108px] lg:bg-[#f5f8f1] lg:p-0">
                 {shouldShowFloorPlanImage ? (
                     <button
                         type="button"
@@ -5190,8 +5190,8 @@ function FloorPlanCard({
                 )}
             </div>
 
-            <div className="min-w-0 rounded-2xl bg-[#f5f8f1] p-3 sm:h-full lg:bg-transparent lg:p-0">
-                <div className="grid gap-2">
+            <div className="min-w-0">
+                <div className="grid gap-1.5">
                     <h3 className="line-clamp-2 text-lg font-black leading-tight text-[#102426] lg:truncate">
                         {name}
                     </h3>
@@ -5206,39 +5206,39 @@ function FloorPlanCard({
                 <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
                     {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
                 </p>
+            </div>
 
-                <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                    <div className="min-w-0 rounded-xl bg-white px-3 py-2 ring-1 ring-[#d7e6df] lg:bg-transparent lg:px-0 lg:py-0 lg:ring-0">
-                        <p className="text-[10px] font-black uppercase text-[#526260]">
-                            Listed
-                        </p>
-                        <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
-                            {displayRentValue}
-                        </p>
-                    </div>
+            <div className="clear-both grid gap-2 pt-2 sm:grid-cols-3 lg:pt-3">
+                <div className="min-w-0 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
+                    <p className="text-[10px] font-black uppercase text-[#526260]">
+                        Listed
+                    </p>
+                    <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+                        {displayRentValue}
+                    </p>
+                </div>
 
-                    <div className="min-w-0 rounded-xl bg-white px-3 py-2 ring-1 ring-[#d7e6df] lg:bg-transparent lg:px-0 lg:py-0 lg:ring-0">
-                        <p className="text-[10px] font-black uppercase text-[#526260]">
-                            Effective
-                        </p>
-                        <p className={`mt-0.5 truncate text-sm font-black ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
-                            {displayEffectiveValue}
-                        </p>
-                    </div>
+                <div className="min-w-0 rounded-xl bg-[#e7f3ee] px-3 py-2 ring-1 ring-[#a9cfc2]">
+                    <p className="text-[10px] font-black uppercase text-[#526260]">
+                        Effective
+                    </p>
+                    <p className={`mt-0.5 truncate text-sm font-black ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
+                        {displayEffectiveValue}
+                    </p>
+                </div>
 
-                    <div className="min-w-0 rounded-xl bg-white px-3 py-2 ring-1 ring-[#d7e6df] lg:bg-transparent lg:px-0 lg:py-0 lg:ring-0">
-                        <p className="text-[10px] font-black uppercase text-[#526260]">
-                            {hasSpecial ? "Savings" : "Special"}
-                        </p>
-                        <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
-                            {displaySavingsValue}
-                        </p>
-                    </div>
+                <div className="min-w-0 rounded-xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+                    <p className="text-[10px] font-black uppercase text-[#526260]">
+                        {hasSpecial ? "Savings" : "Special"}
+                    </p>
+                    <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+                        {displaySavingsValue}
+                    </p>
                 </div>
             </div>
 
-            <div className="grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 sm:col-span-2 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] sm:items-center md:col-span-1 md:h-full md:grid-cols-1 md:bg-transparent md:p-0 md:text-right lg:text-right">
-                <p className={`rounded-xl bg-white px-3 py-2 text-center text-xs font-black ring-1 ring-[#d7e6df] sm:text-left md:bg-transparent md:px-0 md:py-0 md:text-right md:ring-0 ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
+            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] sm:items-center lg:mt-3">
+                <p className={`rounded-xl bg-white px-3 py-2 text-center text-xs font-black ring-1 ring-[#d7e6df] sm:text-left ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
                     {availabilityBadgeLabel}
                 </p>
 
@@ -5263,7 +5263,7 @@ function FloorPlanCard({
                 </button>
 
                 {isCompared && (
-                    <p className="text-xs font-bold leading-4 text-[#526260] sm:col-span-3 md:col-span-1 md:mt-1.5">
+                    <p className="text-xs font-bold leading-4 text-[#526260] sm:col-span-3">
                         Tap View comparison below to open the chart.
                     </p>
                 )}
