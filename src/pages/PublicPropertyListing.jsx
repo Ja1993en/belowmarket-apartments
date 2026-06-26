@@ -2663,6 +2663,7 @@ export default function PublicPropertyListing() {
                                                     onCheckAvailability={() =>
                                                         openFloorPlanAvailabilityRequest(plan)
                                                     }
+                                                    onViewDetails={() => setSelectedFloorPlan(plan)}
                                                 />
                                             );
                                         })}
@@ -5124,6 +5125,7 @@ function FloorPlanCard({
     isCompared,
     onToggleCompare,
     onCheckAvailability,
+    onViewDetails,
 }) {
     const [hasImageError, setHasImageError] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -5249,7 +5251,7 @@ function FloorPlanCard({
                 </div>
             </div>
 
-            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 lg:mt-3">
+            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 sm:grid-cols-2 lg:mt-3">
                 <button
                     type="button"
                     onClick={onToggleCompare}
@@ -5262,8 +5264,16 @@ function FloorPlanCard({
                     {isCompared ? "Added" : "Compare"}
                 </button>
 
+                <button
+                    type="button"
+                    onClick={onViewDetails}
+                    className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+                >
+                    View Details
+                </button>
+
                 {isCompared && (
-                    <p className="text-xs font-bold leading-4 text-[#526260]">
+                    <p className="text-xs font-bold leading-4 text-[#526260] sm:col-span-2">
                         Tap View comparison below to open the chart.
                     </p>
                 )}
