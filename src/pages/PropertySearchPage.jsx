@@ -1722,7 +1722,7 @@ function SearchResultCard({
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-1 gap-1.5 md:mt-1.5 xl:mt-3 xl:gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
           <SearchRentMetric
             label="Normal rent"
             value={priceSummary.normalRentLabel}
@@ -1786,18 +1786,14 @@ function getSearchCardGalleryImages(property) {
 function SearchRentMetric({ label, value, highlight = false }) {
   return (
     <div
-      className={`flex min-h-[48px] items-center justify-between gap-2 rounded-lg px-2.5 py-2 ring-1 md:min-h-[42px] md:px-2 md:py-1.5 lg:min-h-[46px] lg:px-2.5 lg:py-2 xl:min-h-[52px] xl:px-3 xl:py-2.5 ${
+      className={`rounded-lg px-3 py-2.5 ring-1 md:px-2 md:py-1.5 lg:px-2.5 lg:py-2 xl:px-3 xl:py-2.5 ${
         highlight
           ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
           : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
       }`}
     >
-      <p className="shrink-0 text-[8px] font-black uppercase leading-none md:text-[7px] lg:text-[8px] xl:text-[9px]">
-        {label}
-      </p>
-      <p className="min-w-0 break-words text-right text-[13px] font-black leading-tight text-[#102426] md:text-[11px] lg:text-[12px] xl:text-[14px]">
-        {value}
-      </p>
+      <p className="text-[10px] font-black uppercase">{label}</p>
+      <p className="mt-1 truncate text-base font-black text-[#102426] md:mt-0.5 md:text-xs lg:text-sm xl:mt-1 xl:text-base">{value}</p>
     </div>
   );
 }
