@@ -5267,7 +5267,7 @@ function FloorPlanCard({
                 <button
                     type="button"
                     onClick={onViewDetails}
-                    className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+                    className="rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
                 >
                     View Details
                 </button>
