@@ -1017,7 +1017,6 @@ export default function PropertySearchPage() {
       {hasCompareItems && (
         <CompareDock
           compareItemCount={compareItemCount}
-          compareNotice={compareNotice}
           onClearCompare={() => {
             const clearedSelections = clearCompareSelections();
             setComparePropertyIds(clearedSelections.propertyIds);
@@ -1063,7 +1062,6 @@ function SearchMap({
 
 function CompareDock({
   compareItemCount,
-  compareNotice,
   onClearCompare,
   onViewCompare,
 }) {
@@ -1075,23 +1073,22 @@ function CompareDock({
             Compare list ready
           </p>
           <p className="mt-0.5 truncate text-xs font-bold text-[#526260]">
-            {compareNotice ||
-              `${compareItemCount} option${compareItemCount === 1 ? "" : "s"} selected. View them side by side before you tour.`}
+            {`${compareItemCount} option${compareItemCount === 1 ? "" : "s"} selected. View them side by side before you tour.`}
           </p>
         </div>
 
-        <div className="grid grid-cols-[1fr_auto] gap-2 sm:flex sm:items-center">
+        <div className="grid grid-cols-[1fr_auto] gap-2 sm:flex sm:shrink-0 sm:items-center">
           <button
             type="button"
             onClick={onViewCompare}
-            className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black text-white shadow-sm transition hover:bg-[#102426]"
+            className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm transition hover:bg-[#102426] hover:!text-white"
           >
             View comparison ({compareItemCount})
           </button>
           <button
             type="button"
             onClick={onClearCompare}
-            className="rounded-lg bg-[#fff0ea] px-4 py-3 text-sm font-black text-[#e4572e] transition hover:bg-[#fde8df]"
+            className="rounded-lg bg-[#c9341c] px-4 py-3 text-sm font-black !text-white transition hover:bg-[#a92a18] hover:!text-white"
           >
             Clear
           </button>
