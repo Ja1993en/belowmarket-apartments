@@ -4960,30 +4960,30 @@ function FloorPlanCard({
                 </p>
             </div>
 
-            <div className="clear-both flex flex-wrap gap-1.5 pt-2 lg:gap-2 lg:pt-3">
-                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#f5f8f1] px-2.5 py-1.5 ring-1 ring-[#d7e6df]">
-                    <span className="text-[10px] font-black uppercase text-[#526260]">
+            <div className="clear-both flex flex-wrap gap-1 pt-1.5 lg:gap-2 lg:pt-3">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#f5f8f1] px-2 py-1 ring-1 ring-[#d7e6df] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
                         Listed
                     </span>
-                    <span className="truncate text-sm font-black text-[#102426]">
+                    <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
                         {displayRentValue}
                     </span>
                 </div>
 
-                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#e7f3ee] px-2.5 py-1.5 ring-1 ring-[#a9cfc2]">
-                    <span className="text-[10px] font-black uppercase text-[#526260]">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#e7f3ee] px-2 py-1 ring-1 ring-[#a9cfc2] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
                         Effective
                     </span>
-                    <span className={`truncate text-sm font-black ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
+                    <span className={`truncate text-xs font-black lg:text-sm ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
                         {displayEffectiveValue}
                     </span>
                 </div>
 
-                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#fff8e6] px-2.5 py-1.5 ring-1 ring-[#f2d08a]">
-                    <span className="text-[10px] font-black uppercase text-[#526260]">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#fff8e6] px-2 py-1 ring-1 ring-[#f2d08a] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
                         {hasSpecial ? "Savings" : "Special"}
                     </span>
-                    <span className="truncate text-sm font-black text-[#102426]">
+                    <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
                         {displaySavingsValue}
                     </span>
                 </div>
