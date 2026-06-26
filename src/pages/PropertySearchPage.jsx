@@ -8,11 +8,9 @@ import {
   getCompareFloorPlanItemKey,
   getCompareFloorPlanItems,
   getComparePropertyIds,
-  getSavedPropertyIds,
   removeCompareFloorPlanItem,
   removeComparePropertyId,
   toggleComparePropertyId,
-  toggleSavedPropertyId,
 } from "../data/renterPreferenceStorage";
 
 import {
@@ -118,7 +116,6 @@ export default function PropertySearchPage() {
   const [mappableSearchProperties, setMappableSearchProperties] = useState([]);
   const [allProperties, setAllProperties] = useState([]);
   const [propertyLoadError, setPropertyLoadError] = useState("");
-  const [savedPropertyIds, setSavedPropertyIds] = useState(getSavedPropertyIds);
   const [comparePropertyIds, setComparePropertyIds] = useState(getComparePropertyIds);
   const [compareFloorPlanItems, setCompareFloorPlanItems] = useState(getCompareFloorPlanItems);
   const [activeCompareTab, setActiveCompareTab] = useState("Properties");
@@ -907,7 +904,6 @@ export default function PropertySearchPage() {
                 <SearchResultCard
                   key={property.id}
                   property={property}
-                  isSaved={savedPropertyIds.includes(property.id)}
                   isCompared={comparePropertyIds.includes(property.id)}
                   isMapHighlighted={highlightedMapPropertyId === property.id}
                   selectedBedroomFilter={selectedBedroomFilter}
@@ -919,9 +915,6 @@ export default function PropertySearchPage() {
                       resultCardRefs.current.delete(property.id);
                     }
                   }}
-                  onToggleSaved={() =>
-                    setSavedPropertyIds(toggleSavedPropertyId(property.id))
-                  }
                   onToggleCompare={() => handleTogglePropertyCompare(property)}
                 />
               ))}
@@ -1560,13 +1553,11 @@ function FallbackSearchMap({ properties }) {
 
 function SearchResultCard({
   property,
-  isSaved,
   isCompared,
   isMapHighlighted,
   selectedBedroomFilter,
   selectedPriceRange,
   cardRef,
-  onToggleSaved,
   onToggleCompare,
 }) {
   const addressLabel = getPropertyAddressLabel(property);
@@ -1668,24 +1659,13 @@ function SearchResultCard({
           ))}
         </div>
 
-        <div className="mt-auto grid grid-cols-3 gap-2 pt-3 lg:gap-1.5 lg:pt-2 xl:gap-2 xl:pt-3">
+        <div className="mt-auto grid grid-cols-2 gap-2 pt-3 lg:gap-1.5 lg:pt-2 xl:gap-2 xl:pt-3">
           <Link
             to={cardHref}
-            className="col-span-3 rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] sm:col-span-1 lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-3 xl:text-sm"
+            className="rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-3 xl:text-sm"
           >
             View details
           </Link>
-          <button
-            type="button"
-            onClick={onToggleSaved}
-            className={`${actionButtonClass} ${
-              isSaved
-                ? "bg-[#173f3f] !text-white hover:!text-white"
-                : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
-            }`}
-          >
-            {isSaved ? "Saved" : "Save"}
-          </button>
           <button
             type="button"
             onClick={onToggleCompare}
