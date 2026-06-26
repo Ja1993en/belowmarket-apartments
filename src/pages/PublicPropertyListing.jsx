@@ -2421,27 +2421,29 @@ export default function PublicPropertyListing() {
 
                 </section>
 
-                <section className="grid grid-cols-2 gap-2 py-3 sm:gap-3 sm:py-4 lg:grid-cols-4">
-                    {listingSummaryCards.map((card) => (
-                        <div
-                            key={card.label}
-                            className={`rounded-xl border p-2 sm:p-3 ${
-                                card.special
-                                    ? "border-[#f2d08a] bg-[#fff8e6]"
-                                    : "border-[#d7e6df] bg-white"
-                            }`}
-                        >
-                            <p className="text-[10px] font-black uppercase text-[#526260]">
-                                {card.label}
-                            </p>
-                            <p className="mt-1 truncate text-base font-black text-[#102426] sm:text-lg">
-                                {card.value}
-                            </p>
-                            <p className="mt-1 hidden text-xs font-bold leading-4 text-[#526260] sm:block">
-                                {card.note}
-                            </p>
-                        </div>
-                    ))}
+                <section className="py-3 sm:py-4">
+                    <div className="grid grid-cols-2 gap-1.5 rounded-2xl border border-[#d7e6df] bg-white p-2 shadow-sm sm:grid-cols-4 sm:gap-2">
+                        {listingSummaryCards.map((card) => (
+                            <div
+                                key={card.label}
+                                className={`min-w-0 rounded-xl px-2.5 py-2 sm:px-3 ${
+                                    card.special
+                                        ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+                                        : "bg-[#f5f8f1] text-[#102426]"
+                                }`}
+                            >
+                                <p className="truncate text-[9px] font-black uppercase text-[#526260] sm:text-[10px]">
+                                    {card.label}
+                                </p>
+                                <p className="mt-0.5 truncate text-sm font-black sm:text-base">
+                                    {card.value}
+                                </p>
+                                <p className="mt-0.5 hidden truncate text-[11px] font-bold text-[#526260] md:block">
+                                    {card.note}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
                 </section>
 
                 <nav
