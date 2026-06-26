@@ -461,12 +461,12 @@ export default function PropertySearchPage() {
         <div className="bma-shell">
           <form
             onSubmit={submitSearch}
-            className="relative rounded-xl border border-[#d7e6df] bg-white p-2 shadow-sm"
+            className="relative rounded-xl border border-[#d7e6df] bg-white p-1.5 shadow-sm sm:p-2"
           >
-            <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
-              <div className="flex items-center gap-2 xl:shrink-0">
+            <div className="grid gap-1.5 xl:flex xl:items-center xl:gap-2">
+              <div className="hidden items-center gap-2 xl:flex xl:shrink-0">
                 <Link to="/" className="flex items-center gap-2">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#173f3f] text-xs font-black text-[#f2b84b]">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#173f3f] text-xs font-black text-[#f2b84b] xl:h-10 xl:w-10">
                     BMA
                   </span>
                   <span className="hidden text-sm font-black text-[#102426] md:block">
@@ -476,19 +476,28 @@ export default function PropertySearchPage() {
 
               </div>
 
-              <div className="relative min-w-0 flex-1">
-                <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#2d7dd2]" />
-                <input
-                  type="search"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="City, state, address, or special"
-                  autoComplete="off"
-                  className="bma-focus-ring h-12 w-full rounded-lg border border-[#b8d9d0] bg-[#f9fbf8] pl-12 pr-4 text-base font-bold text-[#102426] outline-none"
-                />
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 xl:flex xl:min-w-0 xl:flex-1 xl:gap-2">
+                <div className="relative min-w-0 flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2d7dd2] sm:left-5 sm:h-5 sm:w-5" />
+                  <input
+                    type="search"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="City, state, address, or special"
+                    autoComplete="off"
+                    className="bma-focus-ring h-10 w-full rounded-lg border border-[#b8d9d0] bg-[#f9fbf8] pl-9 pr-3 text-sm font-bold text-[#102426] outline-none sm:h-12 sm:pl-12 sm:pr-4 sm:text-base"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="bma-btn-primary h-10 px-4 text-sm !text-white hover:!text-white sm:h-12 sm:px-7"
+                >
+                  Search
+                </button>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex min-w-0 gap-1.5 overflow-x-auto pb-0.5 xl:gap-2 xl:overflow-visible xl:pb-0">
                 <div className="relative">
                   <button
                     type="button"
@@ -497,7 +506,7 @@ export default function PropertySearchPage() {
                       setIsBedsFilterOpen(false);
                       setIsSpecialFilterOpen(false);
                     }}
-                    className={`h-11 rounded-lg border px-4 text-sm font-black ${
+                    className={`h-9 shrink-0 rounded-lg border px-3 text-xs font-black sm:h-11 sm:px-4 sm:text-sm ${
                       selectedPriceRange
                         ? "border-[#2d7dd2] bg-[#eef5ff] text-[#174a7c]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
@@ -562,7 +571,7 @@ export default function PropertySearchPage() {
                       setIsPriceFilterOpen(false);
                       setIsSpecialFilterOpen(false);
                     }}
-                    className={`h-11 rounded-lg border px-4 text-sm font-black ${
+                    className={`h-9 shrink-0 rounded-lg border px-3 text-xs font-black sm:h-11 sm:px-4 sm:text-sm ${
                       selectedBedroomFilter
                         ? "border-[#1f6f63] bg-[#e7f3ee] text-[#1f6f63]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
@@ -617,7 +626,7 @@ export default function PropertySearchPage() {
                       setIsPriceFilterOpen(false);
                       setIsBedsFilterOpen(false);
                     }}
-                    className={`h-11 rounded-lg border px-4 text-sm font-black ${
+                    className={`h-9 shrink-0 rounded-lg border px-3 text-xs font-black sm:h-11 sm:px-4 sm:text-sm ${
                       selectedSpecialWeeks
                         ? "border-[#f2b84b] bg-[#fff8e6] text-[#8a5b0a]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
@@ -664,13 +673,6 @@ export default function PropertySearchPage() {
                   )}
                 </div>
               </div>
-
-              <button
-                type="submit"
-                className="bma-btn-primary h-12 px-7 !text-white hover:!text-white"
-              >
-                Search
-              </button>
 
               <Link
                 to="/start"
