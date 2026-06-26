@@ -1795,7 +1795,7 @@ function SearchRentMetric({ label, value, highlight = false }) {
       <p className="truncate text-[9px] font-black uppercase leading-none md:text-[8px] lg:text-[9px] xl:text-[10px]">
         {label}
       </p>
-      <p className="mt-1 whitespace-nowrap text-[15px] font-black leading-none text-[#102426] md:mt-0.5 md:text-[12px] lg:text-[13px] xl:mt-1 xl:text-base">
+      <p className="mt-1 min-w-0 break-words text-[14px] font-black leading-tight text-[#102426] md:mt-0.5 md:text-[12px] lg:text-[13px] xl:mt-1 xl:text-base">
         {value}
       </p>
     </div>
