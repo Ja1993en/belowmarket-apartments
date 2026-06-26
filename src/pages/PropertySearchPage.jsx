@@ -1584,16 +1584,16 @@ function SearchResultCard({
   const showGoldHoverBar = isMapHighlighted && propertyHasStrongMapDeal(property);
   const floorPlanCount = displayFloorPlans.length;
   const actionButtonClass =
-    "rounded-lg px-3 py-2.5 text-sm font-black transition md:px-2.5 md:py-2 md:text-xs xl:px-3 xl:py-2.5 xl:text-sm";
+    "rounded-lg px-3 py-2.5 text-sm font-black transition md:px-2 md:py-1.5 md:text-[11px] lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-2.5 xl:text-sm";
 
   return (
     <article
       ref={cardRef}
-      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid md:grid-cols-[136px_minmax(0,1fr)] md:items-stretch lg:grid-cols-[180px_minmax(0,1fr)] xl:grid-cols-[250px_minmax(0,1fr)] ${
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid md:grid-cols-[152px_minmax(0,1fr)] md:items-stretch lg:grid-cols-[196px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)] ${
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
-      <Link to={cardHref} className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[168px] md:self-stretch lg:min-h-[188px] xl:min-h-[248px]">
+      <Link to={cardHref} className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[164px] md:self-stretch lg:min-h-[184px] xl:min-h-[246px]">
         {showGoldHoverBar && (
           <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
         )}
@@ -1619,30 +1619,30 @@ function SearchResultCard({
         </div>
       </Link>
 
-      <div className="flex min-w-0 flex-col p-3 md:p-2 xl:p-4">
+      <div className="flex min-w-0 flex-col p-3 md:p-1.5 lg:p-2 xl:p-3.5">
         <div className="flex flex-col gap-1.5 xl:gap-2 2xl:flex-row 2xl:items-start 2xl:justify-between">
           <Link to={cardHref} className="min-w-0">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <p className="min-w-0 truncate text-base font-black text-[#102426] md:text-sm xl:text-lg">
+              <p className="min-w-0 truncate text-base font-black text-[#102426] md:text-[13px] lg:text-sm xl:text-lg">
                 {property.name}
               </p>
               {hasSpecial && (
-                <span className="max-w-full truncate rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a] md:px-2 md:py-0.5 md:text-[10px] xl:px-2.5 xl:py-1 xl:text-[11px]">
+                <span className="max-w-full truncate rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a] md:px-1.5 md:py-0.5 md:text-[9px] lg:px-2 lg:text-[10px] xl:px-2.5 xl:py-1 xl:text-[11px]">
                   Special: {priceSummary.specialLabel}
                 </span>
               )}
             </div>
-            <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260] md:gap-1.5 md:text-xs xl:gap-2 xl:text-sm">
+            <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260] md:gap-1 md:text-[11px] lg:text-xs xl:gap-2 xl:text-sm">
               <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63] md:h-3.5 md:w-3.5 xl:h-4 xl:w-4" />
               <span className="truncate">{addressLabel}</span>
             </p>
           </Link>
-          <span className="w-fit shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63] md:px-2.5 md:text-[11px] xl:px-3 xl:text-xs">
+          <span className="w-fit shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63] md:px-2 md:py-0.5 md:text-[10px] lg:px-2.5 lg:text-[11px] xl:px-3 xl:text-xs">
             {getBedsLabel(property, displayFloorPlans)}
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 md:mt-2 md:gap-1.5 xl:mt-3 xl:gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
           <SearchRentMetric
             label="Normal rent"
             value={priceSummary.normalRentLabel}
@@ -1654,24 +1654,24 @@ function SearchResultCard({
           />
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-2 md:gap-1.5 xl:mt-3 xl:gap-2">
-          <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df] md:px-2.5 md:text-[10px] xl:px-3 xl:text-[11px]">
+        <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
+          <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df] md:px-2 md:py-0.5 md:text-[9px] lg:px-2.5 lg:text-[10px] xl:px-3 xl:py-1 xl:text-[11px]">
             {floorPlanCount} matching floor plan{floorPlanCount === 1 ? "" : "s"}
           </span>
           {transparencyBadges.map((badge) => (
             <span
               key={badge}
-              className="rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black text-[#1f6f63] md:px-2.5 md:text-[10px] xl:px-3 xl:text-[11px]"
+              className="rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black text-[#1f6f63] md:px-2 md:py-0.5 md:text-[9px] lg:px-2.5 lg:text-[10px] xl:px-3 xl:py-1 xl:text-[11px]"
             >
               {badge}
             </span>
           ))}
         </div>
 
-        <div className="mt-auto grid grid-cols-2 gap-2 pt-3 md:gap-1.5 md:pt-2 xl:gap-2 xl:pt-3">
+        <div className="mt-auto grid grid-cols-2 gap-2 pt-3 md:gap-1 md:pt-1.5 xl:gap-2 xl:pt-3">
           <Link
             to={cardHref}
-            className="rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] md:px-2.5 md:py-2 md:text-xs xl:px-3 xl:py-3 xl:text-sm"
+            className="rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] md:px-2 md:py-1.5 md:text-[11px] lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-3 xl:text-sm"
           >
             View details
           </Link>
@@ -1695,14 +1695,14 @@ function SearchResultCard({
 function SearchRentMetric({ label, value, highlight = false }) {
   return (
     <div
-      className={`rounded-lg px-3 py-2.5 ring-1 md:px-2.5 md:py-2 xl:px-3 xl:py-2.5 ${
+      className={`rounded-lg px-3 py-2.5 ring-1 md:px-2 md:py-1.5 lg:px-2.5 lg:py-2 xl:px-3 xl:py-2.5 ${
         highlight
           ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
           : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
       }`}
     >
       <p className="text-[10px] font-black uppercase">{label}</p>
-      <p className="mt-1 truncate text-base font-black text-[#102426] md:mt-0.5 md:text-sm xl:mt-1 xl:text-base">{value}</p>
+      <p className="mt-1 truncate text-base font-black text-[#102426] md:mt-0.5 md:text-xs lg:text-sm xl:mt-1 xl:text-base">{value}</p>
     </div>
   );
 }
