@@ -4126,7 +4126,7 @@ function PropertyLocationMap({
                     </p>
                 </div>
             )}
-            <div className="grid max-h-32 grid-cols-1 gap-2 overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            <div className="flex max-h-32 flex-wrap items-center gap-2 overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 <MapLegendItem
                     color="bg-[#f2b84b]"
                     label="Property"
@@ -4213,9 +4213,9 @@ function fitMapToPropertyAndNearbyPlaces(
 
 function MapLegendItem({ color, label, distance }) {
     return (
-        <div className="flex min-w-0 items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] xl:min-w-[150px] xl:flex-none">
+        <div className="flex w-fit max-w-full flex-none items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] sm:w-auto xl:min-w-[150px] xl:flex-none">
             <span className={`h-3 w-3 shrink-0 rounded-full ${color}`} />
-            <span className="min-w-0 flex-1 truncate">{label}</span>
+            <span className="min-w-0 max-w-[7.5rem] truncate sm:max-w-none sm:flex-1">{label}</span>
             {distance && (
                 <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-[#526260]">
                     {distance}
