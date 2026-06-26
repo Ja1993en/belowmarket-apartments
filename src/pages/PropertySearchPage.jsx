@@ -1407,10 +1407,6 @@ function MapboxSearchMap({
         )}
       </div>
 
-      <div className="pointer-events-none absolute right-4 top-4 z-10 hidden items-center gap-2 rounded-2xl bg-white/95 px-3 py-2 text-sm font-black text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df] sm:flex">
-        <Navigation className="h-4 w-4 text-[#2d7dd2]" />
-        Live map
-      </div>
       {hoveredProperty && !isChoosingArea && (
         <MapPropertyHoverPreview
           property={hoveredProperty}
