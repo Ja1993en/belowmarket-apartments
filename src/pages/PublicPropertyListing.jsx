@@ -2406,11 +2406,11 @@ export default function PublicPropertyListing() {
 
                 </section>
 
-                <section className="grid gap-3 py-4 sm:grid-cols-2 lg:grid-cols-4">
+                <section className="grid grid-cols-2 gap-2 py-3 sm:gap-3 sm:py-4 lg:grid-cols-4">
                     {listingSummaryCards.map((card) => (
                         <div
                             key={card.label}
-                            className={`rounded-xl border p-3 ${
+                            className={`rounded-xl border p-2 sm:p-3 ${
                                 card.special
                                     ? "border-[#f2d08a] bg-[#fff8e6]"
                                     : "border-[#d7e6df] bg-white"
@@ -2419,10 +2419,10 @@ export default function PublicPropertyListing() {
                             <p className="text-[10px] font-black uppercase text-[#526260]">
                                 {card.label}
                             </p>
-                            <p className="mt-1 truncate text-lg font-black text-[#102426]">
+                            <p className="mt-1 truncate text-base font-black text-[#102426] sm:text-lg">
                                 {card.value}
                             </p>
-                            <p className="mt-1 text-xs font-bold leading-4 text-[#526260]">
+                            <p className="mt-1 hidden text-xs font-bold leading-4 text-[#526260] sm:block">
                                 {card.note}
                             </p>
                         </div>
