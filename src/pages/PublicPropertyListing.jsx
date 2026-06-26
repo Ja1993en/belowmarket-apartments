@@ -5206,6 +5206,10 @@ function FloorPlanCard({
                 <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
                     {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
                 </p>
+
+                <p className={`mt-1 text-xs font-black ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
+                    {availabilityBadgeLabel}
+                </p>
             </div>
 
             <div className="clear-both grid gap-2 pt-2 sm:grid-cols-3 lg:pt-3">
@@ -5237,11 +5241,7 @@ function FloorPlanCard({
                 </div>
             </div>
 
-            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] sm:items-center lg:mt-3">
-                <p className={`rounded-xl bg-white px-3 py-2 text-center text-xs font-black ring-1 ring-[#d7e6df] sm:text-left ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
-                    {availabilityBadgeLabel}
-                </p>
-
+            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 sm:grid-cols-2 sm:items-center lg:mt-3">
                 <button
                     type="button"
                     onClick={onCheckAvailability}
@@ -5263,7 +5263,7 @@ function FloorPlanCard({
                 </button>
 
                 {isCompared && (
-                    <p className="text-xs font-bold leading-4 text-[#526260] sm:col-span-3">
+                    <p className="text-xs font-bold leading-4 text-[#526260] sm:col-span-2">
                         Tap View comparison below to open the chart.
                     </p>
                 )}
