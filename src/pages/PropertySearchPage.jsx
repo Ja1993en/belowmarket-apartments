@@ -1722,7 +1722,7 @@ function SearchResultCard({
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
+        <div className="mt-3 grid grid-cols-1 gap-1.5 md:mt-1.5 xl:mt-3 xl:gap-2">
           <SearchRentMetric
             label="Normal rent"
             value={priceSummary.normalRentLabel}
