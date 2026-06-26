@@ -4886,6 +4886,7 @@ function FloorPlanCard({
             : hasSpecial
                 ? "Verify"
                 : "None listed");
+    const shouldShowSavingsChip = hasSpecial && parseCurrency(displaySavingsValue) > 0;
     const hasAvailableFloorPlanUnits =
         availableUnitCount > 0 || isFloorPlanAvailable({ available, availableUnits, status });
     const availabilityBadgeLabel = getFloorPlanAvailabilityBadgeLabel({
@@ -4979,14 +4980,16 @@ function FloorPlanCard({
                     </span>
                 </div>
 
-                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#fff8e6] px-2 py-1 ring-1 ring-[#f2d08a] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
-                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
-                        {hasSpecial ? "Savings" : "Special"}
-                    </span>
-                    <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
-                        {displaySavingsValue}
-                    </span>
-                </div>
+                {shouldShowSavingsChip && (
+                    <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#fff8e6] px-2 py-1 ring-1 ring-[#f2d08a] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                        <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
+                            Savings
+                        </span>
+                        <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
+                            {displaySavingsValue}
+                        </span>
+                    </div>
+                )}
             </div>
 
             <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-2.5 sm:grid-cols-2 lg:mt-3 lg:p-3">
