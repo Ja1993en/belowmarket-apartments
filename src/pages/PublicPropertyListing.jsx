@@ -2051,6 +2051,21 @@ export default function PublicPropertyListing() {
         rentNumber - effectiveRent;
 
     const concessionValue = rentNumber * (freeWeeks / 4) + rentCreditSpecialNumber;
+    const selectedFloorPlanListedRentLabel =
+        formatFloorPlanMetricValue(selectedFloorPlan?.rent) || "Contact";
+    const selectedFloorPlanEffectiveRentLabel =
+        hasCalculableSelectedSpecial
+            ? formatCurrency(Math.round(effectiveRent))
+            : formatFloorPlanMetricValue(selectedFloorPlan?.effectiveRent) ||
+            selectedFloorPlanListedRentLabel;
+    const selectedFloorPlanMarketRentLabel =
+        formatFloorPlanMetricValue(selectedFloorPlan?.marketRent) || "Verify";
+    const selectedFloorPlanSavingsLabel =
+        hasCalculableSelectedSpecial
+            ? `Save about ${formatCurrency(Math.round(monthlySavings))}/mo`
+            : selectedFloorPlan?.effectiveRent && selectedFloorPlan?.rent
+                ? getCompareSavingsLabel(selectedFloorPlan.rent, selectedFloorPlan.effectiveRent)
+                : "Confirm with locator";
     const leadRequestRentNumber = activeLeadFloorPlan
         ? Number(String(activeLeadFloorPlan.rent || "").replace(/[^0-9]/g, ""))
         : 0;
@@ -3134,7 +3149,8 @@ export default function PublicPropertyListing() {
 
             {selectedFloorPlan && (
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 p-4">
-                    <div className="mx-auto my-8 w-full max-w-5xl rounded-3xl bg-white p-6 shadow-xl">                    <div className="flex items-start justify-between gap-4">
+                    <div className="mx-auto my-8 w-full max-w-5xl rounded-3xl bg-white p-6 shadow-xl">
+                    <div className="flex items-start justify-between gap-4">
                         <div>
                             <p className="text-sm font-bold text-[#526260]">
                                 Floor Plan Details
@@ -3145,7 +3161,7 @@ export default function PublicPropertyListing() {
                             </h2>
 
                             <p className="mt-2 text-[#526260]">
-                                {formatBedroomLabel(selectedFloorPlan.beds)} • {selectedFloorPlan.baths} • {selectedFloorPlan.sqft}
+                                {formatBedroomLabel(selectedFloorPlan.beds, selectedFloorPlan.name)} • {formatBathroomLabel(selectedFloorPlan.baths)} • {formatSquareFeetLabel(selectedFloorPlan.sqft)}
                             </p>
 
 
@@ -3162,70 +3178,55 @@ export default function PublicPropertyListing() {
                         <div className="mt-6">
                             <div>
 
-                                {selectedFloorPlan.image && (
-                                    <img
-                                        src={selectedFloorPlan.image}
-                                        alt={`${selectedFloorPlan.name} floor plan`}
-                                        loading="lazy"
-                                        decoding="async"
-                                        className="mt-5 h-64 w-full rounded-3xl object-cover"
-                                    />
-                                )}
-
-
-                                <div className="mt-6 grid gap-4 md:grid-cols-3">
-
-                                    <div className="rounded-2xl bg-[#f5f8f1] p-4">
-                                        <p className="text-sm font-bold text-[#526260]">
-                                            Starting Rent
-                                        </p>
-
-                                        <p className="mt-1 text-2xl font-black text-[#102426]">
-                                            {selectedFloorPlan.rent}
-                                        </p>
-                                    </div>
-                                    {hasCalculableSelectedSpecial && (
-                                        <div className="rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">
-                                            <p className="text-sm font-bold text-[#8a5b0a]">
-                                                Estimated Rent After Special                                            </p>
-
-                                            <p className="mt-1 text-2xl font-black text-[#102426]">
-                                                ${Math.round(effectiveRent).toLocaleString()}
-                                            </p>
-
-                                            <p className="mt-1 text-sm font-semibold text-[#7a432e]">
-                                                Save about ${Math.round(monthlySavings)}/mo
-                                            </p>
-                                        </div>
-
+                                <div className="mt-5 flex h-64 w-full items-center justify-center overflow-hidden rounded-3xl bg-[#f5f8f1] ring-1 ring-[#d7e6df]">
+                                    {selectedFloorPlan.image ? (
+                                        <img
+                                            src={selectedFloorPlan.image}
+                                            alt={`${selectedFloorPlan.name} floor plan`}
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="h-full w-full object-contain"
+                                        />
+                                    ) : (
+                                        <span className="px-4 text-center text-sm font-black uppercase text-[#526260]">
+                                            Floor plan image pending
+                                        </span>
                                     )}
-
-                                    {hasCalculableSelectedSpecial && (
-                                        <p className="mt-3 text-sm font-semibold text-[#526260]">
-                                            Rent after special is estimated using a {leaseMonths}-month lease term.
-                                        </p>
-                                    )}
-
-                                    {selectedFloorPlan.marketRent && (
-                                        <div className="rounded-2xl bg-[#f5f8f1] p-4">
-                                            <p className="text-sm font-bold text-[#526260]">
-                                                {getMarketRentCopy(selectedFloorPlan).title}
-                                            </p>
-
-                                            <p className="mt-1 text-2xl font-black text-[#102426]">
-                                                {selectedFloorPlan.marketRent}
-                                            </p>
-
-                                            {selectedFloorPlan.marketRentSource && (
-                                                <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                                    {getMarketRentCopy(selectedFloorPlan).detailNote}
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-
-
                                 </div>
+
+
+                                <div className="mt-6 grid gap-3 md:grid-cols-3">
+                                    <FloorPlanDetailMetric
+                                        label="Listed rent"
+                                        value={selectedFloorPlanListedRentLabel}
+                                        note="Before specials"
+                                    />
+                                    <FloorPlanDetailMetric
+                                        label="Effective value"
+                                        value={selectedFloorPlanEffectiveRentLabel}
+                                        note={
+                                            hasCalculableSelectedSpecial
+                                                ? selectedFloorPlanSavingsLabel
+                                                : "Estimated value"
+                                        }
+                                        highlight
+                                    />
+                                    <FloorPlanDetailMetric
+                                        label={getMarketRentCopy(selectedFloorPlan).title}
+                                        value={selectedFloorPlanMarketRentLabel}
+                                        note={
+                                            selectedFloorPlan.marketRentSource
+                                                ? getMarketRentCopy(selectedFloorPlan).detailNote
+                                                : "Confirm comparison"
+                                        }
+                                    />
+                                </div>
+
+                                {hasCalculableSelectedSpecial && (
+                                    <p className="mt-3 text-sm font-semibold text-[#526260]">
+                                        Rent after special is estimated using a {leaseMonths}-month lease term.
+                                    </p>
+                                )}
                                 <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-5">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-lg font-black text-[#102426]">
@@ -3347,32 +3348,34 @@ export default function PublicPropertyListing() {
                                     </div>
                                 </div>
 
-                                {hasSelectedFloorPlanSpecial && (
-                                    <div className="mt-5 rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">
-                                        <p className="text-sm font-bold text-[#8a5b0a]">
-                                            Special Offer
-                                        </p>
-                                        <p className="mt-1 font-black text-[#102426]">
-                                            {selectedFloorPlan.special.label}
-                                        </p>
-                                        {hasCalculableSelectedSpecial ? (
-                                            <>
-                                                <p className="mt-2 text-sm font-semibold text-[#7a432e]">
-                                                    Estimated concession value: ${Math.round(concessionValue).toLocaleString()}
-                                                </p>
-                                                <p className="mt-1 text-xs leading-5 text-[#7a432e]">
-                                                    Based on listed rent specials spread across a {leaseMonths}-month lease.
-                                                </p>
-                                            </>
-                                        ) : (
+                                <div className="mt-5 rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">
+                                    <p className="text-sm font-bold text-[#8a5b0a]">
+                                        Special Offer
+                                    </p>
+                                    <p className="mt-1 font-black text-[#102426]">
+                                        {hasSelectedFloorPlanSpecial
+                                            ? cleanUnitSpecialLabel(selectedFloorPlan.special.label)
+                                            : "No special listed"}
+                                    </p>
+                                    {hasCalculableSelectedSpecial ? (
+                                        <>
                                             <p className="mt-2 text-sm font-semibold text-[#7a432e]">
-                                                Contact us to confirm exactly how this special is applied.
+                                                Estimated concession value: ${Math.round(concessionValue).toLocaleString()}
                                             </p>
-                                        )}
+                                            <p className="mt-1 text-xs leading-5 text-[#7a432e]">
+                                                Based on listed rent specials spread across a {leaseMonths}-month lease.
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p className="mt-2 text-sm font-semibold text-[#7a432e]">
+                                            {hasSelectedFloorPlanSpecial
+                                                ? "Contact us to confirm exactly how this special is applied."
+                                                : "Ask us to confirm if a current leasing special is available."}
+                                        </p>
+                                    )}
 
 
-                                    </div>
-                                )}
+                                </div>
 
                             </div>
 
@@ -4941,15 +4944,19 @@ function FloorPlanCard({
                         {name}
                     </h3>
 
-                    {hasSpecial && (
-                        <span className="inline-flex w-fit max-w-full rounded-full bg-[#fff8e6] px-2 py-0.5 text-[10px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a] sm:px-2.5 sm:py-1 sm:text-[11px]">
-                            <span className="truncate">{specialLabel}</span>
-                        </span>
-                    )}
+                    <span
+                        className={`inline-flex w-fit max-w-full rounded-full px-2 py-0.5 text-[10px] font-black ring-1 sm:px-2.5 sm:py-1 sm:text-[11px] ${
+                            hasSpecial
+                                ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
+                                : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
+                        }`}
+                    >
+                        <span className="truncate">{specialLabel}</span>
+                    </span>
                 </div>
 
                 <p className="mt-1.5 text-sm font-semibold leading-5 text-[#526260]">
-                    {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
+                    {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {formatSquareFeetLabel(sqft)}
                 </p>
 
                 <p className={`mt-1 text-xs font-black ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
@@ -5035,7 +5042,7 @@ function FloorPlanCard({
                                 {name}
                             </h3>
                             <p className="mt-1 truncate text-sm font-bold text-[#526260]">
-                                {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
+                                {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {formatSquareFeetLabel(sqft)}
                             </p>
                         </div>
 
@@ -5120,6 +5127,26 @@ function FloorPlanMetric({ label, value, highlight = false }) {
         >
             <p className="text-[11px] font-black uppercase">{label}</p>
             <p className="mt-0.5 truncate text-sm font-black">{value}</p>
+        </div>
+    );
+}
+
+function FloorPlanDetailMetric({ label, value, note, highlight = false }) {
+    return (
+        <div
+            className={`rounded-2xl p-4 ${
+                highlight
+                    ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+                    : "bg-[#f5f8f1] text-[#173f3f]"
+            }`}
+        >
+            <p className="text-sm font-bold text-[#526260]">{label}</p>
+            <p className="mt-1 truncate text-2xl font-black text-[#102426]">
+                {value}
+            </p>
+            <p className="mt-1 truncate text-sm font-semibold text-[#526260]">
+                {note}
+            </p>
         </div>
     );
 }
