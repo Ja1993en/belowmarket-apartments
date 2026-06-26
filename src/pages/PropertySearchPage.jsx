@@ -494,7 +494,8 @@ export default function PropertySearchPage() {
 
               </div>
 
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 xl:flex xl:min-w-0 xl:flex-1 xl:gap-2">
+              <div className="grid gap-1.5 xl:flex xl:min-w-0 xl:flex-1 xl:items-center xl:gap-2">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 lg:grid-cols-[minmax(0,1fr)_auto_auto] xl:min-w-0 xl:flex-1">
                 <div className="relative min-w-0 flex-1">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2d7dd2] sm:left-5 sm:h-5 sm:w-5" />
                   <input
@@ -513,9 +514,8 @@ export default function PropertySearchPage() {
                 >
                   Search
                 </button>
-              </div>
 
-              <div className="flex min-w-0 gap-1.5 overflow-x-auto pb-0.5 xl:gap-2 xl:overflow-visible xl:pb-0">
+                <div className="col-span-2 flex min-w-0 gap-1.5 overflow-x-auto pb-0.5 lg:col-span-1 lg:pb-0 xl:gap-2 xl:overflow-visible">
                 <div className="relative">
                   <button
                     type="button"
@@ -691,6 +691,7 @@ export default function PropertySearchPage() {
                   )}
                 </div>
               </div>
+              </div>
 
               <Link
                 to="/start"
@@ -699,6 +700,7 @@ export default function PropertySearchPage() {
                 Find Apartment Locator
               </Link>
             </div>
+          </div>
 
             {suggestions.length > 0 && searchTerm.trim() !== searchFromUrl.trim() && (
               <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-50 overflow-hidden rounded-lg border border-[#d7e6df] bg-white shadow-2xl lg:right-auto lg:w-[min(560px,calc(100%-1rem))]">
