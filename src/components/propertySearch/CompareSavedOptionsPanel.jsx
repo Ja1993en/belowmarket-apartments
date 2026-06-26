@@ -73,7 +73,7 @@ export default function CompareSavedOptionsPanel({
           <button
             type="button"
             onClick={onClearCompare}
-            className="w-fit rounded-xl border border-[#f2b84b] bg-[#b42318] px-3 py-2 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+            className="w-fit rounded-lg border border-[#f2b84b] bg-[#b42318] px-2.5 py-1.5 text-[11px] font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
           >
             Clear compare
           </button>
