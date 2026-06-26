@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Building2, ChevronLeft, ChevronRight, MapPin, Navigation, Search } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, MapPin, Navigation, Search, X } from "lucide-react";
 import CompareSavedOptionsPanel from "../components/propertySearch/CompareSavedOptionsPanel";
 import { getPublicPropertySummaries } from "../data/propertyStorage";
 import {
@@ -124,6 +124,7 @@ export default function PropertySearchPage() {
   const [selectedMapPropertyId, setSelectedMapPropertyId] = useState("");
   const [currentResultsPage, setCurrentResultsPage] = useState(1);
   const [compareNotice, setCompareNotice] = useState("");
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const resultCardRefs = useRef(new Map());
   const resultsTopRef = useRef(null);
   const comparePanelRef = useRef(null);
@@ -432,6 +433,24 @@ export default function PropertySearchPage() {
     });
   }, []);
 
+  const handleClearCompare = useCallback(() => {
+    const clearedSelections = clearCompareSelections();
+
+    setComparePropertyIds(clearedSelections.propertyIds);
+    setCompareFloorPlanItems(clearedSelections.floorPlanItems);
+    setCompareNotice("Compare list cleared.");
+    setIsCompareModalOpen(false);
+  }, []);
+
+  const handleViewCompare = useCallback(() => {
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setIsCompareModalOpen(true);
+      return;
+    }
+
+    scrollToComparePanel();
+  }, [scrollToComparePanel]);
+
   const handleTogglePropertyCompare = useCallback(
     (property) => {
       const isAlreadyCompared = comparePropertyIds.includes(property.id);
@@ -459,6 +478,32 @@ export default function PropertySearchPage() {
 
     return () => window.clearTimeout(noticeTimer);
   }, [compareNotice]);
+
+  useEffect(() => {
+    if (!hasCompareItems) {
+      setIsCompareModalOpen(false);
+    }
+  }, [hasCompareItems]);
+
+  const renderComparePanel = () => (
+    <CompareSavedOptionsPanel
+      activeTab={activeCompareTab}
+      compareDetailMode={compareDetailMode}
+      compareDetailRows={compareDetailRows}
+      compareFloorPlanRows={compareFloorPlanRows}
+      formatBedroomLabel={formatBedroomLabel}
+      getSearchDealScore={getSearchDealScore}
+      onClearCompare={handleClearCompare}
+      onRemoveFloorPlan={(row) =>
+        setCompareFloorPlanItems(removeCompareFloorPlanItem(row))
+      }
+      onRemoveProperty={(propertyId) =>
+        setComparePropertyIds(removeComparePropertyId(propertyId))
+      }
+      propertyCompareRows={propertyCompareRows}
+      setActiveTab={setActiveCompareTab}
+    />
+  );
 
   return (
     <main className="min-h-screen bg-[#f5f8f1] pb-24 text-[#102426]">
@@ -847,29 +892,8 @@ export default function PropertySearchPage() {
         </div>
 
         {hasCompareItems && (
-          <div ref={comparePanelRef} className="scroll-mt-32">
-            <CompareSavedOptionsPanel
-              activeTab={activeCompareTab}
-              compareDetailMode={compareDetailMode}
-              compareDetailRows={compareDetailRows}
-              compareFloorPlanRows={compareFloorPlanRows}
-              formatBedroomLabel={formatBedroomLabel}
-              getSearchDealScore={getSearchDealScore}
-              onClearCompare={() => {
-                const clearedSelections = clearCompareSelections();
-                setComparePropertyIds(clearedSelections.propertyIds);
-                setCompareFloorPlanItems(clearedSelections.floorPlanItems);
-                setCompareNotice("Compare list cleared.");
-              }}
-              onRemoveFloorPlan={(row) =>
-                setCompareFloorPlanItems(removeCompareFloorPlanItem(row))
-              }
-              onRemoveProperty={(propertyId) =>
-                setComparePropertyIds(removeComparePropertyId(propertyId))
-              }
-              propertyCompareRows={propertyCompareRows}
-              setActiveTab={setActiveCompareTab}
-            />
+          <div ref={comparePanelRef} className="hidden scroll-mt-32 md:block">
+            {renderComparePanel()}
           </div>
         )}
 
@@ -1014,16 +1038,44 @@ export default function PropertySearchPage() {
         </div>
       </section>
 
+      {isCompareModalOpen && hasCompareItems && (
+        <div
+          className="fixed inset-0 z-[60] bg-[#102426]/55 p-3 backdrop-blur-sm md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Compare selected apartments"
+        >
+          <div className="mx-auto flex h-full max-w-lg flex-col overflow-hidden rounded-2xl bg-[#f5f8f1] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#d7e6df] bg-white px-4 py-3">
+              <div>
+                <p className="text-sm font-black text-[#102426]">
+                  Compare selected options
+                </p>
+                <p className="mt-0.5 text-xs font-bold text-[#526260]">
+                  {compareItemCount} option{compareItemCount === 1 ? "" : "s"} selected
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCompareModalOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+                aria-label="Close comparison modal"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-3 pb-24">
+              {renderComparePanel()}
+            </div>
+          </div>
+        </div>
+      )}
+
       {hasCompareItems && (
         <CompareDock
           compareItemCount={compareItemCount}
-          onClearCompare={() => {
-            const clearedSelections = clearCompareSelections();
-            setComparePropertyIds(clearedSelections.propertyIds);
-            setCompareFloorPlanItems(clearedSelections.floorPlanItems);
-            setCompareNotice("Compare list cleared.");
-          }}
-          onViewCompare={scrollToComparePanel}
+          onClearCompare={handleClearCompare}
+          onViewCompare={handleViewCompare}
         />
       )}
     </main>
