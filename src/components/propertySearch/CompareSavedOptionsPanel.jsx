@@ -41,6 +41,7 @@ export default function CompareSavedOptionsPanel({
   compareFloorPlanRows,
   formatBedroomLabel,
   getSearchDealScore,
+  isCompact = false,
   onClearCompare,
   onRemoveFloorPlan,
   onRemoveProperty,
@@ -48,29 +49,37 @@ export default function CompareSavedOptionsPanel({
   setActiveTab,
 }) {
   return (
-    <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-3 shadow-sm sm:p-5">
-      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
-        <div>
-          <p className="text-sm font-black text-[#1f6f63]">
-            Your compare list
-          </p>
-          <h2 className="mt-1 text-xl font-black text-[#102426] sm:text-2xl">
-            Compare apartments side by side
-          </h2>
-          <p className="mt-1 text-sm font-semibold text-[#526260]">
-            This is where every property you tap Compare will land. Review rent, specials, and floor plans before you tour.
-          </p>
+    <div
+      className={
+        isCompact
+          ? "rounded-none bg-transparent"
+          : "mt-6 rounded-3xl border border-[#d7e6df] bg-white p-3 shadow-sm sm:p-5"
+      }
+    >
+      {!isCompact && (
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+          <div>
+            <p className="text-sm font-black text-[#1f6f63]">
+              Your compare list
+            </p>
+            <h2 className="mt-1 text-xl font-black text-[#102426] sm:text-2xl">
+              Compare apartments side by side
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-[#526260]">
+              This is where every property you tap Compare will land. Review rent, specials, and floor plans before you tour.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClearCompare}
+            className="w-fit rounded-2xl border border-[#f2b84b] bg-[#b42318] px-3 py-2.5 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white sm:px-4 sm:py-3 sm:text-sm"
+          >
+            Clear compare
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onClearCompare}
-          className="w-fit rounded-2xl border border-[#f2b84b] bg-[#b42318] px-3 py-2.5 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white sm:px-4 sm:py-3 sm:text-sm"
-        >
-          Clear compare
-        </button>
-      </div>
+      )}
 
-      <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2">
+      <div className={`${isCompact ? "grid grid-cols-3 gap-1.5" : "mt-4 grid grid-cols-3 gap-1.5 sm:gap-2"}`}>
         {COMPARE_TABS.map((tab) => {
           const count =
             tab.label === "Floor Plans"
@@ -85,7 +94,11 @@ export default function CompareSavedOptionsPanel({
               type="button"
               aria-pressed={activeTab === tab.label}
               onClick={() => setActiveTab(tab.label)}
-              className={`min-w-0 rounded-2xl px-2.5 py-2 text-left text-xs font-black ring-1 transition sm:px-4 sm:py-3 sm:text-sm ${
+              className={`min-w-0 text-left font-black ring-1 transition ${
+                isCompact
+                  ? "rounded-xl px-2 py-2 text-[11px]"
+                  : "rounded-2xl px-2.5 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm"
+              } ${
                 activeTab === tab.label
                   ? "bg-[#173f3f] text-white"
                   : "bg-[#f5f8f1] text-[#173f3f] ring-[#d7e6df] hover:bg-[#d7e6df]"
@@ -100,7 +113,9 @@ export default function CompareSavedOptionsPanel({
                 </span>
               </span>
               <span
-                className={`mt-1 block truncate text-[10px] font-bold sm:text-xs ${
+                className={`mt-1 block truncate font-bold ${
+                  isCompact ? "text-[9px]" : "text-[10px] sm:text-xs"
+                } ${
                   activeTab === tab.label ? "text-white/80" : "text-[#526260]"
                 }`}
               >
@@ -115,6 +130,7 @@ export default function CompareSavedOptionsPanel({
         <CompareFloorPlanTab
           rows={compareFloorPlanRows}
           formatBedroomLabel={formatBedroomLabel}
+          isCompact={isCompact}
           onRemove={onRemoveFloorPlan}
         />
       )}
@@ -123,12 +139,17 @@ export default function CompareSavedOptionsPanel({
         <ComparePropertiesTab
           rows={propertyCompareRows}
           getSearchDealScore={getSearchDealScore}
+          isCompact={isCompact}
           onRemove={onRemoveProperty}
         />
       )}
 
       {activeTab === "Details" && (
-        <CompareDetailsTab rows={compareDetailRows} mode={compareDetailMode} />
+        <CompareDetailsTab
+          rows={compareDetailRows}
+          mode={compareDetailMode}
+          isCompact={isCompact}
+        />
       )}
     </div>
   );
@@ -143,7 +164,7 @@ function CompareMetric({ label, value }) {
   );
 }
 
-function CompareFloorPlanTab({ rows, formatBedroomLabel, onRemove }) {
+function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) {
   if (rows.length === 0) {
     return (
       <CompareEmptyState text="No floor plans selected yet. Open a property and tap Compare Floor Plan on the layouts you want to compare." />
@@ -151,66 +172,93 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, onRemove }) {
   }
 
   return (
-    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <div className={isCompact ? "mt-3 grid gap-2" : "mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
       {rows.map((row) => (
-        <div key={row.compareKey} className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-          <div className="flex gap-3">
+        <div
+          key={row.compareKey}
+          className={
+            isCompact
+              ? "rounded-xl bg-white p-3 ring-1 ring-[#d7e6df]"
+              : "rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]"
+          }
+        >
+          <div className={isCompact ? "flex gap-2.5" : "flex gap-3"}>
             <img
               src={row.image || getPropertyPrimaryImage(row.property || {})}
               alt={`${row.floorPlanName} floor plan`}
-              className="h-20 w-24 shrink-0 rounded-xl bg-white object-cover ring-1 ring-[#d7e6df]"
+              className={`${isCompact ? "h-16 w-20" : "h-20 w-24"} shrink-0 rounded-xl bg-white object-cover ring-1 ring-[#d7e6df]`}
             />
 
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-black text-[#102426]">
+                  <p className={`${isCompact ? "text-sm" : "text-sm"} truncate font-black text-[#102426]`}>
                     {row.floorPlanName}
                   </p>
-                  <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+                  <p className="mt-0.5 truncate text-xs font-bold text-[#526260]">
                     {row.propertyName}
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => onRemove(row)}
-                  className="shrink-0 rounded-full border border-[#f2b84b] bg-[#b42318] px-3 py-1 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
-                >
-                  Remove
-                </button>
+                {!isCompact && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(row)}
+                    className="shrink-0 rounded-full border border-[#f2b84b] bg-[#b42318] px-3 py-1 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
 
-              <p className="mt-2 text-xs font-semibold text-[#526260]">
+              <p className={`${isCompact ? "mt-1 line-clamp-2 leading-4" : "mt-2"} text-xs font-semibold text-[#526260]`}>
                 {formatBedroomLabel(row.beds, row.floorPlanName)} • {row.baths || "Baths not listed"} ba •{" "}
                 {row.sqft || "Sq ft not listed"} sq ft
               </p>
             </div>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <CompareTile label="Starting" value={row.rent || "Contact"} />
+          <div className={`${isCompact ? "mt-2" : "mt-3"} grid grid-cols-2 gap-2`}>
+            <CompareTile label="Starting" value={row.rent || "Contact"} isCompact={isCompact} />
             <CompareTile
               label="Effective"
               value={row.effectiveRent || row.rent || "Contact"}
               highlight
+              isCompact={isCompact}
             />
           </div>
 
-          <p className="mt-3 truncate text-xs font-black text-[#8a5b0a]">
-            {row.special || "No special listed"}
-          </p>
+          <div className={`${isCompact ? "mt-2 rounded-lg bg-[#fff8e6] px-2.5 py-2 ring-1 ring-[#f2d08a]" : ""}`}>
+            <p className={`${isCompact ? "line-clamp-2 leading-4" : "truncate"} text-xs font-black text-[#8a5b0a]`}>
+              {row.special || "No special listed"}
+            </p>
+            {isCompact && (
+              <p className="mt-0.5 truncate text-[11px] font-bold text-[#526260]">
+                {formatAvailabilityLabel(row.available) || "Availability not listed"}
+              </p>
+            )}
+          </div>
 
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className={`${isCompact ? "mt-2 grid grid-cols-2 gap-2" : "mt-3 grid gap-2 sm:grid-cols-2"}`}>
             <Link
               to={`/properties/${row.propertyId}`}
               className="rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black text-white hover:bg-[#102426]"
             >
               View property
             </Link>
-            <span className="rounded-xl bg-white px-3 py-2 text-center text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
-              {formatAvailabilityLabel(row.available) || "Availability not listed"}
-            </span>
+            {isCompact ? (
+              <button
+                type="button"
+                onClick={() => onRemove(row)}
+                className="rounded-xl border border-[#f2b84b] bg-[#b42318] px-3 py-2 text-center text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+              >
+                Remove
+              </button>
+            ) : (
+              <span className="rounded-xl bg-white px-3 py-2 text-center text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+                {formatAvailabilityLabel(row.available) || "Availability not listed"}
+              </span>
+            )}
           </div>
         </div>
       ))}
@@ -218,20 +266,34 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, onRemove }) {
   );
 }
 
-function ComparePropertiesTab({ rows, getSearchDealScore, onRemove }) {
+function ComparePropertiesTab({ rows, getSearchDealScore, isCompact, onRemove }) {
   if (rows.length === 0) {
     return <CompareEmptyState text="No properties selected yet. Tap Compare on properties you want to save side by side." />;
   }
 
   return (
     <div className="mt-4">
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={isCompact ? "grid gap-2" : "grid gap-2 sm:grid-cols-2 lg:grid-cols-4"}>
         {rows.map(({ property, priceSummary }) => (
-          <div key={property.id} className="min-w-0 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] sm:p-4">
+          <div
+            key={property.id}
+            className={
+              isCompact
+                ? "min-w-0 rounded-xl bg-white p-3 ring-1 ring-[#d7e6df]"
+                : "min-w-0 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] sm:p-4"
+            }
+          >
             <div className="flex items-start justify-between gap-2">
-              <p className="min-w-0 truncate text-xs font-black text-[#102426] sm:text-sm">
-                {property.name}
-              </p>
+              <div className="min-w-0">
+                <p className="min-w-0 truncate text-sm font-black text-[#102426]">
+                  {property.name}
+                </p>
+                {isCompact && (
+                  <p className="mt-0.5 text-[11px] font-black text-[#1f6f63]">
+                    Deal score {getSearchDealScore(property, priceSummary)}/100
+                  </p>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => onRemove(property.id)}
@@ -240,16 +302,34 @@ function ComparePropertiesTab({ rows, getSearchDealScore, onRemove }) {
                 Remove
               </button>
             </div>
-            <CompareMetric
-              label="Deal score"
-              value={`${getSearchDealScore(property, priceSummary)}/100`}
-            />
-            <CompareMetric label="Effective" value={priceSummary.effectiveRentLabel} />
-            <CompareMetric label="Normal" value={priceSummary.normalRentLabel} />
-            <CompareMetric
-              label="Special"
-              value={priceSummary.specialLabel || "None listed"}
-            />
+            {!isCompact && (
+              <CompareMetric
+                label="Deal score"
+                value={`${getSearchDealScore(property, priceSummary)}/100`}
+              />
+            )}
+            <div className={isCompact ? "mt-2 grid grid-cols-2 gap-2" : ""}>
+              {isCompact ? (
+                <>
+                  <CompareTile label="Effective" value={priceSummary.effectiveRentLabel} highlight isCompact />
+                  <CompareTile label="Normal" value={priceSummary.normalRentLabel} isCompact />
+                </>
+              ) : (
+                <>
+                  <CompareMetric label="Effective" value={priceSummary.effectiveRentLabel} />
+                  <CompareMetric label="Normal" value={priceSummary.normalRentLabel} />
+                  <CompareMetric
+                    label="Special"
+                    value={priceSummary.specialLabel || "None listed"}
+                  />
+                </>
+              )}
+            </div>
+            {isCompact && (
+              <p className="mt-2 line-clamp-2 rounded-lg bg-[#fff8e6] px-2.5 py-2 text-xs font-black leading-4 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                {priceSummary.specialLabel || "No special listed"}
+              </p>
+            )}
             <Link
               to={getFloorPlansRoute(property.id)}
               onClick={rememberFloorPlanSectionTarget}
@@ -264,19 +344,75 @@ function ComparePropertiesTab({ rows, getSearchDealScore, onRemove }) {
   );
 }
 
-function CompareDetailsTab({ rows, mode }) {
+function CompareDetailsTab({ rows, mode, isCompact }) {
   if (rows.length === 0) {
     return <CompareEmptyState text="Choose floor plans or properties to compare exact details." />;
   }
 
   return (
     <>
-      <p className="mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold leading-6 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+      <p
+        className={
+          isCompact
+            ? "mt-3 rounded-xl bg-[#fff8e6] px-3 py-2 text-xs font-bold leading-5 text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+            : "mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold leading-6 text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+        }
+      >
         {mode === "floorPlans"
           ? "Details is comparing exact floor plans for the clearest rent, size, and special comparison."
           : "For the most accurate comparison, choose floor plans from each property. Until then, Details compares the selected properties."}
       </p>
 
+      {isCompact && (
+        <div className="mt-3 grid gap-2">
+          {rows.map((row) => (
+            <div key={row.id} className="rounded-xl bg-white p-3 ring-1 ring-[#d7e6df]">
+              <div className="flex gap-2.5">
+                <img
+                  src={row.image}
+                  alt={`${row.title} ${row.type.toLowerCase()} preview`}
+                  className="h-16 w-20 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-black text-[#102426]">
+                    {row.title}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs font-bold text-[#526260]">
+                    {row.propertyName}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-xs font-semibold leading-4 text-[#526260]">
+                    {row.beds} • {row.baths} • {row.sqft}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <CompareTile label="Normal" value={row.normalRent} isCompact />
+                <CompareTile label="Effective" value={row.effectiveRent} highlight isCompact />
+              </div>
+
+              <p className="mt-2 line-clamp-2 rounded-lg bg-[#fff8e6] px-2.5 py-2 text-xs font-black leading-4 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                {row.special}
+              </p>
+
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <p className="rounded-xl bg-[#f5f8f1] px-3 py-2 text-center text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+                  {formatAvailabilityLabel(row.availability) || "Availability not listed"}
+                </p>
+                <Link
+                  to={row.linkTo}
+                  onClick={rememberFloorPlanSectionTarget}
+                  className="rounded-xl bg-[#173f3f] px-3 py-2 text-center text-xs font-black text-white hover:bg-[#102426]"
+                >
+                  {row.actionLabel || "View"}
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!isCompact && (
       <div className="mt-4 overflow-x-auto rounded-2xl ring-1 ring-[#d7e6df]">
         <table className="min-w-[960px] w-full border-collapse bg-white text-left text-sm">
           <thead className="bg-[#173f3f] text-white">
@@ -360,21 +496,22 @@ function CompareDetailsTab({ rows, mode }) {
           </tbody>
         </table>
       </div>
+      )}
     </>
   );
 }
 
-function CompareTile({ label, value, highlight = false }) {
+function CompareTile({ label, value, highlight = false, isCompact = false }) {
   return (
     <div
-      className={`rounded-xl px-3 py-2 ${
+      className={`rounded-xl ${isCompact ? "px-2.5 py-2" : "px-3 py-2"} ${
         highlight
           ? "bg-[#e7f3ee] text-[#1f6f63]"
           : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df]"
       }`}
     >
       <p className="text-[10px] font-black uppercase">{label}</p>
-      <p className="mt-1 truncate text-sm font-black">{value}</p>
+      <p className={`${isCompact ? "mt-0.5 text-xs" : "mt-1 text-sm"} truncate font-black`}>{value}</p>
     </div>
   );
 }
