@@ -3197,7 +3197,7 @@ export default function PublicPropertyListing() {
                                 </div>
 
 
-                                <div className="mt-6 grid gap-3 md:grid-cols-3">
+                                <div className="mt-4 grid gap-2 md:grid-cols-3">
                                     <FloorPlanDetailMetric
                                         label="Listed rent"
                                         value={selectedFloorPlanListedRentLabel}
@@ -5136,17 +5136,17 @@ function FloorPlanMetric({ label, value, highlight = false }) {
 function FloorPlanDetailMetric({ label, value, note, highlight = false }) {
     return (
         <div
-            className={`rounded-2xl p-4 ${
+            className={`rounded-xl p-3 ${
                 highlight
                     ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
                     : "bg-[#f5f8f1] text-[#173f3f]"
             }`}
         >
-            <p className="text-sm font-bold text-[#526260]">{label}</p>
-            <p className="mt-1 truncate text-2xl font-black text-[#102426]">
+            <p className="text-xs font-bold text-[#526260]">{label}</p>
+            <p className="mt-0.5 truncate text-xl font-black text-[#102426]">
                 {value}
             </p>
-            <p className="mt-1 truncate text-sm font-semibold text-[#526260]">
+            <p className="mt-0.5 line-clamp-2 text-xs font-semibold leading-4 text-[#526260]">
                 {note}
             </p>
         </div>
