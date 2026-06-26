@@ -5164,7 +5164,7 @@ function FloorPlanCard({
 
     return (
         <>
-        <div className="relative rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] sm:p-4 lg:p-3">
+        <div className="relative rounded-2xl border border-[#d7e6df] bg-white p-2.5 transition hover:border-[#f2d08a] sm:p-3 lg:p-3">
             <button
                 type="button"
                 onClick={onCheckAvailability}
@@ -5173,7 +5173,7 @@ function FloorPlanCard({
                 Request Info
             </button>
 
-            <div className="float-left mr-3 mb-2 flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-28 sm:w-28 lg:h-[92px] lg:w-[108px] lg:bg-[#f5f8f1] lg:p-0">
+            <div className="float-left mr-3 mb-1.5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-24 sm:w-24 lg:h-[92px] lg:w-[108px] lg:bg-[#f5f8f1] lg:p-0">
                 {shouldShowFloorPlanImage ? (
                     <button
                         type="button"
@@ -5201,19 +5201,19 @@ function FloorPlanCard({
             </div>
 
             <div className="min-w-0 pr-24 sm:pr-28">
-                <div className="grid gap-1.5">
-                    <h3 className="line-clamp-2 text-lg font-black leading-tight text-[#102426] lg:truncate">
+                <div className="grid gap-1">
+                    <h3 className="line-clamp-2 text-base font-black leading-tight text-[#102426] sm:text-lg lg:truncate">
                         {name}
                     </h3>
 
                     {hasSpecial && (
-                        <span className="inline-flex w-fit max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                        <span className="inline-flex w-fit max-w-full rounded-full bg-[#fff8e6] px-2 py-0.5 text-[10px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a] sm:px-2.5 sm:py-1 sm:text-[11px]">
                             <span className="truncate">{specialLabel}</span>
                         </span>
                     )}
                 </div>
 
-                <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
+                <p className="mt-1.5 text-sm font-semibold leading-5 text-[#526260]">
                     {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
                 </p>
 
@@ -5222,8 +5222,8 @@ function FloorPlanCard({
                 </p>
             </div>
 
-            <div className="clear-both flex flex-wrap gap-2 pt-2 lg:pt-3">
-                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
+            <div className="clear-both flex flex-wrap gap-1.5 pt-2 lg:gap-2 lg:pt-3">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#f5f8f1] px-2.5 py-1.5 ring-1 ring-[#d7e6df]">
                     <span className="text-[10px] font-black uppercase text-[#526260]">
                         Listed
                     </span>
@@ -5232,7 +5232,7 @@ function FloorPlanCard({
                     </span>
                 </div>
 
-                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#e7f3ee] px-3 py-2 ring-1 ring-[#a9cfc2]">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#e7f3ee] px-2.5 py-1.5 ring-1 ring-[#a9cfc2]">
                     <span className="text-[10px] font-black uppercase text-[#526260]">
                         Effective
                     </span>
@@ -5241,7 +5241,7 @@ function FloorPlanCard({
                     </span>
                 </div>
 
-                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#fff8e6] px-2.5 py-1.5 ring-1 ring-[#f2d08a]">
                     <span className="text-[10px] font-black uppercase text-[#526260]">
                         {hasSpecial ? "Savings" : "Special"}
                     </span>
@@ -5251,7 +5251,7 @@ function FloorPlanCard({
                 </div>
             </div>
 
-            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 sm:grid-cols-2 lg:mt-3">
+            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-2.5 sm:grid-cols-2 lg:mt-3 lg:p-3">
                 <button
                     type="button"
                     onClick={onToggleCompare}
