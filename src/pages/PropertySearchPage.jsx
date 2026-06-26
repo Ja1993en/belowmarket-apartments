@@ -127,7 +127,6 @@ export default function PropertySearchPage() {
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const resultCardRefs = useRef(new Map());
   const resultsTopRef = useRef(null);
-  const comparePanelRef = useRef(null);
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
     () =>
@@ -426,13 +425,6 @@ export default function PropertySearchPage() {
     setSelectedArea(null);
   };
 
-  const scrollToComparePanel = useCallback(() => {
-    comparePanelRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }, []);
-
   const handleClearCompare = useCallback(() => {
     const clearedSelections = clearCompareSelections();
 
@@ -443,13 +435,8 @@ export default function PropertySearchPage() {
   }, []);
 
   const handleViewCompare = useCallback(() => {
-    if (window.matchMedia("(max-width: 767px)").matches) {
-      setIsCompareModalOpen(true);
-      return;
-    }
-
-    scrollToComparePanel();
-  }, [scrollToComparePanel]);
+    setIsCompareModalOpen(true);
+  }, []);
 
   const handleTogglePropertyCompare = useCallback(
     (property) => {
@@ -892,12 +879,6 @@ export default function PropertySearchPage() {
           </Link>
         </div>
 
-        {hasCompareItems && (
-          <div ref={comparePanelRef} className="hidden scroll-mt-32 md:block">
-            {renderComparePanel()}
-          </div>
-        )}
-
         <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(300px,36vw)] md:items-start lg:grid-cols-[minmax(0,1fr)_minmax(340px,36vw)] xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)]">
           <div className="order-2 min-w-0 md:order-1">
             <div
@@ -1041,12 +1022,12 @@ export default function PropertySearchPage() {
 
       {isCompareModalOpen && hasCompareItems && (
         <div
-          className="fixed inset-0 z-[60] bg-[#102426]/55 p-3 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-[60] bg-[#102426]/55 p-3 backdrop-blur-sm md:p-5"
           role="dialog"
           aria-modal="true"
           aria-label="Compare selected apartments"
         >
-          <div className="mx-auto flex h-full max-w-lg flex-col overflow-hidden rounded-2xl bg-[#f5f8f1] shadow-2xl">
+          <div className="mx-auto flex h-full max-w-lg flex-col overflow-hidden rounded-2xl bg-[#f5f8f1] shadow-2xl md:max-w-5xl">
             <div className="flex items-center justify-between border-b border-[#d7e6df] bg-white px-4 py-3">
               <div>
                 <p className="text-sm font-black text-[#102426]">
@@ -1066,7 +1047,12 @@ export default function PropertySearchPage() {
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-3 pb-24">
-              {renderComparePanel({ isMobileModal: true })}
+              <div className="md:hidden">
+                {renderComparePanel({ isMobileModal: true })}
+              </div>
+              <div className="hidden md:block">
+                {renderComparePanel()}
+              </div>
             </div>
           </div>
         </div>
