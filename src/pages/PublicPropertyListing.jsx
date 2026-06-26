@@ -4126,7 +4126,7 @@ function PropertyLocationMap({
                     </p>
                 </div>
             )}
-            <div className="grid max-h-32 gap-2 overflow-y-auto border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 lg:grid-cols-3 xl:flex xl:flex-wrap xl:items-center xl:content-start">
+            <div className="grid max-h-32 grid-cols-1 gap-2 overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 <MapLegendItem
                     color="bg-[#f2b84b]"
                     label="Property"
