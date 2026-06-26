@@ -1687,18 +1687,18 @@ function SearchResultCard({
             <button
               type="button"
               onClick={showPreviousGalleryPhoto}
-              className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-white drop-shadow-[0_2px_5px_rgba(16,36,38,0.75)] transition hover:text-[#f2b84b]"
+              className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-white drop-shadow-[0_2px_5px_rgba(16,36,38,0.75)]"
               aria-label={`Show previous photo for ${property.name}`}
             >
-              <ChevronLeft className="h-7 w-7" />
+              <ChevronLeft className="h-7 w-7 text-white" />
             </button>
             <button
               type="button"
               onClick={showNextGalleryPhoto}
-              className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-white drop-shadow-[0_2px_5px_rgba(16,36,38,0.75)] transition hover:text-[#f2b84b]"
+              className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-white drop-shadow-[0_2px_5px_rgba(16,36,38,0.75)]"
               aria-label={`Show next photo for ${property.name}`}
             >
-              <ChevronRight className="h-7 w-7" />
+              <ChevronRight className="h-7 w-7 text-white" />
             </button>
             <span className="absolute bottom-2 left-2 z-20 rounded-full bg-white/95 px-2 py-1 text-[10px] font-black text-[#102426] shadow-lg ring-1 ring-white/80 sm:left-3 xl:bottom-3">
               {galleryPhotoIndex + 1}/{galleryImages.length}
