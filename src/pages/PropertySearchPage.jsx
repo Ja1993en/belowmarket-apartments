@@ -892,19 +892,13 @@ export default function PropertySearchPage() {
                     Best deals and matching floor plans update when filters change.
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full bg-[#e7f3ee] px-3 py-1.5 text-xs font-black text-[#1f6f63]">
-                    Transparent specials
-                  </span>
-                  <span className="rounded-full bg-[#fff8e6] px-3 py-1.5 text-xs font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                    8+ week deals highlighted
-                  </span>
-                  {hasMultipleResultsPages && (
+                {hasMultipleResultsPages && (
+                  <div className="flex flex-wrap gap-2">
                     <span className="rounded-full bg-[#f5f8f1] px-3 py-1.5 text-xs font-black text-[#526260] ring-1 ring-[#d7e6df]">
                       Page {safeResultsPage} of {totalResultsPages}
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
