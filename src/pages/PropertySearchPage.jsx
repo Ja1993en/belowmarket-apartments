@@ -1583,7 +1583,8 @@ function SearchResultCard({
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
-      <Link to={cardHref} className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[164px] md:self-stretch lg:min-h-[184px] xl:min-h-[246px]">
+      <div className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[164px] md:self-stretch lg:min-h-[184px] xl:min-h-[246px]">
+        <Link to={cardHref} className="absolute inset-0 block overflow-hidden">
         {showGoldHoverBar && (
           <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
         )}
@@ -1609,7 +1610,14 @@ function SearchResultCard({
             )}
           </div>
         </div>
-      </Link>
+        </Link>
+        <Link
+          to={`/start?property=${property.id}`}
+          className="absolute bottom-2 right-2 z-20 rounded-full bg-[#f2b84b] px-2.5 py-1.5 text-[10px] font-black text-[#102426] shadow-lg ring-1 ring-white/80 transition hover:bg-[#f9d783] xl:bottom-3 xl:right-3 xl:px-3 xl:text-[11px]"
+        >
+          Request Info
+        </Link>
+      </div>
 
       <div className="flex min-w-0 flex-col p-3 md:p-1.5 lg:p-2 xl:p-3.5">
         <div className="flex flex-col gap-1.5 xl:gap-2 2xl:flex-row 2xl:items-start 2xl:justify-between">
@@ -1660,18 +1668,12 @@ function SearchResultCard({
           ))}
         </div>
 
-        <div className="mt-auto grid grid-cols-3 gap-1.5 pt-3 md:gap-1 md:pt-1.5 xl:gap-2 xl:pt-3">
+        <div className="mt-auto grid grid-cols-2 gap-2 pt-3 md:gap-1 md:pt-1.5 xl:gap-2 xl:pt-3">
           <Link
             to={cardHref}
-            className="rounded-lg bg-[#173f3f] px-2 py-2.5 text-center text-xs font-black text-white transition hover:bg-[#102426] md:px-1.5 md:py-1.5 md:text-[10px] lg:px-2 lg:py-2 lg:text-[11px] xl:px-3 xl:py-3 xl:text-sm"
+            className="rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] md:px-2 md:py-1.5 md:text-[11px] lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-3 xl:text-sm"
           >
             View details
-          </Link>
-          <Link
-            to={`/start?property=${property.id}`}
-            className="rounded-lg bg-[#f2b84b] px-2 py-2.5 text-center text-xs font-black text-[#102426] transition hover:bg-[#f9d783] md:px-1.5 md:py-1.5 md:text-[10px] lg:px-2 lg:py-2 lg:text-[11px] xl:px-3 xl:py-3 xl:text-sm"
-          >
-            Request Info
           </Link>
           <button
             type="button"
