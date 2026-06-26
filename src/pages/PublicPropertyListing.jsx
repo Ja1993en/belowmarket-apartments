@@ -2058,14 +2058,16 @@ export default function PublicPropertyListing() {
             ? formatCurrency(Math.round(effectiveRent))
             : formatFloorPlanMetricValue(selectedFloorPlan?.effectiveRent) ||
             selectedFloorPlanListedRentLabel;
-    const selectedFloorPlanMarketRentLabel =
-        formatFloorPlanMetricValue(selectedFloorPlan?.marketRent) || "Verify";
-    const selectedFloorPlanSavingsLabel =
+    const selectedFloorPlanSavingsValue =
         hasCalculableSelectedSpecial
-            ? `Save about ${formatCurrency(Math.round(monthlySavings))}/mo`
+            ? `${formatCurrency(Math.round(monthlySavings))}/mo`
             : selectedFloorPlan?.effectiveRent && selectedFloorPlan?.rent
                 ? getCompareSavingsLabel(selectedFloorPlan.rent, selectedFloorPlan.effectiveRent)
-                : "Confirm with locator";
+                : "Verify";
+    const selectedFloorPlanSavingsNote =
+        hasCalculableSelectedSpecial
+            ? "Estimated monthly difference"
+            : "Confirm current special";
     const leadRequestRentNumber = activeLeadFloorPlan
         ? Number(String(activeLeadFloorPlan.rent || "").replace(/[^0-9]/g, ""))
         : 0;
@@ -3206,21 +3208,13 @@ export default function PublicPropertyListing() {
                                     <FloorPlanDetailMetric
                                         label="Effective value"
                                         value={selectedFloorPlanEffectiveRentLabel}
-                                        note={
-                                            hasCalculableSelectedSpecial
-                                                ? selectedFloorPlanSavingsLabel
-                                                : "Estimated value"
-                                        }
+                                        note="After listed special"
                                         highlight
                                     />
                                     <FloorPlanDetailMetric
-                                        label={getMarketRentCopy(selectedFloorPlan).title}
-                                        value={selectedFloorPlanMarketRentLabel}
-                                        note={
-                                            selectedFloorPlan.marketRentSource
-                                                ? getMarketRentCopy(selectedFloorPlan).detailNote
-                                                : "Confirm comparison"
-                                        }
+                                        label="Savings"
+                                        value={selectedFloorPlanSavingsValue}
+                                        note={selectedFloorPlanSavingsNote}
                                     />
                                 </div>
 
