@@ -5212,32 +5212,32 @@ function FloorPlanCard({
                 </p>
             </div>
 
-            <div className="clear-both grid gap-2 pt-2 sm:grid-cols-3 lg:pt-3">
-                <div className="min-w-0 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
-                    <p className="text-[10px] font-black uppercase text-[#526260]">
+            <div className="clear-both flex flex-wrap gap-2 pt-2 lg:pt-3">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
+                    <span className="text-[10px] font-black uppercase text-[#526260]">
                         Listed
-                    </p>
-                    <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+                    </span>
+                    <span className="truncate text-sm font-black text-[#102426]">
                         {displayRentValue}
-                    </p>
+                    </span>
                 </div>
 
-                <div className="min-w-0 rounded-xl bg-[#e7f3ee] px-3 py-2 ring-1 ring-[#a9cfc2]">
-                    <p className="text-[10px] font-black uppercase text-[#526260]">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#e7f3ee] px-3 py-2 ring-1 ring-[#a9cfc2]">
+                    <span className="text-[10px] font-black uppercase text-[#526260]">
                         Effective
-                    </p>
-                    <p className={`mt-0.5 truncate text-sm font-black ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
+                    </span>
+                    <span className={`truncate text-sm font-black ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
                         {displayEffectiveValue}
-                    </p>
+                    </span>
                 </div>
 
-                <div className="min-w-0 rounded-xl bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
-                    <p className="text-[10px] font-black uppercase text-[#526260]">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+                    <span className="text-[10px] font-black uppercase text-[#526260]">
                         {hasSpecial ? "Savings" : "Special"}
-                    </p>
-                    <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+                    </span>
+                    <span className="truncate text-sm font-black text-[#102426]">
                         {displaySavingsValue}
-                    </p>
+                    </span>
                 </div>
             </div>
 
