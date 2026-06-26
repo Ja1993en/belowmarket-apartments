@@ -1660,12 +1660,18 @@ function SearchResultCard({
           ))}
         </div>
 
-        <div className="mt-auto grid grid-cols-2 gap-2 pt-3 md:gap-1 md:pt-1.5 xl:gap-2 xl:pt-3">
+        <div className="mt-auto grid grid-cols-3 gap-1.5 pt-3 md:gap-1 md:pt-1.5 xl:gap-2 xl:pt-3">
           <Link
             to={cardHref}
-            className="rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] md:px-2 md:py-1.5 md:text-[11px] lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-3 xl:text-sm"
+            className="rounded-lg bg-[#173f3f] px-2 py-2.5 text-center text-xs font-black text-white transition hover:bg-[#102426] md:px-1.5 md:py-1.5 md:text-[10px] lg:px-2 lg:py-2 lg:text-[11px] xl:px-3 xl:py-3 xl:text-sm"
           >
             View details
+          </Link>
+          <Link
+            to={`/start?property=${property.id}`}
+            className="rounded-lg bg-[#f2b84b] px-2 py-2.5 text-center text-xs font-black text-[#102426] transition hover:bg-[#f9d783] md:px-1.5 md:py-1.5 md:text-[10px] lg:px-2 lg:py-2 lg:text-[11px] xl:px-3 xl:py-3 xl:text-sm"
+          >
+            Request Info
           </Link>
           <button
             type="button"
