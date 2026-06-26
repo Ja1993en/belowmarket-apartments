@@ -2,9 +2,22 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Home } from "lucide-react";
 
+const trackLeadFormConversion = () => {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") {
+    return;
+  }
+
+  window.gtag("event", "conversion", {
+    send_to: "AW-18240067010/ZJoaCLTRpsYcEMKrxflD",
+    value: 1.0,
+    currency: "USD",
+  });
+};
+
 export default function ThankYouPage() {
   useEffect(() => {
     document.title = "Request Received | Below Market Apartments";
+    trackLeadFormConversion();
 
     let robotsMeta = document.querySelector('meta[name="robots"]');
     const previousRobotsContent = robotsMeta?.getAttribute("content");
