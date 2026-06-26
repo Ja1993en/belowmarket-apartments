@@ -1184,6 +1184,7 @@ export default function PublicPropertyListing() {
     const [floorPlanPage, setFloorPlanPage] = useState(1);
     const [showUnavailableFloorPlans, setShowUnavailableFloorPlans] = useState(false);
     const [selectedFloorPlan, setSelectedFloorPlan] = useState(null);
+    const [leadRequestFloorPlan, setLeadRequestFloorPlan] = useState(null);
     const [isPropertyNavStuck, setIsPropertyNavStuck] = useState(false);
     const [showSidebarError, setShowSidebarError] = useState(false);
     const [showMobileIntakeModal, setShowMobileIntakeModal] = useState(false);
@@ -1482,18 +1483,13 @@ export default function PublicPropertyListing() {
     });
 
     const openFloorPlanAvailabilityRequest = (plan, selectedUnit = "") => {
-        setSelectedFloorPlan(plan);
+        setLeadRequestFloorPlan(plan);
         setLeadSubmitted(false);
-        setLeadForm(getEmptyLeadForm(selectedUnit));
-
-        window.setTimeout(() => {
-            document
-                .getElementById("floor-plan-lead-form")
-                ?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
-        }, 0);
+        setLeadForm({
+            ...getEmptyLeadForm(selectedUnit),
+            bedroomsNeeded: formatBedroomLabel(plan.beds, plan.name),
+        });
+        setShowMobileIntakeModal(true);
     };
 
     const sortedUnits = selectedFloorPlan?.availableUnits
@@ -1507,6 +1503,17 @@ export default function PublicPropertyListing() {
     const selectedUnitDetails = sortedUnits.find(
         (unit) => unit.unit === leadForm.selectedUnit
     );
+    const activeLeadFloorPlan = showMobileIntakeModal ? leadRequestFloorPlan : null;
+    const activeLeadSortedUnits = activeLeadFloorPlan?.availableUnits
+        ? [...activeLeadFloorPlan.availableUnits].sort((a, b) => {
+            const rentA = Number(a.rent.replace(/[^0-9]/g, ""));
+            const rentB = Number(b.rent.replace(/[^0-9]/g, ""));
+            return rentA - rentB;
+        })
+        : [];
+    const activeLeadUnitDetails = activeLeadSortedUnits.find(
+        (unit) => unit.unit === leadForm.selectedUnit
+    );
 
 
     const handleCallTextClick = (clickLocation) => {
@@ -1517,7 +1524,7 @@ export default function PublicPropertyListing() {
             pageSource: "public_property_listing",
             clickLocation,
             status: "clicked",
-            floorPlan: selectedFloorPlan?.name || null,
+            floorPlan: activeLeadFloorPlan?.name || null,
             selectedUnit: leadForm.selectedUnit || null,
             contactSnapshot: {
                 name: leadForm.name || null,
@@ -1526,22 +1533,22 @@ export default function PublicPropertyListing() {
             },
             propertySnapshot: {
                 propertyName: propertyId,
-                floorPlan: selectedFloorPlan?.name || null,
+                floorPlan: activeLeadFloorPlan?.name || null,
                 selectedUnit: leadForm.selectedUnit || null,
-                rent: selectedFloorPlan?.rent || null,
-                specialLabel: selectedFloorPlan?.special?.label || null,
+                rent: activeLeadFloorPlan?.rent || null,
+                specialLabel: activeLeadFloorPlan?.special?.label || null,
             },
             unitSnapshot: leadForm.selectedUnit
                 ? {
                     unit: leadForm.selectedUnit,
-                    rent: selectedUnitDetails?.rent || null,
-                    available: selectedUnitDetails?.available || null,
-                    requestCount: selectedUnitDetails?.requestCount || 0,
+                    rent: activeLeadUnitDetails?.rent || null,
+                    available: activeLeadUnitDetails?.available || null,
+                    requestCount: activeLeadUnitDetails?.requestCount || 0,
                 }
                 : null,
             priority: leadForm.selectedUnit
                 ? "high"
-                : selectedFloorPlan
+                : activeLeadFloorPlan
                     ? "medium"
                     : "normal",
             leadScore: getLeadScore(),
@@ -1557,22 +1564,22 @@ export default function PublicPropertyListing() {
 
     const getLeadScore = () => {
         if (leadForm.selectedUnit) return 100;
-        if (selectedFloorPlan) return 70;
+        if (activeLeadFloorPlan) return 70;
         return 40;
     };
 
     const getLeadIntent = () => {
         if (leadForm.selectedUnit) return "unit";
-        if (selectedFloorPlan) return "floor_plan";
+        if (activeLeadFloorPlan) return "floor_plan";
         return "property";
     };
 
     const handleFloorPlanLeadSubmit = async () => {
-        const isFloorPlanRequest = Boolean(selectedFloorPlan);
+        const isFloorPlanRequest = Boolean(activeLeadFloorPlan);
         const leadBedrooms =
             leadForm.bedroomsNeeded ||
-            (selectedFloorPlan
-                ? formatBedroomLabel(selectedFloorPlan.beds, selectedFloorPlan.name)
+            (activeLeadFloorPlan
+                ? formatBedroomLabel(activeLeadFloorPlan.beds, activeLeadFloorPlan.name)
                 : "");
         const leadBudget = leadForm.budget.trim();
         const leadMoveIn = leadForm.moveInDate.trim();
@@ -1611,14 +1618,14 @@ export default function PublicPropertyListing() {
         const sourcePropertyId = property?.id || propertyId;
         const sourcePropertyName = property?.name || propertyId;
         const selectedSpecialLabel =
-            selectedFloorPlan?.special?.label ||
+            activeLeadFloorPlan?.special?.label ||
             (hasPropertySpecial ? propertySpecialLabel : "");
         const leadNotes = [
             `Interested property: ${sourcePropertyName}`,
             addressLabel ? `Address: ${addressLabel}` : null,
-            isFloorPlanRequest ? `Floor plan: ${selectedFloorPlan.name}` : null,
+            isFloorPlanRequest ? `Floor plan: ${activeLeadFloorPlan.name}` : null,
             leadForm.selectedUnit ? `Selected unit: ${leadForm.selectedUnit}` : null,
-            selectedUnitDetails?.rent ? `Selected unit rent: ${selectedUnitDetails.rent}` : null,
+            activeLeadUnitDetails?.rent ? `Selected unit rent: ${activeLeadUnitDetails.rent}` : null,
             selectedSpecialLabel ? `Special to confirm: ${selectedSpecialLabel}` : null,
             leadForm.contactMethod ? `Preferred contact: ${leadForm.contactMethod}` : null,
         ]
@@ -1635,46 +1642,46 @@ export default function PublicPropertyListing() {
             status: "new",
             leadSource: leadForm.selectedUnit
                 ? "unit_modal"
-                : selectedFloorPlan
+                : activeLeadFloorPlan
                     ? "floor_plan_modal"
                     : "property_locator_form",
-            floorPlan: selectedFloorPlan?.name,
+            floorPlan: activeLeadFloorPlan?.name,
             selectedUnit: leadForm.selectedUnit || null,
-            selectedUnitRent: selectedUnitDetails?.rent || null,
-            selectedUnitAvailability: selectedUnitDetails?.available || null,
-            beds: selectedFloorPlan?.beds,
-            baths: selectedFloorPlan?.baths,
-            sqft: selectedFloorPlan?.sqft,
-            rent: selectedFloorPlan?.rent,
-            estimatedRentAfterSpecial: hasCalculableSelectedSpecial
-                ? Math.round(effectiveRent)
+            selectedUnitRent: activeLeadUnitDetails?.rent || null,
+            selectedUnitAvailability: activeLeadUnitDetails?.available || null,
+            beds: activeLeadFloorPlan?.beds,
+            baths: activeLeadFloorPlan?.baths,
+            sqft: activeLeadFloorPlan?.sqft,
+            rent: activeLeadFloorPlan?.rent,
+            estimatedRentAfterSpecial: hasCalculableLeadRequestSpecial
+                ? Math.round(leadRequestEffectiveRent)
                 : null,
-            monthlySavings: hasCalculableSelectedSpecial
-                ? Math.round(monthlySavings)
+            monthlySavings: hasCalculableLeadRequestSpecial
+                ? Math.round(leadRequestMonthlySavings)
                 : null,
-            concessionValue: hasCalculableSelectedSpecial
-                ? Math.round(concessionValue)
-                : null, special: selectedFloorPlan?.special || null,
+            concessionValue: hasCalculableLeadRequestSpecial
+                ? Math.round(leadRequestConcessionValue)
+                : null, special: activeLeadFloorPlan?.special || null,
             propertySnapshot: {
                 propertyName: propertyId,
-                floorPlan: selectedFloorPlan?.name,
-                rent: selectedFloorPlan?.rent,
-                beds: selectedFloorPlan?.beds,
-                baths: selectedFloorPlan?.baths,
-                sqft: selectedFloorPlan?.sqft,
-                specialLabel: selectedFloorPlan?.special?.label || null,
+                floorPlan: activeLeadFloorPlan?.name,
+                rent: activeLeadFloorPlan?.rent,
+                beds: activeLeadFloorPlan?.beds,
+                baths: activeLeadFloorPlan?.baths,
+                sqft: activeLeadFloorPlan?.sqft,
+                specialLabel: activeLeadFloorPlan?.special?.label || null,
                 unitSnapshot: leadForm.selectedUnit
                     ? {
                         unit: leadForm.selectedUnit,
-                        rent: selectedUnitDetails?.rent || null,
-                        available: selectedUnitDetails?.available || null,
-                        requestCount: selectedUnitDetails?.requestCount || 0,
+                        rent: activeLeadUnitDetails?.rent || null,
+                        available: activeLeadUnitDetails?.available || null,
+                        requestCount: activeLeadUnitDetails?.requestCount || 0,
                     }
                     : null,
             },
             priority: leadForm.selectedUnit
                 ? "high"
-                : selectedFloorPlan
+                : activeLeadFloorPlan
                     ? "medium"
                     : "normal", contactMethod: leadForm.contactMethod || null,
             moveInDate: leadForm.moveInDate || null,
@@ -1693,9 +1700,9 @@ export default function PublicPropertyListing() {
             budget: leadBudget,
             moveIn: leadMoveIn,
             status: "New Lead",
-            quality: leadForm.selectedUnit || selectedFloorPlan ? "High Intent" : "New",
-            priority: leadForm.selectedUnit ? "High" : selectedFloorPlan ? "High" : "Medium",
-            source: selectedFloorPlan ? "Property floor plan page" : "Property listing page",
+            quality: leadForm.selectedUnit || activeLeadFloorPlan ? "High Intent" : "New",
+            priority: leadForm.selectedUnit ? "High" : activeLeadFloorPlan ? "High" : "Medium",
+            source: activeLeadFloorPlan ? "Property floor plan page" : "Property listing page",
             sourcePropertyId,
             sourcePropertyName,
             assignedTo: "Unassigned",
@@ -2044,6 +2051,30 @@ export default function PublicPropertyListing() {
         rentNumber - effectiveRent;
 
     const concessionValue = rentNumber * (freeWeeks / 4) + rentCreditSpecialNumber;
+    const leadRequestRentNumber = activeLeadFloorPlan
+        ? Number(String(activeLeadFloorPlan.rent || "").replace(/[^0-9]/g, ""))
+        : 0;
+    const leadRequestFreeWeeks =
+        activeLeadFloorPlan?.special?.freeWeeks ||
+        getFreeWeeksFromSpecialLabel(activeLeadFloorPlan?.special?.label) ||
+        0;
+    const leadRequestRentCreditSpecialNumber =
+        parseCurrency(
+            activeLeadFloorPlan?.rentCreditSpecial ||
+            activeLeadFloorPlan?.special?.rentCreditSpecial ||
+            getRentCreditSpecialFromLabel(activeLeadFloorPlan?.special?.label)
+        );
+    const hasCalculableLeadRequestSpecial =
+        leadRequestRentNumber > 0 &&
+        (leadRequestFreeWeeks > 0 || leadRequestRentCreditSpecialNumber > 0);
+    const leadRequestLeaseMonths = activeLeadFloorPlan?.leaseTermMonths || 12;
+    const leadRequestConcessionValue =
+        leadRequestRentNumber * (leadRequestFreeWeeks / 4) +
+        leadRequestRentCreditSpecialNumber;
+    const leadRequestEffectiveRent =
+        leadRequestRentNumber - leadRequestConcessionValue / leadRequestLeaseMonths;
+    const leadRequestMonthlySavings =
+        leadRequestRentNumber - leadRequestEffectiveRent;
 
     const getLowestUnitRent = (units = []) => {
         if (!units.length) return null;
@@ -2252,7 +2283,12 @@ export default function PublicPropertyListing() {
 
                     <button
                         type="button"
-                        onClick={() => setShowMobileIntakeModal(true)}
+                        onClick={() => {
+                            setLeadRequestFloorPlan(null);
+                            setLeadSubmitted(false);
+                            setLeadForm(getEmptyLeadForm());
+                            setShowMobileIntakeModal(true);
+                        }}
                         className="rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783] md:hidden"
                     >
                         Ask an Apartment Locator
@@ -2999,7 +3035,7 @@ export default function PublicPropertyListing() {
             </div>
             {showMobileIntakeModal && (
                 <div
-                    className="fixed inset-0 z-50 bg-[#102426]/70 p-3 backdrop-blur-sm md:hidden"
+                    className="fixed inset-0 z-[70] bg-[#102426]/70 p-3 backdrop-blur-sm"
                     role="dialog"
                     aria-modal="true"
                     aria-label="Ask an apartment locator"
@@ -3123,7 +3159,7 @@ export default function PublicPropertyListing() {
                             Close
                         </button>
                     </div>
-                        <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_.8fr]">
+                        <div className="mt-6">
                             <div>
 
                                 {selectedFloorPlan.image && (
@@ -3286,17 +3322,12 @@ export default function PublicPropertyListing() {
                                                         </p>
 
                                                         <button
-                                                            onClick={() => {
-                                                                setLeadSubmitted(false);
-                                                                setLeadForm(getEmptyLeadForm(unit.unit));
-
-                                                                document
-                                                                    .getElementById("floor-plan-lead-form")
-                                                                    ?.scrollIntoView({
-                                                                        behavior: "smooth",
-                                                                        block: "start",
-                                                                    });
-                                                            }}
+                                                            onClick={() =>
+                                                                openFloorPlanAvailabilityRequest(
+                                                                    selectedFloorPlan,
+                                                                    unit.unit
+                                                                )
+                                                            }
                                                             className={`mt-2 rounded-xl px-3 py-2 text-xs font-bold !text-white hover:!text-white ${leadForm.selectedUnit === unit.unit
                                                                 ? "bg-[#1f6f63]"
                                                                 : "bg-[#173f3f] hover:bg-[#102426]"
@@ -3345,303 +3376,7 @@ export default function PublicPropertyListing() {
 
                             </div>
 
-                            <div className="rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-5">
-                                <h3 className="text-xl font-black text-[#102426]">
-                                    {leadForm.selectedUnit
-                                        ? `Check Unit ${leadForm.selectedUnit} availability`
-                                        : "Check availability for this layout"}
-                                </h3>
 
-                                <p className="mt-2 text-sm text-[#526260]">
-                                    {leadForm.selectedUnit
-                                        ? `Get current pricing, availability, and special details for Unit ${leadForm.selectedUnit}.`
-                                        : `Get current pricing, availability, and special details for ${selectedFloorPlan.name}.`}
-                                </p>
-
-
-                                <div className="mt-4 rounded-2xl bg-white p-4">
-                                    <p className="text-sm font-bold text-[#102426]">
-                                        Local Apartment Locator
-                                    </p>
-
-                                    <div className="mt-3 flex items-center gap-3">
-                                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#173f3f] text-sm font-black text-white">
-                                            JM
-                                        </div>
-
-                                        <div>
-                                            <p className="font-bold text-[#102426]">
-                                                Jalen McNeal
-                                            </p>
-
-
-                                            <p className="text-sm text-[#526260]">
-                                                Dallas apartment specialist
-                                            </p>
-                                            <a
-                                                href="tel:9452693768"
-                                                onClick={() => handleCallTextClick("floor_plan_modal")}
-                                                className="mt-3 block text-center text-sm font-bold text-[#526260] hover:text-[#102426]"
-                                            >
-                                                📞 Call or Text Jalen (945) 269-3768
-                                            </a>
-                                        </div>
-                                    </div>
-
-
-                                    <p className="mt-3 text-sm leading-6 text-[#526260]">
-                                        I’ll help confirm current pricing, specials, and similar options that may fit your move-in timeline.
-                                    </p>
-                                </div>
-
-                                {leadForm.selectedUnit && (
-                                    <div className="mt-4 rounded-2xl border border-[#a9cfc2] bg-[#e7f3ee] p-3">
-
-                                        <p className="text-sm font-bold text-[#1f6f63]">
-                                            ✓ Selected Unit
-                                        </p>
-
-                                        <p className="mt-1 font-black text-[#102426]">
-                                            Unit {leadForm.selectedUnit}
-                                        </p>
-                                        {selectedUnitDetails && (
-                                            <div className="mt-2 flex flex-wrap gap-2">
-                                                {selectedUnitDetails.requestCount > 0 &&
-                                                    selectedUnitDetails.requestCount === highestRequestCount && (
-                                                        <span className="rounded-full bg-[#eef5ff] px-2 py-1 text-xs font-bold text-[#174a7c]">
-                                                            Most Requested
-                                                        </span>
-                                                    )}
-
-                                                {Number(selectedUnitDetails.rent.replace(/[^0-9]/g, "")) === lowestUnitRent && (
-                                                    <span className="rounded-full bg-[#d8efe6] px-2 py-1 text-xs font-bold text-[#1f6f63]">
-                                                        Best Value
-                                                    </span>
-                                                )}
-
-                                                {selectedUnitDetails.available === "Available Now" && (
-                                                    <span className="rounded-full bg-[#d8efe6] px-2 py-1 text-xs font-bold text-[#1f6f63]">
-                                                        Available Now
-                                                    </span>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {selectedUnitDetails && (
-                                            <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                                {selectedUnitDetails.rent}
-                                                {selectedUnitDetails.available !== "Available Now" &&
-                                                    ` • ${selectedUnitDetails.available}`}                                            </p>
-                                        )}
-
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setLeadSubmitted(false);
-
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    selectedUnit: "",
-                                                });
-                                            }}
-                                            className="mt-3 text-xs font-bold text-[#526260] underline hover:text-[#102426]"
-                                        >
-                                            Check entire floor plan instead
-                                        </button>
-                                    </div>
-                                )}
-
-                                <div
-                                    id="floor-plan-lead-form"
-                                    className="mt-5 rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]"
-                                >
-                                    <p className="text-sm font-black text-[#102426]">
-                                        Your contact info
-                                    </p>
-                                    <p className="mt-1 text-xs font-semibold text-[#526260]">
-                                        Name, phone, email, budget, and move-in timing are required so this request appears correctly in admin.
-                                    </p>
-
-                                    <div className="mt-4 grid gap-3 md:grid-cols-2">
-                                        <input
-                                            name="Your name"
-                                            type="text"
-                                            placeholder="Your name *"
-                                            value={leadForm.name}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    name: e.target.value,
-                                                })
-                                            }
-                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        />
-
-                                        <input
-                                            name="phone"
-                                            type="tel"
-                                            placeholder="Phone number *"
-                                            value={leadForm.phone}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    phone: e.target.value,
-                                                })
-                                            }
-                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        />
-                                        <input
-                                            name="email"
-                                            type="email"
-                                            placeholder="Email address *"
-                                            value={leadForm.email}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    email: e.target.value,
-                                                })
-                                            }
-                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2] md:col-span-2"
-                                        />
-
-                                        <input
-                                            name="budget"
-                                            type="text"
-                                            placeholder="Budget *"
-                                            value={leadForm.budget}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    budget: e.target.value,
-                                                })
-                                            }
-                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        />
-
-                                        <select
-                                            name="moveInDate"
-                                            value={leadForm.moveInDate}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    moveInDate: e.target.value,
-                                                })
-                                            }
-                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        >
-                                            <option value="">Move-in timeline *</option>
-                                            <option value="Immediately">Immediately</option>
-                                            <option value="Within 30 Days">Within 30 Days</option>
-                                            <option value="Within 60 Days">Within 60 Days</option>
-                                            <option value="Within 90 Days">Within 90 Days</option>
-                                            <option value="More Than 90 Days">More Than 90 Days</option>
-                                        </select>
-
-                                        <select
-                                            name="bedroomsNeeded"
-                                            value={leadForm.bedroomsNeeded}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    bedroomsNeeded: e.target.value,
-                                                })
-                                            }
-                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        >
-                                            <option value="">
-                                                {selectedFloorPlan
-                                                    ? `Use ${formatBedroomLabel(selectedFloorPlan.beds, selectedFloorPlan.name)}`
-                                                    : "Bedrooms *"}
-                                            </option>
-                                            <option value="Studio">Studio</option>
-                                            <option value="1 Bed">1 Bed</option>
-                                            <option value="2 Bed">2 Bed</option>
-                                            <option value="3 Bed">3 Bed</option>
-                                        </select>
-
-                                        <select
-                                            name="contactMethod"
-                                            value={leadForm.contactMethod}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    contactMethod: e.target.value,
-                                                })
-                                            }
-                                            className="rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm outline-none focus:border-[#2d7dd2]"
-                                        >
-                                            <option value="">Preferred contact (optional)</option>
-                                            <option value="Text">Text me</option>
-                                            <option value="Call">Call me</option>
-                                            <option value="Email">Email me</option>
-                                        </select>
-                                    </div>
-
-                                    <label className="mt-4 flex gap-3 rounded-2xl bg-[#f5f8f1] p-4 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
-                                        <input
-                                            type="checkbox"
-                                            checked={leadForm.smsConsent}
-                                            onChange={(e) =>
-                                                setLeadForm({
-                                                    ...leadForm,
-                                                    smsConsent: e.target.checked,
-                                                })
-                                            }
-                                            className="mt-1 h-4 w-4 shrink-0 accent-[#173f3f]"
-                                        />
-                                        <span>
-                                            I agree to receive recurring text messages from Below Market Apartments about apartment search help, property recommendations, tour coordination, and follow-up. Reply HELP for help or STOP to opt out.
-                                        </span>
-                                    </label>
-
-                                    {showSidebarError && (
-                                        <p className="mt-3 text-sm font-semibold text-[#e4572e]">
-                                            {leadFormError || "Add the required info so we can check availability."}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-4">
-                                    <p className="text-sm font-semibold text-[#173f3f]">
-                                        ✓ No cost to renters
-                                    </p>
-
-                                    <p className="mt-2 text-sm font-semibold text-[#173f3f]">
-                                        ✓ Access to active leasing specials
-                                    </p>
-
-                                    <p className="mt-2 text-sm font-semibold text-[#173f3f]">
-                                        ✓ Fast response from a local apartment locator
-                                    </p>
-                                </div>
-
-                                {leadSubmitted && (
-                                    <div className="mt-4 rounded-2xl p-4 text-sm font-bold text-[#1f6f63]">
-                                        {leadForm.selectedUnit
-                                            ? `✅ Request received for Unit ${leadForm.selectedUnit}. We'll follow up with current pricing and availability.`
-                                            : `✅ Request received for ${selectedFloorPlan.name}. We'll follow up with current pricing and availability.`}
-                                    </div>
-                                )}
-
-                                <button
-                                    type="button"
-                                    onClick={handleFloorPlanLeadSubmit}
-                                    disabled={isSubmittingLead || leadSubmitted}
-                                    className={`mt-6 w-full rounded-2xl px-5 py-3 text-sm font-black ${leadSubmitted
-                                        ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
-                                        : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
-                                        }`}
-                                >
-                                    {isSubmittingLead
-                                        ? "Sending..."
-                                        : leadSubmitted
-                                            ? "Availability Request Sent"
-                                            : leadForm.selectedUnit
-                                                ? `Check Unit ${leadForm.selectedUnit} Availability`
-                                                : `Check ${selectedFloorPlan.name} Availability`}
-                                </button>
-
-
-                            </div>
                         </div>
                     </div>
                 </div>
