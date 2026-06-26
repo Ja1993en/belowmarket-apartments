@@ -864,8 +864,8 @@ export default function PropertySearchPage() {
           </div>
         )}
 
-        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)] xl:items-start">
-          <div className="order-2 min-w-0 xl:order-1">
+        <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(340px,36vw)] lg:items-start xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)]">
+          <div className="order-2 min-w-0 lg:order-1">
             <div
               ref={resultsTopRef}
               className="rounded-xl border border-[#d7e6df] bg-white p-4 shadow-sm"
@@ -984,7 +984,7 @@ export default function PropertySearchPage() {
             )}
           </div>
 
-          <div className="order-1 xl:sticky xl:top-28 xl:order-2">
+          <div className="order-1 lg:sticky lg:top-28 lg:order-2">
             <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
               <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
                 <div>
@@ -997,7 +997,7 @@ export default function PropertySearchPage() {
                   {mappableFilteredProperties.length} pins
                 </span>
               </div>
-              <div className="bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[430px] xl:h-[calc(100vh-210px)] xl:min-h-[520px]">
+              <div className="bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[430px] lg:h-[calc(100vh-210px)] lg:min-h-[480px] xl:min-h-[520px]">
                 <SearchMap
                   properties={filteredProperties}
                   mappableProperties={mappableFilteredProperties}
@@ -1587,11 +1587,11 @@ function SearchResultCard({
   return (
     <article
       ref={cardRef}
-      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid md:grid-cols-[250px_minmax(0,1fr)] md:items-stretch ${
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid md:grid-cols-[220px_minmax(0,1fr)] md:items-stretch xl:grid-cols-[250px_minmax(0,1fr)] ${
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
-      <Link to={cardHref} className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[248px] md:self-stretch">
+      <Link to={cardHref} className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[220px] md:self-stretch xl:min-h-[248px]">
         {showGoldHoverBar && (
           <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
         )}
@@ -1617,11 +1617,11 @@ function SearchResultCard({
         </div>
       </Link>
 
-      <div className="flex min-w-0 flex-col p-4">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex min-w-0 flex-col p-3 xl:p-4">
+        <div className="flex flex-col gap-2 2xl:flex-row 2xl:items-start 2xl:justify-between">
           <Link to={cardHref} className="min-w-0">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <p className="min-w-0 truncate text-lg font-black text-[#102426]">
+              <p className="min-w-0 truncate text-base font-black text-[#102426] xl:text-lg">
                 {property.name}
               </p>
               {hasSpecial && (
