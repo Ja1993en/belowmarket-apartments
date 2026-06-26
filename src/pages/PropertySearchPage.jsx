@@ -1765,7 +1765,7 @@ function SearchResultCard({
         <div className="mt-auto grid grid-cols-2 gap-2 pt-3 md:gap-1 md:pt-1.5 xl:gap-2 xl:pt-3">
           <Link
             to={cardHref}
-            className="rounded-lg bg-[#173f3f] px-3 py-2.5 text-center text-xs font-black leading-none text-white transition hover:bg-[#102426] sm:text-sm md:px-3 md:py-2.5 md:text-sm lg:px-3 lg:py-2.5 lg:text-sm xl:py-3"
+            className="inline-flex items-center justify-center rounded-lg bg-[#173f3f] px-3 py-2.5 text-center text-xs font-black text-white transition hover:bg-[#102426] sm:text-sm md:px-3 md:py-2.5 md:text-sm lg:px-3 lg:py-2.5 lg:text-sm xl:py-3"
           >
             View details
           </Link>
