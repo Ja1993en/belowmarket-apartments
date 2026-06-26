@@ -485,7 +485,7 @@ export default function PropertySearchPage() {
     }
   }, [hasCompareItems]);
 
-  const renderComparePanel = () => (
+  const renderComparePanel = ({ isMobileModal = false } = {}) => (
     <CompareSavedOptionsPanel
       activeTab={activeCompareTab}
       compareDetailMode={compareDetailMode}
@@ -493,6 +493,7 @@ export default function PropertySearchPage() {
       compareFloorPlanRows={compareFloorPlanRows}
       formatBedroomLabel={formatBedroomLabel}
       getSearchDealScore={getSearchDealScore}
+      isMobileModal={isMobileModal}
       onClearCompare={handleClearCompare}
       onRemoveFloorPlan={(row) =>
         setCompareFloorPlanItems(removeCompareFloorPlanItem(row))
@@ -1065,7 +1066,7 @@ export default function PropertySearchPage() {
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-3 pb-24">
-              {renderComparePanel()}
+              {renderComparePanel({ isMobileModal: true })}
             </div>
           </div>
         </div>
