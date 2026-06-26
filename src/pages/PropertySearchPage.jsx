@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Building2, MapPin, Navigation, Search } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, MapPin, Navigation, Search } from "lucide-react";
 import CompareSavedOptionsPanel from "../components/propertySearch/CompareSavedOptionsPanel";
 import { getPublicPropertySummaries } from "../data/propertyStorage";
 import {
@@ -15,6 +15,7 @@ import {
 
 import {
   getPropertyAddressLabel,
+  getPhotoImageUrl,
   getPropertyPrimaryImage,
   getPropertySearchSuggestions,
   getPublicSearchProperties,
@@ -1573,8 +1574,28 @@ function SearchResultCard({
   const cardHref = `/properties/${property.id}`;
   const showGoldHoverBar = isMapHighlighted && propertyHasStrongMapDeal(property);
   const floorPlanCount = displayFloorPlans.length;
+  const galleryImages = useMemo(() => getSearchCardGalleryImages(property), [property]);
+  const [galleryPhotoIndex, setGalleryPhotoIndex] = useState(0);
+  const currentGalleryImage = galleryImages[galleryPhotoIndex] || getPropertyPrimaryImage(property);
+  const hasGalleryControls = galleryImages.length > 1;
   const actionButtonClass =
     "rounded-lg px-3 py-2.5 text-sm font-black transition md:px-2 md:py-1.5 md:text-[11px] lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-2.5 xl:text-sm";
+
+  useEffect(() => {
+    setGalleryPhotoIndex(0);
+  }, [property.id]);
+
+  const showPreviousGalleryPhoto = () => {
+    setGalleryPhotoIndex((currentIndex) =>
+      currentIndex === 0 ? galleryImages.length - 1 : currentIndex - 1
+    );
+  };
+
+  const showNextGalleryPhoto = () => {
+    setGalleryPhotoIndex((currentIndex) =>
+      currentIndex === galleryImages.length - 1 ? 0 : currentIndex + 1
+    );
+  };
 
   return (
     <article
@@ -1590,7 +1611,7 @@ function SearchResultCard({
         )}
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src={getPropertyPrimaryImage(property)}
+            src={currentGalleryImage}
             alt={property.name}
             loading="lazy"
             decoding="async"
@@ -1611,6 +1632,29 @@ function SearchResultCard({
           </div>
         </div>
         </Link>
+        {hasGalleryControls && (
+          <>
+            <button
+              type="button"
+              onClick={showPreviousGalleryPhoto}
+              className="absolute left-2 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-[#173f3f] shadow-lg ring-1 ring-white/80 transition hover:bg-[#f2b84b]"
+              aria-label={`Show previous photo for ${property.name}`}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={showNextGalleryPhoto}
+              className="absolute right-2 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-[#173f3f] shadow-lg ring-1 ring-white/80 transition hover:bg-[#f2b84b]"
+              aria-label={`Show next photo for ${property.name}`}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <span className="absolute bottom-2 left-2 z-20 rounded-full bg-white/95 px-2 py-1 text-[10px] font-black text-[#102426] shadow-lg ring-1 ring-white/80 sm:left-3 xl:bottom-3">
+              {galleryPhotoIndex + 1}/{galleryImages.length}
+            </span>
+          </>
+        )}
         <Link
           to={`/start?property=${property.id}`}
           className="absolute bottom-2 right-2 z-20 rounded-full bg-[#f2b84b] px-2.5 py-1.5 text-[10px] font-black text-[#102426] shadow-lg ring-1 ring-white/80 transition hover:bg-[#f9d783] xl:bottom-3 xl:right-3 xl:px-3 xl:text-[11px]"
@@ -1690,6 +1734,17 @@ function SearchResultCard({
       </div>
     </article>
   );
+}
+
+function getSearchCardGalleryImages(property) {
+  const imageUrls = [
+    ...(property?.photos || []).map((photo) =>
+      photo?.cardUrl || photo?.thumbnailUrl || getPhotoImageUrl(photo)
+    ),
+    getPropertyPrimaryImage(property),
+  ].filter(Boolean);
+
+  return [...new Set(imageUrls)];
 }
 
 function SearchRentMetric({ label, value, highlight = false }) {
