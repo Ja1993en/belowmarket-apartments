@@ -22,6 +22,22 @@
       gtag('js', new Date());
 
       gtag('config', 'AW-18240067010');
+      window.trackBmaLeadConversion = function() {
+        if (sessionStorage.getItem('bmaLeadConversionTracked') === 'true') {
+          return;
+        }
+
+        sessionStorage.setItem('bmaLeadConversionTracked', 'true');
+        gtag('event', 'conversion', {
+          send_to: 'AW-18240067010/ZJoaCLTRpsYcEMKrxflD',
+          value: 1.0,
+          currency: 'USD'
+        });
+      };
+
+      if (window.location.pathname === '/thank-you') {
+        window.addEventListener('load', window.trackBmaLeadConversion);
+      }
     </script>
     <link rel="canonical" href="https://belowmarketapartments.com/" />
     <!-- bma-og-start -->

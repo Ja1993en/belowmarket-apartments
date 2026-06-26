@@ -3,6 +3,11 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Home } from "lucide-react";
 
 const trackLeadFormConversion = () => {
+  if (typeof window !== "undefined" && typeof window.trackBmaLeadConversion === "function") {
+    window.trackBmaLeadConversion();
+    return;
+  }
+
   if (typeof window === "undefined" || typeof window.gtag !== "function") {
     return;
   }
