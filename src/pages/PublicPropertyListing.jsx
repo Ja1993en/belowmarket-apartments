@@ -5162,8 +5162,8 @@ function FloorPlanCard({
 
     return (
         <>
-        <div className="grid gap-3 rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] lg:grid-cols-[122px_minmax(0,1fr)_178px] lg:items-center">
-            <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl bg-[#f5f8f1] ring-1 ring-[#d7e6df] lg:h-[92px]">
+        <div className="grid gap-4 rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] sm:p-4 lg:grid-cols-[122px_minmax(0,1fr)_178px] lg:items-center lg:gap-3 lg:p-3">
+            <div className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-[#d7e6df] sm:aspect-[16/9] lg:h-[92px] lg:aspect-auto lg:bg-[#f5f8f1] lg:p-0">
                 {shouldShowFloorPlanImage ? (
                     <button
                         type="button"
@@ -5177,7 +5177,7 @@ function FloorPlanCard({
                             loading="lazy"
                             decoding="async"
                             onError={() => setHasImageError(true)}
-                            className="h-full w-full object-cover transition duration-200 group-hover:scale-105"
+                            className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02] lg:object-cover lg:group-hover:scale-105"
                         />
                         <span className="absolute inset-x-2 top-2 rounded-lg bg-[#102426]/85 px-2 py-1 text-center text-[10px] font-black uppercase leading-none !text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus:opacity-100">
                             Preview
@@ -5190,25 +5190,25 @@ function FloorPlanCard({
                 )}
             </div>
 
-            <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="truncate text-lg font-black text-[#102426]">
+            <div className="min-w-0 rounded-2xl bg-[#f5f8f1] p-3 lg:bg-transparent lg:p-0">
+                <div className="grid gap-2">
+                    <h3 className="line-clamp-2 text-lg font-black leading-tight text-[#102426] lg:truncate">
                         {name}
                     </h3>
 
                     {hasSpecial && (
-                        <span className="inline-flex max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                        <span className="inline-flex w-fit max-w-full rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
                             <span className="truncate">{specialLabel}</span>
                         </span>
                     )}
                 </div>
 
-                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
                     {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
                 </p>
 
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                    <div className="min-w-0">
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                    <div className="min-w-0 rounded-xl bg-white px-3 py-2 ring-1 ring-[#d7e6df] lg:bg-transparent lg:px-0 lg:py-0 lg:ring-0">
                         <p className="text-[10px] font-black uppercase text-[#526260]">
                             Listed
                         </p>
@@ -5217,7 +5217,7 @@ function FloorPlanCard({
                         </p>
                     </div>
 
-                    <div className="min-w-0">
+                    <div className="min-w-0 rounded-xl bg-white px-3 py-2 ring-1 ring-[#d7e6df] lg:bg-transparent lg:px-0 lg:py-0 lg:ring-0">
                         <p className="text-[10px] font-black uppercase text-[#526260]">
                             Effective
                         </p>
@@ -5226,7 +5226,7 @@ function FloorPlanCard({
                         </p>
                     </div>
 
-                    <div className="min-w-0">
+                    <div className="min-w-0 rounded-xl bg-white px-3 py-2 ring-1 ring-[#d7e6df] lg:bg-transparent lg:px-0 lg:py-0 lg:ring-0">
                         <p className="text-[10px] font-black uppercase text-[#526260]">
                             {hasSpecial ? "Savings" : "Special"}
                         </p>
@@ -5237,8 +5237,8 @@ function FloorPlanCard({
                 </div>
             </div>
 
-            <div className="grid gap-2 lg:text-right">
-                <p className={`text-xs font-black ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
+            <div className="grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 lg:bg-transparent lg:p-0 lg:text-right">
+                <p className={`rounded-xl bg-white px-3 py-2 text-center text-xs font-black ring-1 ring-[#d7e6df] lg:bg-transparent lg:px-0 lg:py-0 lg:text-right lg:ring-0 ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
                     {availabilityBadgeLabel}
                 </p>
 
