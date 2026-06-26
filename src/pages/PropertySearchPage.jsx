@@ -1582,16 +1582,16 @@ function SearchResultCard({
   const showGoldHoverBar = isMapHighlighted && propertyHasStrongMapDeal(property);
   const floorPlanCount = displayFloorPlans.length;
   const actionButtonClass =
-    "rounded-lg px-3 py-2.5 text-sm font-black transition";
+    "rounded-lg px-3 py-2.5 text-sm font-black transition lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-2.5 xl:text-sm";
 
   return (
     <article
       ref={cardRef}
-      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid md:grid-cols-[220px_minmax(0,1fr)] md:items-stretch xl:grid-cols-[250px_minmax(0,1fr)] ${
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid md:grid-cols-[220px_minmax(0,1fr)] md:items-stretch lg:grid-cols-[180px_minmax(0,1fr)] xl:grid-cols-[250px_minmax(0,1fr)] ${
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
-      <Link to={cardHref} className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[220px] md:self-stretch xl:min-h-[248px]">
+      <Link to={cardHref} className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[220px] md:self-stretch lg:min-h-[188px] xl:min-h-[248px]">
         {showGoldHoverBar && (
           <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
         )}
@@ -1603,44 +1603,44 @@ function SearchResultCard({
             decoding="async"
             className="absolute inset-0 !h-full w-full object-cover"
           />
-          <div className="absolute left-3 top-3 rounded-lg bg-white/95 px-2.5 py-2 text-[#102426] shadow-lg ring-1 ring-white/70">
+          <div className="absolute left-3 top-3 rounded-lg bg-white/95 px-2.5 py-2 text-[#102426] shadow-lg ring-1 ring-white/70 lg:px-2 lg:py-1.5 xl:px-2.5 xl:py-2">
             <p className="text-[10px] font-black uppercase text-[#1f6f63]">
               Score
             </p>
-            <p className="text-lg font-black leading-none">{dealScore}</p>
+            <p className="text-lg font-black leading-none lg:text-base xl:text-lg">{dealScore}</p>
           </div>
           {propertyHasStrongMapDeal(property) && (
-            <div className="absolute right-3 top-3 rounded-full bg-[#f2b84b] px-3 py-1 text-[11px] font-black text-[#102426] shadow-lg">
+            <div className="absolute right-3 top-3 rounded-full bg-[#f2b84b] px-3 py-1 text-[11px] font-black text-[#102426] shadow-lg lg:px-2.5 lg:text-[10px] xl:px-3 xl:text-[11px]">
               Top deal
             </div>
           )}
         </div>
       </Link>
 
-      <div className="flex min-w-0 flex-col p-3 xl:p-4">
-        <div className="flex flex-col gap-2 2xl:flex-row 2xl:items-start 2xl:justify-between">
+      <div className="flex min-w-0 flex-col p-3 lg:p-2.5 xl:p-4">
+        <div className="flex flex-col gap-1.5 xl:gap-2 2xl:flex-row 2xl:items-start 2xl:justify-between">
           <Link to={cardHref} className="min-w-0">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <p className="min-w-0 truncate text-base font-black text-[#102426] xl:text-lg">
+              <p className="min-w-0 truncate text-base font-black text-[#102426] lg:text-sm xl:text-lg">
                 {property.name}
               </p>
               {hasSpecial && (
-                <span className="max-w-full truncate rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                <span className="max-w-full truncate rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a] lg:px-2 lg:py-0.5 lg:text-[10px] xl:px-2.5 xl:py-1 xl:text-[11px]">
                   Special: {priceSummary.specialLabel}
                 </span>
               )}
             </div>
-            <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260]">
-              <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63]" />
+            <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260] lg:gap-1.5 lg:text-xs xl:gap-2 xl:text-sm">
+              <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63] lg:h-3.5 lg:w-3.5 xl:h-4 xl:w-4" />
               <span className="truncate">{addressLabel}</span>
             </p>
           </Link>
-          <span className="w-fit shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+          <span className="w-fit shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63] lg:px-2.5 lg:text-[11px] xl:px-3 xl:text-xs">
             {getBedsLabel(property, displayFloorPlans)}
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2 lg:mt-2 lg:gap-1.5 xl:mt-3 xl:gap-2">
           <SearchRentMetric
             label="Normal rent"
             value={priceSummary.normalRentLabel}
@@ -1652,24 +1652,24 @@ function SearchResultCard({
           />
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df]">
+        <div className="mt-3 flex flex-wrap items-center gap-2 lg:mt-2 lg:gap-1.5 xl:mt-3 xl:gap-2">
+          <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df] lg:px-2.5 lg:text-[10px] xl:px-3 xl:text-[11px]">
             {floorPlanCount} matching floor plan{floorPlanCount === 1 ? "" : "s"}
           </span>
           {transparencyBadges.map((badge) => (
             <span
               key={badge}
-              className="rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black text-[#1f6f63]"
+              className="rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black text-[#1f6f63] lg:px-2.5 lg:text-[10px] xl:px-3 xl:text-[11px]"
             >
               {badge}
             </span>
           ))}
         </div>
 
-        <div className="mt-auto grid grid-cols-3 gap-2 pt-3">
+        <div className="mt-auto grid grid-cols-3 gap-2 pt-3 lg:gap-1.5 lg:pt-2 xl:gap-2 xl:pt-3">
           <Link
             to={cardHref}
-            className="col-span-3 rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] sm:col-span-1"
+            className="col-span-3 rounded-lg bg-[#173f3f] px-3 py-3 text-center text-sm font-black text-white transition hover:bg-[#102426] sm:col-span-1 lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-3 xl:text-sm"
           >
             View details
           </Link>
@@ -1704,14 +1704,14 @@ function SearchResultCard({
 function SearchRentMetric({ label, value, highlight = false }) {
   return (
     <div
-      className={`rounded-lg px-3 py-2.5 ring-1 ${
+      className={`rounded-lg px-3 py-2.5 ring-1 lg:px-2.5 lg:py-2 xl:px-3 xl:py-2.5 ${
         highlight
           ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
           : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
       }`}
     >
       <p className="text-[10px] font-black uppercase">{label}</p>
-      <p className="mt-1 truncate text-base font-black text-[#102426]">{value}</p>
+      <p className="mt-1 truncate text-base font-black text-[#102426] lg:mt-0.5 lg:text-sm xl:mt-1 xl:text-base">{value}</p>
     </div>
   );
 }
