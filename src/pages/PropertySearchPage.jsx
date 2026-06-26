@@ -189,6 +189,13 @@ export default function PropertySearchPage() {
     : "";
   const selectedPriceLabel = getSelectedPriceLabel(selectedPriceRange);
   const selectedBedroomLabel = getSelectedBedroomLabel(selectedBedroomFilter);
+  const hasActiveSearchChips = Boolean(
+    searchFromUrl ||
+    selectedPriceRange ||
+    selectedBedroomFilter ||
+    selectedSpecialWeeks ||
+    selectedArea
+  );
   const suggestions = useMemo(
     () => getPropertySearchSuggestions(properties, searchTerm),
     [properties, searchTerm]
@@ -733,10 +740,8 @@ export default function PropertySearchPage() {
             </div>
           )}
 
+          {hasActiveSearchChips && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-[#e7f3ee] px-4 py-2 text-sm font-black text-[#1f6f63]">
-              {filteredProperties.length} result{filteredProperties.length === 1 ? "" : "s"}
-            </span>
             {searchFromUrl && (
               <>
                 <span className="rounded-full bg-[#f5f8f1] px-4 py-2 text-sm font-bold text-[#526260] ring-1 ring-[#d7e6df]">
@@ -812,14 +817,18 @@ export default function PropertySearchPage() {
               </span>
             )}
           </div>
+          )}
         </div>
       </section>
 
       <section className="bma-shell py-5 lg:py-6">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <p className="text-sm font-black text-[#1f6f63]">
-              Apartment results
+            <p className="flex flex-wrap items-center gap-2 text-sm font-black text-[#1f6f63]">
+              <span>Apartment results</span>
+              <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+                {filteredProperties.length} result{filteredProperties.length === 1 ? "" : "s"}
+              </span>
             </p>
             <h1 className="mt-1 text-3xl font-black leading-tight text-[#102426] lg:text-4xl">
               {searchFromUrl ? `${searchFromUrl} apartments` : "Apartments near you"}
