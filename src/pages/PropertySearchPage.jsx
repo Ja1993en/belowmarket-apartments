@@ -1786,14 +1786,18 @@ function getSearchCardGalleryImages(property) {
 function SearchRentMetric({ label, value, highlight = false }) {
   return (
     <div
-      className={`rounded-lg px-3 py-2.5 ring-1 md:px-2 md:py-1.5 lg:px-2.5 lg:py-2 xl:px-3 xl:py-2.5 ${
+      className={`grid min-h-[62px] content-between rounded-lg px-2.5 py-2 ring-1 md:min-h-[54px] md:px-2 md:py-1.5 lg:min-h-[58px] lg:px-2.5 lg:py-2 xl:min-h-[66px] xl:px-3 xl:py-2.5 ${
         highlight
           ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
           : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
       }`}
     >
-      <p className="text-[10px] font-black uppercase">{label}</p>
-      <p className="mt-1 truncate text-base font-black text-[#102426] md:mt-0.5 md:text-xs lg:text-sm xl:mt-1 xl:text-base">{value}</p>
+      <p className="truncate text-[9px] font-black uppercase leading-none md:text-[8px] lg:text-[9px] xl:text-[10px]">
+        {label}
+      </p>
+      <p className="mt-1 whitespace-nowrap text-[15px] font-black leading-none text-[#102426] md:mt-0.5 md:text-[12px] lg:text-[13px] xl:mt-1 xl:text-base">
+        {value}
+      </p>
     </div>
   );
 }
