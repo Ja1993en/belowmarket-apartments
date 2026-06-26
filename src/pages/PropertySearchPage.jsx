@@ -1595,17 +1595,19 @@ function SearchResultCard({
             decoding="async"
             className="absolute inset-0 !h-full w-full object-cover"
           />
-          <div className="absolute left-3 top-3 rounded-lg bg-white/95 px-2.5 py-2 text-[#102426] shadow-lg ring-1 ring-white/70 lg:px-2 lg:py-1.5 xl:px-2.5 xl:py-2">
-            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
-              Score
-            </p>
-            <p className="text-lg font-black leading-none lg:text-base xl:text-lg">{dealScore}</p>
-          </div>
-          {propertyHasStrongMapDeal(property) && (
-            <div className="absolute right-3 top-3 rounded-full bg-[#f2b84b] px-3 py-1 text-[11px] font-black text-[#102426] shadow-lg lg:px-2.5 lg:text-[10px] xl:px-3 xl:text-[11px]">
-              Top deal
+          <div className="absolute left-2 right-2 top-2 z-10 flex min-w-0 items-start justify-between gap-2 sm:left-3 sm:right-3 sm:top-3">
+            <div className="shrink-0 rounded-lg bg-white/95 px-2 py-1.5 text-[#102426] shadow-lg ring-1 ring-white/70 xl:px-2.5 xl:py-2">
+              <p className="text-[9px] font-black uppercase leading-none text-[#1f6f63] xl:text-[10px]">
+                Score
+              </p>
+              <p className="mt-0.5 text-base font-black leading-none xl:text-lg">{dealScore}</p>
             </div>
-          )}
+            {propertyHasStrongMapDeal(property) && (
+              <div className="min-w-0 rounded-full bg-[#f2b84b] px-2 py-1 text-[10px] font-black leading-none text-[#102426] shadow-lg xl:px-3 xl:text-[11px]">
+                <span className="block truncate">Top deal</span>
+              </div>
+            )}
+          </div>
         </div>
       </Link>
 
