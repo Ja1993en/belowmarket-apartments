@@ -1786,16 +1786,16 @@ function getSearchCardGalleryImages(property) {
 function SearchRentMetric({ label, value, highlight = false }) {
   return (
     <div
-      className={`grid min-h-[62px] content-between rounded-lg px-2.5 py-2 ring-1 md:min-h-[54px] md:px-2 md:py-1.5 lg:min-h-[58px] lg:px-2.5 lg:py-2 xl:min-h-[66px] xl:px-3 xl:py-2.5 ${
+      className={`flex min-h-[48px] items-center justify-between gap-2 rounded-lg px-2.5 py-2 ring-1 md:min-h-[42px] md:px-2 md:py-1.5 lg:min-h-[46px] lg:px-2.5 lg:py-2 xl:min-h-[52px] xl:px-3 xl:py-2.5 ${
         highlight
           ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
           : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
       }`}
     >
-      <p className="truncate text-[9px] font-black uppercase leading-none md:text-[8px] lg:text-[9px] xl:text-[10px]">
+      <p className="shrink-0 text-[8px] font-black uppercase leading-none md:text-[7px] lg:text-[8px] xl:text-[9px]">
         {label}
       </p>
-      <p className="mt-1 min-w-0 break-words text-[14px] font-black leading-tight text-[#102426] md:mt-0.5 md:text-[12px] lg:text-[13px] xl:mt-1 xl:text-base">
+      <p className="min-w-0 break-words text-right text-[13px] font-black leading-tight text-[#102426] md:text-[11px] lg:text-[12px] xl:text-[14px]">
         {value}
       </p>
     </div>
