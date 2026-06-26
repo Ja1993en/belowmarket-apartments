@@ -2390,7 +2390,6 @@ function getSearchDealScore(property, priceSummary) {
 function getSearchTransparencyBadges(property, priceSummary) {
   const badges = [];
 
-  if (priceSummary.hasRentSpecial) badges.push("Special shown");
   if (property?.requiredMonthlyFees || property?.monthlyFees) badges.push("Fees listed");
   if (property?.floorPlans?.length > 0) badges.push("Floor plans");
   if (property?.yearBuilt) badges.push(`Built ${property.yearBuilt}`);
