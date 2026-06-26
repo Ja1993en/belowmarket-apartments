@@ -459,6 +459,24 @@ export default function PropertySearchPage() {
     <main className="min-h-screen bg-[#f5f8f1] pb-24 text-[#102426]">
       <section className="bma-topbar sticky top-0 z-40 px-3 py-2">
         <div className="bma-shell">
+          <div className="mb-1.5 flex items-center justify-between gap-3 xl:hidden">
+            <Link to="/" className="flex min-w-0 items-center gap-2">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] text-[10px] font-black text-[#f2b84b]">
+                BMA
+              </span>
+              <span className="truncate text-sm font-black text-[#102426]">
+                Below Market Apartments
+              </span>
+            </Link>
+
+            <Link
+              to="/start"
+              className="shrink-0 rounded-lg bg-[#f2b84b] px-3 py-2 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
+            >
+              Ask a Locator
+            </Link>
+          </div>
+
           <form
             onSubmit={submitSearch}
             className="relative rounded-xl border border-[#d7e6df] bg-white p-1.5 shadow-sm sm:p-2"
