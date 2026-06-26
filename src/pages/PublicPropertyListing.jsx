@@ -5162,7 +5162,15 @@ function FloorPlanCard({
 
     return (
         <>
-        <div className="rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] sm:p-4 lg:p-3">
+        <div className="relative rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] sm:p-4 lg:p-3">
+            <button
+                type="button"
+                onClick={onCheckAvailability}
+                className="absolute right-3 top-3 rounded-full bg-[#173f3f] px-3 py-2 text-[11px] font-black !text-white shadow-sm hover:bg-[#102426] hover:!text-white"
+            >
+                Request Info
+            </button>
+
             <div className="float-left mr-3 mb-2 flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-28 sm:w-28 lg:h-[92px] lg:w-[108px] lg:bg-[#f5f8f1] lg:p-0">
                 {shouldShowFloorPlanImage ? (
                     <button
@@ -5190,7 +5198,7 @@ function FloorPlanCard({
                 )}
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 pr-24 sm:pr-28">
                 <div className="grid gap-1.5">
                     <h3 className="line-clamp-2 text-lg font-black leading-tight text-[#102426] lg:truncate">
                         {name}
@@ -5241,15 +5249,7 @@ function FloorPlanCard({
                 </div>
             </div>
 
-            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 sm:grid-cols-2 sm:items-center lg:mt-3">
-                <button
-                    type="button"
-                    onClick={onCheckAvailability}
-                    className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
-                >
-                    Check availability
-                </button>
-
+            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-3 lg:mt-3">
                 <button
                     type="button"
                     onClick={onToggleCompare}
@@ -5263,7 +5263,7 @@ function FloorPlanCard({
                 </button>
 
                 {isCompared && (
-                    <p className="text-xs font-bold leading-4 text-[#526260] sm:col-span-2">
+                    <p className="text-xs font-bold leading-4 text-[#526260]">
                         Tap View comparison below to open the chart.
                     </p>
                 )}
