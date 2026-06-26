@@ -5126,6 +5126,7 @@ function FloorPlanCard({
     onCheckAvailability,
 }) {
     const [hasImageError, setHasImageError] = useState(false);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const hasSpecial = Boolean(special?.label);
     const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "No special listed";
     const sortedAvailableUnits = [...(availableUnits || [])]
@@ -5160,17 +5161,28 @@ function FloorPlanCard({
     const imageAlt = shouldShowFloorPlanImage ? `${name} floor plan` : "Floor plan image not listed";
 
     return (
+        <>
         <div className="grid gap-3 rounded-2xl border border-[#d7e6df] bg-white p-3 transition hover:border-[#f2d08a] lg:grid-cols-[122px_minmax(0,1fr)_178px] lg:items-center">
             <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl bg-[#f5f8f1] ring-1 ring-[#d7e6df] lg:h-[92px]">
                 {shouldShowFloorPlanImage ? (
-                    <img
-                        src={image}
-                        alt={imageAlt}
-                        loading="lazy"
-                        decoding="async"
-                        onError={() => setHasImageError(true)}
-                        className="h-full w-full object-cover"
-                    />
+                    <button
+                        type="button"
+                        onClick={() => setIsPreviewOpen(true)}
+                        className="group relative h-full w-full overflow-hidden text-left focus:outline-none focus:ring-2 focus:ring-[#f2b84b]"
+                        aria-label={`Preview ${name} floor plan image`}
+                    >
+                        <img
+                            src={image}
+                            alt={imageAlt}
+                            loading="lazy"
+                            decoding="async"
+                            onError={() => setHasImageError(true)}
+                            className="h-full w-full object-cover transition duration-200 group-hover:scale-105"
+                        />
+                        <span className="absolute inset-x-2 top-2 rounded-lg bg-[#102426]/85 px-2 py-1 text-center text-[10px] font-black uppercase leading-none !text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus:opacity-100">
+                            Preview
+                        </span>
+                    </button>
                 ) : (
                     <span className="px-2 text-center text-[10px] font-black uppercase leading-4 text-[#526260]">
                         Image pending
@@ -5257,6 +5269,51 @@ function FloorPlanCard({
                 )}
             </div>
         </div>
+        {isPreviewOpen && (
+            <div
+                className="fixed inset-0 z-[80] flex items-center justify-center bg-[#102426]/75 p-4 backdrop-blur-sm"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${name} floor plan preview`}
+                onClick={() => setIsPreviewOpen(false)}
+            >
+                <div
+                    className="w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+                    onClick={(event) => event.stopPropagation()}
+                >
+                    <div className="flex items-start justify-between gap-4 border-b border-[#d7e6df] p-4">
+                        <div className="min-w-0">
+                            <p className="text-xs font-black uppercase text-[#1f6f63]">
+                                Floor plan preview
+                            </p>
+                            <h3 className="mt-1 truncate text-xl font-black text-[#102426]">
+                                {name}
+                            </h3>
+                            <p className="mt-1 truncate text-sm font-bold text-[#526260]">
+                                {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {sqft || "Sq ft not listed"} sq ft
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsPreviewOpen(false)}
+                            className="rounded-xl bg-[#f5f8f1] px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+                        >
+                            Close
+                        </button>
+                    </div>
+
+                    <div className="bg-[#f5f8f1] p-4">
+                        <img
+                            src={image}
+                            alt={`${name} enlarged floor plan`}
+                            className="mx-auto max-h-[72vh] w-full rounded-2xl bg-white object-contain"
+                        />
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 }
 
