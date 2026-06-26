@@ -5168,7 +5168,7 @@ function FloorPlanCard({
             <button
                 type="button"
                 onClick={onCheckAvailability}
-                className="absolute right-3 top-3 rounded-full bg-[#f2b84b] px-2 py-1 text-[9px] font-black !text-[#102426] shadow-sm ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426]"
+                className="absolute right-3 top-3 rounded-full bg-[#f2b84b] px-2 py-1 text-[9px] font-black !text-[#102426] shadow-sm ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:hidden"
             >
                 Request Info
             </button>
