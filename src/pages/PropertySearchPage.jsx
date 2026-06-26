@@ -1722,15 +1722,15 @@ function SearchResultCard({
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
-          <SearchRentMetric
-            label="Normal rent"
-            value={priceSummary.normalRentLabel}
-          />
+        <div className="mt-3 grid gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
           <SearchRentMetric
             label={showNetEffectiveRent ? "Estimated rent" : "Same as rent"}
             value={showNetEffectiveRent ? priceSummary.effectiveRentLabel : priceSummary.normalRentLabel}
             highlight={showNetEffectiveRent}
+          />
+          <SearchRentMetric
+            label="Normal rent"
+            value={priceSummary.normalRentLabel}
           />
         </div>
 
