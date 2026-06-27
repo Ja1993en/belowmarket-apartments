@@ -610,8 +610,13 @@ export default function PropertySearchPage() {
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] text-[10px] font-black text-[#f2b84b]">
                 BMA
               </span>
-              <span className="truncate text-sm font-black text-[#102426]">
-                Below Market Apartments
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-black text-[#102426]">
+                  Below Market Apartments
+                </span>
+                <span className="block text-xs font-bold text-[#526260]">
+                  Verified specials, ranked by deal value
+                </span>
               </span>
             </Link>
 
