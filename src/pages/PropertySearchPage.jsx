@@ -2046,8 +2046,6 @@ function SearchResultCard({
   const [galleryPhotoIndex, setGalleryPhotoIndex] = useState(0);
   const currentGalleryImage = galleryImages[galleryPhotoIndex] || getPropertyPrimaryImage(property);
   const hasGalleryControls = galleryImages.length > 1;
-  const actionButtonClass =
-    "rounded-lg px-3 py-2.5 text-sm font-black transition md:px-2 md:py-1.5 md:text-[11px] lg:px-2.5 lg:py-2 lg:text-xs xl:px-3 xl:py-2.5 xl:text-sm";
 
   useEffect(() => {
     setGalleryPhotoIndex(0);
@@ -2120,13 +2118,6 @@ function SearchResultCard({
             </button>
           </>
         )}
-        <button
-          type="button"
-          onClick={onRequestInfo}
-          className="absolute bottom-2 right-2 z-20 rounded-full bg-[#f2b84b] px-2.5 py-1.5 text-[10px] font-black text-[#102426] shadow-lg ring-1 ring-white/80 transition hover:bg-[#f9d783] xl:bottom-3 xl:right-3 xl:px-3 xl:text-[11px]"
-        >
-          Request Info
-        </button>
       </div>
 
       <div className="flex min-w-0 flex-col p-3 md:p-1.5 lg:p-2 xl:p-3.5">
@@ -2178,17 +2169,24 @@ function SearchResultCard({
           ))}
         </div>
 
-        <div className="mt-auto grid grid-cols-2 gap-1 pt-3 md:pt-1.5 xl:gap-1.5 xl:pt-3">
+        <div className="mt-auto grid grid-cols-3 gap-1 pt-3 md:pt-1.5 xl:gap-1.5 xl:pt-3">
           <Link
             to={cardHref}
-            className="inline-flex items-center justify-center rounded-lg bg-[#173f3f] px-3 py-2.5 text-center text-xs font-black text-white transition hover:bg-[#102426] sm:text-sm md:px-3 md:py-2.5 md:text-sm lg:px-3 lg:py-2.5 lg:text-sm xl:py-3"
+            className="inline-flex items-center justify-center rounded-lg bg-[#173f3f] px-2 py-2 text-center text-[11px] font-black text-white transition hover:bg-[#102426] sm:text-xs md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5"
           >
             View details
           </Link>
           <button
             type="button"
+            onClick={onRequestInfo}
+            className="rounded-lg bg-[#f2b84b] px-2 py-2 text-center text-[11px] font-black text-[#102426] transition hover:bg-[#f9d783] sm:text-xs md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5"
+          >
+            Request Info
+          </button>
+          <button
+            type="button"
             onClick={onToggleCompare}
-            className={`${actionButtonClass} ${
+            className={`rounded-lg px-2 py-2 text-center text-[11px] font-black transition sm:text-xs md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5 ${
               isCompared
                 ? "bg-[#f2b84b] text-[#102426]"
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
