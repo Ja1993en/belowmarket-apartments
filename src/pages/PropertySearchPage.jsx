@@ -1686,9 +1686,6 @@ function SearchResultCard({
             >
               <ChevronRight className="h-7 w-7 text-white" />
             </button>
-            <span className="absolute bottom-2 left-2 z-20 rounded-full bg-white/95 px-2 py-1 text-[10px] font-black text-[#102426] shadow-lg ring-1 ring-white/80 sm:left-3 xl:bottom-3">
-              {galleryPhotoIndex + 1}/{galleryImages.length}
-            </span>
           </>
         )}
         <Link
