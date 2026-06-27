@@ -197,6 +197,7 @@ export default function PropertySearchPage() {
   const [activeCompareTab, setActiveCompareTab] = useState("Properties");
   const [hoveredMapPropertyId, setHoveredMapPropertyId] = useState("");
   const [selectedMapPropertyId, setSelectedMapPropertyId] = useState("");
+  const [mobileMapSelectedPropertyId, setMobileMapSelectedPropertyId] = useState("");
   const [currentResultsPage, setCurrentResultsPage] = useState(1);
   const [compareNotice, setCompareNotice] = useState("");
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
@@ -373,6 +374,15 @@ export default function PropertySearchPage() {
     filteredProperties.some((property) => property.id === selectedMapPropertyId);
   const highlightedMapPropertyId =
     hoveredMapPropertyId || (selectedMapPropertyIsVisible ? selectedMapPropertyId : "");
+  const mobileMapSelectedProperty = useMemo(
+    () =>
+      mappableFilteredProperties.find(
+        (property) => property.id === mobileMapSelectedPropertyId
+      ) ||
+      filteredProperties.find((property) => property.id === mobileMapSelectedPropertyId) ||
+      null,
+    [filteredProperties, mappableFilteredProperties, mobileMapSelectedPropertyId]
+  );
   const paginationPages = useMemo(
     () => getPaginationPages(safeResultsPage, totalResultsPages),
     [safeResultsPage, totalResultsPages]
@@ -390,12 +400,31 @@ export default function PropertySearchPage() {
     }, 0);
   }, []);
 
-  const handleMobileMapPropertySelect = useCallback(
+  const handleMobileMapPropertySelect = useCallback((propertyId) => {
+    setSelectedMapPropertyId(propertyId);
+    setHoveredMapPropertyId(propertyId);
+    setMobileMapSelectedPropertyId(propertyId);
+  }, []);
+
+  const closeMobileMapModal = useCallback(() => {
+    setIsMobileMapModalOpen(false);
+    setMobileMapSelectedPropertyId("");
+  }, []);
+
+  const handleMobileMapViewDetails = useCallback(
     (propertyId) => {
-      setIsMobileMapModalOpen(false);
-      handleMapPropertySelect(propertyId);
+      closeMobileMapModal();
+      navigate(`/properties/${propertyId}`);
     },
-    [handleMapPropertySelect]
+    [closeMobileMapModal, navigate]
+  );
+
+  const handleMobileMapRequestInfo = useCallback(
+    (property) => {
+      closeMobileMapModal();
+      setRequestInfoProperty(property);
+    },
+    [closeMobileMapModal]
   );
 
   const handleResultsPageChange = useCallback(
@@ -1103,7 +1132,7 @@ export default function PropertySearchPage() {
           aria-label="Apartment map"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
-              setIsMobileMapModalOpen(false);
+              closeMobileMapModal();
             }
           }}
         >
@@ -1117,7 +1146,7 @@ export default function PropertySearchPage() {
               </div>
               <button
                 type="button"
-                onClick={() => setIsMobileMapModalOpen(false)}
+                onClick={closeMobileMapModal}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
                 aria-label="Close map"
               >
@@ -1136,6 +1165,20 @@ export default function PropertySearchPage() {
                 onPropertySelect={handleMobileMapPropertySelect}
                 hoveredPropertyId={highlightedMapPropertyId}
               />
+              {mobileMapSelectedProperty && (
+                <MobileMapPropertySheet
+                  property={mobileMapSelectedProperty}
+                  selectedBedroomFilter={selectedBedroomFilter}
+                  selectedPriceRange={selectedPriceRange}
+                  onClose={() => setMobileMapSelectedPropertyId("")}
+                  onViewDetails={() =>
+                    handleMobileMapViewDetails(mobileMapSelectedProperty.id)
+                  }
+                  onRequestInfo={() =>
+                    handleMobileMapRequestInfo(mobileMapSelectedProperty)
+                  }
+                />
+              )}
             </div>
           </div>
         </div>
@@ -1267,6 +1310,96 @@ function CompareDock({
             Clear
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+function MobileMapPropertySheet({
+  property,
+  selectedBedroomFilter,
+  selectedPriceRange,
+  onClose,
+  onViewDetails,
+  onRequestInfo,
+}) {
+  const displayFloorPlans = getSearchDisplayFloorPlans(
+    property,
+    selectedBedroomFilter,
+    selectedPriceRange
+  );
+  const priceSummary = getPropertySearchPriceSummary(property, displayFloorPlans);
+  const rentLabel = priceSummary.hasRentSpecial
+    ? priceSummary.effectiveRentLabel
+    : priceSummary.normalRentLabel;
+  const rentEyebrow = priceSummary.hasRentSpecial
+    ? isRentRangeLabel(rentLabel)
+      ? "Estimated rent range"
+      : "Estimated rent"
+    : isRentRangeLabel(rentLabel)
+      ? "Listed rent range"
+      : "Listed rent";
+
+  return (
+    <div className="absolute inset-x-3 bottom-3 z-20 overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-[#d7e6df]">
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df]"
+        aria-label="Close property preview"
+      >
+        <X className="h-4 w-4" />
+      </button>
+
+      <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3 p-3">
+        <img
+          src={getPropertyPrimaryImage(property)}
+          alt={property.name}
+          loading="lazy"
+          decoding="async"
+          className="h-24 w-24 rounded-xl object-cover"
+        />
+
+        <div className="min-w-0 pr-9">
+          <p className="truncate text-base font-black text-[#102426]">
+            {property.name}
+          </p>
+          <p className="mt-1 flex items-center gap-1 truncate text-xs font-bold text-[#526260]">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-[#1f6f63]" />
+            <span className="truncate">{getPropertyAddressLabel(property)}</span>
+          </p>
+          {priceSummary.hasSpecial && (
+            <p className="mt-2 line-clamp-1 rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+              {priceSummary.specialLabel}
+            </p>
+          )}
+          <div className="mt-2 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
+            <p className="text-[10px] font-black uppercase text-[#526260]">
+              {rentEyebrow}
+            </p>
+            <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+              {rentLabel}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 border-t border-[#d7e6df] bg-[#f5f8f1] p-3">
+        <button
+          type="button"
+          onClick={onViewDetails}
+          className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+        >
+          View details
+        </button>
+        <button
+          type="button"
+          onClick={onRequestInfo}
+          className="rounded-xl bg-[#f2b84b] px-4 py-3 text-sm font-black !text-[#102426] ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426]"
+        >
+          Request info
+        </button>
       </div>
     </div>
   );
