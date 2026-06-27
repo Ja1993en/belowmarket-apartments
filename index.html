@@ -14,31 +14,6 @@
       name="description"
       content="Find the best apartment deals near you."
     />
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18240067010"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'AW-18240067010');
-      window.trackBmaLeadConversion = function() {
-        if (sessionStorage.getItem('bmaLeadConversionTracked') === 'true') {
-          return;
-        }
-
-        sessionStorage.setItem('bmaLeadConversionTracked', 'true');
-        gtag('event', 'conversion', {
-          send_to: 'AW-18240067010/ZJoaCLTRpsYcEMKrxflD',
-          value: 1.0,
-          currency: 'USD'
-        });
-      };
-
-      if (window.location.pathname === '/thank-you') {
-        window.addEventListener('load', window.trackBmaLeadConversion);
-      }
-    </script>
     <link rel="canonical" href="https://belowmarketapartments.com/" />
     <!-- bma-og-start -->
     <meta property="og:site_name" content="Below Market Apartments" />
