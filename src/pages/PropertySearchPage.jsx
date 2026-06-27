@@ -2074,6 +2074,12 @@ function SearchResultCard({
   const priceSummary = getPropertySearchPriceSummary(property, displayFloorPlans);
   const hasSpecial = priceSummary.hasSpecial;
   const showNetEffectiveRent = priceSummary.hasRentSpecial;
+  const estimatedRentLabel = isRentRangeLabel(priceSummary.effectiveRentLabel)
+    ? "Estimated rent range"
+    : "Estimated rent";
+  const listedRentLabel = isRentRangeLabel(priceSummary.normalRentLabel)
+    ? "Listed rent range"
+    : "Listed rent";
   const dealScore = getSearchDealScore(property, priceSummary);
   const transparencyBadges = getSearchTransparencyBadges(property, priceSummary);
   const cardHref = `/properties/${property.id}`;
@@ -2252,18 +2258,18 @@ function SearchResultCard({
           {showNetEffectiveRent ? (
             <>
               <SearchRentMetric
-                label="Estimated rent"
+                label={estimatedRentLabel}
                 value={priceSummary.effectiveRentLabel}
                 highlight
               />
               <SearchRentMetric
-                label="Normal rent"
+                label={listedRentLabel}
                 value={priceSummary.normalRentLabel}
               />
             </>
           ) : (
             <SearchRentMetric
-              label="Listed rent"
+              label={listedRentLabel}
               value={priceSummary.normalRentLabel}
             />
           )}
@@ -3365,6 +3371,10 @@ function formatRentRange(minRent, maxRent) {
   }
 
   return `${formatCurrency(minRent)} - ${formatCurrency(maxRent)}`;
+}
+
+function isRentRangeLabel(value) {
+  return /\$\d[\d,]*\s*-\s*\$\d[\d,]*/.test(String(value || ""));
 }
 
 function getBedsLabel(property, floorPlans = null) {
