@@ -682,17 +682,25 @@ export default function PropertySearchPage() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (selectedPriceRange) {
+                        setSelectedPriceRange("");
+                        setIsPriceFilterOpen(false);
+                        setSelectedArea(null);
+                        return;
+                      }
+
                       setIsPriceFilterOpen((currentValue) => !currentValue);
                       setIsBedsFilterOpen(false);
                       setIsSpecialFilterOpen(false);
                     }}
-                    className={`h-9 shrink-0 rounded-lg border px-3 text-xs font-black sm:h-11 sm:px-4 sm:text-sm ${
+                    className={`h-7 shrink-0 rounded-md border px-2 text-[10px] font-black sm:h-8 sm:px-2.5 sm:text-xs ${
                       selectedPriceRange
-                        ? "border-[#2d7dd2] bg-[#eef5ff] text-[#174a7c]"
+                        ? "border-[#2d7dd2] bg-[#eef5ff] text-[#174a7c] hover:bg-[#dbeeff]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
                     }`}
+                    title={selectedPriceRange ? "Remove price filter" : "Open price filter"}
                   >
-                    {selectedPriceLabel || "Price"}
+                    {selectedPriceLabel || "Price"} {selectedPriceRange ? "x" : ""}
                   </button>
 
                   {isPriceFilterOpen && (
@@ -747,17 +755,25 @@ export default function PropertySearchPage() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (selectedBedroomFilter) {
+                        setSelectedBedroomFilter("");
+                        setIsBedsFilterOpen(false);
+                        setSelectedArea(null);
+                        return;
+                      }
+
                       setIsBedsFilterOpen((currentValue) => !currentValue);
                       setIsPriceFilterOpen(false);
                       setIsSpecialFilterOpen(false);
                     }}
-                    className={`h-9 shrink-0 rounded-lg border px-3 text-xs font-black sm:h-11 sm:px-4 sm:text-sm ${
+                    className={`h-7 shrink-0 rounded-md border px-2 text-[10px] font-black sm:h-8 sm:px-2.5 sm:text-xs ${
                       selectedBedroomFilter
-                        ? "border-[#1f6f63] bg-[#e7f3ee] text-[#1f6f63]"
+                        ? "border-[#1f6f63] bg-[#e7f3ee] text-[#1f6f63] hover:bg-[#d8efe6]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
                     }`}
+                    title={selectedBedroomFilter ? "Remove beds filter" : "Open beds filter"}
                   >
-                    {selectedBedroomLabel || "Beds"}
+                    {selectedBedroomLabel || "Beds"} {selectedBedroomFilter ? "x" : ""}
                   </button>
 
                   {isBedsFilterOpen && (
@@ -802,17 +818,25 @@ export default function PropertySearchPage() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (selectedSpecialWeeks) {
+                        setSelectedSpecialWeeks("");
+                        setIsSpecialFilterOpen(false);
+                        setSelectedArea(null);
+                        return;
+                      }
+
                       setIsSpecialFilterOpen((currentValue) => !currentValue);
                       setIsPriceFilterOpen(false);
                       setIsBedsFilterOpen(false);
                     }}
-                    className={`h-9 shrink-0 rounded-lg border px-3 text-xs font-black sm:h-11 sm:px-4 sm:text-sm ${
+                    className={`h-7 shrink-0 rounded-md border px-2 text-[10px] font-black sm:h-8 sm:px-2.5 sm:text-xs ${
                       selectedSpecialWeeks
-                        ? "border-[#f2b84b] bg-[#fff8e6] text-[#8a5b0a]"
+                        ? "border-[#f2b84b] bg-[#fff8e6] text-[#8a5b0a] hover:bg-[#fff0c7]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
                     }`}
+                    title={selectedSpecialWeeks ? "Remove special filter" : "Open specials filter"}
                   >
-                    {selectedSpecialLabel || "Specials"}
+                    {selectedSpecialLabel || "Specials"} {selectedSpecialWeeks ? "x" : ""}
                   </button>
 
                   {isSpecialFilterOpen && (
