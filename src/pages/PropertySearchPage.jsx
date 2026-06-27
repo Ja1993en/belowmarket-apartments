@@ -9,6 +9,10 @@ import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { isNonRentOnlySpecialText } from "../utils/rentSpecials";
 import {
+  DALLAS_BUDGET_GUIDE,
+  getBudgetQualificationMessage,
+} from "../utils/leadQualification";
+import {
   clearCompareSelections,
   getCompareFloorPlanItemKey,
   getCompareFloorPlanItems,
@@ -1914,6 +1918,16 @@ function RequestInfoModal({ property, searchParams, onClose, onSubmitted }) {
       return;
     }
 
+    const budgetQualificationMessage = getBudgetQualificationMessage(
+      form.bedrooms,
+      form.budget
+    );
+
+    if (budgetQualificationMessage) {
+      setFormError(budgetQualificationMessage);
+      return;
+    }
+
     setFormError("");
     const adTracking = getAdTracking(searchParams);
     const leadPayload = {
@@ -2082,6 +2096,7 @@ function RequestInfoModal({ property, searchParams, onClose, onSubmitted }) {
               value={form.budget}
               onChange={(value) => handleChange("budget", value)}
               placeholder="$1,600"
+              helperText={DALLAS_BUDGET_GUIDE}
               required
             />
             <RequestInfoField
@@ -2159,6 +2174,7 @@ function RequestInfoField({
   placeholder,
   type = "text",
   required = false,
+  helperText = "",
 }) {
   return (
     <label className="block">
@@ -2171,6 +2187,11 @@ function RequestInfoField({
         required={required}
         className="mt-2 w-full rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
       />
+      {helperText && (
+        <span className="mt-2 block text-xs font-bold leading-5 text-[#526260]">
+          {helperText}
+        </span>
+      )}
     </label>
   );
 }

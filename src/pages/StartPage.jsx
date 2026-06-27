@@ -6,6 +6,10 @@ import { saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { getAnyPropertyById } from "../data/propertyStorage";
+import {
+  DALLAS_BUDGET_GUIDE,
+  getBudgetQualificationMessage,
+} from "../utils/leadQualification";
 const emptyForm = {
   name: "",
   phone: "",
@@ -127,6 +131,16 @@ export default function StartPage() {
     }
     if (!form.smsConsent) {
       setFormError("Please agree to receive text messages before submitting.");
+      return;
+    }
+
+    const budgetQualificationMessage = getBudgetQualificationMessage(
+      form.bedrooms,
+      form.budget
+    );
+
+    if (budgetQualificationMessage) {
+      setFormError(budgetQualificationMessage);
       return;
     }
 
@@ -298,6 +312,7 @@ export default function StartPage() {
                   value={form.budget}
                   onChange={(value) => handleChange("budget", value)}
                   placeholder="$1,600"
+                  helperText={DALLAS_BUDGET_GUIDE}
                   required
                 />
 
@@ -382,6 +397,7 @@ function Field({
   placeholder,
   type = "text",
   required = false,
+  helperText = "",
 }) {
   return (
     <label className="block">
@@ -395,6 +411,11 @@ function Field({
         required={required}
         className="mt-2 w-full rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
       />
+      {helperText && (
+        <span className="mt-2 block text-xs font-bold leading-5 text-[#526260]">
+          {helperText}
+        </span>
+      )}
     </label>
   );
 }

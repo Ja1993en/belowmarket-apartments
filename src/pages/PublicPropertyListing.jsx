@@ -28,6 +28,10 @@ import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { formatAvailability as formatAvailabilityLabel } from "../utils/displayFormatters";
+import {
+    DALLAS_BUDGET_GUIDE,
+    getBudgetQualificationMessage,
+} from "../utils/leadQualification";
 import { shouldShowRentConcessionMetrics } from "../utils/rentSpecials";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -1612,6 +1616,17 @@ export default function PublicPropertyListing() {
             return;
         }
 
+        const budgetQualificationMessage = getBudgetQualificationMessage(
+            leadBedrooms,
+            leadBudget
+        );
+
+        if (budgetQualificationMessage) {
+            setShowSidebarError(true);
+            setLeadFormError(budgetQualificationMessage);
+            return;
+        }
+
         setShowSidebarError(false);
         setLeadFormError("");
 
@@ -1935,6 +1950,10 @@ export default function PublicPropertyListing() {
                             }
                             className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                         />
+
+                        <p className="col-span-2 text-xs font-bold leading-5 text-[#526260]">
+                            {DALLAS_BUDGET_GUIDE}
+                        </p>
 
                         <select
                             value={leadForm.contactMethod}
@@ -2989,6 +3008,10 @@ export default function PublicPropertyListing() {
                                                     }
                                                     className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 />
+
+                                                <p className="col-span-2 text-xs font-bold leading-5 text-[#526260]">
+                                                    {DALLAS_BUDGET_GUIDE}
+                                                </p>
 
                                                 <select
                                                     value={leadForm.contactMethod}
