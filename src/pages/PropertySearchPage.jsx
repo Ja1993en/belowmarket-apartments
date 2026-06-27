@@ -1136,6 +1136,11 @@ export default function PropertySearchPage() {
           role="dialog"
           aria-modal="true"
           aria-label="Compare selected apartments"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsCompareModalOpen(false);
+            }
+          }}
         >
           <div className="mx-auto flex h-full max-w-lg flex-col overflow-hidden rounded-2xl bg-[#f5f8f1] shadow-2xl md:max-w-5xl">
             <div className="flex items-center justify-between border-b border-[#d7e6df] bg-white px-4 py-3">
