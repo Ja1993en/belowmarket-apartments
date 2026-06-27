@@ -2222,6 +2222,7 @@ export default function PublicPropertyListing() {
                                     >
                                         <Link
                                             to={`/properties/${compareProperty.id}`}
+                                            onClick={() => setIsCompareBoardOpen(false)}
                                             className="flex min-w-0 gap-3 hover:opacity-90"
                                         >
                                             <img
@@ -2276,6 +2277,7 @@ export default function PublicPropertyListing() {
                         onRequestFloorPlan={(floorPlan) =>
                             openFloorPlanAvailabilityRequest(floorPlan)
                         }
+                        onViewProperty={() => setIsCompareBoardOpen(false)}
                     />
                 ) : (
                     <CompareEmptyState text="Choose exact floor plans to unlock the side-by-side shortlist." />
@@ -4647,7 +4649,7 @@ function CompareEmptyState({ text }) {
     );
 }
 
-function CompareDetailsTable({ rows, onRequestFloorPlan }) {
+function CompareDetailsTable({ rows, onRequestFloorPlan, onViewProperty }) {
     return (
         <div className="mt-5 rounded-3xl border border-[#d7e6df] bg-[#f5f8f1] p-4">
             <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
@@ -4695,7 +4697,11 @@ function CompareDetailsTable({ rows, onRequestFloorPlan }) {
                                     </p>
                                 </div>
                             </div>
-                            <CompareDetailsAction row={row} onRequestFloorPlan={onRequestFloorPlan} />
+                            <CompareDetailsAction
+                                row={row}
+                                onRequestFloorPlan={onRequestFloorPlan}
+                                onViewProperty={onViewProperty}
+                            />
                         </div>
 
                         <div className="mt-4 grid grid-cols-2 gap-2">
@@ -4794,7 +4800,11 @@ function CompareDetailsTable({ rows, onRequestFloorPlan }) {
                                     {row.savings}
                                 </td>
                                 <td className="px-4 py-4 align-top">
-                                    <CompareDetailsAction row={row} onRequestFloorPlan={onRequestFloorPlan} />
+                                    <CompareDetailsAction
+                                        row={row}
+                                        onRequestFloorPlan={onRequestFloorPlan}
+                                        onViewProperty={onViewProperty}
+                                    />
                                 </td>
                             </tr>
                         ))}
@@ -4805,7 +4815,7 @@ function CompareDetailsTable({ rows, onRequestFloorPlan }) {
     );
 }
 
-function CompareDetailsAction({ row, onRequestFloorPlan }) {
+function CompareDetailsAction({ row, onRequestFloorPlan, onViewProperty }) {
     if (row.floorPlan) {
         return (
             <button
@@ -4821,6 +4831,7 @@ function CompareDetailsAction({ row, onRequestFloorPlan }) {
     return (
         <Link
             to={`/properties/${row.propertyId}`}
+            onClick={onViewProperty}
             className="inline-flex shrink-0 rounded-xl bg-[#e7f3ee] px-3 py-2 text-xs font-black text-[#173f3f] hover:bg-[#d7e6df]"
         >
             View property
