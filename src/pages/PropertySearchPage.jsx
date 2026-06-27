@@ -199,6 +199,7 @@ export default function PropertySearchPage() {
   const [currentResultsPage, setCurrentResultsPage] = useState(1);
   const [compareNotice, setCompareNotice] = useState("");
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [isMobileMapModalOpen, setIsMobileMapModalOpen] = useState(false);
   const [requestInfoProperty, setRequestInfoProperty] = useState(null);
   const resultCardRefs = useRef(new Map());
   const resultsTopRef = useRef(null);
@@ -394,6 +395,15 @@ export default function PropertySearchPage() {
       });
     }, 0);
   }, []);
+
+  const handleMobileMapPropertySelect = useCallback(
+    (propertyId) => {
+      setIsMobileMapModalOpen(false);
+      handleMapPropertySelect(propertyId);
+    },
+    [handleMapPropertySelect]
+  );
+
   const handleResultsPageChange = useCallback(
     (nextPage) => {
       const pageNumber = Math.max(1, Math.min(nextPage, totalResultsPages));
@@ -985,12 +995,21 @@ export default function PropertySearchPage() {
               Search by city, ZIP, property address, or active special. Compare normal rent, estimated effective rent, and specials before you tour.
             </p>
           </div>
-          <Link
-            to="/start"
-            className="bma-btn-gold w-fit shrink-0"
-          >
-            Get matched
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setIsMobileMapModalOpen(true)}
+              className="w-fit shrink-0 rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm hover:bg-[#102426] hover:!text-white md:hidden"
+            >
+              Open map ({mappableFilteredProperties.length})
+            </button>
+            <Link
+              to="/start"
+              className="bma-btn-gold w-fit shrink-0"
+            >
+              Get matched
+            </Link>
+          </div>
         </div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(300px,36vw)] md:items-start lg:grid-cols-[minmax(0,1fr)_minmax(340px,36vw)] xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)]">
@@ -1104,7 +1123,7 @@ export default function PropertySearchPage() {
             )}
           </div>
 
-          <div className="order-1 md:sticky md:top-28 md:order-2">
+          <div className="hidden md:sticky md:top-28 md:order-2 md:block">
             <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
               <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
                 <div>
@@ -1134,6 +1153,52 @@ export default function PropertySearchPage() {
           </div>
         </div>
       </section>
+
+      {isMobileMapModalOpen && (
+        <div
+          className="fixed inset-0 z-[65] bg-[#102426]/65 p-3 backdrop-blur-sm md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Apartment map"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsMobileMapModalOpen(false);
+            }
+          }}
+        >
+          <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-white/70">
+            <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-sm font-black text-[#102426]">Map view</p>
+                <p className="mt-0.5 truncate text-xs font-bold text-[#526260]">
+                  {mappableFilteredProperties.length} pin{mappableFilteredProperties.length === 1 ? "" : "s"} from current results
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileMapModalOpen(false)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+                aria-label="Close map"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="bma-map-surface relative min-h-0 flex-1 rounded-none border-0 shadow-none">
+              <SearchMap
+                properties={filteredProperties}
+                mappableProperties={mappableFilteredProperties}
+                selectedArea={selectedArea}
+                selectedBedroomFilter={selectedBedroomFilter}
+                selectedPriceRange={selectedPriceRange}
+                onAreaChange={setSelectedArea}
+                onPropertyHover={setHoveredMapPropertyId}
+                onPropertySelect={handleMobileMapPropertySelect}
+                hoveredPropertyId={highlightedMapPropertyId}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {isCompareModalOpen && hasCompareItems && (
         <div
