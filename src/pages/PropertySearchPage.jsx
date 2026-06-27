@@ -640,7 +640,7 @@ export default function PropertySearchPage() {
                   Search
                 </button>
 
-                <div className="col-span-2 flex min-w-0 gap-1.5 overflow-x-auto pb-0.5 lg:col-span-1 lg:pb-0 xl:gap-2 xl:overflow-visible">
+                <div className="col-span-2 flex min-w-0 flex-wrap gap-1.5 overflow-visible pb-0.5 lg:col-span-1 lg:pb-0 xl:gap-2">
                 <div className="relative">
                   <button
                     type="button"
