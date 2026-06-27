@@ -202,6 +202,7 @@ export default function PropertySearchPage() {
   const [requestInfoProperty, setRequestInfoProperty] = useState(null);
   const resultCardRefs = useRef(new Map());
   const resultsTopRef = useRef(null);
+  const searchFormRef = useRef(null);
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
   const searchMatchedProperties = useMemo(
     () =>
@@ -559,6 +560,26 @@ export default function PropertySearchPage() {
     }
   }, [hasCompareItems]);
 
+  useEffect(() => {
+    if (!isPriceFilterOpen && !isBedsFilterOpen && !isSpecialFilterOpen) {
+      return undefined;
+    }
+
+    const handleOutsideFilterPointerDown = (event) => {
+      if (searchFormRef.current?.contains(event.target)) return;
+
+      setIsPriceFilterOpen(false);
+      setIsBedsFilterOpen(false);
+      setIsSpecialFilterOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handleOutsideFilterPointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideFilterPointerDown);
+    };
+  }, [isBedsFilterOpen, isPriceFilterOpen, isSpecialFilterOpen]);
+
   const renderComparePanel = ({ isMobileModal = false } = {}) => (
     <CompareSavedOptionsPanel
       activeTab={activeCompareTab}
@@ -603,6 +624,7 @@ export default function PropertySearchPage() {
           </div>
 
           <form
+            ref={searchFormRef}
             onSubmit={submitSearch}
             className="relative rounded-xl border border-[#d7e6df] bg-white p-1.5 shadow-sm sm:p-2"
           >
