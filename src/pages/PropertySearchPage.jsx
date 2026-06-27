@@ -1532,22 +1532,6 @@ function MapboxSearchMap({
         />
       )}
       <div className="absolute left-4 top-4 z-10 flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2">
-        <div className="flex overflow-hidden rounded-2xl bg-white/95 shadow-sm ring-1 ring-[#d7e6df]">
-          {AREA_RADIUS_OPTIONS.map((radiusMiles) => (
-            <button
-              key={radiusMiles}
-              type="button"
-              onClick={() => selectAreaRadius(radiusMiles)}
-              className={`px-3 py-3 text-sm font-black ${
-                areaRadiusMiles === radiusMiles
-                  ? "bg-[#173f3f] !text-white hover:!text-white"
-                  : "text-[#173f3f] hover:bg-[#f5f8f1]"
-              }`}
-            >
-              {radiusMiles} mi
-            </button>
-          ))}
-        </div>
         <button
           type="button"
           onClick={() => setIsChoosingArea((currentValue) => !currentValue)}
@@ -1560,16 +1544,37 @@ function MapboxSearchMap({
           {isChoosingArea ? "Tap map" : "Choose area"}
         </button>
         {selectedArea && (
-          <button
-            type="button"
-            onClick={() => {
-              onAreaChange(null);
-              setIsChoosingArea(false);
-            }}
-            className="rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#e4572e] shadow-sm ring-1 ring-[#f4c8b8] hover:bg-[#fff0ea]"
-          >
-            Clear area
-          </button>
+          <>
+            <div className="flex overflow-hidden rounded-2xl bg-white/95 shadow-sm ring-1 ring-[#d7e6df]">
+              {AREA_RADIUS_OPTIONS.map((radiusMiles) => (
+                <button
+                  key={radiusMiles}
+                  type="button"
+                  onClick={() => selectAreaRadius(radiusMiles)}
+                  className={`px-3 py-3 text-sm font-black ${
+                    areaRadiusMiles === radiusMiles
+                      ? "bg-[#173f3f] !text-white hover:!text-white"
+                      : "text-[#173f3f] hover:bg-[#f5f8f1]"
+                  }`}
+                >
+                  {radiusMiles} mi
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onAreaChange(null);
+                setIsChoosingArea(false);
+              }}
+              className="rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#e4572e] shadow-sm ring-1 ring-[#f4c8b8] hover:bg-[#fff0ea]"
+            >
+              Clear area
+            </button>
+            <p className="w-full rounded-2xl bg-white/95 px-4 py-2 text-xs font-black text-[#174a7c] shadow-sm ring-1 ring-[#b8d9f0] sm:w-auto">
+              Showing apartments within {selectedArea.radiusMiles} mi of your selected area
+            </p>
+          </>
         )}
       </div>
 
