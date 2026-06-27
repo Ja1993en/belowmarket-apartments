@@ -142,8 +142,31 @@ export default function HomePage() {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageFaqSchema) }}
             />
             <header className="bma-topbar sticky top-0 z-40 px-4 py-3">
-                <div className="bma-shell flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex items-center justify-between gap-4">
+                <div className="bma-shell">
+                    <div className="mb-1.5 flex items-center justify-between gap-3 xl:hidden">
+                        <Link to="/" className="flex min-w-0 items-center gap-2">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] text-[10px] font-black text-[#f2b84b]">
+                                BMA
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block truncate text-sm font-black text-[#102426]">
+                                    Below Market Apartments
+                                </span>
+                                <span className="block text-xs font-bold text-[#526260]">
+                                    Verified specials, ranked by deal value
+                                </span>
+                            </span>
+                        </Link>
+
+                        <Link
+                            to="/start"
+                            className="shrink-0 rounded-lg bg-[#f2b84b] px-3 py-2 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
+                        >
+                            Ask a Locator
+                        </Link>
+                    </div>
+
+                    <div className="hidden items-center justify-between gap-4 xl:flex">
                         <Link to="/" className="flex items-center gap-3">
                             <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#173f3f] text-sm font-black text-[#f2b84b]">
                                 BMA
@@ -158,29 +181,23 @@ export default function HomePage() {
                             </span>
                         </Link>
 
-                        <Link
-                            to="/start"
-                            className="bma-btn-gold lg:hidden"
-                        >
-                            Locator
-                        </Link>
+
+                        <nav className="flex items-center gap-3">
+                            <Link
+                                to="/start"
+                                className="bma-btn-gold"
+                            >
+                                Find Apartment Locator
+                            </Link>
+
+                            <Link
+                                to="/admin/dashboard"
+                                className="bma-btn-primary"
+                            >
+                                Admin Portal
+                            </Link>
+                        </nav>
                     </div>
-
-                    <nav className="hidden items-center gap-3 lg:flex">
-                        <Link
-                            to="/start"
-                            className="bma-btn-gold"
-                        >
-                            Find Apartment Locator
-                        </Link>
-
-                        <Link
-                            to="/admin/dashboard"
-                            className="bma-btn-primary"
-                        >
-                            Admin Portal
-                        </Link>
-                    </nav>
                 </div>
             </header>
 
