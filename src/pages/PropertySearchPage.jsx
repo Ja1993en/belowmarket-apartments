@@ -942,7 +942,13 @@ export default function PropertySearchPage() {
               className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[#f2b84b] px-5 py-3.5 text-sm font-black !text-[#102426] shadow-[0_10px_24px_rgba(242,184,75,0.32)] ring-1 ring-[#d49a24] transition hover:bg-[#f9d783] hover:!text-[#102426] md:hidden"
             >
               <Navigation className="h-4 w-4" aria-hidden="true" />
-              View map with {mappableFilteredProperties.length} pins
+              <span className="grid text-left leading-tight">
+                <span>Map view available</span>
+                <span className="text-xs font-bold">
+                  See {mappableFilteredProperties.length} apartment{" "}
+                  {mappableFilteredProperties.length === 1 ? "pin" : "pins"} nearby
+                </span>
+              </span>
             </button>
           </div>
         </div>
