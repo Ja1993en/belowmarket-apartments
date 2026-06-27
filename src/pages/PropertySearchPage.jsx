@@ -7,6 +7,7 @@ import { saveLocalLead } from "../data/leadStorage";
 import { saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
+import { isNonRentOnlySpecialText } from "../utils/rentSpecials";
 import {
   clearCompareSelections,
   getCompareFloorPlanItemKey,
@@ -1619,7 +1620,7 @@ function MapPropertyHoverPreview({
   const rentLabel = priceSummary.hasRentSpecial
     ? priceSummary.effectiveRentLabel
     : priceSummary.normalRentLabel;
-  const rentEyebrow = priceSummary.hasRentSpecial ? "Net effective" : "Normal rent";
+  const rentEyebrow = priceSummary.hasRentSpecial ? "Net effective" : "Listed rent";
 
   return (
     <div
@@ -2243,16 +2244,29 @@ function SearchResultCard({
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
-          <SearchRentMetric
-            label={showNetEffectiveRent ? "Estimated rent" : "Same as rent"}
-            value={showNetEffectiveRent ? priceSummary.effectiveRentLabel : priceSummary.normalRentLabel}
-            highlight={showNetEffectiveRent}
-          />
-          <SearchRentMetric
-            label="Normal rent"
-            value={priceSummary.normalRentLabel}
-          />
+        <div
+          className={`mt-3 grid gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2 ${
+            showNetEffectiveRent ? "grid-cols-2" : ""
+          }`}
+        >
+          {showNetEffectiveRent ? (
+            <>
+              <SearchRentMetric
+                label="Estimated rent"
+                value={priceSummary.effectiveRentLabel}
+                highlight
+              />
+              <SearchRentMetric
+                label="Normal rent"
+                value={priceSummary.normalRentLabel}
+              />
+            </>
+          ) : (
+            <SearchRentMetric
+              label="Listed rent"
+              value={priceSummary.normalRentLabel}
+            />
+          )}
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
@@ -3184,23 +3198,26 @@ function createSearchSpecialDealUnit({
     enteredTotalMonthlyRentValues[0] ||
     (baseRentNumber ? baseRentNumber + requiredMonthlyFeesNumber : 0);
   const enteredEffectiveRentNumber = enteredEffectiveRentValues[0] || 0;
+  const hasEnteredEffectiveRentDeal = enteredEffectiveRentValues.some(
+    (effectiveRentValue, index) =>
+      effectiveRentValue > 0 &&
+      (enteredTotalMonthlyRentValues[index] ||
+        enteredTotalMonthlyRentValues[0] ||
+        totalMonthlyRentNumber) > 0 &&
+      effectiveRentValue <
+        (enteredTotalMonthlyRentValues[index] ||
+          enteredTotalMonthlyRentValues[0] ||
+          totalMonthlyRentNumber)
+  );
+  const hasRentConcession =
+    !isNonRentOnlySpecialText(specialLabel) &&
+    (Number(freeWeeks || 0) > 0 ||
+      rentCreditSpecialNumber > 0 ||
+      hasEnteredEffectiveRentDeal);
 
   return {
     specialLabel,
-    hasRentSpecial:
-      Number(freeWeeks || 0) > 0 ||
-      rentCreditSpecialNumber > 0 ||
-      enteredEffectiveRentValues.some(
-        (effectiveRentValue, index) =>
-          effectiveRentValue > 0 &&
-          (enteredTotalMonthlyRentValues[index] ||
-            enteredTotalMonthlyRentValues[0] ||
-            totalMonthlyRentNumber) > 0 &&
-          effectiveRentValue <
-            (enteredTotalMonthlyRentValues[index] ||
-              enteredTotalMonthlyRentValues[0] ||
-              totalMonthlyRentNumber)
-      ),
+    hasRentSpecial: hasRentConcession,
     effectiveRentNumber: effectiveRentNumbers[0] || enteredEffectiveRentNumber || totalMonthlyRentNumber,
     effectiveRentNumbers,
   };
@@ -3308,7 +3325,7 @@ function getSearchSpecialLabel(freeWeeks, rentCreditSpecial = "") {
 function getPrimaryRentLabel(property) {
   const priceSummary = getPropertySearchPriceSummary(property);
 
-  return priceSummary.hasSpecial
+  return priceSummary.hasRentSpecial
     ? priceSummary.effectiveRentLabel
     : priceSummary.normalRentLabel;
 }
