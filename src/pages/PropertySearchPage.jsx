@@ -943,12 +943,6 @@ export default function PropertySearchPage() {
             >
               Open map ({mappableFilteredProperties.length})
             </button>
-            <Link
-              to="/start"
-              className="bma-btn-gold w-fit shrink-0"
-            >
-              Get matched
-            </Link>
           </div>
         </div>
 
