@@ -2046,6 +2046,9 @@ function SearchResultCard({
   const [galleryPhotoIndex, setGalleryPhotoIndex] = useState(0);
   const currentGalleryImage = galleryImages[galleryPhotoIndex] || getPropertyPrimaryImage(property);
   const hasGalleryControls = galleryImages.length > 1;
+  const touchStartXRef = useRef(null);
+  const touchStartYRef = useRef(null);
+  const didSwipeGalleryRef = useRef(false);
 
   useEffect(() => {
     setGalleryPhotoIndex(0);
@@ -2063,6 +2066,52 @@ function SearchResultCard({
     );
   };
 
+  const handleGalleryTouchStart = (event) => {
+    if (!hasGalleryControls) return;
+
+    const touch = event.touches[0];
+    touchStartXRef.current = touch.clientX;
+    touchStartYRef.current = touch.clientY;
+    didSwipeGalleryRef.current = false;
+  };
+
+  const handleGalleryTouchEnd = (event) => {
+    if (
+      !hasGalleryControls ||
+      touchStartXRef.current === null ||
+      touchStartYRef.current === null
+    ) {
+      return;
+    }
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStartXRef.current;
+    const deltaY = touch.clientY - touchStartYRef.current;
+
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+
+    if (Math.abs(deltaX) < 42 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) {
+      return;
+    }
+
+    didSwipeGalleryRef.current = true;
+
+    if (deltaX > 0) {
+      showPreviousGalleryPhoto();
+    } else {
+      showNextGalleryPhoto();
+    }
+  };
+
+  const handleGalleryLinkClick = (event) => {
+    if (!didSwipeGalleryRef.current) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    didSwipeGalleryRef.current = false;
+  };
+
   return (
     <article
       ref={cardRef}
@@ -2070,8 +2119,16 @@ function SearchResultCard({
         isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
       }`}
     >
-      <div className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[164px] md:self-stretch lg:min-h-[184px] xl:min-h-[246px]">
-        <Link to={cardHref} className="absolute inset-0 block overflow-hidden">
+      <div
+        className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[164px] md:self-stretch lg:min-h-[184px] xl:min-h-[246px]"
+        onTouchStart={handleGalleryTouchStart}
+        onTouchEnd={handleGalleryTouchEnd}
+      >
+        <Link
+          to={cardHref}
+          onClickCapture={handleGalleryLinkClick}
+          className="absolute inset-0 block overflow-hidden"
+        >
         {showGoldHoverBar && (
           <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
         )}
