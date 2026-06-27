@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Building2, ChevronLeft, ChevronRight, MapPin, Navigation, Search, X } from "lucide-react";
 import CompareSavedOptionsPanel from "../components/propertySearch/CompareSavedOptionsPanel";
 import { getPublicPropertySummaries } from "../data/propertyStorage";
+import { saveLocalLead } from "../data/leadStorage";
+import { saveSupabaseLead } from "../data/supabaseLeadStorage";
+import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
+import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import {
   clearCompareSelections,
   getCompareFloorPlanItemKey,
@@ -44,6 +48,75 @@ const mapboxGeocodeRequests = new Map();
 const FLOOR_PLAN_SCROLL_TARGET_KEY = "bma-scroll-target";
 const PROPERTY_RESULTS_PER_PAGE = 18;
 const MAP_GEOCODE_BATCH_SIZE = 6;
+const emptyRequestInfoForm = {
+  name: "",
+  phone: "",
+  email: "",
+  area: "",
+  bedrooms: "",
+  budget: "",
+  moveIn: "",
+  contactMethod: "",
+  smsConsent: false,
+  notes: "",
+};
+
+function getTrackingValue(searchParams, key) {
+  return searchParams.get(key)?.trim() || "";
+}
+
+function getAdTracking(searchParams) {
+  const utmSource = getTrackingValue(searchParams, "utm_source");
+  const utmMedium = getTrackingValue(searchParams, "utm_medium");
+  const utmCampaign = getTrackingValue(searchParams, "utm_campaign");
+  const utmTerm = getTrackingValue(searchParams, "utm_term");
+  const utmContent = getTrackingValue(searchParams, "utm_content");
+  const gclid = getTrackingValue(searchParams, "gclid");
+
+  return {
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    utmTerm,
+    utmContent,
+    gclid,
+    landingPage: `${window.location.pathname}${window.location.search}`,
+    referrer: document.referrer || "",
+    hasPaidTracking:
+      Boolean(gclid) ||
+      utmSource.toLowerCase() === "google" ||
+      utmMedium.toLowerCase().includes("paid") ||
+      utmMedium.toLowerCase().includes("cpc"),
+  };
+}
+
+async function sendLeadNotification(lead) {
+  try {
+    const response = await fetch("/api/send-lead-email", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        ...lead,
+        adminUrl: `${window.location.origin}/admin/leads/${lead.id}`,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      console.warn(body.error || "Lead email notification was not sent.");
+    }
+  } catch (error) {
+    console.warn("Lead email notification was not sent.", error);
+  }
+}
+
+function sendLeadNotificationInBackground(lead) {
+  sendLeadNotification(lead).catch((error) => {
+    console.warn("Lead email notification was not sent.", error);
+  });
+}
 
 function getFloorPlansRoute(propertyId) {
   return `/properties/${propertyId}?section=floor-plans#floor-plans`;
@@ -105,6 +178,7 @@ function getPaginationPages(currentPage, totalPages) {
 
 export default function PropertySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const searchFromUrl = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(searchFromUrl);
   const [selectedArea, setSelectedArea] = useState(null);
@@ -125,6 +199,7 @@ export default function PropertySearchPage() {
   const [currentResultsPage, setCurrentResultsPage] = useState(1);
   const [compareNotice, setCompareNotice] = useState("");
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [requestInfoProperty, setRequestInfoProperty] = useState(null);
   const resultCardRefs = useRef(new Map());
   const resultsTopRef = useRef(null);
   const properties = useMemo(() => getPublicSearchProperties(allProperties), [allProperties]);
@@ -437,6 +512,18 @@ export default function PropertySearchPage() {
   const handleViewCompare = useCallback(() => {
     setIsCompareModalOpen(true);
   }, []);
+
+  const handleOpenRequestInfo = useCallback((property) => {
+    setRequestInfoProperty(property);
+  }, []);
+
+  const handleCloseRequestInfo = useCallback(() => {
+    setRequestInfoProperty(null);
+  }, []);
+
+  const handleRequestInfoSubmitted = useCallback(() => {
+    navigate("/thank-you", { replace: true });
+  }, [navigate]);
 
   const handleTogglePropertyCompare = useCallback(
     (property) => {
@@ -926,6 +1013,7 @@ export default function PropertySearchPage() {
                     }
                   }}
                   onToggleCompare={() => handleTogglePropertyCompare(property)}
+                  onRequestInfo={() => handleOpenRequestInfo(property)}
                 />
               ))}
             </div>
@@ -1063,6 +1151,15 @@ export default function PropertySearchPage() {
           compareItemCount={compareItemCount}
           onClearCompare={handleClearCompare}
           onViewCompare={handleViewCompare}
+        />
+      )}
+
+      {requestInfoProperty && (
+        <RequestInfoModal
+          property={requestInfoProperty}
+          searchParams={searchParams}
+          onClose={handleCloseRequestInfo}
+          onSubmitted={handleRequestInfoSubmitted}
         />
       )}
     </main>
@@ -1587,6 +1684,340 @@ function FallbackSearchMap({ properties }) {
   );
 }
 
+function RequestInfoModal({ property, searchParams, onClose, onSubmitted }) {
+  const [form, setForm] = useState(() => ({
+    ...emptyRequestInfoForm,
+    area: property.area || property.city || "",
+  }));
+  const [formError, setFormError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
+
+  const handleChange = (field, value) => {
+    setForm((currentForm) => ({
+      ...currentForm,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (
+      !form.name ||
+      !form.phone ||
+      !form.email ||
+      !form.area ||
+      !form.bedrooms ||
+      !form.budget ||
+      !form.moveIn
+    ) {
+      setFormError("Please complete all required fields before submitting.");
+      return;
+    }
+
+    if (!form.smsConsent) {
+      setFormError("Please agree to receive text messages before submitting.");
+      return;
+    }
+
+    setFormError("");
+    const adTracking = getAdTracking(searchParams);
+    const leadPayload = {
+      id: `local-${Date.now()}`,
+      name: form.name,
+      phone: form.phone,
+      email: form.email,
+      preference: `${form.bedrooms} - ${form.area} - ${form.budget} budget`,
+      bedrooms: form.bedrooms,
+      budget: form.budget,
+      moveIn: form.moveIn,
+      status: "New Lead",
+      quality: "New",
+      priority: "Medium",
+      source: adTracking.hasPaidTracking ? "Google Ads" : "Property search modal",
+      sourcePropertyId: property.id,
+      sourcePropertyName: property.name,
+      assignedTo: "Unassigned",
+      lastTouch: "Just now",
+      notes: form.notes || `Requested info for ${property.name}.`,
+      recommendedPropertyIds: [],
+      token: `lead-${Date.now()}`,
+      contactMethod: form.contactMethod || "Not selected",
+      createdAt: new Date().toISOString(),
+      utmSource: adTracking.utmSource,
+      utmMedium: adTracking.utmMedium,
+      utmCampaign: adTracking.utmCampaign,
+      utmTerm: adTracking.utmTerm,
+      utmContent: adTracking.utmContent,
+      gclid: adTracking.gclid,
+      landingPage: adTracking.landingPage,
+      referrer: adTracking.referrer,
+    };
+
+    try {
+      setIsSubmitting(true);
+      const savedLead = await saveSupabaseLead(leadPayload);
+
+      saveLeadEventInBackground({
+        leadId: savedLead.id,
+        eventType: "lead_submitted",
+        propertyId: savedLead.sourcePropertyId,
+        propertyName: savedLead.sourcePropertyName,
+        metadata: {
+          source: savedLead.source,
+          bedrooms: savedLead.bedrooms,
+          budget: savedLead.budget,
+          moveIn: savedLead.moveIn,
+          contactMethod: savedLead.contactMethod,
+          utmSource: savedLead.utmSource,
+          utmMedium: savedLead.utmMedium,
+          utmCampaign: savedLead.utmCampaign,
+          utmTerm: savedLead.utmTerm,
+          utmContent: savedLead.utmContent,
+          gclid: savedLead.gclid,
+          landingPage: savedLead.landingPage,
+          referrer: savedLead.referrer,
+        },
+      });
+
+      sendLeadNotificationInBackground({
+        ...leadPayload,
+        ...savedLead,
+      });
+      onSubmitted();
+    } catch (error) {
+      console.error(error);
+
+      if (isLocalFallbackEnabled) {
+        saveLocalLead(leadPayload);
+        sendLeadNotificationInBackground(leadPayload);
+        onSubmitted();
+        return;
+      }
+
+      setFormError("Something went wrong while saving your request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-[#102426]/70 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="request-info-title"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl ring-1 ring-white/70">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#d7e6df] bg-white px-4 py-4 sm:px-6">
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase text-[#1f6f63]">
+              Request apartment info
+            </p>
+            <h2
+              id="request-info-title"
+              className="mt-1 text-xl font-black leading-tight text-[#102426] sm:text-2xl"
+            >
+              Interested in {property.name}
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f5f8f1] text-[#102426] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+            aria-label="Close request form"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="px-4 py-5 sm:px-6">
+          <div className="mb-5 rounded-2xl bg-[#d8efe6] p-4 text-sm font-bold text-[#1f6f63] ring-1 ring-[#a9cfc2]">
+            We will include {property.name} with your request.
+          </div>
+
+          {formError && (
+            <div className="mb-5 rounded-2xl bg-[#fde8df] p-4 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
+              {formError}
+            </div>
+          )}
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <RequestInfoField
+              label="Full Name"
+              value={form.name}
+              onChange={(value) => handleChange("name", value)}
+              placeholder="Ashley Brown"
+              required
+            />
+            <RequestInfoField
+              label="Phone"
+              value={form.phone}
+              onChange={(value) => handleChange("phone", value)}
+              placeholder="(214) 555-0144"
+              required
+            />
+            <RequestInfoField
+              label="Email"
+              value={form.email}
+              onChange={(value) => handleChange("email", value)}
+              placeholder="ashley@example.com"
+              type="email"
+              required
+            />
+            <RequestInfoField
+              label="Preferred Area"
+              value={form.area}
+              onChange={(value) => handleChange("area", value)}
+              placeholder="Uptown Dallas"
+              required
+            />
+            <RequestInfoSelectField
+              label="Bedrooms"
+              value={form.bedrooms}
+              onChange={(value) => handleChange("bedrooms", value)}
+              options={["Studio", "1 Bed", "2 Bed", "3 Bed"]}
+              required
+            />
+            <RequestInfoField
+              label="Budget"
+              value={form.budget}
+              onChange={(value) => handleChange("budget", value)}
+              placeholder="$1,600"
+              required
+            />
+            <RequestInfoField
+              label="Move-in Date"
+              value={form.moveIn}
+              onChange={(value) => handleChange("moveIn", value)}
+              type="date"
+              required
+            />
+            <RequestInfoSelectField
+              label="Preferred Contact"
+              value={form.contactMethod}
+              onChange={(value) => handleChange("contactMethod", value)}
+              options={["Text", "Call", "Email"]}
+            />
+          </div>
+
+          <div className="mt-4">
+            <label className="text-sm font-bold text-[#526260]">Notes</label>
+            <textarea
+              value={form.notes}
+              onChange={(event) => handleChange("notes", event.target.value)}
+              rows={4}
+              placeholder="Tell us about must-haves, pets, parking, work location, or timing..."
+              className="mt-2 w-full resize-none rounded-2xl border border-[#b8d9d0] bg-white p-4 font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
+            />
+          </div>
+
+          <label className="mt-4 flex gap-3 rounded-2xl bg-[#f5f8f1] p-4 text-xs font-semibold leading-5 text-[#526260] ring-1 ring-[#d7e6df]">
+            <input
+              type="checkbox"
+              checked={form.smsConsent}
+              onChange={(event) => handleChange("smsConsent", event.target.checked)}
+              required
+              className="mt-1 h-4 w-4 shrink-0 accent-[#173f3f]"
+            />
+            <span>
+              <strong className="block text-[#102426]">
+                Text Message Consent
+              </strong>
+              I agree to receive recurring text messages from Below Market
+              Apartments about apartment search help, property recommendations,
+              tour coordination, and follow-up at the phone number I provided.
+              Message frequency varies. Message and data rates may apply. Reply{" "}
+              <strong>HELP</strong> for help or <strong>STOP</strong> to opt
+              out. Consent is not a condition of renting an apartment. View our{" "}
+              <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
+                Privacy Policy
+              </Link>{" "}
+              and{" "}
+              <Link className="font-black text-[#173f3f] underline" to="/terms-and-conditions">
+                Terms and Conditions
+              </Link>
+              .
+            </span>
+          </label>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="mt-6 w-full rounded-2xl bg-[#f2b84b] px-5 py-4 text-sm font-black text-[#102426] hover:bg-[#f9d783] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Request"}
+          </button>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function RequestInfoField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  required = false,
+}) {
+  return (
+    <label className="block">
+      <span className="text-sm font-bold text-[#526260]">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        required={required}
+        className="mt-2 w-full rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
+      />
+    </label>
+  );
+}
+
+function RequestInfoSelectField({ label, value, onChange, options, required = false }) {
+  return (
+    <label className="block">
+      <span className="text-sm font-bold text-[#526260]">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        required={required}
+        className="mt-2 w-full rounded-2xl border border-[#b8d9d0] bg-white px-4 py-3 font-semibold text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
+      >
+        <option value="">Select one</option>
+        {options.map((option) => (
+          <option key={option}>{option}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 function SearchResultCard({
   property,
   isCompared,
@@ -1594,6 +2025,7 @@ function SearchResultCard({
   selectedBedroomFilter,
   selectedPriceRange,
   cardRef,
+  onRequestInfo,
   onToggleCompare,
 }) {
   const addressLabel = getPropertyAddressLabel(property);
@@ -1688,12 +2120,13 @@ function SearchResultCard({
             </button>
           </>
         )}
-        <Link
-          to={`/start?property=${property.id}`}
+        <button
+          type="button"
+          onClick={onRequestInfo}
           className="absolute bottom-2 right-2 z-20 rounded-full bg-[#f2b84b] px-2.5 py-1.5 text-[10px] font-black text-[#102426] shadow-lg ring-1 ring-white/80 transition hover:bg-[#f9d783] xl:bottom-3 xl:right-3 xl:px-3 xl:text-[11px]"
         >
           Request Info
-        </Link>
+        </button>
       </div>
 
       <div className="flex min-w-0 flex-col p-3 md:p-1.5 lg:p-2 xl:p-3.5">
