@@ -267,13 +267,6 @@ export default function PropertySearchPage() {
     : "";
   const selectedPriceLabel = getSelectedPriceLabel(selectedPriceRange);
   const selectedBedroomLabel = getSelectedBedroomLabel(selectedBedroomFilter);
-  const hasActiveSearchChips = Boolean(
-    searchFromUrl ||
-    selectedPriceRange ||
-    selectedBedroomFilter ||
-    selectedSpecialWeeks ||
-    selectedArea
-  );
   const suggestions = useMemo(
     () => getPropertySearchSuggestions(properties, searchTerm),
     [properties, searchTerm]
@@ -922,84 +915,6 @@ export default function PropertySearchPage() {
             </div>
           )}
 
-          {hasActiveSearchChips && (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {searchFromUrl && (
-              <>
-                <span className="rounded-full bg-[#f5f8f1] px-4 py-2 text-sm font-bold text-[#526260] ring-1 ring-[#d7e6df]">
-                  Search: {searchFromUrl}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setSearchParams({});
-                    setSelectedArea(null);
-                  }}
-                  className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
-                >
-                  Clear
-                </button>
-              </>
-            )}
-            {selectedPriceRange && (
-              <>
-                <span className="rounded-full bg-[#eef5ff] px-4 py-2 text-sm font-bold text-[#174a7c] ring-1 ring-[#b8d9f0]">
-                  Price: {selectedPriceLabel}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedPriceRange("");
-                    setSelectedArea(null);
-                  }}
-                  className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
-                >
-                  Clear price
-                </button>
-              </>
-            )}
-            {selectedBedroomFilter && (
-              <>
-                <span className="rounded-full bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#1f6f63] ring-1 ring-[#d7e6df]">
-                  Beds: {selectedBedroomLabel}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedBedroomFilter("");
-                    setSelectedArea(null);
-                  }}
-                  className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
-                >
-                  Clear beds
-                </button>
-              </>
-            )}
-            {selectedSpecialWeeks && (
-              <>
-                <span className="rounded-full bg-[#fff8e6] px-4 py-2 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                  Special: {selectedSpecialLabel}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedSpecialWeeks("");
-                    setSelectedArea(null);
-                  }}
-                  className="rounded-full px-4 py-2 text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
-                >
-                  Clear special
-                </button>
-              </>
-            )}
-            {selectedArea && (
-              <span className="rounded-full bg-[#eef5ff] px-4 py-2 text-sm font-bold text-[#174a7c] ring-1 ring-[#b8d9f0]">
-                Area: {selectedArea.radiusMiles.toFixed(1)} mi
-              </span>
-            )}
-          </div>
-          )}
         </div>
       </section>
 
