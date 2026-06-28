@@ -160,8 +160,9 @@ export default function HomePage() {
 
                         <Link
                             to="/start"
-                            className="shrink-0 rounded-lg bg-[#f2b84b] px-3 py-2 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
+                            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#f2b84b] px-3 py-2 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
                         >
+                            <Search className="h-3.5 w-3.5" aria-hidden="true" />
                             Ask a Locator
                         </Link>
                     </div>
