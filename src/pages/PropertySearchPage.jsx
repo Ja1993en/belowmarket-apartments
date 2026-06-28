@@ -2319,8 +2319,8 @@ function SearchResultCard({
   return (
     <article
       ref={cardRef}
-      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition hover:-translate-y-0.5 hover:ring-[#f2b84b] hover:shadow-md md:grid md:grid-cols-[152px_minmax(0,1fr)] md:items-stretch lg:grid-cols-[196px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)] ${
-        isMapHighlighted ? "ring-[#f2b84b] shadow-md" : "ring-[#d7e6df]"
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition duration-200 ease-out hover:-translate-y-1.5 hover:ring-2 hover:ring-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.18)] md:grid md:grid-cols-[152px_minmax(0,1fr)] md:items-stretch lg:grid-cols-[196px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)] ${
+        isMapHighlighted ? "ring-2 ring-[#f2b84b] shadow-[0_18px_42px_rgba(16,36,38,0.18)]" : "ring-[#d7e6df]"
       }`}
     >
       <div

@@ -4913,7 +4913,7 @@ function FloorPlanCard({
 
     return (
         <>
-        <div className="relative rounded-2xl border border-[#d7e6df] bg-white p-2.5 transition hover:border-[#f2d08a] sm:p-3 lg:p-3">
+        <div className="relative rounded-2xl border border-[#d7e6df] bg-white p-2.5 shadow-sm transition duration-200 ease-out hover:-translate-y-1.5 hover:border-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.16)] hover:ring-2 hover:ring-[#f2b84b]/45 sm:p-3 lg:p-3">
             <button
                 type="button"
                 onClick={onCheckAvailability}

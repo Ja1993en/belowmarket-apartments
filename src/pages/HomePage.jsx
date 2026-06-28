@@ -1196,7 +1196,7 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
     return (
         <Link
             to={cardHref}
-            className="bma-card group overflow-hidden transition hover:-translate-y-1 hover:border-[#f2b84b] hover:shadow-md"
+            className="bma-card group overflow-hidden transition duration-200 ease-out hover:-translate-y-1.5 hover:border-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.18)] hover:ring-2 hover:ring-[#f2b84b]/45"
         >
             <div className="relative">
                 <img
