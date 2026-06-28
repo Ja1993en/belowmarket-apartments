@@ -28,11 +28,6 @@ import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { formatAvailability as formatAvailabilityLabel } from "../utils/displayFormatters";
-import {
-    DALLAS_BUDGET_GUIDE,
-    getBudgetQualificationMessage,
-} from "../utils/leadQualification";
-import { shouldShowRentConcessionMetrics } from "../utils/rentSpecials";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = { latitude: 32.7767, longitude: -96.797 };
@@ -1616,17 +1611,6 @@ export default function PublicPropertyListing() {
             return;
         }
 
-        const budgetQualificationMessage = getBudgetQualificationMessage(
-            leadBedrooms,
-            leadBudget
-        );
-
-        if (budgetQualificationMessage) {
-            setShowSidebarError(true);
-            setLeadFormError(budgetQualificationMessage);
-            return;
-        }
-
         setShowSidebarError(false);
         setLeadFormError("");
 
@@ -1950,10 +1934,6 @@ export default function PublicPropertyListing() {
                             }
                             className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                         />
-
-                        <p className="col-span-2 text-xs font-bold leading-5 text-[#526260]">
-                            {DALLAS_BUDGET_GUIDE}
-                        </p>
 
                         <select
                             value={leadForm.contactMethod}
@@ -3008,10 +2988,6 @@ export default function PublicPropertyListing() {
                                                     }
                                                     className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 />
-
-                                                <p className="col-span-2 text-xs font-bold leading-5 text-[#526260]">
-                                                    {DALLAS_BUDGET_GUIDE}
-                                                </p>
 
                                                 <select
                                                     value={leadForm.contactMethod}
@@ -4921,14 +4897,7 @@ function FloorPlanCard({
             : hasSpecial
                 ? "Verify"
                 : "None listed");
-    const shouldShowRentConcessionChips = shouldShowRentConcessionMetrics({
-        specialLabel,
-        rent: displayRentValue,
-        effectiveRent: displayEffectiveValue,
-        savings: displaySavingsValue,
-    });
-    const shouldShowSavingsChip =
-        shouldShowRentConcessionChips && parseCurrency(displaySavingsValue) > 0;
+    const shouldShowSavingsChip = hasSpecial && parseCurrency(displaySavingsValue) > 0;
     const hasAvailableFloorPlanUnits =
         availableUnitCount > 0 || isFloorPlanAvailable({ available, availableUnits, status });
     const availabilityBadgeLabel = getFloorPlanAvailabilityBadgeLabel({
@@ -5013,16 +4982,14 @@ function FloorPlanCard({
                     </span>
                 </div>
 
-                {shouldShowRentConcessionChips && (
-                    <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#e7f3ee] px-2 py-1 ring-1 ring-[#a9cfc2] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
-                        <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
-                            Effective
-                        </span>
-                        <span className="truncate text-xs font-black text-[#1f6f63] lg:text-sm">
-                            {displayEffectiveValue}
-                        </span>
-                    </div>
-                )}
+                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#e7f3ee] px-2 py-1 ring-1 ring-[#a9cfc2] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
+                        Effective
+                    </span>
+                    <span className={`truncate text-xs font-black lg:text-sm ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
+                        {displayEffectiveValue}
+                    </span>
+                </div>
 
                 {shouldShowSavingsChip && (
                     <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#fff8e6] px-2 py-1 ring-1 ring-[#f2d08a] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
