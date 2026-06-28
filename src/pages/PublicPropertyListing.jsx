@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { GitCompareArrows, Search } from "lucide-react";
+import { Scale, Search } from "lucide-react";
 import {
     DEFAULT_PROPERTY_IMAGE,
     getPhotoImageUrl,
@@ -2520,7 +2520,7 @@ export default function PublicPropertyListing() {
                                                     }}
                                                     className="inline-flex w-fit items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-4 py-2 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                                                 >
-                                                    <GitCompareArrows className="h-4 w-4 shrink-0" />
+                                                    <Scale className="h-4 w-4 shrink-0" />
                                                     <span>View Comparison Chart</span>
                                                 </button>
 
@@ -3492,7 +3492,7 @@ function PropertyCompareDock({
                         onClick={onViewCompare}
                         className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm transition hover:bg-[#102426] hover:!text-white"
                     >
-                        <GitCompareArrows className="h-4 w-4 shrink-0" />
+                        <Scale className="h-4 w-4 shrink-0" />
                         <span>View comparison ({compareItemCount})</span>
                     </button>
                     <button
@@ -5018,7 +5018,7 @@ function FloorPlanCard({
                             : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
                     }`}
                 >
-                    <GitCompareArrows className="h-4 w-4 shrink-0" />
+                    <Scale className="h-4 w-4 shrink-0" />
                     <span>{isCompared ? "Added" : "Compare"}</span>
                 </button>
 

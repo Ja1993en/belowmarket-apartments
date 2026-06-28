@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Building2, ChevronLeft, ChevronRight, GitCompareArrows, MapPin, Navigation, Search, X } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, MapPin, Navigation, Scale, Search, X } from "lucide-react";
 import CompareSavedOptionsPanel from "../components/propertySearch/CompareSavedOptionsPanel";
 import { getPublicPropertySummaries } from "../data/propertyStorage";
 import { saveLocalLead } from "../data/leadStorage";
@@ -1305,7 +1305,7 @@ function CompareDock({
             onClick={onViewCompare}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm transition hover:bg-[#102426] hover:!text-white"
           >
-            <GitCompareArrows className="h-4 w-4 shrink-0" />
+            <Scale className="h-4 w-4 shrink-0" />
             <span>View comparison ({compareItemCount})</span>
           </button>
           <button
@@ -2452,7 +2452,7 @@ function SearchResultCard({
                 : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#d7e6df]"
             }`}
           >
-            <GitCompareArrows className="h-3.5 w-3.5 shrink-0" />
+            <Scale className="h-3.5 w-3.5 shrink-0" />
             <span>{isCompared ? "Added" : "Compare"}</span>
           </button>
         </div>
