@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { Scale, Search } from "lucide-react";
+import { Bath, BedDouble, Scale, Search } from "lucide-react";
 import {
     DEFAULT_PROPERTY_IMAGE,
     getPhotoImageUrl,
@@ -3170,9 +3170,13 @@ export default function PublicPropertyListing() {
                                 {selectedFloorPlan.name}
                             </h2>
 
-                            <p className="mt-2 text-[#526260]">
-                                {formatBedroomLabel(selectedFloorPlan.beds, selectedFloorPlan.name)} • {formatBathroomLabel(selectedFloorPlan.baths)} • {formatSquareFeetLabel(selectedFloorPlan.sqft)}
-                            </p>
+                            <FloorPlanBasicStats
+                                beds={selectedFloorPlan.beds}
+                                baths={selectedFloorPlan.baths}
+                                name={selectedFloorPlan.name}
+                                sqft={selectedFloorPlan.sqft}
+                                className="mt-2 text-[#526260]"
+                            />
 
 
                         </div>
@@ -4859,6 +4863,22 @@ function CompareDetailMetric({ label, value, highlight = false }) {
     );
 }
 
+function FloorPlanBasicStats({ beds, baths, name, sqft, className = "" }) {
+    return (
+        <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className}`}>
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+                <BedDouble className="h-4 w-4 shrink-0 text-[#1f6f63]" />
+                <span className="truncate">{formatBedroomLabel(beds, name)}</span>
+            </span>
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+                <Bath className="h-4 w-4 shrink-0 text-[#1f6f63]" />
+                <span className="truncate">{formatBathroomLabel(baths)}</span>
+            </span>
+            <span className="truncate">{formatSquareFeetLabel(sqft)}</span>
+        </div>
+    );
+}
+
 function FloorPlanCard({
     name,
     beds,
@@ -4968,9 +4988,13 @@ function FloorPlanCard({
                     </span>
                 </div>
 
-                <p className="mt-1.5 text-sm font-semibold leading-5 text-[#526260]">
-                    {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {formatSquareFeetLabel(sqft)}
-                </p>
+                <FloorPlanBasicStats
+                    beds={beds}
+                    baths={baths}
+                    name={name}
+                    sqft={sqft}
+                    className="mt-1.5 text-sm font-semibold leading-5 text-[#526260]"
+                />
 
                 <p className={`mt-1 text-xs font-black ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
                     {availabilityBadgeLabel}
@@ -5057,9 +5081,13 @@ function FloorPlanCard({
                             <h3 className="mt-1 truncate text-xl font-black text-[#102426]">
                                 {name}
                             </h3>
-                            <p className="mt-1 truncate text-sm font-bold text-[#526260]">
-                                {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {formatSquareFeetLabel(sqft)}
-                            </p>
+                            <FloorPlanBasicStats
+                                beds={beds}
+                                baths={baths}
+                                name={name}
+                                sqft={sqft}
+                                className="mt-1 text-sm font-bold text-[#526260]"
+                            />
                         </div>
 
                         <button
