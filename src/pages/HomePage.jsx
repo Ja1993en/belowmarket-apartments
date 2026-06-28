@@ -213,7 +213,7 @@ export default function HomePage() {
                     </h1>
 
                     <p className="mx-auto mt-4 max-w-2xl text-[#d7ece6]">
-                        Search by city, ZIP, property name, manager, or special.
+                        Search by city, neighborhood, ZIP, property name, or special.
                     </p>
 
                     <form onSubmit={submitSearch} className="bma-panel relative mx-auto mt-8 max-w-3xl p-2">
@@ -226,7 +226,7 @@ export default function HomePage() {
                                     type="text"
                                     value={searchTerm}
                                     onChange={(event) => setSearchTerm(event.target.value)}
-                                    placeholder="Enter city, ZIP, property, or special"
+                                    placeholder="Enter city, neighborhood, property, or special"
                                     autoComplete="off"
                                     className="bma-focus-ring h-16 w-full rounded-lg border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-[#102426]"
                                     style={{ color: "#000000", caretColor: "#000000" }}

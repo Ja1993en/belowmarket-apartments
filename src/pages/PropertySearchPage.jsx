@@ -692,7 +692,7 @@ export default function PropertySearchPage() {
                     type="search"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    placeholder="City, state, address, or special"
+                    placeholder="City, neighborhood, property, or special"
                     autoComplete="off"
                     className="bma-focus-ring h-10 w-full rounded-lg border border-[#b8d9d0] bg-[#f9fbf8] pl-9 pr-3 text-sm font-bold text-[#102426] outline-none sm:h-12 sm:pl-12 sm:pr-4 sm:text-base"
                   />
@@ -966,7 +966,7 @@ export default function PropertySearchPage() {
               {searchFromUrl ? `${searchFromUrl} apartments` : "Apartments near you"}
             </h1>
             <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
-              Search by city, ZIP, property address, or active special. Compare normal rent, estimated effective rent, and specials before you tour.
+              Search by city, neighborhood, ZIP, property name, or active special. Compare normal rent, estimated effective rent, and specials before you tour.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1092,7 +1092,7 @@ export default function PropertySearchPage() {
                   No matching properties yet
                 </h2>
                 <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-[#526260]">
-                  Try a city, ZIP code, property address, or special like 6 weeks free.
+                  Try a city, neighborhood, ZIP code, property name, or special like 6 weeks free.
                 </p>
               </div>
             )}

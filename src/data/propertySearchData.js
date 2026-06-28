@@ -15,10 +15,17 @@ export function getPropertySearchSuggestions(properties, query, limit = 6) {
   properties.forEach((property) => {
     getSuggestionCandidates(property).forEach((candidate) => {
       const normalizedValue = normalizeSearchValue(
-        `${candidate.label} ${candidate.detail || ""}`
+        candidate.searchText || `${candidate.label} ${candidate.detail || ""}`
       );
 
       if (!doesSearchTextMatchQuery(normalizedValue, queryTokens, normalizedQuery)) {
+        return;
+      }
+
+      if (
+        (candidate.type === "Property" || candidate.type === "Area") &&
+        !doesAnyTokenMatchValue(queryTokens, candidate.label)
+      ) {
         return;
       }
 
@@ -37,6 +44,13 @@ export function getPropertySearchSuggestions(properties, query, limit = 6) {
 
   return [...suggestions.values()]
     .sort((firstSuggestion, secondSuggestion) => {
+      const firstPriority = getSuggestionTypePriority(firstSuggestion.type);
+      const secondPriority = getSuggestionTypePriority(secondSuggestion.type);
+
+      if (firstPriority !== secondPriority) {
+        return firstPriority - secondPriority;
+      }
+
       if (firstSuggestion.score !== secondSuggestion.score) {
         return firstSuggestion.score - secondSuggestion.score;
       }
@@ -184,42 +198,52 @@ function getSuggestionCandidates(property) {
       label: property.name,
       detail: addressLabel,
       value: property.name,
+      searchText: [
+        property.name,
+        property.area,
+        property.city,
+        property.state,
+        property.zipcode,
+      ].filter(Boolean).join(" "),
     },
     {
       type: "City",
       label: cityState,
       detail: property.zipcode || "",
       value: cityState,
+      searchText: [cityState, property.city, property.state, property.zipcode]
+        .filter(Boolean)
+        .join(" "),
     },
     {
       type: "Area",
       label: property.area,
       detail: cityState,
       value: property.area,
+      searchText: [property.area, property.city, property.state]
+        .filter(Boolean)
+        .join(" "),
     },
     {
       type: "ZIP",
       label: property.zipcode,
       detail: cityState || property.area || "",
       value: property.zipcode,
-    },
-    {
-      type: "Address",
-      label: addressLabel,
-      detail: property.name,
-      value: addressLabel,
+      searchText: property.zipcode,
     },
     {
       type: "Manager",
       label: managerLabel,
       detail: property.name,
       value: managerLabel,
+      searchText: managerLabel,
     },
     ...specialLabels.map((specialLabel) => ({
       type: "Special",
       label: specialLabel,
       detail: property.name,
       value: specialLabel,
+      searchText: specialLabel,
     })),
   ];
 
@@ -380,4 +404,23 @@ function getSuggestionScore(normalizedValue, normalizedQuery, queryTokens) {
     : -1;
 
   return firstTokenIndex === 0 ? 3 : 4;
+}
+
+function getSuggestionTypePriority(type) {
+  return {
+    City: 0,
+    Area: 1,
+    Property: 2,
+    ZIP: 3,
+    Special: 4,
+    Manager: 5,
+  }[type] ?? 10;
+}
+
+function doesAnyTokenMatchValue(queryTokens, value) {
+  const normalizedValue = normalizeSearchValue(value);
+
+  if (!normalizedValue) return false;
+
+  return queryTokens.some((token) => normalizedValue.includes(token));
 }
