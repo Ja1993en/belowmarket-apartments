@@ -2308,7 +2308,7 @@ export default function PublicPropertyListing() {
 
     return (
 
-        <main className="min-h-screen overflow-x-hidden bg-[#f5f8f1] pb-32 text-[#102426] md:pb-32">
+        <main className="min-h-screen bg-[#f5f8f1] pb-32 text-[#102426] md:pb-32">
             <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white/95 shadow-sm backdrop-blur">
                 <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 py-2 md:px-6">
                     <Link to="/" className="flex min-w-0 items-center gap-2.5">
@@ -2328,14 +2328,14 @@ export default function PublicPropertyListing() {
                             setLeadForm(getEmptyLeadForm());
                             setShowMobileIntakeModal(true);
                         }}
-                        className="rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783] lg:hidden"
+                        className="rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783] md:hidden"
                     >
                         Ask an Apartment Locator
                     </button>
 
                     <a
                         href="#request-info"
-                        className="hidden rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783] lg:inline-flex"
+                        className="hidden rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783] md:inline-flex"
                     >
                         Ask an Apartment Locator
                     </a>
@@ -2472,7 +2472,7 @@ export default function PublicPropertyListing() {
 
                 <nav
                     ref={propertyNavRef}
-                    className={`sticky top-14 z-30 mb-3 flex max-w-full min-w-0 gap-1.5 overflow-x-auto overscroll-x-contain border border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur ${
+                    className={`sticky top-14 z-30 mb-3 flex gap-1.5 overflow-x-auto border border-[#d7e6df] bg-white/95 p-1.5 shadow-sm backdrop-blur ${
                         isPropertyNavStuck ? "rounded-b-xl border-t-0" : "rounded-xl"
                     }`}
                 >
@@ -2502,7 +2502,7 @@ export default function PublicPropertyListing() {
                     ))}
                 </nav>
 
-                <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_370px] lg:items-stretch xl:grid-cols-[minmax(0,1fr)_400px]">
+                <div className="mt-4 grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_370px] md:items-stretch xl:grid-cols-[minmax(0,1fr)_400px]">
                     <div className="min-w-0">
 
                                 {shouldShowCompareList && (
@@ -2880,9 +2880,9 @@ export default function PublicPropertyListing() {
                             </div>
 
                             <div
-                                className="mt-8 hidden flex-col gap-4 lg:mt-0 lg:flex lg:min-h-full lg:self-stretch"
+                                className="mt-8 hidden flex-col gap-4 md:mt-0 md:flex md:min-h-full md:self-stretch"
                             >
-                                <div id="request-info" className={`order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-[7rem] lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto ${intakeCardHeightClass}`}>
+                                <div id="request-info" className={`order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto ${intakeCardHeightClass}`}>
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
                                     <div className={`${intakePanelPaddingClass} flex flex-1 flex-col ${intakePanelLayoutClass}`}>
@@ -3537,7 +3537,7 @@ function getCleanNearbyPlaceLabel(place) {
 
 function SchoolSnapshotCard({ schoolSnapshot }) {
     return (
-        <div id="schools" className="min-w-0 overflow-hidden scroll-mt-32 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
+        <div id="schools" className="scroll-mt-32 rounded-3xl border border-[#d7e6df] bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                     <p className="text-sm font-black text-[#1f6f63]">
@@ -3572,7 +3572,7 @@ function SchoolSnapshotCard({ schoolSnapshot }) {
 
 function SchoolGradeItem({ school }) {
     return (
-        <div className="min-w-0 max-w-full overflow-hidden rounded-2xl bg-[#f5f8f1] p-4">
+        <div className="rounded-2xl bg-[#f5f8f1] p-4">
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     <p className="text-xs font-black uppercase text-[#1f6f63]">
@@ -4942,70 +4942,68 @@ function FloorPlanCard({
     return (
         <>
         <div className="relative rounded-2xl border border-[#d7e6df] bg-white p-2.5 transition hover:border-[#f2d08a] sm:p-3 lg:p-3">
-            <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-3 sm:grid-cols-[96px_minmax(0,1fr)] lg:grid-cols-[108px_minmax(0,1fr)]">
-                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-24 sm:w-24 lg:h-[92px] lg:w-[108px] lg:bg-[#f5f8f1] lg:p-0">
-                    {shouldShowFloorPlanImage ? (
-                        <button
-                            type="button"
-                            onClick={() => setIsPreviewOpen(true)}
-                            className="group relative h-full w-full overflow-hidden text-left focus:outline-none focus:ring-2 focus:ring-[#f2b84b]"
-                            aria-label={`Preview ${name} floor plan image`}
-                        >
-                            <img
-                                src={image}
-                                alt={imageAlt}
-                                loading="lazy"
-                                decoding="async"
-                                onError={() => setHasImageError(true)}
-                                className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02] lg:object-cover lg:group-hover:scale-105"
-                            />
-                            <span className="absolute inset-x-2 top-2 rounded-lg bg-[#102426]/85 px-2 py-1 text-center text-[10px] font-black uppercase leading-none !text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus:opacity-100">
-                                Preview
-                            </span>
-                        </button>
-                    ) : (
-                        <span className="px-2 text-center text-[10px] font-black uppercase leading-4 text-[#526260]">
-                            Image pending
+            <button
+                type="button"
+                onClick={onCheckAvailability}
+                className="absolute right-3 top-3 rounded-full bg-[#f2b84b] px-1.5 py-0.5 text-[8px] font-black !text-[#102426] shadow-sm ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:hidden"
+            >
+                Request Info
+            </button>
+
+            <div className="float-left mr-3 mb-1.5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-24 sm:w-24 lg:h-[92px] lg:w-[108px] lg:bg-[#f5f8f1] lg:p-0">
+                {shouldShowFloorPlanImage ? (
+                    <button
+                        type="button"
+                        onClick={() => setIsPreviewOpen(true)}
+                        className="group relative h-full w-full overflow-hidden text-left focus:outline-none focus:ring-2 focus:ring-[#f2b84b]"
+                        aria-label={`Preview ${name} floor plan image`}
+                    >
+                        <img
+                            src={image}
+                            alt={imageAlt}
+                            loading="lazy"
+                            decoding="async"
+                            onError={() => setHasImageError(true)}
+                            className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02] lg:object-cover lg:group-hover:scale-105"
+                        />
+                        <span className="absolute inset-x-2 top-2 rounded-lg bg-[#102426]/85 px-2 py-1 text-center text-[10px] font-black uppercase leading-none !text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus:opacity-100">
+                            Preview
                         </span>
-                    )}
-                </div>
-
-                <div className="min-w-0">
-                    <div className="grid gap-1">
-                        <h3 className="line-clamp-2 w-full max-w-full text-base font-black leading-tight text-[#102426] sm:text-lg lg:truncate">
-                            {name}
-                        </h3>
-
-                        <span
-                            className={`flex w-full max-w-full overflow-hidden rounded-full px-2 py-0.5 text-[10px] font-black ring-1 sm:inline-flex sm:w-fit sm:px-2.5 sm:py-1 sm:text-[11px] ${
-                                hasSpecial
-                                    ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
-                                    : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
-                            }`}
-                        >
-                            <span className="truncate">{specialLabel}</span>
-                        </span>
-                    </div>
-
-                    <p className="mt-1.5 text-sm font-semibold leading-5 text-[#526260]">
-                        {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {formatSquareFeetLabel(sqft)}
-                    </p>
-
-                    <p className={`mt-1 text-xs font-black ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
-                        {availabilityBadgeLabel}
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    onClick={onCheckAvailability}
-                    className="col-span-2 rounded-xl bg-[#f2b84b] px-3 py-2 text-xs font-black !text-[#102426] shadow-sm ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:hidden"
-                >
-                    Request Info
-                </button>
+                    </button>
+                ) : (
+                    <span className="px-2 text-center text-[10px] font-black uppercase leading-4 text-[#526260]">
+                        Image pending
+                    </span>
+                )}
             </div>
 
-            <div className="mt-2 flex flex-wrap gap-1 lg:gap-2 lg:pt-1">
+            <div className="min-w-0 pr-24 sm:pr-28">
+                <div className="grid gap-1">
+                    <h3 className="line-clamp-2 text-base font-black leading-tight text-[#102426] sm:text-lg lg:truncate">
+                        {name}
+                    </h3>
+
+                    <span
+                        className={`inline-flex w-fit max-w-full rounded-full px-2 py-0.5 text-[10px] font-black ring-1 sm:px-2.5 sm:py-1 sm:text-[11px] ${
+                            hasSpecial
+                                ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
+                                : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
+                        }`}
+                    >
+                        <span className="truncate">{specialLabel}</span>
+                    </span>
+                </div>
+
+                <p className="mt-1.5 text-sm font-semibold leading-5 text-[#526260]">
+                    {formatBedroomLabel(beds, name)} • {formatBathroomLabel(baths)} • {formatSquareFeetLabel(sqft)}
+                </p>
+
+                <p className={`mt-1 text-xs font-black ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
+                    {availabilityBadgeLabel}
+                </p>
+            </div>
+
+            <div className="clear-both flex flex-wrap gap-1 pt-1.5 lg:gap-2 lg:pt-3">
                 <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#f5f8f1] px-2 py-1 ring-1 ring-[#d7e6df] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
                     <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
                         Listed
