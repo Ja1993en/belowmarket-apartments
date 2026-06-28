@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { Bath, BedDouble, Scale, Search } from "lucide-react";
+import { Bath, BedDouble, Ruler, Scale, Search } from "lucide-react";
 import {
     DEFAULT_PROPERTY_IMAGE,
     getPhotoImageUrl,
@@ -4874,7 +4874,10 @@ function FloorPlanBasicStats({ beds, baths, name, sqft, className = "" }) {
                 <Bath className="h-4 w-4 shrink-0 text-[#1f6f63]" />
                 <span className="truncate">{formatBathroomLabel(baths)}</span>
             </span>
-            <span className="truncate">{formatSquareFeetLabel(sqft)}</span>
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+                <Ruler className="h-4 w-4 shrink-0 text-[#1f6f63]" />
+                <span className="truncate">{formatSquareFeetLabel(sqft)}</span>
+            </span>
         </div>
     );
 }
