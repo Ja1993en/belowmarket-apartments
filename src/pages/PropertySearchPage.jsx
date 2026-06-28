@@ -2479,7 +2479,7 @@ function BmaSpecialRibbon({ label }) {
         <span className="flex h-5 w-8 shrink-0 items-center justify-center bg-[#102426] text-[7px] font-black leading-none text-white ring-1 ring-[#102426]/25 xl:h-[22px] xl:w-9 xl:text-[8px]">
           BMA
         </span>
-        <span className="ml-2 min-w-0 truncate text-[10px] font-black uppercase leading-none tracking-wide sm:text-[11px] xl:text-xs">
+        <span className="ml-1 min-w-0 truncate text-[7px] font-black uppercase leading-none tracking-wide sm:text-[8px] xl:text-[9px]">
           {label}
         </span>
       </div>
