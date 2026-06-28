@@ -2241,10 +2241,8 @@ function SearchResultCard({
   const listedRentLabel = isRentRangeLabel(priceSummary.normalRentLabel)
     ? "Listed rent range"
     : "Listed rent";
-  const dealScore = getSearchDealScore(property, priceSummary);
   const transparencyBadges = getSearchTransparencyBadges(property, priceSummary);
   const cardHref = `/properties/${property.id}`;
-  const showGoldHoverBar = isMapHighlighted && propertyHasStrongMapDeal(property);
   const floorPlanCount = displayFloorPlans.length;
   const galleryImages = useMemo(() => getSearchCardGalleryImages(property), [property]);
   const [galleryPhotoIndex, setGalleryPhotoIndex] = useState(0);
@@ -2333,9 +2331,6 @@ function SearchResultCard({
           onClickCapture={handleGalleryLinkClick}
           className="absolute inset-0 block overflow-hidden"
         >
-        {showGoldHoverBar && (
-          <div className="absolute inset-x-0 top-0 z-10 h-1.5 bg-[#f2b84b]" />
-        )}
         <div className="absolute inset-0 overflow-hidden">
           <img
             src={currentGalleryImage}
@@ -2344,19 +2339,7 @@ function SearchResultCard({
             decoding="async"
             className="absolute inset-0 !h-full w-full object-cover"
           />
-          <div className="absolute left-2 right-2 top-2 z-10 flex min-w-0 items-start justify-between gap-2 sm:left-3 sm:right-3 sm:top-3">
-            <div className="shrink-0 rounded-lg bg-white/95 px-2 py-1.5 text-[#102426] shadow-lg ring-1 ring-white/70 xl:px-2.5 xl:py-2">
-              <p className="text-[9px] font-black uppercase leading-none text-[#1f6f63] xl:text-[10px]">
-                Score
-              </p>
-              <p className="mt-0.5 text-base font-black leading-none xl:text-lg">{dealScore}</p>
-            </div>
-            {propertyHasStrongMapDeal(property) && (
-              <div className="min-w-0 rounded-full bg-[#f2b84b] px-2 py-1 text-[10px] font-black leading-none text-[#102426] shadow-lg xl:px-3 xl:text-[11px]">
-                <span className="block truncate">Top deal</span>
-              </div>
-            )}
-          </div>
+          {hasSpecial && <BmaSpecialRibbon label={priceSummary.specialLabel} />}
         </div>
         </Link>
         {hasGalleryControls && (
@@ -2395,11 +2378,6 @@ function SearchResultCard({
               <p className="min-w-0 truncate text-base font-black text-[#102426] md:text-[13px] lg:text-sm xl:text-lg">
                 {property.name}
               </p>
-              {hasSpecial && (
-                <span className="max-w-full truncate rounded-full bg-[#fff8e6] px-2.5 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a] md:px-1.5 md:py-0.5 md:text-[9px] lg:px-2 lg:text-[10px] xl:px-2.5 xl:py-1 xl:text-[11px]">
-                  Special: {priceSummary.specialLabel}
-                </span>
-              )}
             </div>
             <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#526260] md:gap-1 md:text-[11px] lg:text-xs xl:gap-2 xl:text-sm">
               <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63] md:h-3.5 md:w-3.5 xl:h-4 xl:w-4" />
@@ -2490,6 +2468,42 @@ function getSearchCardGalleryImages(property) {
   ].filter(Boolean);
 
   return [...new Set(imageUrls)];
+}
+
+function BmaSpecialRibbon({ label }) {
+  if (!label) return null;
+
+  return (
+    <div className="absolute left-2 top-2 z-10 flex max-w-[calc(100%-1rem)] items-center rounded-r-full bg-[#fff8e6]/95 pr-2.5 text-[#102426] shadow-lg ring-1 ring-[#f2d08a] sm:left-3 sm:top-3 xl:pr-3">
+      <svg
+        viewBox="0 0 36 24"
+        aria-hidden="true"
+        className="h-7 w-10 shrink-0 drop-shadow-[0_1px_1px_rgba(16,36,38,0.2)] xl:h-8 xl:w-12"
+      >
+        <path
+          d="M2 3H27.5L34 12L27.5 21H2Z"
+          fill="#f2b84b"
+          stroke="#d49a24"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <text
+          x="15"
+          y="14.7"
+          textAnchor="middle"
+          fontSize="6.8"
+          fontWeight="900"
+          fill="#102426"
+          letterSpacing="0"
+        >
+          BMA
+        </text>
+      </svg>
+      <span className="min-w-0 truncate text-[10px] font-black leading-none text-[#8a5b0a] sm:text-[11px] xl:text-xs">
+        {label}
+      </span>
+    </div>
+  );
 }
 
 function SearchRentMetric({ label, value, highlight = false }) {
