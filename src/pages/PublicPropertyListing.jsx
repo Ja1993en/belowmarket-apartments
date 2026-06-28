@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { Search } from "lucide-react";
+import { GitCompareArrows, Search } from "lucide-react";
 import {
     DEFAULT_PROPERTY_IMAGE,
     getPhotoImageUrl,
@@ -2518,9 +2518,10 @@ export default function PublicPropertyListing() {
                                                         setIsCompareBoardOpen(true);
                                                         setActiveCompareTab("Floor Plans");
                                                     }}
-                                                    className="w-fit rounded-2xl bg-[#173f3f] px-4 py-2 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
+                                                    className="inline-flex w-fit items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-4 py-2 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
                                                 >
-                                                    View Comparison Chart
+                                                    <GitCompareArrows className="h-4 w-4 shrink-0" />
+                                                    <span>View Comparison Chart</span>
                                                 </button>
 
                                                 <button
@@ -3489,9 +3490,10 @@ function PropertyCompareDock({
                     <button
                         type="button"
                         onClick={onViewCompare}
-                        className="rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm transition hover:bg-[#102426] hover:!text-white"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm transition hover:bg-[#102426] hover:!text-white"
                     >
-                        View comparison ({compareItemCount})
+                        <GitCompareArrows className="h-4 w-4 shrink-0" />
+                        <span>View comparison ({compareItemCount})</span>
                     </button>
                     <button
                         type="button"
@@ -5010,13 +5012,14 @@ function FloorPlanCard({
                 <button
                     type="button"
                     onClick={onToggleCompare}
-                    className={`rounded-xl px-4 py-2.5 text-sm font-black ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black ${
                         isCompared
                             ? "bg-[#f2b84b] text-[#102426]"
                             : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
                     }`}
                 >
-                    {isCompared ? "Added" : "Compare"}
+                    <GitCompareArrows className="h-4 w-4 shrink-0" />
+                    <span>{isCompared ? "Added" : "Compare"}</span>
                 </button>
 
                 <button
