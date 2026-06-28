@@ -1,0 +1,3 @@
+Property Name,Management Company,Address,City,State,ZIP,Year Built,Status,Floor Plan,Bedrooms,Bathrooms,Sqft,Starting Rent,Monthly Fees,Special,Free Weeks,Available Units,Available Date,Property Photo URLs,Floor Plan Photo URLs
+Example Dallas Apartments,Example Management,123 Main St,Dallas,TX,75201,2020,Live,A1,1,1,720,1795,158,8 weeks free,8,6,07/15/2026,https://example.com/gallery-1.jpg|https://example.com/gallery-2.jpg,https://example.com/a1-plan.jpg
+Example Dallas Apartments,Example Management,123 Main St,Dallas,TX,75201,2020,Live,B2,2,2,1040,2295,188,6 weeks free,6,0,,,https://example.com/b2-plan.jpg

@@ -140,9 +140,15 @@ export default function PropertiesTab() {
 
     const importBulkProperties = async () => {
         const importedDrafts = parseBulkPropertyImportRows(bulkPropertyText);
+        const validationErrors = validateBulkPropertyDrafts(importedDrafts);
 
         if (importedDrafts.length === 0) {
             setNotice("Paste at least one valid property row before importing.");
+            return;
+        }
+
+        if (validationErrors.length > 0) {
+            setNotice(`Fix these import issues first: ${validationErrors.slice(0, 4).join(" ")}`);
             return;
         }
 
@@ -284,7 +290,7 @@ export default function PropertiesTab() {
                             Paste properties and floor plans
                         </h2>
                         <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[#526260]">
-                            Add multiple Dallas properties from a spreadsheet. Each row creates one floor plan; repeated property names are grouped into the same property. Use photos only when you have permission to publish them.
+                            Add multiple Dallas properties from a spreadsheet. Each row creates one floor plan; repeated property names are grouped into the same property. Property gallery photos and floor plan photos are separate columns so images land in the right place.
                         </p>
                     </div>
 
@@ -301,13 +307,13 @@ export default function PropertiesTab() {
                     value={bulkPropertyText}
                     onChange={(event) => setBulkPropertyText(event.target.value)}
                     rows={7}
-                    placeholder="Property Name,Management Company,Address,City,State,ZIP,Year Built,Status,Floor Plan,Bedrooms,Bathrooms,Sqft,Starting Rent,Monthly Fees,Special,Free Weeks,Available Units,Available Date,Photo URLs"
+                    placeholder="Property Name,Management Company,Address,City,State,ZIP,Year Built,Status,Floor Plan,Bedrooms,Bathrooms,Sqft,Starting Rent,Monthly Fees,Special,Free Weeks,Available Units,Available Date,Property Photo URLs,Floor Plan Photo URLs"
                     className="mt-5 w-full rounded-2xl border border-[#b8d9d0] bg-[#f5f8f1] px-4 py-3 text-sm font-bold leading-6 text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-4 focus:ring-[#f2b84b]/20"
                 />
 
                 <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <p className="text-xs font-bold leading-5 text-[#526260]">
-                        Columns: Property Name, Management Company, Address, City, State, ZIP, Year Built, Status, Floor Plan, Bedrooms, Bathrooms, Sqft, Starting Rent, Monthly Fees, Special, Free Weeks, Available Units, Available Date, Photo URLs.
+                        Columns: Property Name, Management Company, Address, City, State, ZIP, Year Built, Status, Floor Plan, Bedrooms, Bathrooms, Sqft, Starting Rent, Monthly Fees, Special, Free Weeks, Available Units, Available Date, Property Photo URLs, Floor Plan Photo URLs.
                     </p>
 
                     <button
@@ -515,9 +521,9 @@ function hasVisibleSpecial(special) {
     return Boolean(special && special !== "Special not listed");
 }
 
-const BULK_PROPERTY_IMPORT_SAMPLE = `Property Name,Management Company,Address,City,State,ZIP,Year Built,Status,Floor Plan,Bedrooms,Bathrooms,Sqft,Starting Rent,Monthly Fees,Special,Free Weeks,Available Units,Available Date,Photo URLs
-Example Dallas Apartments,Example Management,123 Main St,Dallas,TX,75201,2020,Live,A1,1,1,720,1795,158,8 weeks free,8,6,07/15/2026,https://example.com/photo-1.jpg|https://example.com/photo-2.jpg
-Example Dallas Apartments,Example Management,123 Main St,Dallas,TX,75201,2020,Live,B2,2,2,1040,2295,188,6 weeks free,6,3,08/01/2026,`;
+const BULK_PROPERTY_IMPORT_SAMPLE = `Property Name,Management Company,Address,City,State,ZIP,Year Built,Status,Floor Plan,Bedrooms,Bathrooms,Sqft,Starting Rent,Monthly Fees,Special,Free Weeks,Available Units,Available Date,Property Photo URLs,Floor Plan Photo URLs
+Example Dallas Apartments,Example Management,123 Main St,Dallas,TX,75201,2020,Live,A1,1,1,720,1795,158,8 weeks free,8,6,07/15/2026,https://example.com/gallery-1.jpg|https://example.com/gallery-2.jpg,https://example.com/a1-plan.jpg
+Example Dallas Apartments,Example Management,123 Main St,Dallas,TX,75201,2020,Live,B2,2,2,1040,2295,188,6 weeks free,6,0,,,https://example.com/b2-plan.jpg`;
 
 function parseBulkPropertyImportRows(value) {
     const rows = String(value || "")
@@ -538,6 +544,10 @@ function parseBulkPropertyImportRows(value) {
             propertyMap.get(propertyKey) || createBulkPropertyDraft(columns);
         const floorPlan = createBulkFloorPlanDraft(columns, existingProperty.floorPlans.length);
 
+        existingProperty.photos = mergeBulkPhotoLists(
+            existingProperty.photos,
+            createBulkPhotoList(getBulkPropertyPhotoUrls(columns))
+        );
         existingProperty.floorPlans.push(floorPlan);
         propertyMap.set(propertyKey, existingProperty);
     });
@@ -579,7 +589,7 @@ function createBulkPropertyDraft(columns) {
         zipcode: zipcode?.trim() || "",
         yearBuilt: yearBuilt?.trim() || "",
         status: normalizeBulkPropertyStatus(status),
-        photos: createBulkPhotoList(columns[18]),
+        photos: createBulkPhotoList(getBulkPropertyPhotoUrls(columns)),
         floorPlans: [],
     };
 }
@@ -604,11 +614,14 @@ function createBulkFloorPlanDraft(columns, index) {
         freeWeeks,
         availableUnits,
         availableDate,
-        photoUrls,
+        propertyPhotoUrls,
+        floorPlanPhotoUrls,
     ] = columns;
     const cleanStartingRent = formatBulkCurrency(startingRent);
-    const unitCount = Math.max(Number(String(availableUnits || "").replace(/[^0-9]/g, "")) || 1, 1);
+    const unitCount = getBulkAvailableUnitCount(availableUnits);
+    const isAvailable = unitCount > 0;
     const cleanFreeWeeks = String(freeWeeks || "").trim() || getWeeksFromSpecialLabel(special);
+    const normalizedAvailableDate = normalizeBulkDate(availableDate);
 
     return {
         id: `bulk-floor-plan-${Date.now()}-${index}`,
@@ -626,11 +639,17 @@ function createBulkFloorPlanDraft(columns, index) {
         currentSpecial: special?.trim() || "",
         freeWeeks: cleanFreeWeeks,
         leaseTermMonths: "12",
-        photos: createBulkPhotoList(photoUrls, "Floor Plan"),
-        availableUnits: Array.from({ length: unitCount }, (_, unitIndex) => ({
+        photos: createBulkPhotoList(getBulkFloorPlanPhotoUrls({
+            propertyPhotoUrls,
+            floorPlanPhotoUrls,
+        }), "Floor Plan"),
+        available: isAvailable ? `${unitCount} Available` : "Not Currently Available",
+        availability: isAvailable ? `${unitCount} Available` : "Not Currently Available",
+        availableDate: isAvailable ? normalizedAvailableDate : "Not Currently Available",
+        availableUnits: isAvailable ? Array.from({ length: unitCount }, (_, unitIndex) => ({
             id: `bulk-availability-${Date.now()}-${index}-${unitIndex}`,
             unit: unitCount === 1 ? "" : `Option ${unitIndex + 1}`,
-            availableDate: normalizeBulkDate(availableDate),
+            availableDate: normalizedAvailableDate,
             rent: cleanStartingRent,
             status: "available",
             specialMode: cleanFreeWeeks ? "custom" : "floorPlan",
@@ -638,9 +657,77 @@ function createBulkFloorPlanDraft(columns, index) {
             adminFeeSpecial: "",
             adminFeeSpecialType: "admin",
             notes: "",
-        })),
-        status: "available",
+        })) : [],
+        status: isAvailable ? "available" : "unavailable",
     };
+}
+
+function validateBulkPropertyDrafts(properties) {
+    const errors = [];
+
+    properties.forEach((property) => {
+        if (!property.name) {
+            errors.push("Every property needs a property name.");
+        }
+
+        if (!property.address && !property.city) {
+            errors.push(`${property.name || "A property"} needs at least an address or city.`);
+        }
+
+        if (!property.floorPlans.length) {
+            errors.push(`${property.name || "A property"} needs at least one floor plan row.`);
+        }
+
+        property.floorPlans.forEach((floorPlan) => {
+            const planLabel = `${property.name || "Property"} / ${floorPlan.name || "Floor plan"}`;
+
+            if (!floorPlan.name) {
+                errors.push(`${planLabel} needs a floor plan name.`);
+            }
+
+            if (!floorPlan.rent) {
+                errors.push(`${planLabel} needs starting rent.`);
+            }
+        });
+    });
+
+    return [...new Set(errors)];
+}
+
+function getBulkPropertyPhotoUrls(columns) {
+    return columns[18] || "";
+}
+
+function getBulkFloorPlanPhotoUrls({ propertyPhotoUrls, floorPlanPhotoUrls }) {
+    return floorPlanPhotoUrls || propertyPhotoUrls || "";
+}
+
+function getBulkAvailableUnitCount(value) {
+    const normalizedValue = String(value || "").trim().toLowerCase();
+
+    if (
+        !normalizedValue ||
+        normalizedValue === "0" ||
+        normalizedValue.includes("unavailable") ||
+        normalizedValue.includes("not currently") ||
+        normalizedValue.includes("none")
+    ) {
+        return 0;
+    }
+
+    const match = normalizedValue.match(/\d+/);
+    return match ? Number(match[0]) : 0;
+}
+
+function mergeBulkPhotoLists(currentPhotos = [], nextPhotos = []) {
+    const photosByUrl = new Map();
+
+    [...currentPhotos, ...nextPhotos].forEach((photo) => {
+        if (!photo?.url) return;
+        photosByUrl.set(photo.url, photo);
+    });
+
+    return [...photosByUrl.values()];
 }
 
 function isBulkPropertyHeaderRow(row, index) {
