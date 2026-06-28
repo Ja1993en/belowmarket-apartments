@@ -2474,34 +2474,23 @@ function BmaSpecialRibbon({ label }) {
   if (!label) return null;
 
   return (
-    <div className="absolute left-2 top-2 z-10 flex max-w-[calc(100%-1rem)] items-center rounded-r-full bg-[#fff8e6]/95 pr-2.5 text-[#102426] shadow-lg ring-1 ring-[#f2d08a] sm:left-3 sm:top-3 xl:pr-3">
-      <svg
-        viewBox="0 0 36 24"
-        aria-hidden="true"
-        className="h-7 w-10 shrink-0 drop-shadow-[0_1px_1px_rgba(16,36,38,0.2)] xl:h-8 xl:w-12"
-      >
-        <path
-          d="M2 3H27.5L34 12L27.5 21H2Z"
-          fill="#f2b84b"
-          stroke="#d49a24"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <text
-          x="15"
-          y="14.7"
-          textAnchor="middle"
-          fontSize="6.8"
-          fontWeight="900"
-          fill="#102426"
-          letterSpacing="0"
-        >
+    <div className="absolute left-0 top-3 z-10 flex max-w-[calc(100%-1.5rem)] items-stretch shadow-[0_8px_18px_rgba(16,36,38,0.24)]">
+      <div className="flex h-8 min-w-0 items-center bg-[#f2b84b] pl-2 pr-2.5 text-[#102426] ring-1 ring-[#d49a24] xl:h-9 xl:pl-2.5 xl:pr-3">
+        <span className="flex h-5 w-8 shrink-0 items-center justify-center bg-[#102426] text-[7px] font-black leading-none text-white ring-1 ring-[#102426]/25 xl:h-[22px] xl:w-9 xl:text-[8px]">
           BMA
-        </text>
-      </svg>
-      <span className="min-w-0 truncate text-[10px] font-black leading-none text-[#8a5b0a] sm:text-[11px] xl:text-xs">
-        {label}
-      </span>
+        </span>
+        <span className="ml-2 min-w-0 truncate text-[10px] font-black uppercase leading-none tracking-wide sm:text-[11px] xl:text-xs">
+          {label}
+        </span>
+      </div>
+      <div
+        aria-hidden="true"
+        className="h-8 w-4 shrink-0 border-y border-r border-[#d49a24] bg-[#f2b84b] [clip-path:polygon(0_0,100%_50%,0_100%)] xl:h-9"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -bottom-1 left-0 h-1 w-2 bg-[#a96f16] [clip-path:polygon(0_0,100%_0,100%_100%)]"
+      />
     </div>
   );
 }
