@@ -1381,17 +1381,29 @@ export default function PublicPropertyListing() {
         setCompareMessage("Compare board cleared.");
     };
 
-    const intakePanelPaddingClass = "p-2.5 xl:p-3";
-    const intakeSectionSpacingClass = "mt-2";
+    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3.5 xl:p-4";
+    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-3";
     const intakeGridSpacingClass = shouldShowCompareList
         ? "mt-1.5 gap-1.5"
-        : "mt-1.5 gap-1.5";
-    const intakeFieldSizeClass = "py-1.5 text-xs lg:py-1.5 xl:py-1.5 xl:text-xs";
-    const intakeConsentClass = "mt-2 p-2 text-[10px] leading-3";
-    const intakeSubmitClass = "mt-2 py-2.5 text-sm";
-    const intakeFinePrintClass = "mt-1.5 text-[10px] leading-3";
-    const intakeCardHeightClass = "";
-    const intakePanelLayoutClass = "";
+        : "mt-2 gap-2";
+    const intakeFieldSizeClass = shouldShowCompareList
+        ? "md:py-1.5 lg:py-1.5 xl:py-1.5 xl:text-sm"
+        : "md:py-2 lg:py-2 xl:py-2.5 xl:text-sm";
+    const intakeConsentClass = shouldShowCompareList
+        ? "mt-2 p-2 text-[10px] leading-3"
+        : "mt-3 p-2.5 text-[11px] leading-4";
+    const intakeSubmitClass = shouldShowCompareList
+        ? "mt-2 py-2.5 text-sm"
+        : "mt-3 py-3 text-sm";
+    const intakeFinePrintClass = shouldShowCompareList
+        ? "mt-1.5 text-[10px] leading-3"
+        : "mt-2 text-[10px] leading-4 xl:text-xs";
+    const intakeCardHeightClass = shouldShowCompareList
+        ? "md:min-h-[calc(100vh-12rem)]"
+        : "md:min-h-[calc(100vh-8rem)]";
+    const intakePanelLayoutClass = shouldShowCompareList
+        ? "md:min-h-[calc(100vh-12.5rem)]"
+        : "md:min-h-[calc(100vh-8.5rem)]";
 
     const filteredFloorPlans =
         activeFloorPlanFilter === "All"
@@ -1794,13 +1806,13 @@ export default function PublicPropertyListing() {
             className={
                 isModal
                     ? "flex max-h-[86vh] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl"
-                    : `order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-[7rem] ${intakeCardHeightClass}`
+                    : `order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto ${intakeCardHeightClass}`
             }
         >
             <div className="h-1.5 bg-[#f2b84b]" />
 
             <div
-                className={`${intakePanelPaddingClass} flex flex-1 flex-col ${isModal ? "overflow-y-auto" : ""} ${intakePanelLayoutClass}`}
+                className={`${intakePanelPaddingClass} flex flex-1 flex-col overflow-y-auto ${intakePanelLayoutClass}`}
             >
                 <div className="flex items-start justify-between gap-3">
                     <div>
@@ -1808,7 +1820,7 @@ export default function PublicPropertyListing() {
                             Free locator help
                         </p>
 
-                        <h2 className="mt-0.5 text-base font-black leading-tight text-[#102426] xl:text-lg">
+                        <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
                             Get verified pricing
                         </h2>
                     </div>
@@ -1824,11 +1836,11 @@ export default function PublicPropertyListing() {
                     )}
                 </div>
 
-                <p className="mt-1 text-xs font-semibold leading-4 text-[#526260]">
+                <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
                     Confirm specials, fees, and availability before touring.
                 </p>
 
-                <div className={`mt-1.5 truncate rounded-lg px-2.5 py-1.5 text-[11px] font-black ${
+                <div className={`mt-2.5 truncate rounded-xl px-3 py-2 text-xs font-black ${
                     hasPropertySpecial
                         ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
                         : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
@@ -1839,7 +1851,7 @@ export default function PublicPropertyListing() {
                 </div>
 
                 <div className={intakeSectionSpacingClass}>
-                    <p className="text-[11px] font-black uppercase tracking-wide text-[#102426]">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
                         Contact
                     </p>
 
@@ -1886,7 +1898,7 @@ export default function PublicPropertyListing() {
                 </div>
 
                 <div className={intakeSectionSpacingClass}>
-                    <p className="text-[11px] font-black uppercase tracking-wide text-[#102426]">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
                         Search details
                     </p>
 
@@ -1939,7 +1951,7 @@ export default function PublicPropertyListing() {
                             className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                         />
 
-                        <p className="col-span-2 truncate text-[10px] font-bold leading-3 text-[#526260]">
+                        <p className="col-span-2 text-xs font-bold leading-5 text-[#526260]">
                             {DALLAS_BUDGET_GUIDE}
                         </p>
 
@@ -2870,7 +2882,7 @@ export default function PublicPropertyListing() {
                             <div
                                 className="mt-8 hidden flex-col gap-4 lg:mt-0 lg:flex lg:min-h-full lg:self-stretch"
                             >
-                                <div id="request-info" className={`order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-[7rem] ${intakeCardHeightClass}`}>
+                                <div id="request-info" className={`order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm lg:sticky lg:top-[7rem] lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto ${intakeCardHeightClass}`}>
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
                                     <div className={`${intakePanelPaddingClass} flex flex-1 flex-col ${intakePanelLayoutClass}`}>
@@ -2878,15 +2890,15 @@ export default function PublicPropertyListing() {
                                             Free locator help
                                         </p>
 
-                                        <h2 className="mt-0.5 text-base font-black leading-tight text-[#102426] xl:text-lg">
+                                        <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
                                             Get verified pricing
                                         </h2>
 
-                                        <p className="mt-1 text-xs font-semibold leading-4 text-[#526260]">
+                                        <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
                                             Confirm specials, fees, and availability before touring.
                                         </p>
 
-                                        <div className={`mt-1.5 truncate rounded-lg px-2.5 py-1.5 text-[11px] font-black ${
+                                        <div className={`mt-2.5 truncate rounded-xl px-3 py-2 text-xs font-black ${
                                                 hasPropertySpecial
                                                     ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
                                                     : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
@@ -2897,7 +2909,7 @@ export default function PublicPropertyListing() {
                                         </div>
 
                                         <div className={intakeSectionSpacingClass}>
-                                            <p className="text-[11px] font-black uppercase tracking-wide text-[#102426]">
+                                            <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
                                                 Contact
                                             </p>
 
@@ -2944,7 +2956,7 @@ export default function PublicPropertyListing() {
                                         </div>
 
                                         <div className={intakeSectionSpacingClass}>
-                                            <p className="text-[11px] font-black uppercase tracking-wide text-[#102426]">
+                                            <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
                                                 Search details
                                             </p>
 
@@ -2997,7 +3009,7 @@ export default function PublicPropertyListing() {
                                                     className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
                                                 />
 
-                                                <p className="col-span-2 truncate text-[10px] font-bold leading-3 text-[#526260]">
+                                                <p className="col-span-2 text-xs font-bold leading-5 text-[#526260]">
                                                     {DALLAS_BUDGET_GUIDE}
                                                 </p>
 
