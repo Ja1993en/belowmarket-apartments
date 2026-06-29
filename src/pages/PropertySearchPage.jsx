@@ -2393,9 +2393,25 @@ function SearchResultCard({
               <p className="truncate text-[10px] font-black uppercase leading-none text-[#526260] md:text-[8px] lg:text-[9px] xl:text-[10px]">
                 {item.label}
               </p>
-              <p className="mt-1 truncate text-sm font-black leading-tight text-[#102426] md:text-[11px] lg:text-xs xl:text-base">
-                {item.price}
-              </p>
+              {item.hasAfterSpecialRent ? (
+                <>
+                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#1f6f63] md:text-[11px] lg:text-xs xl:text-base">
+                    {item.afterSpecialPrice} after
+                  </p>
+                  <p className="mt-0.5 truncate text-[9px] font-black leading-tight text-[#526260] md:text-[8px] lg:text-[9px] xl:text-[10px]">
+                    Listed {item.listedPrice}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#102426] md:text-[11px] lg:text-xs xl:text-base">
+                    {item.listedPrice}
+                  </p>
+                  <p className="mt-0.5 truncate text-[9px] font-black leading-tight text-[#526260] md:text-[8px] lg:text-[9px] xl:text-[10px]">
+                    Listed rent
+                  </p>
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -3142,9 +3158,9 @@ function getPropertySearchPriceSummary(property, floorPlans = getSearchFloorPlan
 
 function getSearchRentRollupItems(property, floorPlans = getSearchFloorPlans(property)) {
   const rentGroups = [
-    { key: "studio", label: "Studio", values: [] },
-    { key: "oneBed", label: "1 Bed", values: [] },
-    { key: "twoPlus", label: "2 Beds+", values: [] },
+    { key: "studio", label: "Studio", listedValues: [], effectiveValues: [] },
+    { key: "oneBed", label: "1 Bed", listedValues: [], effectiveValues: [] },
+    { key: "twoPlus", label: "2 Beds+", listedValues: [], effectiveValues: [] },
   ];
   const rentGroupMap = new Map(rentGroups.map((group) => [group.key, group]));
   const availableFloorPlans = floorPlans.filter(isAvailableSearchFloorPlan);
@@ -3152,33 +3168,47 @@ function getSearchRentRollupItems(property, floorPlans = getSearchFloorPlans(pro
 
   rollupFloorPlans.forEach((floorPlan) => {
     const bedroomCount = getBedroomCount(getBedroomValueFromFloorPlan(floorPlan));
-    const rentValues = getSearchFloorPlanListedRentValues(property, floorPlan);
+    const listedRentValues = getSearchFloorPlanListedRentValues(property, floorPlan);
 
-    if (!Number.isFinite(bedroomCount) || bedroomCount >= 99 || rentValues.length === 0) {
+    if (!Number.isFinite(bedroomCount) || bedroomCount >= 99 || listedRentValues.length === 0) {
       return;
     }
+
+    const effectiveRentValues = getSearchFloorPlanEffectiveRentValues(property, floorPlan);
+    const lowestListedRent = Math.min(...listedRentValues);
+    const discountedEffectiveRentValues = effectiveRentValues.filter(
+      (effectiveRentValue) => effectiveRentValue > 0 && effectiveRentValue < lowestListedRent
+    );
+    let rentGroup = null;
 
     if (bedroomCount === 0) {
-      rentGroupMap.get("studio").values.push(...rentValues);
-      return;
+      rentGroup = rentGroupMap.get("studio");
+    } else if (bedroomCount === 1) {
+      rentGroup = rentGroupMap.get("oneBed");
+    } else if (bedroomCount >= 2) {
+      rentGroup = rentGroupMap.get("twoPlus");
     }
 
-    if (bedroomCount === 1) {
-      rentGroupMap.get("oneBed").values.push(...rentValues);
-      return;
-    }
+    if (!rentGroup) return;
 
-    if (bedroomCount >= 2) {
-      rentGroupMap.get("twoPlus").values.push(...rentValues);
-    }
+    rentGroup.listedValues.push(...listedRentValues);
+    rentGroup.effectiveValues.push(...discountedEffectiveRentValues);
   });
 
   const rollupItems = rentGroups
-    .filter((group) => group.values.length > 0)
-    .map((group) => ({
-      label: group.label,
-      price: `${formatCurrency(Math.min(...group.values))}+`,
-    }));
+    .filter((group) => group.listedValues.length > 0)
+    .map((group) => {
+      const listedRent = Math.min(...group.listedValues);
+      const afterSpecialRent =
+        group.effectiveValues.length > 0 ? Math.min(...group.effectiveValues) : 0;
+
+      return {
+        label: group.label,
+        listedPrice: `${formatCurrency(listedRent)}+`,
+        afterSpecialPrice: afterSpecialRent ? `${formatCurrency(afterSpecialRent)}+` : "",
+        hasAfterSpecialRent: afterSpecialRent > 0 && afterSpecialRent < listedRent,
+      };
+    });
 
   if (rollupItems.length > 0) return rollupItems;
 
@@ -3187,7 +3217,9 @@ function getSearchRentRollupItems(property, floorPlans = getSearchFloorPlans(pro
   return [
     {
       label: getBedsLabel(property, floorPlans),
-      price: fallbackRent ? `${formatCurrency(fallbackRent)}+` : "Contact",
+      listedPrice: fallbackRent ? `${formatCurrency(fallbackRent)}+` : "Contact",
+      afterSpecialPrice: "",
+      hasAfterSpecialRent: false,
     },
   ];
 }
@@ -3208,6 +3240,45 @@ function getSearchFloorPlanListedRentValues(property, floorPlan) {
   return parseCurrencyValues(
     floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent || property?.rent
   );
+}
+
+function getSearchFloorPlanEffectiveRentValues(property, floorPlan) {
+  const floorPlanSpecial = getFloorPlanSearchSpecial(floorPlan, property);
+  const availableUnits =
+    floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+
+  if (availableUnits.length > 0) {
+    return availableUnits
+      .flatMap((unit) => {
+        const unitSpecial = getUnitSearchSpecial(unit, floorPlanSpecial);
+
+        if (!unitSpecial.hasSpecial) return [];
+
+        const dealUnit = createSearchSpecialDealUnit({
+          floorPlan,
+          unitRent:
+            unit.rent || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent,
+          specialLabel: unitSpecial.label,
+          freeWeeks: unitSpecial.freeWeeks,
+          rentCreditSpecial: unitSpecial.rentCreditSpecial,
+        });
+
+        return dealUnit.hasRentSpecial ? dealUnit.effectiveRentNumbers : [];
+      })
+      .filter(Boolean);
+  }
+
+  if (!floorPlanSpecial.hasSpecial) return [];
+
+  const dealUnit = createSearchSpecialDealUnit({
+    floorPlan,
+    unitRent: floorPlan.startingRent || floorPlan.rent || property?.rent,
+    specialLabel: floorPlanSpecial.label,
+    freeWeeks: floorPlanSpecial.freeWeeks,
+    rentCreditSpecial: floorPlanSpecial.rentCreditSpecial,
+  });
+
+  return dealUnit.hasRentSpecial ? dealUnit.effectiveRentNumbers : [];
 }
 
 function getSearchDealScore(property, priceSummary) {
