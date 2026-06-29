@@ -2395,9 +2395,9 @@ function SearchResultCard({
               </p>
               {item.hasAfterSpecialRent ? (
                 <>
-                  <p className="mt-1 truncate text-sm font-bold leading-tight text-[#1f6f63] md:text-[11px] lg:text-xs xl:text-base">
-                    <span className="font-black text-[#b7791f]">{item.afterSpecialPrice}</span>{" "}
-                    <span className="align-baseline text-[8px] font-black uppercase leading-none tracking-wide text-[#526260] md:text-[7px] lg:text-[8px] xl:text-[9px]">
+                  <p className="mt-1 min-w-0 text-sm font-bold leading-tight text-[#1f6f63] md:text-[11px] lg:text-xs xl:text-base">
+                    <span className="whitespace-nowrap font-black text-[#b7791f]">{item.afterSpecialPrice}</span>{" "}
+                    <span className="block truncate text-[6px] font-black leading-none tracking-normal text-[#526260] sm:inline sm:text-[7px] md:align-baseline md:text-[7px] md:uppercase md:tracking-wide lg:text-[8px] xl:text-[9px]">
                       after special
                     </span>
                   </p>
