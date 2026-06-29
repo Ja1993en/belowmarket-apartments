@@ -353,6 +353,12 @@ export default function PropertySearchPage() {
   const hasCompareItems =
     compareFloorPlanRows.length > 0 || propertyCompareRows.length > 0;
   const compareItemCount = compareFloorPlanRows.length + propertyCompareRows.length;
+  const desktopMapStickyClass = hasCompareItems
+    ? "hidden md:sticky md:top-20 md:order-2 md:block"
+    : "hidden md:sticky md:top-28 md:order-2 md:block";
+  const desktopMapSurfaceClass = hasCompareItems
+    ? "bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[calc(100vh-270px)] md:min-h-[300px] lg:min-h-[360px] xl:min-h-[400px]"
+    : "bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[calc(100vh-190px)] md:min-h-[360px] lg:min-h-[480px] xl:min-h-[520px]";
   const totalResultsPages = Math.max(
     1,
     Math.ceil(filteredProperties.length / PROPERTY_RESULTS_PER_PAGE)
@@ -1098,7 +1104,7 @@ export default function PropertySearchPage() {
             )}
           </div>
 
-          <div className="hidden md:sticky md:top-28 md:order-2 md:block">
+          <div className={desktopMapStickyClass}>
             <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
               <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
                 <div>
@@ -1111,7 +1117,7 @@ export default function PropertySearchPage() {
                   {mappableFilteredProperties.length} pins
                 </span>
               </div>
-              <div className="bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[calc(100vh-190px)] md:min-h-[360px] lg:min-h-[480px] xl:min-h-[520px]">
+              <div className={desktopMapSurfaceClass}>
                 <SearchMap
                   properties={filteredProperties}
                   mappableProperties={mappableFilteredProperties}
