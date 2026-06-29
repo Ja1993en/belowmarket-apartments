@@ -1039,6 +1039,7 @@ export default function PropertySearchPage() {
                       resultCardRefs.current.delete(property.id);
                     }
                   }}
+                  onMapHover={setHoveredMapPropertyId}
                   onToggleCompare={() => handleTogglePropertyCompare(property)}
                   onRequestInfo={() => handleOpenRequestInfo(property)}
                 />
@@ -1648,6 +1649,18 @@ function MapboxSearchMap({
     onPropertySelect,
   ]);
 
+  useEffect(() => {
+    markersRef.current.forEach((marker) => {
+      const markerElement = marker.getElement?.();
+      if (!markerElement) return;
+
+      setSearchMapPinHighlight(
+        markerElement,
+        markerElement.dataset.propertyId === hoveredPropertyId
+      );
+    });
+  }, [hoveredPropertyId, mappableProperties]);
+
   const keepHoveredPropertyPreview = () => {
     if (!hoveredProperty) return;
 
@@ -2230,6 +2243,7 @@ function SearchResultCard({
   selectedBedroomFilter,
   selectedPriceRange,
   cardRef,
+  onMapHover,
   onRequestInfo,
   onToggleCompare,
 }) {
@@ -2318,6 +2332,14 @@ function SearchResultCard({
   return (
     <article
       ref={cardRef}
+      onMouseEnter={() => onMapHover?.(property.id)}
+      onMouseLeave={() => onMapHover?.("")}
+      onFocus={() => onMapHover?.(property.id)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          onMapHover?.("");
+        }
+      }}
       className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition duration-200 ease-out hover:-translate-y-1.5 hover:ring-2 hover:ring-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.18)] md:grid md:grid-cols-[152px_minmax(0,1fr)] md:items-stretch lg:grid-cols-[196px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)] ${
         isMapHighlighted ? "ring-2 ring-[#f2b84b] shadow-[0_18px_42px_rgba(16,36,38,0.18)]" : "ring-[#d7e6df]"
       }`}
@@ -2756,9 +2778,13 @@ function createSearchMapPinElement(property) {
   const markerElement = document.createElement("button");
   const pinDotElement = document.createElement("span");
   markerElement.type = "button";
+  markerElement.dataset.propertyId = property.id;
+  markerElement.dataset.approximatePin = String(isApproximatePin);
+  markerElement.dataset.strongMapDeal = String(hasStrongDeal);
   markerElement.className = [
     "group flex h-7 w-7 items-center justify-center rounded-full focus:outline-none",
   ].join(" ");
+  pinDotElement.dataset.searchMapPinDot = "true";
   pinDotElement.className = [
     "block h-3.5 w-3.5 rounded-full border-2 shadow-[0_2px_7px_rgba(16,36,38,0.28)] transition group-hover:scale-125 group-focus:scale-125",
     isApproximatePin
@@ -2776,6 +2802,31 @@ function createSearchMapPinElement(property) {
   markerElement.appendChild(pinDotElement);
 
   return markerElement;
+}
+
+function setSearchMapPinHighlight(markerElement, isHighlighted) {
+  const pinDotElement = markerElement.querySelector("[data-search-map-pin-dot='true']");
+  if (!pinDotElement) return;
+
+  const hasStrongDeal = markerElement.dataset.strongMapDeal === "true";
+
+  markerElement.style.zIndex = isHighlighted ? "30" : "";
+  pinDotElement.classList.toggle("scale-125", isHighlighted);
+  pinDotElement.classList.toggle("border-[#102426]", isHighlighted);
+  pinDotElement.classList.toggle("bg-[#f2b84b]", isHighlighted);
+  pinDotElement.classList.toggle("ring-4", isHighlighted);
+  pinDotElement.classList.toggle("ring-[#f2b84b]", isHighlighted || hasStrongDeal);
+  pinDotElement.classList.toggle("ring-offset-1", isHighlighted || hasStrongDeal);
+  pinDotElement.classList.toggle("ring-offset-white", isHighlighted || hasStrongDeal);
+  pinDotElement.classList.toggle("border-white", !isHighlighted);
+  pinDotElement.classList.toggle(
+    "bg-[#8a5b0a]",
+    !isHighlighted && markerElement.dataset.approximatePin === "true"
+  );
+  pinDotElement.classList.toggle(
+    "bg-[#173f3f]",
+    !isHighlighted && markerElement.dataset.approximatePin !== "true"
+  );
 }
 
 function propertyHasStrongMapDeal(property) {
