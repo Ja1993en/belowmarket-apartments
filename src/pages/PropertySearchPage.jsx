@@ -357,7 +357,7 @@ export default function PropertySearchPage() {
     ? "hidden md:sticky md:top-20 md:order-2 md:block"
     : "hidden md:sticky md:top-28 md:order-2 md:block";
   const desktopMapSurfaceClass = hasCompareItems
-    ? "bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[calc(100vh-270px)] md:min-h-[300px] lg:min-h-[360px] xl:min-h-[400px]"
+    ? "bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[calc(100vh-230px)] md:min-h-[340px] lg:min-h-[420px] xl:min-h-[470px]"
     : "bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[calc(100vh-190px)] md:min-h-[360px] lg:min-h-[480px] xl:min-h-[520px]";
   const totalResultsPages = Math.max(
     1,
