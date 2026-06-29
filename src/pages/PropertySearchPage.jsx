@@ -2235,13 +2235,7 @@ function SearchResultCard({
   );
   const priceSummary = getPropertySearchPriceSummary(property, displayFloorPlans);
   const hasSpecial = priceSummary.hasSpecial;
-  const showNetEffectiveRent = priceSummary.hasRentSpecial;
-  const estimatedRentLabel = isRentRangeLabel(priceSummary.effectiveRentLabel)
-    ? "Estimated rent range"
-    : "Estimated rent";
-  const listedRentLabel = isRentRangeLabel(priceSummary.normalRentLabel)
-    ? "Listed rent range"
-    : "Listed rent";
+  const rentRollupItems = getSearchRentRollupItems(property, displayFloorPlans);
   const transparencyBadges = getSearchTransparencyBadges(property, priceSummary);
   const cardHref = `/properties/${property.id}`;
   const floorPlanCount = displayFloorPlans.length;
@@ -2390,29 +2384,20 @@ function SearchResultCard({
           </span>
         </div>
 
-        <div
-          className={`mt-3 grid gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2 ${
-            showNetEffectiveRent ? "grid-cols-2" : ""
-          }`}
-        >
-          {showNetEffectiveRent ? (
-            <>
-              <SearchRentMetric
-                label={estimatedRentLabel}
-                value={priceSummary.effectiveRentLabel}
-                highlight
-              />
-              <SearchRentMetric
-                label={listedRentLabel}
-                value={priceSummary.normalRentLabel}
-              />
-            </>
-          ) : (
-            <SearchRentMetric
-              label={listedRentLabel}
-              value={priceSummary.normalRentLabel}
-            />
-          )}
+        <div className="mt-3 flex overflow-hidden rounded-lg border border-[#d7e6df] bg-white md:mt-1.5 xl:mt-3">
+          {rentRollupItems.map((item) => (
+            <div
+              key={item.label}
+              className="min-w-0 flex-1 border-r border-[#d7e6df] px-2 py-2 text-center last:border-r-0 md:px-1.5 md:py-1.5 lg:px-2 xl:px-3 xl:py-2.5"
+            >
+              <p className="truncate text-[10px] font-black uppercase leading-none text-[#526260] md:text-[8px] lg:text-[9px] xl:text-[10px]">
+                {item.label}
+              </p>
+              <p className="mt-1 truncate text-sm font-black leading-tight text-[#102426] md:text-[11px] lg:text-xs xl:text-base">
+                {item.price}
+              </p>
+            </div>
+          ))}
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
@@ -2493,23 +2478,6 @@ function BmaSpecialRibbon({ label }) {
         aria-hidden="true"
         className="absolute -bottom-1 left-0 h-1 w-2 bg-[#a96f16] [clip-path:polygon(0_0,100%_0,100%_100%)]"
       />
-    </div>
-  );
-}
-
-function SearchRentMetric({ label, value, highlight = false }) {
-  return (
-    <div
-      className={`min-w-0 rounded-lg px-2.5 py-2 ring-1 sm:px-3 sm:py-2.5 md:px-2 md:py-1.5 lg:px-2.5 lg:py-2 xl:px-3 xl:py-2.5 ${
-        highlight
-          ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
-          : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
-      }`}
-    >
-      <p className="text-[9px] font-black uppercase leading-none sm:text-[10px]">{label}</p>
-      <p className="mt-1 whitespace-normal break-words text-[13px] font-black leading-tight text-[#102426] sm:text-base md:mt-0.5 md:text-xs lg:text-sm xl:mt-1 xl:text-base">
-        {value}
-      </p>
     </div>
   );
 }
@@ -3170,6 +3138,76 @@ function getPropertySearchPriceSummary(property, floorPlans = getSearchFloorPlan
     ),
     specialLabel: formatSearchSpecialSummary(specialLabels),
   };
+}
+
+function getSearchRentRollupItems(property, floorPlans = getSearchFloorPlans(property)) {
+  const rentGroups = [
+    { key: "studio", label: "Studio", values: [] },
+    { key: "oneBed", label: "1 Bed", values: [] },
+    { key: "twoPlus", label: "2 Beds+", values: [] },
+  ];
+  const rentGroupMap = new Map(rentGroups.map((group) => [group.key, group]));
+  const availableFloorPlans = floorPlans.filter(isAvailableSearchFloorPlan);
+  const rollupFloorPlans = availableFloorPlans.length > 0 ? availableFloorPlans : floorPlans;
+
+  rollupFloorPlans.forEach((floorPlan) => {
+    const bedroomCount = getBedroomCount(getBedroomValueFromFloorPlan(floorPlan));
+    const rentValues = getSearchFloorPlanListedRentValues(property, floorPlan);
+
+    if (!Number.isFinite(bedroomCount) || bedroomCount >= 99 || rentValues.length === 0) {
+      return;
+    }
+
+    if (bedroomCount === 0) {
+      rentGroupMap.get("studio").values.push(...rentValues);
+      return;
+    }
+
+    if (bedroomCount === 1) {
+      rentGroupMap.get("oneBed").values.push(...rentValues);
+      return;
+    }
+
+    if (bedroomCount >= 2) {
+      rentGroupMap.get("twoPlus").values.push(...rentValues);
+    }
+  });
+
+  const rollupItems = rentGroups
+    .filter((group) => group.values.length > 0)
+    .map((group) => ({
+      label: group.label,
+      price: `${formatCurrency(Math.min(...group.values))}+`,
+    }));
+
+  if (rollupItems.length > 0) return rollupItems;
+
+  const fallbackRent = parseFirstCurrency(property?.rent);
+
+  return [
+    {
+      label: getBedsLabel(property, floorPlans),
+      price: fallbackRent ? `${formatCurrency(fallbackRent)}+` : "Contact",
+    },
+  ];
+}
+
+function getSearchFloorPlanListedRentValues(property, floorPlan) {
+  const availableUnits =
+    floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+  const availableUnitRents = availableUnits
+    .flatMap((unit) =>
+      parseCurrencyValues(
+        unit.rent || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
+      )
+    )
+    .filter(Boolean);
+
+  if (availableUnitRents.length > 0) return availableUnitRents;
+
+  return parseCurrencyValues(
+    floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent || property?.rent
+  );
 }
 
 function getSearchDealScore(property, priceSummary) {
