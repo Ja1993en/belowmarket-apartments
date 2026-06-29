@@ -2398,7 +2398,7 @@ function SearchResultCard({
                   <p className="mt-1 truncate text-sm font-bold leading-tight text-[#1f6f63] md:text-[11px] lg:text-xs xl:text-base">
                     <span className="font-black text-[#b7791f]">{item.afterSpecialPrice}</span>{" "}
                     <span className="align-baseline text-[8px] font-black uppercase leading-none tracking-wide text-[#526260] md:text-[7px] lg:text-[8px] xl:text-[9px]">
-                      after special
+                      w/ special
                     </span>
                   </p>
                   <p className="mt-0.5 truncate text-[9px] font-black leading-tight text-[#526260] md:text-[8px] lg:text-[9px] xl:text-[10px]">
