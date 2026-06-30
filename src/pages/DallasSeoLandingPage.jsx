@@ -6,6 +6,7 @@ import {
   getPropertyAddressLabel,
   getPropertyPrimaryImage,
 } from "../data/propertySearchData";
+import { isNonRentOnlySpecialText } from "../utils/rentSpecials";
 
 const SEO_LANDING_PROPERTY_LIMIT = 10;
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -1092,11 +1093,14 @@ function SeoFaqCard({ question, answer }) {
 
 function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
   const address = getPropertyAddressLabel(property);
-  const special = getPropertySpecialLabel(property);
-  const price = property.effectiveRent || property.startingRent || property.rent || "Contact for pricing";
-  const bedroomLabel = Array.isArray(property.bedrooms) && property.bedrooms.length > 0
-    ? property.bedrooms.join(" - ")
-    : getFloorPlanBedroomSummary(property);
+  const floorPlans = getSeoSearchFloorPlans(property);
+  const priceSummary = getSeoPropertySearchPriceSummary(property, floorPlans);
+  const hasSpecial = priceSummary.hasSpecial;
+  const special = priceSummary.specialLabel || getPropertySpecialLabel(property);
+  const rentRollupItems = getSeoSearchRentRollupItems(property, floorPlans);
+  const floorPlanCount = floorPlans.length;
+  const transparencyBadges = getSeoTransparencyBadges(property, priceSummary);
+  const cardHref = `/properties/${property.id}`;
 
   return (
     <article
@@ -1108,13 +1112,13 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
           onMapHover?.("");
         }
       }}
-      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition duration-200 ease-out hover:-translate-y-1 hover:ring-2 hover:ring-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.14)] md:grid md:grid-cols-[172px_minmax(0,1fr)] ${
-        isMapHighlighted ? "ring-2 ring-[#f2b84b] shadow-[0_18px_42px_rgba(16,36,38,0.14)]" : "ring-[#d7e6df]"
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition duration-200 ease-out hover:-translate-y-1.5 hover:ring-2 hover:ring-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.18)] md:grid md:grid-cols-[172px_minmax(0,1fr)] lg:grid-cols-[196px_minmax(0,1fr)] ${
+        isMapHighlighted ? "ring-2 ring-[#f2b84b] shadow-[0_18px_42px_rgba(16,36,38,0.18)]" : "ring-[#d7e6df]"
       }`}
     >
       <Link
-        to={`/properties/${property.id}`}
-        className="relative block h-56 overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[190px]"
+        to={cardHref}
+        className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[190px]"
       >
         <img
           src={getPropertyPrimaryImage(property)}
@@ -1123,38 +1127,77 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
           decoding="async"
           className="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105"
         />
-        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-black uppercase text-[#1f6f63] shadow-sm ring-1 ring-[#d7e6df]">
-          {special ? "Special" : "Live"}
-        </span>
+        {hasSpecial && <SeoBmaSpecialRibbon label={special} />}
+        {!hasSpecial && (
+          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-black uppercase text-[#1f6f63] shadow-sm ring-1 ring-[#d7e6df]">
+            Live
+          </span>
+        )}
       </Link>
 
-      <div className="min-w-0 p-4">
-        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-black uppercase text-[#1f6f63]">
-              {special ? "Current special" : "Live listing"}
-            </p>
-            <h3 className="mt-1 truncate text-xl font-black text-[#102426]">
+      <div className="flex min-w-0 flex-col p-3 sm:p-4 md:p-3 lg:p-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <Link to={cardHref} className="min-w-0">
+            <h3 className="truncate text-lg font-black text-[#102426] lg:text-xl">
               {property.name}
             </h3>
             <p className="mt-1 flex min-w-0 items-center gap-1.5 text-sm font-semibold leading-5 text-[#526260]">
               <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63]" />
               <span className="truncate">{address || "Dallas, TX"}</span>
             </p>
-          </div>
-          <Link
-            to={`/properties/${property.id}`}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black text-white hover:bg-[#102426]"
-          >
-            View
-            <ArrowRight className="h-4 w-4" />
           </Link>
+          <span className="w-fit shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+            {getSeoBedsLabel(property, floorPlans)}
+          </span>
         </div>
 
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
-          <SeoPropertyMetric label="Price" value={price} />
-          <SeoPropertyMetric label="Beds" value={bedroomLabel || "Floor plans"} />
-          <SeoPropertyMetric label="Special" value={special || "Ask leasing"} />
+        <div className="mt-3 flex overflow-hidden rounded-lg border border-[#d7e6df] bg-white">
+          {rentRollupItems.map((item) => (
+            <div
+              key={item.label}
+              className="min-w-0 flex-1 border-r border-[#d7e6df] px-2 py-2 text-center last:border-r-0 sm:px-3"
+            >
+              <p className="truncate text-[10px] font-black uppercase leading-none text-[#526260]">
+                {item.label}
+              </p>
+              {item.hasAfterSpecialRent ? (
+                <>
+                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#b7791f]">
+                    {item.afterSpecialPrice}
+                  </p>
+                  <p className="mt-0.5 truncate text-[7px] font-black uppercase leading-none text-[#526260]">
+                    after special
+                  </p>
+                  <p className="mt-1 truncate text-[10px] font-black leading-tight text-[#526260]">
+                    Listed {item.listedPrice}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#102426]">
+                    {item.listedPrice}
+                  </p>
+                  <p className="mt-0.5 truncate text-[10px] font-black leading-tight text-[#526260]">
+                    Listed rent
+                  </p>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df]">
+            {floorPlanCount} floor plan{floorPlanCount === 1 ? "" : "s"}
+          </span>
+          {transparencyBadges.map((badge) => (
+            <span
+              key={badge}
+              className="rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black text-[#1f6f63]"
+            >
+              {badge}
+            </span>
+          ))}
         </div>
 
         {special && (
@@ -1162,18 +1205,594 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
             {special}
           </p>
         )}
+
+        <div className="mt-auto grid grid-cols-2 gap-2 pt-3">
+          <Link
+            to={cardHref}
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-3 py-2.5 text-center text-xs font-black text-white transition hover:bg-[#102426]"
+          >
+            View details
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+          <Link
+            to={`/start?property=${encodeURIComponent(property.id)}`}
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#f2b84b] px-3 py-2.5 text-center text-xs font-black text-[#102426] transition hover:bg-[#f9d783]"
+          >
+            <Search className="h-3.5 w-3.5" />
+            Ask locator
+          </Link>
+        </div>
       </div>
     </article>
   );
 }
 
-function SeoPropertyMetric({ label, value }) {
+function SeoBmaSpecialRibbon({ label }) {
+  if (!label) return null;
+
   return (
-    <div className="min-w-0 rounded-lg bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
-      <p className="text-[11px] font-black uppercase text-[#526260]">{label}</p>
-      <p className="mt-1 truncate text-sm font-black text-[#102426]">{value}</p>
+    <div className="absolute left-0 top-3 z-10 flex max-w-[calc(100%-1.5rem)] items-stretch shadow-[0_8px_18px_rgba(16,36,38,0.24)]">
+      <div className="flex h-8 min-w-0 items-center bg-[#f2b84b] pl-2 pr-2.5 text-[#102426] ring-1 ring-[#d49a24]">
+        <span className="flex h-5 w-8 shrink-0 items-center justify-center bg-[#102426] text-[7px] font-black leading-none text-white ring-1 ring-[#102426]/25">
+          BMA
+        </span>
+        <span className="ml-1 min-w-0 truncate text-[7px] font-black uppercase leading-none tracking-wide sm:text-[8px]">
+          {label}
+        </span>
+      </div>
+      <div
+        aria-hidden="true"
+        className="h-8 w-4 shrink-0 border-y border-r border-[#d49a24] bg-[#f2b84b] [clip-path:polygon(0_0,100%_50%,0_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -bottom-1 left-0 h-1 w-2 bg-[#a96f16] [clip-path:polygon(0_0,100%_0,100%_100%)]"
+      />
     </div>
   );
+}
+
+function getSeoSearchRentRollupItems(property, floorPlans = getSeoSearchFloorPlans(property)) {
+  const rentGroups = [
+    { key: "studio", label: "Studio", listedValues: [], effectiveValues: [] },
+    { key: "oneBed", label: "1 Bed", listedValues: [], effectiveValues: [] },
+    { key: "twoPlus", label: "2 Beds+", listedValues: [], effectiveValues: [] },
+  ];
+  const rentGroupMap = new Map(rentGroups.map((group) => [group.key, group]));
+  const availableFloorPlans = floorPlans.filter(isAvailableSeoFloorPlan);
+  const rollupFloorPlans = availableFloorPlans.length > 0 ? availableFloorPlans : floorPlans;
+
+  rollupFloorPlans.forEach((floorPlan) => {
+    const bedroomCount = getSeoBedroomCount(getSeoBedroomValueFromFloorPlan(floorPlan));
+    const listedRentValues = getSeoFloorPlanListedRentValues(property, floorPlan);
+
+    if (!Number.isFinite(bedroomCount) || bedroomCount >= 99 || listedRentValues.length === 0) {
+      return;
+    }
+
+    const effectiveRentValues = getSeoFloorPlanEffectiveRentValues(property, floorPlan);
+    const lowestListedRent = Math.min(...listedRentValues);
+    const discountedEffectiveRentValues = effectiveRentValues.filter(
+      (effectiveRentValue) => effectiveRentValue > 0 && effectiveRentValue < lowestListedRent
+    );
+    const rentGroup =
+      bedroomCount === 0
+        ? rentGroupMap.get("studio")
+        : bedroomCount === 1
+          ? rentGroupMap.get("oneBed")
+          : rentGroupMap.get("twoPlus");
+
+    if (!rentGroup) return;
+
+    rentGroup.listedValues.push(...listedRentValues);
+    rentGroup.effectiveValues.push(...discountedEffectiveRentValues);
+  });
+
+  const rollupItems = rentGroups
+    .filter((group) => group.listedValues.length > 0)
+    .map((group) => {
+      const listedRent = Math.min(...group.listedValues);
+      const afterSpecialRent =
+        group.effectiveValues.length > 0 ? Math.min(...group.effectiveValues) : 0;
+
+      return {
+        label: group.label,
+        listedPrice: `${formatSeoCurrency(listedRent)}+`,
+        afterSpecialPrice: afterSpecialRent ? `${formatSeoCurrency(afterSpecialRent)}+` : "",
+        hasAfterSpecialRent: afterSpecialRent > 0 && afterSpecialRent < listedRent,
+      };
+    });
+
+  if (rollupItems.length > 0) return rollupItems;
+
+  const fallbackRent = parseSeoFirstCurrency(property?.rent);
+
+  return [
+    {
+      label: getSeoBedsLabel(property, floorPlans),
+      listedPrice: fallbackRent ? `${formatSeoCurrency(fallbackRent)}+` : "Contact",
+      afterSpecialPrice: "",
+      hasAfterSpecialRent: false,
+    },
+  ];
+}
+
+function getSeoPropertySearchPriceSummary(
+  property,
+  floorPlans = getSeoSearchFloorPlans(property)
+) {
+  const normalRentValues = getSeoNormalRentValues(property, floorPlans);
+  const specialDealUnits = getSeoSpecialDealUnits(property, floorPlans);
+  const specialRentValues = specialDealUnits
+    .filter((dealUnit) => dealUnit.hasRentSpecial)
+    .flatMap((dealUnit) => dealUnit.effectiveRentNumbers || [dealUnit.effectiveRentNumber])
+    .filter((value) => value > 0);
+  const specialLabels = [
+    ...new Set(specialDealUnits.map((dealUnit) => dealUnit.specialLabel).filter(Boolean)),
+  ];
+  const normalRentLabel =
+    normalRentValues.length > 0
+      ? formatSeoRentRange(Math.min(...normalRentValues), Math.max(...normalRentValues))
+      : property.rent || "Contact for pricing";
+
+  if (specialRentValues.length === 0) {
+    return {
+      hasSpecial: specialDealUnits.length > 0,
+      hasRentSpecial: false,
+      normalRentLabel,
+      effectiveRentLabel: normalRentLabel,
+      specialLabel: formatSeoSpecialSummary(specialLabels),
+    };
+  }
+
+  return {
+    hasSpecial: true,
+    hasRentSpecial: true,
+    normalRentLabel,
+    effectiveRentLabel: formatSeoRentRange(
+      Math.min(...specialRentValues),
+      Math.max(...specialRentValues)
+    ),
+    specialLabel: formatSeoSpecialSummary(specialLabels),
+  };
+}
+
+function getSeoTransparencyBadges(property, priceSummary) {
+  const badges = [];
+
+  if (priceSummary.hasRentSpecial) badges.push("After-special rent");
+  if (property?.requiredMonthlyFees || property?.monthlyFees) badges.push("Fees listed");
+  if (property?.yearBuilt) badges.push(`Built ${property.yearBuilt}`);
+
+  return badges.slice(0, 3);
+}
+
+function getSeoFloorPlanListedRentValues(property, floorPlan) {
+  const availableUnits =
+    floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+  const availableUnitRents = availableUnits
+    .flatMap((unit) =>
+      parseSeoCurrencyValues(
+        unit.rent || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
+      )
+    )
+    .filter(Boolean);
+
+  if (availableUnitRents.length > 0) return availableUnitRents;
+
+  return parseSeoCurrencyValues(
+    floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent || property?.rent
+  );
+}
+
+function getSeoFloorPlanEffectiveRentValues(property, floorPlan) {
+  const floorPlanSpecial = getSeoFloorPlanSpecial(floorPlan, property);
+  const availableUnits =
+    floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+
+  if (availableUnits.length > 0) {
+    return availableUnits
+      .flatMap((unit) => {
+        const unitSpecial = getSeoUnitSpecial(unit, floorPlanSpecial);
+
+        if (!unitSpecial.hasSpecial) return [];
+
+        const dealUnit = createSeoSpecialDealUnit({
+          floorPlan,
+          unitRent:
+            unit.rent || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent,
+          specialLabel: unitSpecial.label,
+          freeWeeks: unitSpecial.freeWeeks,
+          rentCreditSpecial: unitSpecial.rentCreditSpecial,
+        });
+
+        return dealUnit.hasRentSpecial ? dealUnit.effectiveRentNumbers : [];
+      })
+      .filter(Boolean);
+  }
+
+  if (!floorPlanSpecial.hasSpecial) return [];
+
+  const dealUnit = createSeoSpecialDealUnit({
+    floorPlan,
+    unitRent: floorPlan.startingRent || floorPlan.rent || property?.rent,
+    specialLabel: floorPlanSpecial.label,
+    freeWeeks: floorPlanSpecial.freeWeeks,
+    rentCreditSpecial: floorPlanSpecial.rentCreditSpecial,
+  });
+
+  return dealUnit.hasRentSpecial ? dealUnit.effectiveRentNumbers : [];
+}
+
+function getSeoSearchFloorPlans(property) {
+  if (property?.floorPlans?.length) return property.floorPlans;
+
+  return [
+    {
+      name: property?.name || "Available floor plan",
+      startingRent: property?.startingRent || property?.rent || "",
+      rent: property?.rent || "",
+      totalMonthlyRent: property?.rent || "",
+      requiredMonthlyFees: property?.requiredMonthlyFees || "",
+      effectiveRent: property?.effectiveRent || "",
+      currentSpecial: property?.special || "",
+      freeWeeks: getWeeksFromSeoSpecialText(property?.special) || 0,
+      leaseTermMonths: 12,
+      availableUnits: [],
+    },
+  ];
+}
+
+function getSeoNormalRentValues(property, floorPlans) {
+  const floorPlanRentGroups = floorPlans.map((floorPlan) => {
+    const floorPlanRentValues = parseSeoCurrencyValues(
+      floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
+    );
+    const unitRents =
+      floorPlan.availableUnits
+        ?.filter((unit) => unit.status !== "leased")
+        .flatMap((unit) =>
+          parseSeoCurrencyValues(
+            unit.rent ||
+              floorPlan.totalMonthlyRent ||
+              floorPlan.rent ||
+              floorPlan.startingRent
+          )
+        )
+        .filter(Boolean) || [];
+
+    return {
+      isAvailable: isAvailableSeoFloorPlan(floorPlan),
+      values: unitRents.length > 0 ? unitRents : floorPlanRentValues,
+    };
+  });
+  const availableRentValues = floorPlanRentGroups
+    .filter((rentGroup) => rentGroup.isAvailable)
+    .flatMap((rentGroup) => rentGroup.values)
+    .filter(Boolean);
+  const rentValues =
+    availableRentValues.length > 0
+      ? availableRentValues
+      : floorPlanRentGroups.flatMap((rentGroup) => rentGroup.values).filter(Boolean);
+  const propertyRentValues = parseSeoCurrencyValues(property?.rent);
+
+  return rentValues.length > 0 ? rentValues : propertyRentValues;
+}
+
+function getSeoSpecialDealUnits(property, floorPlans) {
+  const availableFloorPlans = floorPlans.filter(isAvailableSeoFloorPlan);
+  const searchableFloorPlans =
+    availableFloorPlans.length > 0 ? availableFloorPlans : floorPlans;
+
+  return searchableFloorPlans.flatMap((floorPlan) => {
+    const floorPlanSpecial = getSeoFloorPlanSpecial(floorPlan, property);
+    const availableUnits =
+      floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
+
+    if (availableUnits.length === 0) {
+      if (!floorPlanSpecial.hasSpecial) return [];
+
+      return [
+        createSeoSpecialDealUnit({
+          floorPlan,
+          unitRent: floorPlan.startingRent || floorPlan.rent || property?.rent,
+          specialLabel: floorPlanSpecial.label,
+          freeWeeks: floorPlanSpecial.freeWeeks,
+          rentCreditSpecial: floorPlanSpecial.rentCreditSpecial,
+        }),
+      ];
+    }
+
+    return availableUnits.flatMap((unit) => {
+      const unitSpecial = getSeoUnitSpecial(unit, floorPlanSpecial);
+
+      if (!unitSpecial.hasSpecial) return [];
+
+      return createSeoSpecialDealUnit({
+        floorPlan,
+        unitRent: unit.rent || floorPlan.startingRent || floorPlan.rent || property?.rent,
+        specialLabel: unitSpecial.label,
+        freeWeeks: unitSpecial.freeWeeks,
+        rentCreditSpecial: unitSpecial.rentCreditSpecial,
+      });
+    });
+  });
+}
+
+function createSeoSpecialDealUnit({
+  floorPlan,
+  unitRent,
+  specialLabel,
+  freeWeeks,
+  rentCreditSpecial,
+}) {
+  const baseRentValues = parseSeoCurrencyValues(unitRent);
+  const baseRentNumber = baseRentValues[0] || 0;
+  const requiredMonthlyFeesNumber = parseSeoCurrency(floorPlan.requiredMonthlyFees);
+  const enteredTotalMonthlyRentValues = parseSeoCurrencyValues(
+    floorPlan.totalMonthlyRent || floorPlan.rent
+  );
+  const enteredEffectiveRentValues = parseSeoCurrencyValues(floorPlan.effectiveRent);
+  const leaseTermMonths = Number(floorPlan.leaseTermMonths || 12);
+  const freeMonths = Number(freeWeeks || 0) / 4;
+  const rentCreditSpecialNumber = parseSeoCurrency(rentCreditSpecial);
+  const rentValues = baseRentValues.length > 0 ? baseRentValues : enteredTotalMonthlyRentValues;
+  const effectiveRentNumbers = rentValues
+    .map((baseRentValue, index) => {
+      const totalMonthlyRentNumber =
+        enteredTotalMonthlyRentValues[index] ||
+        enteredTotalMonthlyRentValues[0] ||
+        baseRentValue + requiredMonthlyFeesNumber;
+      const enteredEffectiveRentNumber =
+        enteredEffectiveRentValues[index] || enteredEffectiveRentValues[0] || 0;
+      const monthlyConcession =
+        baseRentValue && leaseTermMonths
+          ? (baseRentValue * freeMonths + rentCreditSpecialNumber) / leaseTermMonths
+          : 0;
+      const calculatedEffectiveRentNumber =
+        totalMonthlyRentNumber && monthlyConcession
+          ? Math.max(totalMonthlyRentNumber - monthlyConcession, 0)
+          : 0;
+
+      return calculatedEffectiveRentNumber || enteredEffectiveRentNumber || totalMonthlyRentNumber;
+    })
+    .filter((value) => value > 0);
+  const totalMonthlyRentNumber =
+    enteredTotalMonthlyRentValues[0] ||
+    (baseRentNumber ? baseRentNumber + requiredMonthlyFeesNumber : 0);
+  const enteredEffectiveRentNumber = enteredEffectiveRentValues[0] || 0;
+  const hasEnteredEffectiveRentDeal = enteredEffectiveRentValues.some(
+    (effectiveRentValue, index) =>
+      effectiveRentValue > 0 &&
+      (enteredTotalMonthlyRentValues[index] ||
+        enteredTotalMonthlyRentValues[0] ||
+        totalMonthlyRentNumber) > 0 &&
+      effectiveRentValue <
+        (enteredTotalMonthlyRentValues[index] ||
+          enteredTotalMonthlyRentValues[0] ||
+          totalMonthlyRentNumber)
+  );
+  const hasRentConcession =
+    !isNonRentOnlySpecialText(specialLabel) &&
+    (Number(freeWeeks || 0) > 0 ||
+      rentCreditSpecialNumber > 0 ||
+      hasEnteredEffectiveRentDeal);
+
+  return {
+    specialLabel,
+    hasRentSpecial: hasRentConcession,
+    effectiveRentNumber:
+      effectiveRentNumbers[0] || enteredEffectiveRentNumber || totalMonthlyRentNumber,
+    effectiveRentNumbers,
+  };
+}
+
+function getSeoFloorPlanSpecial(floorPlan, property) {
+  const label =
+    floorPlan.currentSpecial ||
+    floorPlan.special?.label ||
+    property?.special ||
+    "";
+  const freeWeeks =
+    Number(floorPlan.freeWeeks || floorPlan.special?.freeWeeks || 0) ||
+    getWeeksFromSeoSpecialText(label);
+  const rentCreditSpecial =
+    floorPlan.rentCreditSpecial ||
+    floorPlan.special?.rentCreditSpecial ||
+    getSeoRentCreditSpecialFromText(label);
+
+  return {
+    hasSpecial: freeWeeks > 0 || Boolean(rentCreditSpecial) || Boolean(label),
+    freeWeeks,
+    rentCreditSpecial,
+    label:
+      label ||
+      getSeoSpecialLabel(freeWeeks, rentCreditSpecial) ||
+      (freeWeeks > 0 ? `${freeWeeks} weeks free` : ""),
+  };
+}
+
+function getSeoUnitSpecial(unit, floorPlanSpecial) {
+  if (unit.specialMode === "none") {
+    return {
+      hasSpecial: false,
+      freeWeeks: 0,
+      rentCreditSpecial: "",
+      label: "",
+    };
+  }
+
+  const label = unit.currentSpecial || unit.special?.label || "";
+  const freeWeeks =
+    Number(unit.freeWeeks || unit.special?.freeWeeks || 0) ||
+    getWeeksFromSeoSpecialText(label);
+  const rentCreditSpecial =
+    unit.rentCreditSpecial ||
+    unit.special?.rentCreditSpecial ||
+    getSeoRentCreditSpecialFromText(label);
+
+  if (unit.specialMode === "custom" || freeWeeks > 0 || rentCreditSpecial || label) {
+    return {
+      hasSpecial: freeWeeks > 0 || Boolean(rentCreditSpecial) || Boolean(label),
+      freeWeeks,
+      rentCreditSpecial,
+      label:
+        label ||
+        getSeoSpecialLabel(freeWeeks, rentCreditSpecial) ||
+        (freeWeeks > 0 ? `${freeWeeks} weeks free` : ""),
+    };
+  }
+
+  return floorPlanSpecial;
+}
+
+function isAvailableSeoFloorPlan(floorPlan) {
+  const status = String(floorPlan.status || "").toLowerCase();
+  const availability = String(
+    floorPlan.available || floorPlan.availability || ""
+  ).toLowerCase();
+
+  if (/not[-\s]?available|unavailable|leased|sold/.test(status)) return false;
+  if (/not currently available|unavailable|sold out|0\s+available/.test(availability)) {
+    return false;
+  }
+
+  return true;
+}
+
+function formatSeoSpecialSummary(specialLabels) {
+  const cleanLabels = specialLabels.filter(
+    (label) => label && label !== "Special not listed"
+  );
+
+  if (cleanLabels.length === 0) return "Special available";
+  if (cleanLabels.length <= 2) return cleanLabels.join(", ");
+
+  return `${cleanLabels.slice(0, 2).join(", ")} +${cleanLabels.length - 2} more`;
+}
+
+function getWeeksFromSeoSpecialText(value) {
+  const match = String(value || "").match(/(\d+(?:\.\d+)?)\s*weeks?\s*free/i);
+  if (!match) return null;
+
+  return Number(match[1]);
+}
+
+function getSeoRentCreditSpecialFromText(value) {
+  const match = String(value || "").match(/\$?\s*([\d,]+(?:\.\d+)?)\s*(?:off|rent credit|credit)/i);
+  if (!match) return "";
+
+  return formatSeoCurrency(Number(match[1].replace(/,/g, "")));
+}
+
+function getSeoSpecialLabel(freeWeeks, rentCreditSpecial = "") {
+  const specialParts = [];
+  const rentCreditNumber = parseSeoCurrency(rentCreditSpecial);
+
+  if (freeWeeks) {
+    specialParts.push(`${freeWeeks} ${freeWeeks === 1 ? "week" : "weeks"} free`);
+  }
+
+  if (rentCreditNumber) {
+    specialParts.push(`${formatSeoCurrency(rentCreditNumber)} off base rent`);
+  }
+
+  return specialParts.join(" + ");
+}
+
+function parseSeoCurrency(value) {
+  const match = String(value || "").match(/\$?\s*([\d,]+(?:\.\d+)?)/);
+  if (!match) return 0;
+
+  const parsedValue = Number(match[1].replace(/,/g, ""));
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
+function parseSeoCurrencyValues(value) {
+  return [...String(value || "").matchAll(/\$?\s*([\d,]+(?:\.\d+)?)/g)]
+    .map((match) => Number(match[1].replace(/,/g, "")))
+    .filter((parsedValue) => Number.isFinite(parsedValue) && parsedValue > 0);
+}
+
+function parseSeoFirstCurrency(value) {
+  const match = String(value || "").match(/\$?\s*([\d,]+(?:\.\d+)?)/);
+  if (!match) return 0;
+
+  return Number(match[1].replace(/,/g, ""));
+}
+
+function formatSeoCurrency(value) {
+  return `$${Math.round(value).toLocaleString()}`;
+}
+
+function formatSeoRentRange(minRent, maxRent) {
+  if (!minRent && !maxRent) return "Contact for pricing";
+  if (minRent === maxRent) return `${formatSeoCurrency(minRent)}+`;
+
+  return `${formatSeoCurrency(minRent)} - ${formatSeoCurrency(maxRent)}`;
+}
+
+function getSeoBedsLabel(property, floorPlans = null) {
+  const bedroomsFromFloorPlans =
+    floorPlans
+      ?.map(getSeoBedroomValueFromFloorPlan)
+      .filter((bedroomValue) => bedroomValue !== undefined && bedroomValue !== null) ||
+    [];
+  const bedrooms = [
+    ...new Set(bedroomsFromFloorPlans.length > 0 ? bedroomsFromFloorPlans : property.bedrooms || []),
+  ].sort(
+    (firstBedroom, secondBedroom) =>
+      getSeoBedroomCount(firstBedroom) - getSeoBedroomCount(secondBedroom)
+  );
+
+  if (bedrooms.length === 0) return "Beds";
+  if (bedrooms.length === 1) return formatSeoBedroomLabel(bedrooms[0]);
+
+  const firstBedroom = bedrooms[0];
+  const lastBedroom = bedrooms[bedrooms.length - 1];
+  const firstCount = getSeoBedroomCount(firstBedroom);
+  const lastCount = getSeoBedroomCount(lastBedroom);
+
+  if (firstCount === 0 && lastCount > 0) return `Studio - ${lastCount} bd`;
+  if (firstCount > 0 && lastCount > firstCount) return `${firstCount}-${lastCount} bd`;
+
+  return `${formatSeoBedroomLabel(firstBedroom)} - ${formatSeoBedroomLabel(lastBedroom)}`;
+}
+
+function getSeoBedroomValueFromFloorPlan(floorPlan = {}) {
+  const bedroomValue = floorPlan.bedrooms ?? floorPlan.beds;
+  if (bedroomValue !== undefined && bedroomValue !== null && bedroomValue !== "") {
+    return bedroomValue;
+  }
+
+  const floorPlanName = String(floorPlan.name || floorPlan.floorPlanName || "").trim();
+  if (/studio/i.test(floorPlanName) || /^s\d*[a-z]?$/i.test(floorPlanName)) {
+    return "Studio";
+  }
+
+  return bedroomValue;
+}
+
+function getSeoBedroomCount(value) {
+  if (String(value).toLowerCase().includes("studio")) return 0;
+
+  const match = String(value).match(/\d+/);
+  return match ? Number(match[0]) : 99;
+}
+
+function formatSeoBedroomLabel(value) {
+  const normalizedValue = String(value ?? "").trim();
+  if (!normalizedValue) return "Beds";
+  if (/studio/i.test(normalizedValue) || normalizedValue === "0") return "Studio";
+  if (/\bbd\b/i.test(normalizedValue)) return normalizedValue;
+
+  const bedMatch = normalizedValue.match(/^(\d+(?:\.\d+)?)\s*beds?$/i);
+  if (bedMatch) return `${bedMatch[1]} bd`;
+
+  const match = normalizedValue.match(/^(\d+(?:\.\d+)?)$/);
+  if (match) return `${match[1]} bd`;
+
+  return normalizedValue;
 }
 
 function LandingListingsMap({ properties, hoveredPropertyId, onPropertyHover }) {
