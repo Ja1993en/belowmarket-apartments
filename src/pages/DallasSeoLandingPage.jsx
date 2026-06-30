@@ -1100,6 +1100,10 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
   const rentRollupItems = getSeoSearchRentRollupItems(property, floorPlans);
   const floorPlanCount = floorPlans.length;
   const transparencyBadges = getSeoTransparencyBadges(property, priceSummary);
+  const detailItems = [
+    `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"}`,
+    ...transparencyBadges,
+  ].slice(0, 3);
   const cardHref = `/properties/${property.id}`;
 
   return (
@@ -1112,13 +1116,13 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
           onMapHover?.("");
         }
       }}
-      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition duration-200 ease-out hover:-translate-y-1.5 hover:ring-2 hover:ring-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.18)] md:grid md:grid-cols-[172px_minmax(0,1fr)] lg:grid-cols-[196px_minmax(0,1fr)] ${
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition duration-200 ease-out hover:-translate-y-1.5 hover:ring-2 hover:ring-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.18)] md:grid md:grid-cols-[180px_minmax(0,1fr)] lg:grid-cols-[210px_minmax(0,1fr)] ${
         isMapHighlighted ? "ring-2 ring-[#f2b84b] shadow-[0_18px_42px_rgba(16,36,38,0.18)]" : "ring-[#d7e6df]"
       }`}
     >
       <Link
         to={cardHref}
-        className="relative block h-[220px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[190px]"
+        className="relative block h-[210px] overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[220px]"
       >
         <img
           src={getPropertyPrimaryImage(property)}
@@ -1127,18 +1131,25 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
           decoding="async"
           className="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105"
         />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#102426]/65 to-transparent" />
         {hasSpecial && <SeoBmaSpecialRibbon label={special} />}
         {!hasSpecial && (
           <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-black uppercase text-[#1f6f63] shadow-sm ring-1 ring-[#d7e6df]">
             Live
           </span>
         )}
+        <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1 text-[10px] font-black uppercase text-[#173f3f] shadow-sm ring-1 ring-white/70">
+          {getSeoBedsLabel(property, floorPlans)}
+        </span>
       </Link>
 
-      <div className="flex min-w-0 flex-col p-3 sm:p-4 md:p-3 lg:p-4">
+      <div className="flex min-w-0 flex-col p-3.5 sm:p-4 md:p-3.5 lg:p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <Link to={cardHref} className="min-w-0">
-            <h3 className="truncate text-lg font-black text-[#102426] lg:text-xl">
+            <p className="text-[10px] font-black uppercase tracking-wide text-[#1f6f63]">
+              {hasSpecial ? "Verified special" : "Live listing"}
+            </p>
+            <h3 className="mt-0.5 truncate text-lg font-black leading-tight text-[#102426] lg:text-xl">
               {property.name}
             </h3>
             <p className="mt-1 flex min-w-0 items-center gap-1.5 text-sm font-semibold leading-5 text-[#526260]">
@@ -1146,23 +1157,29 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
               <span className="truncate">{address || "Dallas, TX"}</span>
             </p>
           </Link>
-          <span className="w-fit shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
-            {getSeoBedsLabel(property, floorPlans)}
+          <span className="hidden w-fit shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63] sm:inline-flex">
+            {priceSummary.hasRentSpecial ? "After-special pricing" : "Pricing listed"}
           </span>
         </div>
 
-        <div className="mt-3 flex overflow-hidden rounded-lg border border-[#d7e6df] bg-white">
+        {special && (
+          <p className="mt-2 truncate rounded-lg bg-[#fff8e6] px-3 py-2 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+            {special}
+          </p>
+        )}
+
+        <div className="mt-3 flex overflow-hidden rounded-lg border border-[#d7e6df] bg-[#fbfdfb]">
           {rentRollupItems.map((item) => (
             <div
               key={item.label}
-              className="min-w-0 flex-1 border-r border-[#d7e6df] px-2 py-2 text-center last:border-r-0 sm:px-3"
+              className="min-w-0 flex-1 border-r border-[#d7e6df] px-2 py-2.5 text-center last:border-r-0 sm:px-3"
             >
               <p className="truncate text-[10px] font-black uppercase leading-none text-[#526260]">
                 {item.label}
               </p>
               {item.hasAfterSpecialRent ? (
                 <>
-                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#b7791f]">
+                  <p className="mt-1 truncate text-base font-black leading-tight text-[#b7791f] md:text-sm lg:text-base">
                     {item.afterSpecialPrice}
                   </p>
                   <p className="mt-0.5 truncate text-[7px] font-black uppercase leading-none text-[#526260]">
@@ -1174,7 +1191,7 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
                 </>
               ) : (
                 <>
-                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#102426]">
+                  <p className="mt-1 truncate text-base font-black leading-tight text-[#102426] md:text-sm lg:text-base">
                     {item.listedPrice}
                   </p>
                   <p className="mt-0.5 truncate text-[10px] font-black leading-tight text-[#526260]">
@@ -1186,25 +1203,14 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
           ))}
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df]">
-            {floorPlanCount} floor plan{floorPlanCount === 1 ? "" : "s"}
-          </span>
-          {transparencyBadges.map((badge) => (
-            <span
-              key={badge}
-              className="rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black text-[#1f6f63]"
-            >
-              {badge}
+        <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-black uppercase leading-4 text-[#526260]">
+          {detailItems.map((item, index) => (
+            <span key={item} className="inline-flex items-center gap-2">
+              {index > 0 && <span className="h-1 w-1 rounded-full bg-[#a9b9b5]" />}
+              {item}
             </span>
           ))}
         </div>
-
-        {special && (
-          <p className="mt-3 truncate rounded-lg bg-[#fff8e6] px-3 py-2 text-xs font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-            {special}
-          </p>
-        )}
 
         <div className="mt-auto grid grid-cols-2 gap-2 pt-3">
           <Link
