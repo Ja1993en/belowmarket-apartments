@@ -7,6 +7,8 @@ import {
   getPropertyPrimaryImage,
 } from "../data/propertySearchData";
 
+const SEO_LANDING_PROPERTY_LIMIT = 10;
+
 const DALLAS_LANDING_PAGES = {
   "dallas-tx": {
     title: "Dallas Apartments With Verified Specials",
@@ -782,10 +784,13 @@ export default function DallasSeoLandingPage({ pageKey }) {
 
   const pageFaqs = getPageFaqs(page);
   const featuredProperties = getSeoLandingProperties(properties, currentPageType);
+  const matchingPropertyCount = getSeoLandingPropertyCount(properties, currentPageType);
   const featuredListingLabel =
-    featuredProperties.length === 1
+    matchingPropertyCount === 1
       ? "1 live match"
-      : `${featuredProperties.length} live matches`;
+      : matchingPropertyCount > SEO_LANDING_PROPERTY_LIMIT
+        ? `${SEO_LANDING_PROPERTY_LIMIT} of ${matchingPropertyCount} live matches`
+        : `${matchingPropertyCount} live matches`;
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -899,16 +904,34 @@ export default function DallasSeoLandingPage({ pageKey }) {
           </div>
 
           {featuredProperties.length > 0 ? (
-            <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)] xl:items-start">
-              <div className="grid gap-4">
-                {featuredProperties.map((property) => (
-                  <LandingPropertyCard
-                    key={property.id}
-                    property={property}
-                    isMapHighlighted={hoveredLandingPropertyId === property.id}
-                    onMapHover={setHoveredLandingPropertyId}
-                  />
-                ))}
+            <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(300px,36vw)] md:items-start lg:grid-cols-[minmax(0,1fr)_minmax(340px,36vw)] xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)]">
+              <div className="order-2 min-w-0 md:sticky md:top-24 md:order-1 md:max-h-[calc(100vh-7rem)] md:overflow-y-auto md:overscroll-contain md:pr-1">
+                <div className="rounded-xl border border-[#d7e6df] bg-white p-4 shadow-sm">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-sm font-black text-[#102426]">
+                        Showing 1-{featuredProperties.length} of {matchingPropertyCount} listings
+                      </p>
+                      <p className="mt-1 text-xs font-bold text-[#526260]">
+                        Limited to {SEO_LANDING_PROPERTY_LIMIT} matching properties per SEO page.
+                      </p>
+                    </div>
+                    <span className="w-fit rounded-full bg-[#f5f8f1] px-3 py-1.5 text-xs font-black text-[#526260] ring-1 ring-[#d7e6df]">
+                      {featuredListingLabel}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-4">
+                  {featuredProperties.map((property) => (
+                    <LandingPropertyCard
+                      key={property.id}
+                      property={property}
+                      isMapHighlighted={hoveredLandingPropertyId === property.id}
+                      onMapHover={setHoveredLandingPropertyId}
+                    />
+                  ))}
+                </div>
               </div>
 
               <LandingListingsMap
@@ -1161,7 +1184,7 @@ function LandingListingsMap({ properties, hoveredPropertyId, onPropertyHover }) 
   );
 
   return (
-    <aside className="xl:sticky xl:top-32">
+    <aside className="order-1 md:sticky md:top-24 md:order-2">
       <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
         <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
           <div>
@@ -1175,7 +1198,7 @@ function LandingListingsMap({ properties, hoveredPropertyId, onPropertyHover }) 
           </span>
         </div>
 
-        <div className="relative h-[360px] overflow-hidden bg-[#dcebe4] sm:h-[420px] xl:h-[calc(100vh-250px)] xl:min-h-[430px]">
+        <div className="relative h-[340px] overflow-hidden bg-[#dcebe4] sm:h-[420px] md:h-[calc(100vh-7rem)] md:min-h-[360px] md:max-h-[640px]">
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(23,63,63,0.08)_1px,transparent_1px),linear-gradient(0deg,rgba(23,63,63,0.08)_1px,transparent_1px)] bg-[size:74px_74px]" />
           <div className="absolute left-[-12%] top-[52%] h-10 w-[130%] -rotate-6 bg-white/85 shadow-sm" />
           <div className="absolute left-[20%] top-[-8%] h-[125%] w-12 rotate-12 bg-white/75 shadow-sm" />
@@ -1308,6 +1331,12 @@ function LandingSnapshotRow({ label, value }) {
   );
 }
 
+function getSeoLandingPropertyCount(properties, pageType) {
+  return properties
+    .filter((property) => property.status === "Live")
+    .filter((property) => matchesLandingPage(property, pageType)).length;
+}
+
 function getSeoLandingProperties(properties, pageType) {
   return properties
     .filter((property) => property.status === "Live")
@@ -1318,7 +1347,7 @@ function getSeoLandingProperties(properties, pageType) {
 
       return secondHasSpecial - firstHasSpecial;
     })
-    .slice(0, 6);
+    .slice(0, SEO_LANDING_PROPERTY_LIMIT);
 }
 
 function matchesLandingPage(property, pageType) {
