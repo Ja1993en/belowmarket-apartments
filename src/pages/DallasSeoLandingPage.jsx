@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowRight, CheckCircle2, MapPin, Search, ShieldCheck, Tag } from "lucide-react";
 import { getAllProperties } from "../data/propertyStorage";
+import {
+  getPropertyAddressLabel,
+  getPropertyPrimaryImage,
+} from "../data/propertySearchData";
 
 const DALLAS_LANDING_PAGES = {
   "dallas-tx": {
@@ -708,6 +712,7 @@ export default function DallasSeoLandingPage({ pageKey }) {
   const currentPageType = pageKey || pageType;
   const page = DALLAS_LANDING_PAGES[currentPageType];
   const [properties, setProperties] = useState([]);
+  const [hoveredLandingPropertyId, setHoveredLandingPropertyId] = useState("");
 
   useEffect(() => {
     if (!page) return;
@@ -902,10 +907,23 @@ export default function DallasSeoLandingPage({ pageKey }) {
           </div>
 
           {featuredProperties.length > 0 ? (
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {featuredProperties.map((property) => (
-                <LandingPropertyCard key={property.id} property={property} />
-              ))}
+            <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)] xl:items-start">
+              <div className="grid gap-4">
+                {featuredProperties.map((property) => (
+                  <LandingPropertyCard
+                    key={property.id}
+                    property={property}
+                    isMapHighlighted={hoveredLandingPropertyId === property.id}
+                    onMapHover={setHoveredLandingPropertyId}
+                  />
+                ))}
+              </div>
+
+              <LandingListingsMap
+                properties={featuredProperties}
+                hoveredPropertyId={hoveredLandingPropertyId}
+                onPropertyHover={setHoveredLandingPropertyId}
+              />
             </div>
           ) : (
             <div className="mt-5 rounded-2xl bg-[#f5f8f1] p-5">
@@ -1044,10 +1062,8 @@ function SeoFaqCard({ question, answer }) {
   );
 }
 
-function LandingPropertyCard({ property }) {
-  const address = [property.address, property.city, property.state, property.zipcode]
-    .filter(Boolean)
-    .join(", ");
+function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
+  const address = getPropertyAddressLabel(property);
   const special = getPropertySpecialLabel(property);
   const price = property.effectiveRent || property.startingRent || property.rent || "Contact for pricing";
   const bedroomLabel = Array.isArray(property.bedrooms) && property.bedrooms.length > 0
@@ -1055,39 +1071,229 @@ function LandingPropertyCard({ property }) {
     : getFloorPlanBedroomSummary(property);
 
   return (
-    <article className="rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] p-5">
-      <p className="text-xs font-black uppercase text-[#1f6f63]">
-        {special ? "Current special" : "Live listing"}
-      </p>
-      <h3 className="mt-2 text-lg font-black text-[#102426]">
-        {property.name}
-      </h3>
-      <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">
-        {address || "Dallas, TX"}
-      </p>
-      <div className="mt-4 grid gap-2">
-        <SeoPropertyMetric label="Price" value={price} />
-        <SeoPropertyMetric label="Bedrooms" value={bedroomLabel || "Floor plans listed"} />
-        <SeoPropertyMetric label="Special" value={special || "Ask about current specials"} />
-      </div>
+    <article
+      onMouseEnter={() => onMapHover?.(property.id)}
+      onMouseLeave={() => onMapHover?.("")}
+      onFocus={() => onMapHover?.(property.id)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          onMapHover?.("");
+        }
+      }}
+      className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition duration-200 ease-out hover:-translate-y-1 hover:ring-2 hover:ring-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.14)] md:grid md:grid-cols-[172px_minmax(0,1fr)] ${
+        isMapHighlighted ? "ring-2 ring-[#f2b84b] shadow-[0_18px_42px_rgba(16,36,38,0.14)]" : "ring-[#d7e6df]"
+      }`}
+    >
       <Link
         to={`/properties/${property.id}`}
-        className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#edf4ef]"
+        className="relative block h-56 overflow-hidden bg-[#dcebe4] md:h-full md:min-h-[190px]"
       >
-        View property
-        <ArrowRight className="h-4 w-4" />
+        <img
+          src={getPropertyPrimaryImage(property)}
+          alt={property.name}
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105"
+        />
+        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-black uppercase text-[#1f6f63] shadow-sm ring-1 ring-[#d7e6df]">
+          {special ? "Special" : "Live"}
+        </span>
       </Link>
+
+      <div className="min-w-0 p-4">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase text-[#1f6f63]">
+              {special ? "Current special" : "Live listing"}
+            </p>
+            <h3 className="mt-1 truncate text-xl font-black text-[#102426]">
+              {property.name}
+            </h3>
+            <p className="mt-1 flex min-w-0 items-center gap-1.5 text-sm font-semibold leading-5 text-[#526260]">
+              <MapPin className="h-4 w-4 shrink-0 text-[#1f6f63]" />
+              <span className="truncate">{address || "Dallas, TX"}</span>
+            </p>
+          </div>
+          <Link
+            to={`/properties/${property.id}`}
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black text-white hover:bg-[#102426]"
+          >
+            View
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          <SeoPropertyMetric label="Price" value={price} />
+          <SeoPropertyMetric label="Beds" value={bedroomLabel || "Floor plans"} />
+          <SeoPropertyMetric label="Special" value={special || "Ask leasing"} />
+        </div>
+
+        {special && (
+          <p className="mt-3 truncate rounded-lg bg-[#fff8e6] px-3 py-2 text-xs font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+            {special}
+          </p>
+        )}
+      </div>
     </article>
   );
 }
 
 function SeoPropertyMetric({ label, value }) {
   return (
-    <div className="rounded-xl bg-white px-3 py-2">
+    <div className="min-w-0 rounded-lg bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]">
       <p className="text-[11px] font-black uppercase text-[#526260]">{label}</p>
-      <p className="mt-1 text-sm font-black text-[#102426]">{value}</p>
+      <p className="mt-1 truncate text-sm font-black text-[#102426]">{value}</p>
     </div>
   );
+}
+
+function LandingListingsMap({ properties, hoveredPropertyId, onPropertyHover }) {
+  const pins = properties.map((property, index) => ({
+    property,
+    position: getLandingMapPinPosition(property, index),
+  }));
+  const hoveredProperty = properties.find(
+    (property) => property.id === hoveredPropertyId
+  );
+
+  return (
+    <aside className="xl:sticky xl:top-32">
+      <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
+          <div>
+            <p className="text-sm font-black text-[#102426]">Map view</p>
+            <p className="text-xs font-bold text-[#526260]">
+              Hover a property to see its map dot.
+            </p>
+          </div>
+          <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+            {properties.length} pins
+          </span>
+        </div>
+
+        <div className="relative h-[360px] overflow-hidden bg-[#dcebe4] sm:h-[420px] xl:h-[calc(100vh-250px)] xl:min-h-[430px]">
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(23,63,63,0.08)_1px,transparent_1px),linear-gradient(0deg,rgba(23,63,63,0.08)_1px,transparent_1px)] bg-[size:74px_74px]" />
+          <div className="absolute left-[-12%] top-[52%] h-10 w-[130%] -rotate-6 bg-white/85 shadow-sm" />
+          <div className="absolute left-[20%] top-[-8%] h-[125%] w-12 rotate-12 bg-white/75 shadow-sm" />
+          <div className="absolute left-[56%] top-[-10%] h-[130%] w-8 -rotate-[24deg] bg-[#f6f0d8]/90 shadow-sm" />
+          <div className="absolute left-[-12%] top-[26%] h-8 w-[125%] rotate-[18deg] bg-[#f6f0d8]/90 shadow-sm" />
+          <div className="absolute left-[68%] top-[9%] h-28 w-40 rounded-[32px] border border-[#a9cfc2] bg-[#c4dfd6]/80" />
+          <div className="absolute bottom-[12%] right-[7%] h-32 w-56 rounded-[36px] border border-[#a9cfc2] bg-[#c4dfd6]/70" />
+
+          <div className="absolute right-4 top-4 z-10 rounded-xl bg-white/95 px-3 py-2 text-xs font-black text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df]">
+            Dallas area
+          </div>
+
+          {pins.map(({ property, position }) => {
+            const isHighlighted = hoveredPropertyId === property.id;
+
+            return (
+              <Link
+                key={property.id}
+                to={`/properties/${property.id}`}
+                onMouseEnter={() => onPropertyHover?.(property.id)}
+                onMouseLeave={() => onPropertyHover?.("")}
+                onFocus={() => onPropertyHover?.(property.id)}
+                onBlur={() => onPropertyHover?.("")}
+                className={`absolute z-20 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 shadow-[0_8px_18px_rgba(16,36,38,0.24)] ring-2 ring-white transition ${
+                  isHighlighted
+                    ? "scale-125 border-[#102426] bg-[#f2b84b]"
+                    : "border-white bg-[#173f3f] hover:scale-110 hover:bg-[#f2b84b]"
+                }`}
+                style={{ left: position.left, top: position.top }}
+                aria-label={`View ${property.name}`}
+                title={property.name}
+              >
+                <span className="h-2 w-2 rounded-full bg-white/90" />
+              </Link>
+            );
+          })}
+
+          {hoveredProperty && (
+            <div className="absolute bottom-3 left-3 z-30 max-w-[min(17rem,calc(100%-1.5rem))] rounded-xl bg-white p-3 shadow-xl ring-1 ring-[#d7e6df]">
+              <p className="truncate text-sm font-black text-[#102426]">
+                {hoveredProperty.name}
+              </p>
+              <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+                {getPropertyAddressLabel(hoveredProperty)}
+              </p>
+              {getPropertySpecialLabel(hoveredProperty) && (
+                <p className="mt-2 truncate rounded-lg bg-[#fff8e6] px-2 py-1.5 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                  {getPropertySpecialLabel(hoveredProperty)}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function getLandingMapPinPosition(property, index) {
+  const coordinates = getLandingPropertyCoordinates(property);
+
+  if (coordinates) {
+    const dallasBounds = {
+      minLatitude: 32.66,
+      maxLatitude: 32.96,
+      minLongitude: -96.98,
+      maxLongitude: -96.62,
+    };
+    const left =
+      ((coordinates.longitude - dallasBounds.minLongitude) /
+        (dallasBounds.maxLongitude - dallasBounds.minLongitude)) *
+      100;
+    const top =
+      ((dallasBounds.maxLatitude - coordinates.latitude) /
+        (dallasBounds.maxLatitude - dallasBounds.minLatitude)) *
+      100;
+
+    return {
+      left: `${clampMapPosition(left, 8, 92)}%`,
+      top: `${clampMapPosition(top, 10, 90)}%`,
+    };
+  }
+
+  const fallbackPositions = [
+    { left: "46%", top: "45%" },
+    { left: "58%", top: "38%" },
+    { left: "40%", top: "58%" },
+    { left: "64%", top: "58%" },
+    { left: "34%", top: "36%" },
+    { left: "52%", top: "70%" },
+  ];
+
+  return fallbackPositions[index % fallbackPositions.length];
+}
+
+function getLandingPropertyCoordinates(property) {
+  const latitude = Number(property.latitude || property.lat);
+  const longitude = Number(property.longitude || property.lng);
+
+  if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+    return { latitude, longitude };
+  }
+
+  if (Array.isArray(property.coordinates) && property.coordinates.length >= 2) {
+    const [coordinateLongitude, coordinateLatitude] = property.coordinates.map(Number);
+
+    if (Number.isFinite(coordinateLatitude) && Number.isFinite(coordinateLongitude)) {
+      return {
+        latitude: coordinateLatitude,
+        longitude: coordinateLongitude,
+      };
+    }
+  }
+
+  return null;
+}
+
+function clampMapPosition(value, minValue, maxValue) {
+  if (!Number.isFinite(value)) return minValue;
+
+  return Math.min(maxValue, Math.max(minValue, value));
 }
 
 function LandingSignal({ icon: Icon, title, text }) {
