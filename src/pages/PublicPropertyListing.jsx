@@ -2816,9 +2816,9 @@ export default function PublicPropertyListing() {
                                 <div className="mt-6 space-y-6 lg:mt-3">
                                     <section
                                         id="location"
-                                        className="scroll-mt-32 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm"
+                                        className="scroll-mt-32 rounded-3xl border border-[#d7e6df] bg-white shadow-sm"
                                     >
-                                        <div className="grid gap-0 lg:grid-cols-[minmax(190px,0.34fr)_minmax(0,1fr)]">
+                                        <div className="grid gap-0 lg:grid-cols-[minmax(190px,0.34fr)_minmax(0,1fr)] lg:items-start">
                                             <div className="border-b border-[#edf4ef] p-5 lg:border-b-0 lg:border-r lg:py-4">
                                                 <p className="text-sm font-black text-[#1f6f63]">
                                                     Location
@@ -2831,7 +2831,7 @@ export default function PublicPropertyListing() {
                                                 </p>
                                             </div>
 
-                                            <div className="p-4 md:p-5 lg:p-3">
+                                            <div className="p-4 md:p-5 lg:relative lg:-top-5 lg:mb-[-1.25rem] lg:px-3 lg:pb-3 lg:pt-0">
                                                 <PropertyLocationMap
                                                     property={property}
                                                     addressLabel={addressLabel}
