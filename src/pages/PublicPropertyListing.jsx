@@ -2813,17 +2813,17 @@ export default function PublicPropertyListing() {
 
 
 
-                                <div className="mt-8 space-y-6">
+                                <div className="mt-6 space-y-6 lg:mt-3">
                                     <section
                                         id="location"
                                         className="scroll-mt-32 overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm"
                                     >
-                                        <div className="border-b border-[#edf4ef] p-5 lg:flex lg:items-start lg:justify-between lg:gap-5">
-                                            <div>
+                                        <div className="grid gap-0 lg:grid-cols-[minmax(190px,0.34fr)_minmax(0,1fr)]">
+                                            <div className="border-b border-[#edf4ef] p-5 lg:border-b-0 lg:border-r lg:py-4">
                                                 <p className="text-sm font-black text-[#1f6f63]">
                                                     Location
                                                 </p>
-                                                <h2 className="mt-2 text-2xl font-black text-[#102426]">
+                                                <h2 className="mt-2 text-2xl font-black leading-tight text-[#102426] lg:text-xl">
                                                     Map and nearby essentials
                                                 </h2>
                                                 <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
@@ -2831,15 +2831,14 @@ export default function PublicPropertyListing() {
                                                 </p>
                                             </div>
 
-                                        </div>
-
-                                        <div className="p-4 md:p-5">
-                                            <PropertyLocationMap
-                                                property={property}
-                                                addressLabel={addressLabel}
-                                                nearbyPlaces={nearbyPlaces}
-                                                onNearbyPlacesChange={setNearbyPlaces}
-                                            />
+                                            <div className="p-4 md:p-5 lg:p-3">
+                                                <PropertyLocationMap
+                                                    property={property}
+                                                    addressLabel={addressLabel}
+                                                    nearbyPlaces={nearbyPlaces}
+                                                    onNearbyPlacesChange={setNearbyPlaces}
+                                                />
+                                            </div>
                                         </div>
                                     </section>
 
@@ -3864,9 +3863,9 @@ function PropertyLocationMap({
     return (
         <div ref={mapSectionRef} className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-[#dcebe4]">
             {shouldLoadMap ? (
-                <div ref={mapContainerRef} className="h-[420px] w-full md:h-[480px]" />
+                <div ref={mapContainerRef} className="h-[420px] w-full md:h-[480px] lg:h-[min(520px,calc(100vh-220px))] lg:min-h-[380px]" />
             ) : (
-                <div className="flex h-[420px] w-full items-center justify-center bg-[#dcebe4] md:h-[480px]">
+                <div className="flex h-[420px] w-full items-center justify-center bg-[#dcebe4] md:h-[480px] lg:h-[min(520px,calc(100vh-220px))] lg:min-h-[380px]">
                     <p className="rounded-full bg-white px-5 py-3 text-sm font-black text-[#173f3f] shadow-sm">
                         Map loading as you scroll
                     </p>
