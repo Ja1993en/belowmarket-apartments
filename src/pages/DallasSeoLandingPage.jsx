@@ -908,7 +908,7 @@ export default function DallasSeoLandingPage({ pageKey }) {
 
           {featuredProperties.length > 0 ? (
             <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(300px,36vw)] md:items-start lg:grid-cols-[minmax(0,1fr)_minmax(340px,36vw)] xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)]">
-              <div className="order-2 min-w-0 md:sticky md:top-24 md:order-1 md:max-h-[calc(100vh-7rem)] md:overflow-y-auto md:overscroll-contain md:pr-1">
+              <div className="order-2 min-w-0 md:sticky md:top-24 md:order-1 md:max-h-[calc(100vh-7rem)] md:overflow-y-auto md:pr-1">
                 <div className="rounded-xl border border-[#d7e6df] bg-white p-4 shadow-sm">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
