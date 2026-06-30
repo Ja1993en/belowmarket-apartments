@@ -1163,9 +1163,14 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
         </div>
 
         {special && (
-          <p className="mt-2 truncate rounded-lg bg-[#fff8e6] px-3 py-2 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-            {special}
-          </p>
+          <div className="mt-2 rounded-lg bg-[#fff8e6] px-3 py-2.5 ring-1 ring-[#f2d08a] shadow-[0_8px_18px_rgba(138,91,10,0.08)]">
+            <p className="text-[9px] font-black uppercase leading-none tracking-wide text-[#8a5b0a]">
+              Listed special
+            </p>
+            <p className="mt-1 line-clamp-2 text-xs font-black leading-4 text-[#6f4707]">
+              {special}
+            </p>
+          </div>
         )}
 
         <div className="mt-3 flex overflow-hidden rounded-lg border border-[#d7e6df] bg-[#fbfdfb]">
@@ -1237,18 +1242,21 @@ function SeoBmaSpecialRibbon({ label }) {
   if (!label) return null;
 
   return (
-    <div className="absolute left-0 top-3 z-10 flex max-w-[calc(100%-1.5rem)] items-stretch shadow-[0_8px_18px_rgba(16,36,38,0.24)]">
-      <div className="flex h-8 min-w-0 items-center bg-[#f2b84b] pl-2 pr-2.5 text-[#102426] ring-1 ring-[#d49a24]">
-        <span className="flex h-5 w-8 shrink-0 items-center justify-center bg-[#102426] text-[7px] font-black leading-none text-white ring-1 ring-[#102426]/25">
+    <div
+      className="absolute left-0 top-3 z-10 flex max-w-[calc(100%-1.5rem)] items-stretch shadow-[0_8px_18px_rgba(16,36,38,0.24)]"
+      title={label}
+    >
+      <div className="flex h-9 min-w-0 items-center bg-[#f2b84b] pl-2.5 pr-3 text-[#102426] ring-1 ring-[#d49a24]">
+        <span className="flex h-[22px] w-9 shrink-0 items-center justify-center bg-[#102426] text-[8px] font-black leading-none text-white ring-1 ring-[#102426]/25">
           BMA
         </span>
-        <span className="ml-1 min-w-0 truncate text-[7px] font-black uppercase leading-none tracking-wide sm:text-[8px]">
-          {label}
+        <span className="ml-2 min-w-0 whitespace-nowrap text-[10px] font-black uppercase leading-none tracking-wide sm:text-[11px]">
+          Special
         </span>
       </div>
       <div
         aria-hidden="true"
-        className="h-8 w-4 shrink-0 border-y border-r border-[#d49a24] bg-[#f2b84b] [clip-path:polygon(0_0,100%_50%,0_100%)]"
+        className="h-9 w-4 shrink-0 border-y border-r border-[#d49a24] bg-[#f2b84b] [clip-path:polygon(0_0,100%_50%,0_100%)]"
       />
       <div
         aria-hidden="true"
