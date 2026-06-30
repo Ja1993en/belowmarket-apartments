@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { ArrowRight, CheckCircle2, MapPin, Search, ShieldCheck, Tag } from "lucide-react";
+import { ArrowRight, CheckCircle2, MapPin, Search } from "lucide-react";
 import { getAllProperties } from "../data/propertyStorage";
 import {
   getPropertyAddressLabel,
@@ -782,6 +782,10 @@ export default function DallasSeoLandingPage({ pageKey }) {
 
   const pageFaqs = getPageFaqs(page);
   const featuredProperties = getSeoLandingProperties(properties, currentPageType);
+  const featuredListingLabel =
+    featuredProperties.length === 1
+      ? "1 live match"
+      : `${featuredProperties.length} live matches`;
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -801,105 +805,93 @@ export default function DallasSeoLandingPage({ pageKey }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <header className="border-b border-[#d7e6df] bg-white px-4 py-4 shadow-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+      <header className="border-b border-[#d7e6df] bg-white px-4 py-3 shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#173f3f] text-xs font-black text-[#f2b84b]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#173f3f] text-xs font-black text-[#f2b84b]">
               BMA
             </span>
-            <span className="font-black text-[#102426]">Below Market Apartments</span>
+            <span className="hidden font-black text-[#102426] sm:block">Below Market Apartments</span>
           </Link>
           <Link
             to="/properties?search=Dallas%2C%20TX"
-            className="rounded-2xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+            className="rounded-xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
           >
             Search Dallas
           </Link>
         </div>
       </header>
 
-      <section className="bma-brand-panel border-b-[6px] border-[#f2b84b] px-4 py-12 text-white">
-        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <section className="bma-brand-panel border-b-[5px] border-[#f2b84b] px-4 py-8 text-white md:py-10">
+        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
           <div>
-            <p className="w-fit rounded-full bg-[#f2b84b]/15 px-4 py-2 text-sm font-black text-[#f9d783]">
+            <p className="w-fit rounded-full bg-[#f2b84b]/15 px-3 py-1.5 text-xs font-black uppercase text-[#f9d783]">
               {page.eyebrow}
             </p>
-            <h1 className="mt-5 max-w-3xl text-4xl font-black text-[#fff7df] md:text-6xl">
+            <h1 className="mt-4 max-w-4xl text-3xl font-black leading-tight text-[#fff7df] md:text-5xl">
               {page.title}
             </h1>
-            <p className="mt-4 max-w-2xl text-lg font-semibold leading-8 text-[#d7ece6]">
+            <p className="mt-3 max-w-3xl text-base font-semibold leading-7 text-[#d7ece6] md:text-lg">
               {page.description}
             </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Link
                 to={page.searchUrl}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-5 py-4 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#f2b84b] px-5 py-3 text-sm font-black text-[#102426] hover:bg-[#f9d783]"
               >
                 <Search className="h-4 w-4" />
                 {page.searchLabel}
               </Link>
               <Link
                 to="/start"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-4 text-sm font-black text-white ring-1 ring-white/25 hover:bg-white/15"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-black text-white ring-1 ring-white/25 hover:bg-white/15"
               >
                 Get matched
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {page.relatedLinks.slice(0, 3).map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-white ring-1 ring-white/15 hover:bg-white/15"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
 
-          <div className="rounded-3xl border border-white/15 bg-white/10 p-5 shadow-2xl shadow-[#102426]/20 backdrop-blur">
-            <div className="bma-value-stripe h-2 rounded-full" />
-            <div className="mt-5 space-y-4">
-              <LandingSignal
-                icon={Tag}
-                title="Current specials"
-                text="Search by weeks free, rent credit, property name, city, ZIP, or address."
-              />
-              <LandingSignal
-                icon={ShieldCheck}
-                title="Transparent comparison"
-                text="Normal rent and estimated effective rent stay visible while renters compare."
-              />
-              <LandingSignal
-                icon={MapPin}
-                title="Dallas map search"
-                text="Use map pins, filters, and area selection to narrow the apartment search."
-              />
+          <div className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-2xl shadow-[#102426]/20 backdrop-blur">
+            <p className="text-xs font-black uppercase text-[#f2b84b]">Search snapshot</p>
+            <div className="mt-3 divide-y divide-white/10">
+              <LandingSnapshotRow label="Listings" value={featuredListingLabel} />
+              <LandingSnapshotRow label="Pricing" value="Normal + special value" />
+              <LandingSnapshotRow label="Next step" value="Compare before touring" />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-10">
-        <div className="grid gap-4 lg:grid-cols-3">
-          <InfoCard
-            title={page.primaryKeyword}
-            text={page.highlight}
-            isFeatured
-          />
-          {page.sections.map((section) => (
-            <InfoCard key={section.title} title={section.title} text={section.text} />
-          ))}
-        </div>
-
-        <section className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+      <section className="mx-auto max-w-7xl px-4 py-7 md:py-8">
+        <section className="rounded-2xl border border-[#d7e6df] bg-white p-4 shadow-sm md:p-5">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div>
               <p className="text-sm font-black text-[#1f6f63]">
                 Live Dallas listings
               </p>
-              <h2 className="mt-2 text-2xl font-black text-[#102426]">
+              <h2 className="mt-1 text-2xl font-black text-[#102426]">
                 Apartments currently matching this search
               </h2>
-              <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
+              <p className="mt-1.5 max-w-3xl text-sm font-semibold leading-6 text-[#526260]">
                 These live property pages give renters direct access to floor plans, specials, photos, location details, and effective-rent estimates.
               </p>
             </div>
 
             <Link
               to={page.searchUrl}
-              className="inline-flex w-fit items-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-black text-white hover:bg-[#102426]"
+              className="inline-flex w-fit items-center gap-2 rounded-xl bg-[#173f3f] px-5 py-3 text-sm font-black text-white hover:bg-[#102426]"
             >
               View all matches
               <ArrowRight className="h-4 w-4" />
@@ -934,10 +926,21 @@ export default function DallasSeoLandingPage({ pageKey }) {
           )}
         </section>
 
-        <div className="mt-8 grid gap-5 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm lg:grid-cols-[1fr_1fr]">
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          <InfoCard
+            title={page.primaryKeyword}
+            text={page.highlight}
+            isFeatured
+          />
+          {page.sections.map((section) => (
+            <InfoCard key={section.title} title={section.title} text={section.text} />
+          ))}
+        </div>
+
+        <div className="mt-6 grid gap-5 rounded-2xl border border-[#d7e6df] bg-white p-5 shadow-sm lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <p className="text-sm font-black text-[#1f6f63]">How renters use this page</p>
-            <h2 className="mt-2 text-3xl font-black text-[#102426]">
+            <h2 className="mt-2 text-2xl font-black text-[#102426]">
               Start broad, then narrow by real unit details.
             </h2>
             <p className="mt-3 text-sm font-semibold leading-6 text-[#526260]">
@@ -1296,12 +1299,11 @@ function clampMapPosition(value, minValue, maxValue) {
   return Math.min(maxValue, Math.max(minValue, value));
 }
 
-function LandingSignal({ icon: Icon, title, text }) {
+function LandingSnapshotRow({ label, value }) {
   return (
-    <div className="rounded-2xl bg-white p-4 text-[#102426]">
-      <Icon className="h-5 w-5 text-[#1f6f63]" />
-      <p className="mt-3 text-sm font-black">{title}</p>
-      <p className="mt-1 text-xs font-bold leading-5 text-[#526260]">{text}</p>
+    <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+      <p className="text-xs font-black uppercase text-[#d7ece6]">{label}</p>
+      <p className="text-right text-sm font-black text-white">{value}</p>
     </div>
   );
 }
