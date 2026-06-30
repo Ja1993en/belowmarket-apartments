@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { ArrowRight, CheckCircle2, MapPin, Search } from "lucide-react";
 import { getAllProperties } from "../data/propertyStorage";
 import {
@@ -8,6 +8,8 @@ import {
 } from "../data/propertySearchData";
 
 const SEO_LANDING_PROPERTY_LIMIT = 10;
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+const DALLAS_CENTER = [-96.797, 32.7767];
 
 const DALLAS_LANDING_PAGES = {
   "dallas-tx": {
@@ -1175,6 +1177,196 @@ function SeoPropertyMetric({ label, value }) {
 }
 
 function LandingListingsMap({ properties, hoveredPropertyId, onPropertyHover }) {
+  const mappableProperties = useMemo(
+    () =>
+      properties
+        .map((property) => {
+          const coordinates = getLandingPropertyCoordinates(property);
+          if (!coordinates) return null;
+
+          return {
+            ...property,
+            ...coordinates,
+            mapAccuracy: property.mapAccuracy || "exact",
+          };
+        })
+        .filter(Boolean),
+    [properties]
+  );
+
+  if (MAPBOX_TOKEN && mappableProperties.length > 0) {
+    return (
+      <MapboxLandingListingsMap
+        properties={properties}
+        mappableProperties={mappableProperties}
+        hoveredPropertyId={hoveredPropertyId}
+        onPropertyHover={onPropertyHover}
+      />
+    );
+  }
+
+  return (
+    <FallbackLandingListingsMap
+      properties={properties}
+      hoveredPropertyId={hoveredPropertyId}
+      onPropertyHover={onPropertyHover}
+    />
+  );
+}
+
+function MapboxLandingListingsMap({
+  properties,
+  mappableProperties,
+  hoveredPropertyId,
+  onPropertyHover,
+}) {
+  const navigate = useNavigate();
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+  const markersRef = useRef([]);
+  const hoverClearTimerRef = useRef(null);
+  const [mapboxGl, setMapboxGl] = useState(null);
+  const [mapError, setMapError] = useState("");
+  const hoveredProperty =
+    properties.find((property) => property.id === hoveredPropertyId) ||
+    mappableProperties.find((property) => property.id === hoveredPropertyId);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadLandingMapboxGl()
+      .then((loadedMapboxGl) => {
+        if (isMounted) {
+          loadedMapboxGl.accessToken = MAPBOX_TOKEN;
+          setMapboxGl(loadedMapboxGl);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) {
+          setMapError("Could not load the live map.");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapboxGl || !mapContainerRef.current || mapRef.current) return;
+
+    mapRef.current = new mapboxGl.Map({
+      container: mapContainerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: DALLAS_CENTER,
+      zoom: 10.5,
+      attributionControl: false,
+    });
+
+    mapRef.current.addControl(
+      new mapboxGl.NavigationControl({ showCompass: false }),
+      "bottom-right"
+    );
+
+    return () => {
+      window.clearTimeout(hoverClearTimerRef.current);
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, [mapboxGl]);
+
+  useEffect(() => {
+    if (!mapboxGl || !mapRef.current) return;
+
+    const map = mapRef.current;
+    const bounds = new mapboxGl.LngLatBounds();
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = [];
+    onPropertyHover?.("");
+
+    mappableProperties.forEach((property) => {
+      const markerElement = createLandingMapPinElement(property);
+
+      markerElement.addEventListener("click", (event) => {
+        event.preventDefault();
+        navigate(`/properties/${property.id}`);
+      });
+      markerElement.addEventListener("mouseenter", () => {
+        window.clearTimeout(hoverClearTimerRef.current);
+        onPropertyHover?.(property.id);
+      });
+      markerElement.addEventListener("mouseleave", () => {
+        hoverClearTimerRef.current = window.setTimeout(() => {
+          onPropertyHover?.("");
+        }, 180);
+      });
+
+      const marker = new mapboxGl.Marker({
+        element: markerElement,
+        anchor: "center",
+      })
+        .setLngLat([property.longitude, property.latitude])
+        .addTo(map);
+
+      markersRef.current.push(marker);
+      bounds.extend([property.longitude, property.latitude]);
+    });
+
+    if (mappableProperties.length > 1) {
+      map.fitBounds(bounds, {
+        padding: 68,
+        maxZoom: 12.8,
+        duration: map.loaded() ? 500 : 0,
+      });
+    } else if (mappableProperties.length === 1) {
+      map.flyTo({
+        center: [mappableProperties[0].longitude, mappableProperties[0].latitude],
+        zoom: 13,
+        duration: map.loaded() ? 500 : 0,
+      });
+    }
+  }, [mapboxGl, mappableProperties, navigate, onPropertyHover]);
+
+  useEffect(() => {
+    markersRef.current.forEach((marker) => {
+      const markerElement = marker.getElement?.();
+      if (!markerElement) return;
+
+      setLandingMapPinHighlight(
+        markerElement,
+        markerElement.dataset.propertyId === hoveredPropertyId
+      );
+    });
+  }, [hoveredPropertyId, mappableProperties]);
+
+  if (mapError) {
+    return (
+      <FallbackLandingListingsMap
+        properties={properties}
+        hoveredPropertyId={hoveredPropertyId}
+        onPropertyHover={onPropertyHover}
+      />
+    );
+  }
+
+  return (
+    <LandingMapShell
+      countLabel={`${mappableProperties.length} pins`}
+      hoveredProperty={hoveredProperty}
+      mapBody={
+        <div
+          ref={mapContainerRef}
+          className="h-[340px] w-full bg-[#dcebe4] sm:h-[420px] md:h-[calc(100vh-7rem)] md:min-h-[360px] md:max-h-[640px]"
+        />
+      }
+    />
+  );
+}
+
+function FallbackLandingListingsMap({ properties, hoveredPropertyId, onPropertyHover }) {
   const pins = properties.map((property, index) => ({
     property,
     position: getLandingMapPinPosition(property, index),
@@ -1184,20 +1376,10 @@ function LandingListingsMap({ properties, hoveredPropertyId, onPropertyHover }) 
   );
 
   return (
-    <aside className="order-1 md:sticky md:top-24 md:order-2">
-      <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
-          <div>
-            <p className="text-sm font-black text-[#102426]">Map view</p>
-            <p className="text-xs font-bold text-[#526260]">
-              Hover a property to see its map dot.
-            </p>
-          </div>
-          <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
-            {properties.length} pins
-          </span>
-        </div>
-
+    <LandingMapShell
+      countLabel={`${properties.length} pins`}
+      hoveredProperty={hoveredProperty}
+      mapBody={
         <div className="relative h-[340px] overflow-hidden bg-[#dcebe4] sm:h-[420px] md:h-[calc(100vh-7rem)] md:min-h-[360px] md:max-h-[640px]">
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(23,63,63,0.08)_1px,transparent_1px),linear-gradient(0deg,rgba(23,63,63,0.08)_1px,transparent_1px)] bg-[size:74px_74px]" />
           <div className="absolute left-[-12%] top-[52%] h-10 w-[130%] -rotate-6 bg-white/85 shadow-sm" />
@@ -1235,7 +1417,30 @@ function LandingListingsMap({ properties, hoveredPropertyId, onPropertyHover }) 
               </Link>
             );
           })}
+        </div>
+      }
+    />
+  );
+}
 
+function LandingMapShell({ countLabel, hoveredProperty, mapBody }) {
+  return (
+    <aside className="order-1 md:sticky md:top-24 md:order-2">
+      <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
+          <div>
+            <p className="text-sm font-black text-[#102426]">Map view</p>
+            <p className="text-xs font-bold text-[#526260]">
+              Hover a property to see its map dot.
+            </p>
+          </div>
+          <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+            {countLabel}
+          </span>
+        </div>
+
+        <div className="relative overflow-hidden">
+          {mapBody}
           {hoveredProperty && (
             <div className="absolute bottom-3 left-3 z-30 max-w-[min(17rem,calc(100%-1.5rem))] rounded-xl bg-white p-3 shadow-xl ring-1 ring-[#d7e6df]">
               <p className="truncate text-sm font-black text-[#102426]">
@@ -1254,6 +1459,97 @@ function LandingListingsMap({ properties, hoveredPropertyId, onPropertyHover }) 
         </div>
       </div>
     </aside>
+  );
+}
+
+function loadLandingMapboxGl() {
+  if (window.mapboxgl) {
+    return Promise.resolve(window.mapboxgl);
+  }
+
+  if (!document.querySelector("link[data-mapbox-gl='true']")) {
+    const mapboxStyles = document.createElement("link");
+    mapboxStyles.rel = "stylesheet";
+    mapboxStyles.href = "https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css";
+    mapboxStyles.dataset.mapboxGl = "true";
+    document.head.appendChild(mapboxStyles);
+  }
+
+  const existingScript = document.querySelector("script[data-mapbox-gl='true']");
+  if (existingScript) {
+    return new Promise((resolve, reject) => {
+      existingScript.addEventListener("load", () => resolve(window.mapboxgl), {
+        once: true,
+      });
+      existingScript.addEventListener("error", reject, { once: true });
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const mapboxScript = document.createElement("script");
+    mapboxScript.src = "https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js";
+    mapboxScript.async = true;
+    mapboxScript.dataset.mapboxGl = "true";
+    mapboxScript.addEventListener("load", () => resolve(window.mapboxgl), {
+      once: true,
+    });
+    mapboxScript.addEventListener("error", reject, { once: true });
+    document.head.appendChild(mapboxScript);
+  });
+}
+
+function createLandingMapPinElement(property) {
+  const isApproximatePin = property.mapAccuracy === "approximate";
+  const hasSpecial = Boolean(getPropertySpecialLabel(property));
+  const markerElement = document.createElement("button");
+  const pinDotElement = document.createElement("span");
+  markerElement.type = "button";
+  markerElement.dataset.propertyId = property.id;
+  markerElement.dataset.approximatePin = String(isApproximatePin);
+  markerElement.dataset.hasSpecial = String(hasSpecial);
+  markerElement.className = "group flex h-7 w-7 items-center justify-center rounded-full focus:outline-none";
+  markerElement.title = property.name || "Preview property";
+  markerElement.setAttribute(
+    "aria-label",
+    `${property.name || "Property"} map pin. Preview property.`
+  );
+  pinDotElement.dataset.landingMapPinDot = "true";
+  pinDotElement.className = [
+    "block h-3.5 w-3.5 rounded-full border-2 shadow-[0_2px_7px_rgba(16,36,38,0.28)] transition group-hover:scale-125 group-focus:scale-125",
+    isApproximatePin
+      ? "border-white bg-[#8a5b0a]"
+      : "border-white bg-[#173f3f]",
+    hasSpecial
+      ? "ring-2 ring-[#f2b84b] ring-offset-1 ring-offset-white group-hover:ring-4"
+      : "",
+  ].join(" ");
+  markerElement.appendChild(pinDotElement);
+
+  return markerElement;
+}
+
+function setLandingMapPinHighlight(markerElement, isHighlighted) {
+  const pinDotElement = markerElement.querySelector("[data-landing-map-pin-dot='true']");
+  if (!pinDotElement) return;
+
+  const hasSpecial = markerElement.dataset.hasSpecial === "true";
+
+  markerElement.style.zIndex = isHighlighted ? "30" : "";
+  pinDotElement.classList.toggle("scale-125", isHighlighted);
+  pinDotElement.classList.toggle("border-[#102426]", isHighlighted);
+  pinDotElement.classList.toggle("bg-[#f2b84b]", isHighlighted);
+  pinDotElement.classList.toggle("ring-4", isHighlighted);
+  pinDotElement.classList.toggle("ring-[#f2b84b]", isHighlighted || hasSpecial);
+  pinDotElement.classList.toggle("ring-offset-1", isHighlighted || hasSpecial);
+  pinDotElement.classList.toggle("ring-offset-white", isHighlighted || hasSpecial);
+  pinDotElement.classList.toggle("border-white", !isHighlighted);
+  pinDotElement.classList.toggle(
+    "bg-[#8a5b0a]",
+    !isHighlighted && markerElement.dataset.approximatePin === "true"
+  );
+  pinDotElement.classList.toggle(
+    "bg-[#173f3f]",
+    !isHighlighted && markerElement.dataset.approximatePin !== "true"
   );
 }
 
