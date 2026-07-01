@@ -1337,8 +1337,8 @@ export default function PublicPropertyListing() {
 
         setCompareFloorPlanItems(nextCompareFloorPlanItems);
 
-        if (property?.id && !comparePropertyIds.includes(property.id)) {
-            setComparePropertyIds(toggleComparePropertyId(property.id));
+        if (!isFloorPlanCompared && property?.id && comparePropertyIds.includes(property.id)) {
+            setComparePropertyIds(removeComparePropertyId(property.id));
         }
 
         setCompareMessage(
