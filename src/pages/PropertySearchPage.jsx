@@ -1934,11 +1934,6 @@ function RequestInfoModal({ property, searchParams, onClose, onSubmitted }) {
       return;
     }
 
-    if (!form.smsConsent) {
-      setFormError("Please agree to receive text messages before submitting.");
-      return;
-    }
-
     const budgetQualificationMessage = getBudgetQualificationMessage(
       form.bedrooms,
       form.budget
@@ -1972,6 +1967,8 @@ function RequestInfoModal({ property, searchParams, onClose, onSubmitted }) {
       recommendedPropertyIds: [],
       token: `lead-${Date.now()}`,
       contactMethod: form.contactMethod || "Not selected",
+      smsConsent: form.smsConsent,
+      smsConsentAt: form.smsConsent ? new Date().toISOString() : null,
       createdAt: new Date().toISOString(),
       utmSource: adTracking.utmSource,
       utmMedium: adTracking.utmMedium,
@@ -1998,6 +1995,8 @@ function RequestInfoModal({ property, searchParams, onClose, onSubmitted }) {
           budget: savedLead.budget,
           moveIn: savedLead.moveIn,
           contactMethod: savedLead.contactMethod,
+          smsConsent: form.smsConsent,
+          smsConsentAt: leadPayload.smsConsentAt,
           utmSource: savedLead.utmSource,
           utmMedium: savedLead.utmMedium,
           utmCampaign: savedLead.utmCampaign,
@@ -2151,14 +2150,13 @@ function RequestInfoModal({ property, searchParams, onClose, onSubmitted }) {
               type="checkbox"
               checked={form.smsConsent}
               onChange={(event) => handleChange("smsConsent", event.target.checked)}
-              required
               className="mt-1 h-4 w-4 shrink-0 accent-[#173f3f]"
             />
             <span>
               <strong className="block text-[#102426]">
-                Text Message Consent
+                Optional Text Message Consent
               </strong>
-              I agree to receive recurring text messages from Below Market
+              Optional: I agree to receive recurring text messages from Below Market
               Apartments about apartment search help, property recommendations,
               tour coordination, and follow-up at the phone number I provided.
               Message frequency varies. Message and data rates may apply. Reply{" "}

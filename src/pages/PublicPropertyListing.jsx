@@ -1606,16 +1606,11 @@ export default function PublicPropertyListing() {
             return;
         }
 
-        if (!leadForm.smsConsent) {
-            setShowSidebarError(true);
-            setLeadFormError("Please agree to receive text messages before submitting.");
-            return;
-        }
-
         setShowSidebarError(false);
         setLeadFormError("");
 
         const createdAt = new Date().toISOString();
+        const smsConsentAt = leadForm.smsConsent ? createdAt : null;
         const sourcePropertyId = property?.id || propertyId;
         const sourcePropertyName = property?.name || propertyId;
         const selectedSpecialLabel =
@@ -1686,6 +1681,8 @@ export default function PublicPropertyListing() {
                     ? "medium"
                     : "normal", contactMethod: leadForm.contactMethod || null,
             moveInDate: leadForm.moveInDate || null,
+            smsConsent: leadForm.smsConsent,
+            smsConsentAt,
             leadScore: getLeadScore(),
             leadIntent: getLeadIntent(),
 
@@ -1711,7 +1708,9 @@ export default function PublicPropertyListing() {
             notes: leadNotes,
             recommendedPropertyIds: [sourcePropertyId].filter(Boolean),
             token: `lead-${Date.now()}`,
-            contactMethod: leadForm.contactMethod || "Text",
+            contactMethod: leadForm.contactMethod || "Not selected",
+            smsConsent: leadForm.smsConsent,
+            smsConsentAt,
             createdAt,
             landingPage: `${window.location.pathname}${window.location.search}`,
             referrer: document.referrer || "",
@@ -1967,7 +1966,15 @@ export default function PublicPropertyListing() {
                         className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
                     />
                     <span>
-                        I agree to receive texts about this property. Reply STOP to opt out.
+                        Optional: I agree to receive texts about this property. Message frequency varies. Reply HELP for help or STOP to opt out. Consent is not required to request apartment help. View our{" "}
+                        <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
+                            Privacy Policy
+                        </Link>{" "}
+                        and{" "}
+                        <Link className="font-black text-[#173f3f] underline" to="/terms-and-conditions">
+                            Terms and Conditions
+                        </Link>
+                        .
                     </span>
                 </label>
 
@@ -3023,7 +3030,15 @@ export default function PublicPropertyListing() {
                                                 className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
                                             />
                                             <span>
-                                                I agree to receive texts about this property. Reply STOP to opt out.
+                                                Optional: I agree to receive texts about this property. Message frequency varies. Reply HELP for help or STOP to opt out. Consent is not required to request apartment help. View our{" "}
+                                                <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
+                                                    Privacy Policy
+                                                </Link>{" "}
+                                                and{" "}
+                                                <Link className="font-black text-[#173f3f] underline" to="/terms-and-conditions">
+                                                    Terms and Conditions
+                                                </Link>
+                                                .
                                             </span>
                                         </label>
 
