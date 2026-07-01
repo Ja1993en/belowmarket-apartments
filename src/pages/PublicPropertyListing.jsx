@@ -1377,23 +1377,23 @@ export default function PublicPropertyListing() {
         setCompareMessage("Compare board cleared.");
     };
 
-    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3.5 xl:p-4";
-    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-3";
+    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3 xl:p-3.5";
+    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-2.5";
     const intakeGridSpacingClass = shouldShowCompareList
         ? "mt-1.5 gap-1.5"
-        : "mt-2 gap-2";
+        : "mt-1.5 gap-1.5";
     const intakeFieldSizeClass = shouldShowCompareList
-        ? "md:py-1.5 lg:py-1.5 xl:py-1.5 xl:text-sm"
-        : "md:py-2 lg:py-2 xl:py-2.5 xl:text-sm";
+        ? "md:py-1.5 lg:py-1.5 xl:py-1.5 !text-[13px]"
+        : "md:py-1.5 lg:py-1.5 xl:py-2 !text-[13px]";
     const intakeConsentClass = shouldShowCompareList
         ? "mt-2 p-2 text-[10px] leading-3"
-        : "mt-3 p-2.5 text-[11px] leading-4";
+        : "mt-2.5 p-2 text-[10.5px] leading-4";
     const intakeSubmitClass = shouldShowCompareList
         ? "mt-2 py-2.5 text-sm"
-        : "mt-3 py-3 text-sm";
+        : "mt-2.5 py-2.5 text-sm";
     const intakeFinePrintClass = shouldShowCompareList
         ? "mt-1.5 text-[10px] leading-3"
-        : "mt-2 text-[10px] leading-4 xl:text-xs";
+        : "mt-1.5 text-[10px] leading-4";
     const intakeCardHeightClass = shouldShowCompareList
         ? "md:min-h-[calc(100vh-12rem)]"
         : "md:min-h-[calc(100vh-8rem)]";
@@ -1824,7 +1824,7 @@ export default function PublicPropertyListing() {
                     Confirm specials, fees, and availability before touring.
                 </p>
 
-                <div className={`mt-2.5 truncate rounded-xl px-3 py-2 text-xs font-black ${
+                <div className={`mt-2 line-clamp-2 rounded-lg px-2.5 py-1.5 text-[11px] font-black leading-4 ${
                     hasPropertySpecial
                         ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
                         : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
@@ -1966,7 +1966,7 @@ export default function PublicPropertyListing() {
                         className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
                     />
                     <span>
-                        Optional: I agree to receive texts about this property. Message frequency varies. Reply HELP for help or STOP to opt out. Consent is not required to request apartment help. View our{" "}
+                        Optional: I agree to receive texts about this property. Msg frequency varies. Msg/data rates may apply. Reply HELP or STOP. Consent is not required. View our{" "}
                         <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
                             Privacy Policy
                         </Link>{" "}
@@ -2881,7 +2881,7 @@ export default function PublicPropertyListing() {
                                             Confirm specials, fees, and availability before touring.
                                         </p>
 
-                                        <div className={`mt-2.5 truncate rounded-xl px-3 py-2 text-xs font-black ${
+                                        <div className={`mt-2 line-clamp-2 rounded-lg px-2.5 py-1.5 text-[11px] font-black leading-4 ${
                                                 hasPropertySpecial
                                                     ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
                                                     : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
@@ -3023,7 +3023,7 @@ export default function PublicPropertyListing() {
                                                 className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
                                             />
                                             <span>
-                                                Optional: I agree to receive texts about this property. Message frequency varies. Reply HELP for help or STOP to opt out. Consent is not required to request apartment help. View our{" "}
+                                                Optional: I agree to receive texts about this property. Msg frequency varies. Msg/data rates may apply. Reply HELP or STOP. Consent is not required. View our{" "}
                                                 <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
                                                     Privacy Policy
                                                 </Link>{" "}
