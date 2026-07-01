@@ -2322,13 +2322,6 @@ export default function PublicPropertyListing() {
                         Ask an Apartment Locator
                     </button>
 
-                    <a
-                        href="#request-info"
-                        className="hidden items-center gap-1.5 rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783] md:inline-flex"
-                    >
-                        <Search className="h-3.5 w-3.5" aria-hidden="true" />
-                        Ask an Apartment Locator
-                    </a>
                 </div>
             </header>
 
