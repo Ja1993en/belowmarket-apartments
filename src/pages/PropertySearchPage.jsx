@@ -1402,9 +1402,10 @@ function MobileMapPropertySheet({
         <button
           type="button"
           onClick={onViewDetails}
-          className="rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
         >
-          View details
+          <Building2 className="h-4 w-4 shrink-0" />
+          <span>View Property</span>
         </button>
         <button
           type="button"
@@ -2468,9 +2469,10 @@ function SearchResultCard({
         <div className="mt-auto grid grid-cols-2 gap-1 pt-3 md:grid-cols-3 md:pt-1.5 xl:gap-1.5 xl:pt-3">
           <Link
             to={cardHref}
-            className="inline-flex items-center justify-center rounded-lg bg-[#173f3f] px-2 py-2 text-center text-[11px] font-black text-white transition hover:bg-[#102426] sm:text-xs md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-2 py-2 text-center text-[11px] font-black text-white transition hover:bg-[#102426] sm:text-xs md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5"
           >
-            View details
+            <Building2 className="h-3.5 w-3.5 shrink-0" />
+            <span>View Property</span>
           </Link>
           <button
             type="button"
