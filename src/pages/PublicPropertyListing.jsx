@@ -2818,12 +2818,12 @@ export default function PublicPropertyListing() {
                                         id="location"
                                         className="scroll-mt-32 rounded-3xl border border-[#d7e6df] bg-white shadow-sm"
                                     >
-                                        <div className="grid gap-0 xl:grid-cols-[minmax(190px,0.34fr)_minmax(0,1fr)] xl:items-start">
-                                            <div className="border-b border-[#edf4ef] p-5 xl:border-b-0 xl:border-r xl:py-4">
+                                        <div className="grid gap-0">
+                                            <div className="border-b border-[#edf4ef] p-5">
                                                 <p className="text-sm font-black text-[#1f6f63]">
                                                     Location
                                                 </p>
-                                                <h2 className="mt-2 text-2xl font-black leading-tight text-[#102426] xl:text-xl">
+                                                <h2 className="mt-2 text-2xl font-black leading-tight text-[#102426]">
                                                     Map and nearby essentials
                                                 </h2>
                                                 <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]">
@@ -2831,7 +2831,7 @@ export default function PublicPropertyListing() {
                                                 </p>
                                             </div>
 
-                                            <div className="p-4 md:p-5 xl:relative xl:-top-5 xl:mb-[-1.25rem] xl:px-3 xl:pb-3 xl:pt-0">
+                                            <div className="p-4 md:p-5">
                                                 <PropertyLocationMap
                                                     property={property}
                                                     addressLabel={addressLabel}
