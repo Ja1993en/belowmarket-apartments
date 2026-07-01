@@ -1798,45 +1798,31 @@ export default function PublicPropertyListing() {
             <div
                 className={`${intakePanelPaddingClass} flex flex-1 flex-col overflow-y-auto ${intakePanelLayoutClass}`}
             >
-                <div className="rounded-xl bg-[#e7f3ee] p-3 ring-1 ring-[#a9cfc2]">
-                    <div className="flex items-start justify-between gap-3">
-                        <div>
-                            <p className="text-[11px] font-black uppercase tracking-wide text-[#1f6f63]">
-                                Free locator help
-                            </p>
+                <div className="flex items-start justify-between gap-3">
+                    <div>
+                        <p className="text-[11px] font-black uppercase tracking-wide text-[#1f6f63]">
+                            Free locator help
+                        </p>
 
-                            <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
-                                Get verified pricing before you tour
-                            </h2>
-                        </div>
-
-                        {isModal && (
-                            <button
-                                type="button"
-                                onClick={() => setShowMobileIntakeModal(false)}
-                                className="rounded-lg bg-white px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]"
-                            >
-                                Close
-                            </button>
-                        )}
+                        <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
+                            Get verified pricing
+                        </h2>
                     </div>
 
-                    <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
-                        Confirm specials, fees, and availability before touring.
-                    </p>
-
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                        <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
-                            Free renter help
-                        </span>
-                        <span className="rounded-full bg-[#fff8e6] px-2.5 py-1 text-[10px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                            Dallas locator
-                        </span>
-                        <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
-                            No obligation
-                        </span>
-                    </div>
+                    {isModal && (
+                        <button
+                            type="button"
+                            onClick={() => setShowMobileIntakeModal(false)}
+                            className="rounded-lg bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]"
+                        >
+                            Close
+                        </button>
+                    )}
                 </div>
+
+                <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
+                    Confirm specials, fees, and availability before touring.
+                </p>
 
                 <div className={`mt-2 line-clamp-2 rounded-lg px-2.5 py-1.5 text-[11px] font-black leading-4 ${
                     hasPropertySpecial
@@ -1844,7 +1830,7 @@ export default function PublicPropertyListing() {
                         : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
                 }`}>
                     {hasPropertySpecial
-                        ? `Special to verify: ${propertySpecialLabel}`
+                        ? `Listed special: ${propertySpecialLabel}`
                         : "Ask us to confirm current pricing and availability."}
                 </div>
 
@@ -2011,7 +1997,7 @@ export default function PublicPropertyListing() {
                         ? "Sending..."
                         : leadSubmitted
                             ? "Request Sent"
-                            : "Send Me Verified Pricing"}
+                            : "Text me verified details"}
                 </button>
 
                 <p className={`font-semibold text-[#7b8b88] ${intakeFinePrintClass}`}>
@@ -2883,31 +2869,17 @@ export default function PublicPropertyListing() {
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
                                     <div className={`${intakePanelPaddingClass} flex flex-1 flex-col ${intakePanelLayoutClass}`}>
-                                        <div className="rounded-xl bg-[#e7f3ee] p-3 ring-1 ring-[#a9cfc2]">
-                                            <p className="text-[11px] font-black uppercase tracking-wide text-[#1f6f63]">
-                                                Free locator help
-                                            </p>
+                                        <p className="text-[11px] font-black uppercase tracking-wide text-[#1f6f63]">
+                                            Free locator help
+                                        </p>
 
-                                            <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
-                                                Get verified pricing before you tour
-                                            </h2>
+                                        <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
+                                            Get verified pricing
+                                        </h2>
 
-                                            <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
-                                                Confirm specials, fees, and availability before touring.
-                                            </p>
-
-                                            <div className="mt-2 flex flex-wrap gap-1.5">
-                                                <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
-                                                    Free renter help
-                                                </span>
-                                                <span className="rounded-full bg-[#fff8e6] px-2.5 py-1 text-[10px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                                                    Dallas locator
-                                                </span>
-                                                <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
-                                                    No obligation
-                                                </span>
-                                            </div>
-                                        </div>
+                                        <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
+                                            Confirm specials, fees, and availability before touring.
+                                        </p>
 
                                         <div className={`mt-2 line-clamp-2 rounded-lg px-2.5 py-1.5 text-[11px] font-black leading-4 ${
                                                 hasPropertySpecial
@@ -2915,7 +2887,7 @@ export default function PublicPropertyListing() {
                                                     : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
                                             }`}>
                                             {hasPropertySpecial
-                                                ? `Special to verify: ${propertySpecialLabel}`
+                                                ? `Listed special: ${propertySpecialLabel}`
                                                 : "Ask us to confirm current pricing and availability."}
                                         </div>
 
@@ -3082,7 +3054,7 @@ export default function PublicPropertyListing() {
                                                 ? "Sending..."
                                                 : leadSubmitted
                                                     ? "Request Sent"
-                                                    : "Send Me Verified Pricing"}
+                                                    : "Text me verified details"}
                                         </button>
 
                                         <p className={`font-semibold text-[#7b8b88] ${intakeFinePrintClass}`}>
