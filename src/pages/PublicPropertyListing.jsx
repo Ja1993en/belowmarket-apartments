@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { Bath, BedDouble, Ruler, Scale, Search } from "lucide-react";
+import { Bath, BedDouble, Building2, Ruler, Scale, Search } from "lucide-react";
 import {
     DEFAULT_PROPERTY_IMAGE,
     getPhotoImageUrl,
@@ -5059,9 +5059,10 @@ function FloorPlanCard({
                 <button
                     type="button"
                     onClick={onViewDetails}
-                    className="rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
                 >
-                    View Details
+                    <Building2 className="h-4 w-4 shrink-0" />
+                    <span>View Unit</span>
                 </button>
 
                 {isCompared && (
