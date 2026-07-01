@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Building2, ChevronLeft, ChevronRight, MapPin, Navigation, Scale, Search, X } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, MapPin, MessageSquare, Navigation, Scale, Search, X } from "lucide-react";
 import CompareSavedOptionsPanel from "../components/propertySearch/CompareSavedOptionsPanel";
 import { getPublicPropertySummaries } from "../data/propertyStorage";
 import { saveLocalLead } from "../data/leadStorage";
@@ -1410,9 +1410,10 @@ function MobileMapPropertySheet({
         <button
           type="button"
           onClick={onRequestInfo}
-          className="rounded-xl bg-[#f2b84b] px-4 py-3 text-sm font-black !text-[#102426] ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426]"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#f2b84b] px-4 py-3 text-sm font-black !text-[#102426] ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426]"
         >
-          Request info
+          <MessageSquare className="h-4 w-4 shrink-0" />
+          <span>Ask a Locator</span>
         </button>
       </div>
     </div>
@@ -2387,9 +2388,10 @@ function SearchResultCard({
         <button
           type="button"
           onClick={onRequestInfo}
-          className="absolute inset-x-0 bottom-0 z-20 bg-[#f2b84b]/95 py-1.5 text-center text-[11px] font-black uppercase tracking-wide text-[#102426] shadow-[0_-6px_16px_rgba(16,36,38,0.14)] transition hover:bg-[#f9d783] md:hidden"
+          className="absolute inset-x-0 bottom-0 z-20 inline-flex items-center justify-center gap-1.5 bg-[#f2b84b]/95 py-1.5 text-center text-[11px] font-black uppercase tracking-wide text-[#102426] shadow-[0_-6px_16px_rgba(16,36,38,0.14)] transition hover:bg-[#f9d783] md:hidden"
         >
-          Request Info
+          <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+          <span>Ask a Locator</span>
         </button>
       </div>
 
@@ -2477,9 +2479,10 @@ function SearchResultCard({
           <button
             type="button"
             onClick={onRequestInfo}
-            className="hidden rounded-lg bg-[#f2b84b] px-2 py-2 text-center text-[11px] font-black text-[#102426] transition hover:bg-[#f9d783] md:inline-flex md:items-center md:justify-center md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5"
+            className="hidden rounded-lg bg-[#f2b84b] px-2 py-2 text-center text-[11px] font-black text-[#102426] transition hover:bg-[#f9d783] md:inline-flex md:items-center md:justify-center md:gap-1.5 md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5"
           >
-            Request Info
+            <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+            <span>Ask a Locator</span>
           </button>
           <button
             type="button"
