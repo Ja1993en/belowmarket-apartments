@@ -43,6 +43,9 @@ export default function SendPropertiesPage() {
   const [smsError, setSmsError] = useState("");
   const [isSendingSms, setIsSendingSms] = useState(false);
   const recommendedPropertyIds = lead?.recommendedPropertyIds || [];
+  const hasSmsConsent = Boolean(lead?.smsConsent);
+  const smsConsentWarning =
+    "This lead did not opt in to SMS. Use email or call unless the renter opts into texts later.";
 
   const recommendedProperties = recommendedPropertyIds
     .map((propertyId) =>
@@ -300,6 +303,11 @@ export default function SendPropertiesPage() {
   const textRecommendationsToRenter = async () => {
     if (!lead) return;
 
+    if (!hasSmsConsent) {
+      setSaveError(smsConsentWarning);
+      return;
+    }
+
     if (selectedPropertyIds.length === 0) {
       setSaveError("Select at least one property before texting the renter.");
       return;
@@ -324,6 +332,11 @@ export default function SendPropertiesPage() {
 
   const sendRecommendationsSms = async () => {
     if (!lead) return;
+
+    if (!hasSmsConsent) {
+      setSmsError(smsConsentWarning);
+      return;
+    }
 
     if (selectedPropertyIds.length === 0) {
       setSmsError("Select at least one property before sending an SMS.");
@@ -502,11 +515,17 @@ export default function SendPropertiesPage() {
               </p>
             )}
 
+            {!hasSmsConsent && (
+              <p className="mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                {smsConsentWarning}
+              </p>
+            )}
+
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={sendRecommendationsSms}
-                disabled={isSendingSms || isSavingSelections || selectedPropertyIds.length === 0}
+                disabled={!hasSmsConsent || isSendingSms || isSavingSelections || selectedPropertyIds.length === 0}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-6 py-4 text-sm font-black text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
               >
                 <Send className="h-4 w-4" />
@@ -516,7 +535,7 @@ export default function SendPropertiesPage() {
               <button
                 type="button"
                 onClick={textRecommendationsToRenter}
-                disabled={isSavingSelections || selectedPropertyIds.length === 0}
+                disabled={!hasSmsConsent || isSavingSelections || selectedPropertyIds.length === 0}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#e7f3ee] px-6 py-4 text-sm font-black text-[#173f3f] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:bg-[#f5f8f1] disabled:text-[#78908a]"
               >
                 <MessageSquare className="h-4 w-4" />
@@ -921,10 +940,16 @@ export default function SendPropertiesPage() {
               </p>
             )}
 
+            {!hasSmsConsent && (
+              <p className="mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                {smsConsentWarning}
+              </p>
+            )}
+
             <button
               type="button"
               onClick={sendRecommendationsSms}
-              disabled={isSendingSms || isSavingSelections || selectedPropertyIds.length === 0}
+              disabled={!hasSmsConsent || isSendingSms || isSavingSelections || selectedPropertyIds.length === 0}
               className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426] disabled:cursor-not-allowed disabled:bg-[#b8d9d0]"
             >
               <Send className="h-4 w-4" />

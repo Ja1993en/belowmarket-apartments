@@ -122,6 +122,8 @@ export default function StartPage() {
       [field]: value,
     }));
   };
+  const shouldShowSmsConsentNotice =
+    form.contactMethod === "Text" && !form.smsConsent;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -361,8 +363,8 @@ export default function StartPage() {
                   recommendations, tour coordination, and follow-up at the phone
                   number I provided. Message frequency varies. Message and data
                   rates may apply. Reply <strong>HELP</strong> for help or{" "}
-                  <strong>STOP</strong> to opt out. Consent is not a condition of
-                  renting an apartment. View our{" "}
+                  <strong>STOP</strong> to opt out. Consent is not required to
+                  request apartment help. View our{" "}
                   <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
                     Privacy Policy
                   </Link>{" "}
@@ -373,6 +375,12 @@ export default function StartPage() {
                   .
                 </span>
               </label>
+
+              {shouldShowSmsConsentNotice && (
+                <p className="mt-2 rounded-xl bg-[#fff8e6] px-4 py-3 text-xs font-bold leading-5 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                  To receive text updates, check the optional SMS consent box. You can still submit without it and we will follow up by email or call.
+                </p>
+              )}
 
               <button
                 type="submit"

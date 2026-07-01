@@ -97,7 +97,7 @@ export function TermsAndConditionsPage() {
         </p>
         <p>
           Message frequency varies. Message and data rates may apply. Consent is
-          not a condition of purchasing or renting an apartment.
+          not required to request apartment help.
         </p>
       </LegalSection>
 

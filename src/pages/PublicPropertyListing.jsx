@@ -1469,6 +1469,8 @@ export default function PublicPropertyListing() {
         smsConsent: false,
 
     });
+    const shouldShowSmsConsentNotice =
+        leadForm.contactMethod === "Text" && !leadForm.smsConsent;
 
     const getEmptyLeadForm = (selectedUnit = "") => ({
         name: "",
@@ -1966,7 +1968,7 @@ export default function PublicPropertyListing() {
                         className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
                     />
                     <span>
-                        Optional: I agree to receive texts about this property. Msg frequency varies. Msg/data rates may apply. Reply HELP or STOP. Consent is not required. View our{" "}
+                        Optional: I agree to receive texts about this property. Msg frequency varies. Msg/data rates may apply. Reply HELP or STOP. Consent is not required to request apartment help. View our{" "}
                         <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
                             Privacy Policy
                         </Link>{" "}
@@ -1977,6 +1979,12 @@ export default function PublicPropertyListing() {
                         .
                     </span>
                 </label>
+
+                {shouldShowSmsConsentNotice && (
+                    <p className="mt-2 rounded-xl bg-[#fff8e6] px-3 py-2 text-xs font-bold leading-5 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                        To receive text updates, check the optional SMS consent box. You can still submit without it and we will follow up by email or call.
+                    </p>
+                )}
 
                 {showSidebarError && (
                     <p className="mt-2 text-xs font-semibold text-[#e4572e]">
@@ -3023,7 +3031,7 @@ export default function PublicPropertyListing() {
                                                 className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
                                             />
                                             <span>
-                                                Optional: I agree to receive texts about this property. Msg frequency varies. Msg/data rates may apply. Reply HELP or STOP. Consent is not required. View our{" "}
+                                                Optional: I agree to receive texts about this property. Msg frequency varies. Msg/data rates may apply. Reply HELP or STOP. Consent is not required to request apartment help. View our{" "}
                                                 <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
                                                     Privacy Policy
                                                 </Link>{" "}
@@ -3034,6 +3042,12 @@ export default function PublicPropertyListing() {
                                                 .
                                             </span>
                                         </label>
+
+                                        {shouldShowSmsConsentNotice && (
+                                            <p className="mt-2 rounded-xl bg-[#fff8e6] px-3 py-2 text-xs font-bold leading-5 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                                                To receive text updates, check the optional SMS consent box. You can still submit without it and we will follow up by email or call.
+                                            </p>
+                                        )}
 
                                         {showSidebarError && (
                                             <p className="mt-2 text-xs font-semibold text-[#e4572e]">
