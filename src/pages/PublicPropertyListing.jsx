@@ -1377,23 +1377,23 @@ export default function PublicPropertyListing() {
         setCompareMessage("Compare board cleared.");
     };
 
-    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3 xl:p-3.5";
-    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-2.5";
+    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3.5";
+    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-3";
     const intakeGridSpacingClass = shouldShowCompareList
         ? "mt-1.5 gap-1.5"
-        : "mt-1.5 gap-1.5";
+        : "mt-2 gap-2";
     const intakeFieldSizeClass = shouldShowCompareList
         ? "md:py-1.5 lg:py-1.5 xl:py-1.5 !text-[13px]"
-        : "md:py-1.5 lg:py-1.5 xl:py-2 !text-[13px]";
+        : "md:py-2 lg:py-2 xl:py-2 !text-sm";
     const intakeConsentClass = shouldShowCompareList
         ? "mt-2 p-2 text-[10px] leading-3"
-        : "mt-2.5 p-2 text-[10.5px] leading-4";
+        : "mt-3 p-2.5 text-[11px] leading-4";
     const intakeSubmitClass = shouldShowCompareList
         ? "mt-2 py-2.5 text-sm"
-        : "mt-2.5 py-2.5 text-sm";
+        : "mt-3 py-3 text-sm";
     const intakeFinePrintClass = shouldShowCompareList
         ? "mt-1.5 text-[10px] leading-3"
-        : "mt-1.5 text-[10px] leading-4";
+        : "mt-2 text-[10px] leading-4";
     const intakeCardHeightClass = shouldShowCompareList
         ? "md:min-h-[calc(100vh-12rem)]"
         : "md:min-h-[calc(100vh-8rem)]";
