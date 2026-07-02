@@ -52,22 +52,37 @@ const NEARBY_PLACE_TYPES = [
     {
         label: "Walmart",
         type: "walmart",
+        color: "bg-[#2d7dd2]",
+        logo: "W",
+        logoUrl: "/brand-logos/walmart.png",
     },
     {
         label: "Target",
         type: "target",
+        color: "bg-[#e4572e]",
+        logo: "T",
+        logoUrl: "https://logo.clearbit.com/target.com",
     },
     {
         label: "LA Fitness",
         type: "laFitness",
+        color: "bg-[#173f3f]",
+        logo: "LA",
+        logoUrl: "https://logo.clearbit.com/lafitness.com",
     },
     {
         label: "Planet Fitness",
         type: "planetFitness",
+        color: "bg-[#8a5b0a]",
+        logo: "PF",
+        logoUrl: "https://logo.clearbit.com/planetfitness.com",
     },
     {
         label: "Kroger",
         type: "kroger",
+        color: "bg-[#1f6f63]",
+        logo: "K",
+        logoUrl: "https://logo.clearbit.com/kroger.com",
     },
 ];
 const mapboxGeocodeRequests = new Map();
@@ -3897,30 +3912,42 @@ function PropertyLocationMap({
                 <MapLegendItem
                     color="bg-[#f2b84b]"
                     label="Property"
+                    logo="BMA"
+                    logoTextClassName="text-[#102426]"
                 />
                 <MapLegendItem
                     color="bg-[#2d7dd2]"
                     label="Walmart"
+                    logo="W"
+                    logoUrl="/brand-logos/walmart.png"
                     distance={getNearbyLegendDistance(nearbyPlaces, "walmart")}
                 />
                 <MapLegendItem
                     color="bg-[#e4572e]"
                     label="Target"
+                    logo="T"
+                    logoUrl="https://logo.clearbit.com/target.com"
                     distance={getNearbyLegendDistance(nearbyPlaces, "target")}
                 />
                 <MapLegendItem
                     color="bg-[#173f3f]"
                     label="LA Fitness"
+                    logo="LA"
+                    logoUrl="https://logo.clearbit.com/lafitness.com"
                     distance={getNearbyLegendDistance(nearbyPlaces, "laFitness")}
                 />
                 <MapLegendItem
                     color="bg-[#8a5b0a]"
                     label="Planet Fitness"
+                    logo="PF"
+                    logoUrl="https://logo.clearbit.com/planetfitness.com"
                     distance={getNearbyLegendDistance(nearbyPlaces, "planetFitness")}
                 />
                 <MapLegendItem
                     color="bg-[#1f6f63]"
                     label="Kroger"
+                    logo="K"
+                    logoUrl="https://logo.clearbit.com/kroger.com"
                     distance={getNearbyLegendDistance(nearbyPlaces, "kroger")}
                 />
             </div>
@@ -3978,10 +4005,32 @@ function fitMapToPropertyAndNearbyPlaces(
     });
 }
 
-function MapLegendItem({ color, label, distance }) {
+function MapLegendItem({
+    color,
+    label,
+    logo,
+    logoUrl,
+    logoTextClassName = "text-white",
+    distance,
+}) {
     return (
         <div className="flex w-fit max-w-full flex-none items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] sm:w-auto xl:min-w-[150px] xl:flex-none">
-            <span className={`h-3 w-3 shrink-0 rounded-full ${color}`} />
+            <span
+                className={`relative flex h-8 min-w-8 shrink-0 items-center justify-center rounded-xl px-1.5 text-[9px] font-black leading-none shadow-sm ring-1 ring-white ${color} ${logoTextClassName}`}
+            >
+                <span>{logo}</span>
+                {logoUrl && (
+                    <img
+                        src={logoUrl}
+                        alt=""
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full rounded-xl bg-white object-contain p-1"
+                        onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                        }}
+                    />
+                )}
+            </span>
             <span className="min-w-0 max-w-[7.5rem] truncate sm:max-w-none sm:flex-1">{label}</span>
             {distance && (
                 <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-[#526260]">
@@ -4269,32 +4318,28 @@ function createPropertyMapMarker(propertyName, isApproximatePin = false, address
 
 function createNearbyMapMarker(place) {
     const markerElement = document.createElement("div");
-    const colors = {
-        walmart: "bg-[#2d7dd2]",
-        target: "bg-[#e4572e]",
-        laFitness: "bg-[#173f3f]",
-        planetFitness: "bg-[#8a5b0a]",
-        kroger: "bg-[#1f6f63]",
-    };
-    const abbreviations = {
-        walmart: "W",
-        target: "T",
-        laFitness: "LA",
-        planetFitness: "PF",
-        kroger: "K",
-    };
+    const label = getCleanNearbyPlaceLabel(place);
+    const safeLogoUrl = escapeMapAttribute(place.logoUrl);
+    const fallbackLogo = escapeMapText(place.logo || label.slice(0, 2).toUpperCase());
+    const logoImageMarkup = safeLogoUrl
+        ? `<img src="${safeLogoUrl}" alt="" loading="lazy" class="absolute inset-0 h-full w-full rounded-full bg-white object-contain p-1.5" onerror="this.style.display='none'" />`
+        : "";
 
     markerElement.className = "group relative flex flex-col items-center outline-none";
-    markerElement.title = `${getCleanNearbyPlaceLabel(place)} - ${place.distanceMiles.toFixed(1)} miles away`;
+    markerElement.title = `${label} - ${place.distanceMiles.toFixed(1)} miles away`;
     markerElement.tabIndex = 0;
     markerElement.setAttribute("role", "button");
     markerElement.setAttribute("aria-label", markerElement.title);
     markerElement.innerHTML = `
-        ${getMapMarkerTooltipHtml(getCleanNearbyPlaceLabel(place), [
+        ${getMapMarkerTooltipHtml(label, [
             place.detail,
             `${place.distanceMiles.toFixed(1)} miles away`,
         ])}
-        <div class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white ${colors[place.type]} text-[10px] font-black text-white shadow-md">${abbreviations[place.type]}</div>
+        <div class="relative flex h-9 w-9 items-center justify-center rounded-full border-2 border-white ${place.color} text-[9px] font-black text-white shadow-md">
+            <span>${fallbackLogo}</span>
+            ${logoImageMarkup}
+        </div>
+        <div class="-mt-1.5 h-3 w-3 rotate-45 border-b-2 border-r-2 border-white ${place.color} shadow-sm"></div>
     `;
     attachMapMarkerTooltipEvents(markerElement);
 
@@ -4434,6 +4479,10 @@ function escapeMapText(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+function escapeMapAttribute(value) {
+    return escapeMapText(value).replace(/'/g, "&#39;");
 }
 
 function getFloorPlanCompareItem(property, plan) {
