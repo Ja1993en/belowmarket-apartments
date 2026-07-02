@@ -61,28 +61,28 @@ const NEARBY_PLACE_TYPES = [
         type: "target",
         color: "bg-[#e4572e]",
         logo: "T",
-        logoUrl: "https://logo.clearbit.com/target.com",
+        logoUrl: "/brand-logos/target.svg",
     },
     {
         label: "LA Fitness",
         type: "laFitness",
         color: "bg-[#173f3f]",
         logo: "LA",
-        logoUrl: "https://logo.clearbit.com/lafitness.com",
+        logoUrl: "/brand-logos/la-fitness.svg",
     },
     {
         label: "Planet Fitness",
         type: "planetFitness",
         color: "bg-[#8a5b0a]",
         logo: "PF",
-        logoUrl: "https://logo.clearbit.com/planetfitness.com",
+        logoUrl: "/brand-logos/planet-fitness.svg",
     },
     {
         label: "Kroger",
         type: "kroger",
         color: "bg-[#1f6f63]",
         logo: "K",
-        logoUrl: "https://logo.clearbit.com/kroger.com",
+        logoUrl: "/brand-logos/kroger.svg",
     },
 ];
 const mapboxGeocodeRequests = new Map();
@@ -3926,28 +3926,28 @@ function PropertyLocationMap({
                     color="bg-[#e4572e]"
                     label="Target"
                     logo="T"
-                    logoUrl="https://logo.clearbit.com/target.com"
+                    logoUrl="/brand-logos/target.svg"
                     distance={getNearbyLegendDistance(nearbyPlaces, "target")}
                 />
                 <MapLegendItem
                     color="bg-[#173f3f]"
                     label="LA Fitness"
                     logo="LA"
-                    logoUrl="https://logo.clearbit.com/lafitness.com"
+                    logoUrl="/brand-logos/la-fitness.svg"
                     distance={getNearbyLegendDistance(nearbyPlaces, "laFitness")}
                 />
                 <MapLegendItem
                     color="bg-[#8a5b0a]"
                     label="Planet Fitness"
                     logo="PF"
-                    logoUrl="https://logo.clearbit.com/planetfitness.com"
+                    logoUrl="/brand-logos/planet-fitness.svg"
                     distance={getNearbyLegendDistance(nearbyPlaces, "planetFitness")}
                 />
                 <MapLegendItem
                     color="bg-[#1f6f63]"
                     label="Kroger"
                     logo="K"
-                    logoUrl="https://logo.clearbit.com/kroger.com"
+                    logoUrl="/brand-logos/kroger.svg"
                     distance={getNearbyLegendDistance(nearbyPlaces, "kroger")}
                 />
             </div>
