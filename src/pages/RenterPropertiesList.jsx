@@ -57,7 +57,7 @@ const NEARBY_PLACE_TYPES = [
     type: "planetFitness",
     color: "bg-[#8a5b0a]",
     logo: "PF",
-    logoUrl: "https://www.google.com/s2/favicons?domain=planetfitness.com&sz=64",
+    logoUrl: "",
   },
   {
     label: "Kroger",
