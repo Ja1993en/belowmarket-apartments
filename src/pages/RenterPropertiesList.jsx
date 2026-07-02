@@ -31,11 +31,11 @@ const NEARBY_PLACE_RADIUS_MILES = 12;
 const mapboxGeocodeRequests = new Map();
 
 const NEARBY_PLACE_TYPES = [
-  { label: "Walmart", type: "walmart", color: "bg-[#2d7dd2]" },
-  { label: "Target", type: "target", color: "bg-[#e4572e]" },
-  { label: "LA Fitness", type: "laFitness", color: "bg-[#173f3f]" },
-  { label: "Planet Fitness", type: "planetFitness", color: "bg-[#8a5b0a]" },
-  { label: "Kroger", type: "kroger", color: "bg-[#1f6f63]" },
+  { label: "Walmart", type: "walmart", color: "bg-[#2d7dd2]", logo: "W" },
+  { label: "Target", type: "target", color: "bg-[#e4572e]", logo: "T" },
+  { label: "LA Fitness", type: "laFitness", color: "bg-[#173f3f]", logo: "LA" },
+  { label: "Planet Fitness", type: "planetFitness", color: "bg-[#8a5b0a]", logo: "PF" },
+  { label: "Kroger", type: "kroger", color: "bg-[#1f6f63]", logo: "K" },
 ];
 
 const NEARBY_PLACE_CATALOG = [
@@ -1164,13 +1164,19 @@ function RecommendationMapPanel({
       </div>
 
       <div className="flex max-h-32 flex-wrap items-center gap-2 overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <MapLegendItem color="bg-[#f2b84b]" label="Apartments" />
+        <MapLegendItem
+          color="bg-[#f2b84b]"
+          label="Apartments"
+          logo="BMA"
+          logoTextClassName="text-[#102426]"
+        />
 
         {NEARBY_PLACE_TYPES.map((placeType) => (
           <MapLegendItem
             key={placeType.type}
             color={placeType.color}
             label={placeType.label}
+            logo={placeType.logo}
             distance={getNearbyLegendDistance(nearbyPlaces, placeType.type)}
           />
         ))}
@@ -1421,10 +1427,20 @@ function setRecommendationMapPinHighlight(markerElement, isHighlighted) {
   pinDotElement.classList.toggle("ring-4", isHighlighted);
 }
 
-function MapLegendItem({ color, label, distance }) {
+function MapLegendItem({
+  color,
+  label,
+  logo,
+  logoTextClassName = "text-white",
+  distance,
+}) {
   return (
     <div className="flex w-fit max-w-full flex-none items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] sm:w-auto xl:min-w-[150px]">
-      <span className={`h-3 w-3 shrink-0 rounded-full ${color}`} />
+      <span
+        className={`flex h-6 min-w-6 shrink-0 items-center justify-center rounded-lg px-1.5 text-[9px] font-black leading-none shadow-sm ring-1 ring-white ${color} ${logoTextClassName}`}
+      >
+        {logo}
+      </span>
       <span className="min-w-0 max-w-[7.5rem] truncate sm:max-w-none sm:flex-1">
         {label}
       </span>
