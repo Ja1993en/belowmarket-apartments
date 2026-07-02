@@ -2149,7 +2149,7 @@ export default function PublicPropertyListing() {
         {
             label: "Fees",
             value: getSnapshotMetricValue("Fees"),
-            note: "Parking, utilities, admin/app",
+            note: "Required monthly fees",
         },
     ];
 
