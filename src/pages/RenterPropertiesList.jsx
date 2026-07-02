@@ -31,11 +31,41 @@ const NEARBY_PLACE_RADIUS_MILES = 12;
 const mapboxGeocodeRequests = new Map();
 
 const NEARBY_PLACE_TYPES = [
-  { label: "Walmart", type: "walmart", color: "bg-[#2d7dd2]", logo: "W" },
-  { label: "Target", type: "target", color: "bg-[#e4572e]", logo: "T" },
-  { label: "LA Fitness", type: "laFitness", color: "bg-[#173f3f]", logo: "LA" },
-  { label: "Planet Fitness", type: "planetFitness", color: "bg-[#8a5b0a]", logo: "PF" },
-  { label: "Kroger", type: "kroger", color: "bg-[#1f6f63]", logo: "K" },
+  {
+    label: "Walmart",
+    type: "walmart",
+    color: "bg-[#2d7dd2]",
+    logo: "W",
+    logoUrl: "https://www.google.com/s2/favicons?domain=walmart.com&sz=64",
+  },
+  {
+    label: "Target",
+    type: "target",
+    color: "bg-[#e4572e]",
+    logo: "T",
+    logoUrl: "https://www.google.com/s2/favicons?domain=target.com&sz=64",
+  },
+  {
+    label: "LA Fitness",
+    type: "laFitness",
+    color: "bg-[#173f3f]",
+    logo: "LA",
+    logoUrl: "https://www.google.com/s2/favicons?domain=lafitness.com&sz=64",
+  },
+  {
+    label: "Planet Fitness",
+    type: "planetFitness",
+    color: "bg-[#8a5b0a]",
+    logo: "PF",
+    logoUrl: "https://www.google.com/s2/favicons?domain=planetfitness.com&sz=64",
+  },
+  {
+    label: "Kroger",
+    type: "kroger",
+    color: "bg-[#1f6f63]",
+    logo: "K",
+    logoUrl: "https://www.google.com/s2/favicons?domain=kroger.com&sz=64",
+  },
 ];
 
 const NEARBY_PLACE_CATALOG = [
@@ -1177,6 +1207,7 @@ function RecommendationMapPanel({
             color={placeType.color}
             label={placeType.label}
             logo={placeType.logo}
+            logoUrl={placeType.logoUrl}
             distance={getNearbyLegendDistance(nearbyPlaces, placeType.type)}
           />
         ))}
@@ -1386,22 +1417,13 @@ function createRecommendationMapPinElement(property) {
 }
 
 function createNearbyMapMarker(place) {
-  const colors = {
-    walmart: "bg-[#2d7dd2]",
-    target: "bg-[#e4572e]",
-    laFitness: "bg-[#173f3f]",
-    planetFitness: "bg-[#8a5b0a]",
-    kroger: "bg-[#1f6f63]",
-  };
-  const abbreviations = {
-    walmart: "W",
-    target: "T",
-    laFitness: "LA",
-    planetFitness: "PF",
-    kroger: "K",
-  };
   const markerElement = document.createElement("div");
   const label = getCleanNearbyPlaceLabel(place);
+  const safeLogoUrl = escapeMapAttribute(place.logoUrl);
+  const fallbackLogo = escapeMapText(place.logo || label.slice(0, 2).toUpperCase());
+  const logoImageMarkup = safeLogoUrl
+    ? `<img src="${safeLogoUrl}" alt="" loading="lazy" class="absolute inset-0 h-full w-full rounded-full bg-white object-contain p-1" onerror="this.style.display='none'" />`
+    : "";
 
   markerElement.className = "group relative flex flex-col items-center outline-none";
   markerElement.title = `${label} - ${place.distanceMiles.toFixed(1)} miles away`;
@@ -1413,7 +1435,10 @@ function createNearbyMapMarker(place) {
       place.detail,
       `${place.distanceMiles.toFixed(1)} miles from ${place.closestPropertyName || "a recommended property"}`,
     ])}
-    <div class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white ${colors[place.type]} text-[10px] font-black text-white shadow-md">${abbreviations[place.type]}</div>
+    <div class="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white ${place.color} text-[9px] font-black text-white shadow-md">
+      <span>${fallbackLogo}</span>
+      ${logoImageMarkup}
+    </div>
   `;
 
   return markerElement;
@@ -1431,15 +1456,27 @@ function MapLegendItem({
   color,
   label,
   logo,
+  logoUrl,
   logoTextClassName = "text-white",
   distance,
 }) {
   return (
     <div className="flex w-fit max-w-full flex-none items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] sm:w-auto xl:min-w-[150px]">
       <span
-        className={`flex h-6 min-w-6 shrink-0 items-center justify-center rounded-lg px-1.5 text-[9px] font-black leading-none shadow-sm ring-1 ring-white ${color} ${logoTextClassName}`}
+        className={`relative flex h-7 min-w-7 shrink-0 items-center justify-center rounded-lg px-1.5 text-[9px] font-black leading-none shadow-sm ring-1 ring-white ${color} ${logoTextClassName}`}
       >
-        {logo}
+        <span>{logo}</span>
+        {logoUrl && (
+          <img
+            src={logoUrl}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 h-full w-full rounded-lg bg-white object-contain p-1"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+          />
+        )}
       </span>
       <span className="min-w-0 max-w-[7.5rem] truncate sm:max-w-none sm:flex-1">
         {label}
@@ -1691,4 +1728,8 @@ function escapeMapText(value) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function escapeMapAttribute(value) {
+  return escapeMapText(value).replace(/'/g, "&#39;");
 }
