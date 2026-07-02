@@ -1133,13 +1133,13 @@ function RecommendationMapPanel({
 
       <div className="relative overflow-hidden">
         {mapError ? (
-          <div className="flex h-[320px] items-center justify-center bg-[#f5f8f1] p-6 text-center text-sm font-bold text-[#526260] sm:h-[420px] md:h-[calc(100vh-7rem)] md:min-h-[360px] md:max-h-[640px]">
+          <div className="flex h-[420px] items-center justify-center bg-[#f5f8f1] p-6 text-center text-sm font-bold text-[#526260] md:h-[480px] lg:h-[min(520px,calc(100vh-220px))] lg:min-h-[380px]">
             {mapError}
           </div>
         ) : (
           <div
             ref={mapContainerRef}
-            className="h-[340px] w-full bg-[#dcebe4] sm:h-[420px] md:h-[calc(100vh-7rem)] md:min-h-[360px] md:max-h-[640px]"
+            className="h-[420px] w-full bg-[#dcebe4] md:h-[480px] lg:h-[min(520px,calc(100vh-220px))] lg:min-h-[380px]"
           />
         )}
       </div>
