@@ -3908,48 +3908,24 @@ function PropertyLocationMap({
                     </p>
                 </div>
             )}
-            <div className="flex max-h-32 flex-wrap items-center gap-2 overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            <div className="flex max-h-32 flex-wrap items-center gap-2 overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 <MapLegendItem
                     color="bg-[#f2b84b]"
-                    label="Property"
+                    label="Apartments"
                     logo="BMA"
                     logoTextClassName="text-[#102426]"
                 />
-                <MapLegendItem
-                    color="bg-[#2d7dd2]"
-                    label="Walmart"
-                    logo="W"
-                    logoUrl="/brand-logos/walmart.png"
-                    distance={getNearbyLegendDistance(nearbyPlaces, "walmart")}
-                />
-                <MapLegendItem
-                    color="bg-[#e4572e]"
-                    label="Target"
-                    logo="T"
-                    logoUrl="/brand-logos/target.svg"
-                    distance={getNearbyLegendDistance(nearbyPlaces, "target")}
-                />
-                <MapLegendItem
-                    color="bg-[#173f3f]"
-                    label="LA Fitness"
-                    logo="LA"
-                    logoUrl="/brand-logos/la-fitness.svg"
-                    distance={getNearbyLegendDistance(nearbyPlaces, "laFitness")}
-                />
-                <MapLegendItem
-                    color="bg-[#8a5b0a]"
-                    label="Planet Fitness"
-                    logo="PF"
-                    logoUrl="/brand-logos/planet-fitness.svg"
-                    distance={getNearbyLegendDistance(nearbyPlaces, "planetFitness")}
-                />
-                <MapLegendItem
-                    color="bg-[#1f6f63]"
-                    label="Kroger"
-                    logo="K"
-                    logoUrl="/brand-logos/kroger.svg"
-                    distance={getNearbyLegendDistance(nearbyPlaces, "kroger")}
-                />
+
+                {NEARBY_PLACE_TYPES.map((placeType) => (
+                    <MapLegendItem
+                        key={placeType.type}
+                        color={placeType.color}
+                        label={placeType.label}
+                        logo={placeType.logo}
+                        logoUrl={placeType.logoUrl}
+                        distance={getNearbyLegendDistance(nearbyPlaces, placeType.type)}
+                    />
+                ))}
             </div>
         </div>
     );
@@ -4014,7 +3990,7 @@ function MapLegendItem({
     distance,
 }) {
     return (
-        <div className="flex w-fit max-w-full flex-none items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] sm:w-auto xl:min-w-[150px] xl:flex-none">
+        <div className="flex w-fit max-w-full flex-none items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] sm:w-auto xl:min-w-[150px]">
             <span
                 className={`relative flex h-8 min-w-8 shrink-0 items-center justify-center rounded-xl px-1.5 text-[9px] font-black leading-none shadow-sm ring-1 ring-white ${color} ${logoTextClassName}`}
             >
