@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CheckCircle2, Copy, ExternalLink, MessageSquare, Search, Send } from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, Mail, MessageSquare, Search, Send } from "lucide-react";
 import { getAnyLeadById, updateLocalLead } from "../data/leadStorage";
 import { getAllProperties } from "../data/propertyStorage";
 import {
@@ -42,6 +42,12 @@ export default function SendPropertiesPage() {
   const [smsStatusMessage, setSmsStatusMessage] = useState("");
   const [smsError, setSmsError] = useState("");
   const [isSendingSms, setIsSendingSms] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
+  const [isEmailMessageEdited, setIsEmailMessageEdited] = useState(false);
+  const [emailStatusMessage, setEmailStatusMessage] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const recommendedPropertyIds = lead?.recommendedPropertyIds || [];
   const hasSmsConsent = Boolean(lead?.smsConsent);
   const smsConsentWarning =
@@ -155,8 +161,25 @@ export default function SendPropertiesPage() {
       selectedProperties,
     });
   }, [lead, recommendationUrl, selectedFloorPlanItems, selectedProperties]);
+  const defaultEmailSubject = useMemo(() => {
+    if (!lead) return "";
+
+    return `Your apartment recommendations from Below Market Apartments`;
+  }, [lead]);
+  const defaultEmailMessage = useMemo(() => {
+    if (!lead) return "";
+
+    return buildRecommendationEmailMessage({
+      lead,
+      recommendationUrl,
+      selectedFloorPlanItems,
+      selectedProperties,
+    });
+  }, [lead, recommendationUrl, selectedFloorPlanItems, selectedProperties]);
 
   const displayedSmsMessage = isSmsMessageEdited ? smsMessage : defaultSmsMessage;
+  const displayedEmailSubject = emailSubject || defaultEmailSubject;
+  const displayedEmailMessage = isEmailMessageEdited ? emailMessage : defaultEmailMessage;
 
   const normalizedPropertySearch = propertySearch.trim().toLowerCase();
 
@@ -393,6 +416,79 @@ export default function SendPropertiesPage() {
     }
   };
 
+  const sendRecommendationsEmail = async () => {
+    if (!lead) return;
+
+    if (!lead.email) {
+      setEmailError("Add a renter email before sending.");
+      return;
+    }
+
+    if (selectedPropertyIds.length === 0) {
+      setEmailError("Select at least one property before sending an email.");
+      return;
+    }
+
+    if (!smsPin.trim()) {
+      setEmailError("Enter your recommendation send PIN first.");
+      return;
+    }
+
+    if (!displayedEmailMessage.trim()) {
+      setEmailError("Add an email message before sending.");
+      return;
+    }
+
+    setEmailError("");
+    setEmailStatusMessage("");
+
+    const wasSaved = await saveSelections({
+      successMessage: "Recommendations saved. Sending email now.",
+    });
+
+    if (!wasSaved) return;
+
+    try {
+      setIsSendingEmail(true);
+      sessionStorage.setItem("bmaSmsSendPin", smsPin.trim());
+
+      const response = await fetch("/api/send-recommendation-email", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-bma-send-pin": smsPin.trim(),
+        },
+        body: JSON.stringify({
+          to: lead.email,
+          subject: displayedEmailSubject,
+          message: displayedEmailMessage,
+          leadId: lead.id,
+          leadName: lead.name,
+          recommendationUrl,
+          properties: selectedProperties.map((property) => ({
+            id: property.id,
+            name: property.name,
+            area: property.area || property.city || "",
+            special: property.special || "",
+            rent: property.rent || property.effectiveRent || "",
+          })),
+          floorPlanItems: selectedFloorPlanItems,
+        }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Could not send email.");
+      }
+
+      setEmailStatusMessage(`Email sent to ${lead.email}.`);
+    } catch (error) {
+      setEmailError(error?.message || "Could not send email. Check Resend setup and try again.");
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   if (isLoadingLead) {
     return (
       <div className="rounded-3xl border border-[#d7e6df] bg-white p-8 shadow-sm">
@@ -542,6 +638,92 @@ export default function SendPropertiesPage() {
                 Open Phone Text App
               </button>
             </div>
+          </div>
+
+          <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+            <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+              <div>
+                <p className="text-sm font-black uppercase tracking-wide text-[#1f6f63]">
+                  Email
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-[#102426]">
+                  Send recommendation email
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm font-semibold text-[#526260]">
+                  Use this for renters who did not opt into SMS or prefer email.
+                  It sends the saved recommendation link through Resend.
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+                {lead.email || "No renter email"}
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-[220px_1fr]">
+              <label className="block text-sm font-bold text-[#173f3f]">
+                Send PIN
+                <input
+                  type="password"
+                  value={smsPin}
+                  onChange={(event) => {
+                    setSmsPin(event.target.value);
+                    setEmailError("");
+                  }}
+                  placeholder="Enter PIN"
+                  className="mt-2 w-full rounded-2xl border border-[#d7e6df] px-4 py-3 font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                />
+              </label>
+
+              <label className="block text-sm font-bold text-[#173f3f]">
+                Subject
+                <input
+                  type="text"
+                  value={displayedEmailSubject}
+                  onChange={(event) => {
+                    setEmailSubject(event.target.value);
+                    setEmailError("");
+                  }}
+                  className="mt-2 w-full rounded-2xl border border-[#d7e6df] px-4 py-3 font-semibold text-[#102426] outline-none focus:border-[#2d7dd2]"
+                />
+              </label>
+            </div>
+
+            <label className="mt-4 block text-sm font-bold text-[#173f3f]">
+              Email message
+              <textarea
+                value={displayedEmailMessage}
+                onChange={(event) => {
+                  setIsEmailMessageEdited(true);
+                  setEmailMessage(event.target.value);
+                  setEmailError("");
+                }}
+                rows={6}
+                className="mt-2 w-full resize-none rounded-2xl border border-[#d7e6df] px-4 py-3 text-sm font-semibold leading-6 text-[#102426] outline-none focus:border-[#2d7dd2]"
+              />
+            </label>
+
+            {emailError && (
+              <p className="mt-4 rounded-2xl bg-[#fde8df] px-4 py-3 text-sm font-bold text-[#b33818] ring-1 ring-[#f4b39f]">
+                {emailError}
+              </p>
+            )}
+
+            {emailStatusMessage && (
+              <p className="mt-4 rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#1f6f63] ring-1 ring-[#d7e6df]">
+                {emailStatusMessage}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={sendRecommendationsEmail}
+              disabled={isSendingEmail || isSavingSelections || selectedPropertyIds.length === 0 || !lead.email}
+              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-6 py-4 text-sm font-black !text-[#102426] hover:bg-[#dca33c] hover:!text-[#102426] disabled:cursor-not-allowed disabled:bg-[#f2d08a] disabled:!text-[#8a5b0a] sm:w-auto"
+            >
+              <Mail className="h-4 w-4" />
+              {isSendingEmail ? "Sending Email..." : "Send Email Now"}
+            </button>
           </div>
 
           <div className="mt-6 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
@@ -1050,6 +1232,44 @@ function buildRecommendationText({
   return ensureSmsOptOutLine(
     `Hi ${lead.name}, I put together ${selectedProperties.length} apartment option${selectedProperties.length === 1 ? "" : "s"} for you${propertyPhrase}.${floorPlanPhrase} View them here: ${recommendationUrl}. Reply with the ones you like and I can help schedule tours.`
   );
+}
+
+function buildRecommendationEmailMessage({
+  lead,
+  recommendationUrl,
+  selectedFloorPlanItems = [],
+  selectedProperties,
+}) {
+  const propertyNames = selectedProperties
+    .map((property) => property.name)
+    .filter(Boolean);
+  const floorPlanNames = selectedFloorPlanItems
+    .map((item) => `${item.floorPlanName} at ${item.propertyName}`)
+    .filter(Boolean);
+  const lines = [
+    `Hi ${lead.name || "there"},`,
+    "",
+    `I put together ${selectedProperties.length} apartment option${selectedProperties.length === 1 ? "" : "s"} based on your search.`,
+  ];
+
+  if (propertyNames.length > 0) {
+    lines.push("", "Selected properties:", ...propertyNames.map((name) => `- ${name}`));
+  }
+
+  if (floorPlanNames.length > 0) {
+    lines.push("", "Exact floor plans attached:", ...floorPlanNames.map((name) => `- ${name}`));
+  }
+
+  lines.push(
+    "",
+    `View your recommendation link here: ${recommendationUrl}`,
+    "",
+    "Reply to this email with the ones you like, and I can help confirm pricing, availability, and tour times.",
+    "",
+    "Below Market Apartments"
+  );
+
+  return lines.join("\n");
 }
 
 function getPropertyFloorPlanRecommendationItems(property) {
