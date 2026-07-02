@@ -1422,7 +1422,7 @@ function createNearbyMapMarker(place) {
   const safeLogoUrl = escapeMapAttribute(place.logoUrl);
   const fallbackLogo = escapeMapText(place.logo || label.slice(0, 2).toUpperCase());
   const logoImageMarkup = safeLogoUrl
-    ? `<img src="${safeLogoUrl}" alt="" loading="lazy" class="absolute inset-0 h-full w-full rounded-full bg-white object-contain p-1" onerror="this.style.display='none'" />`
+    ? `<img src="${safeLogoUrl}" alt="" loading="lazy" class="absolute inset-0 h-full w-full rounded-full bg-white object-contain p-0.5" onerror="this.style.display='none'" />`
     : "";
 
   markerElement.className = "group relative flex flex-col items-center outline-none";
@@ -1435,10 +1435,11 @@ function createNearbyMapMarker(place) {
       place.detail,
       `${place.distanceMiles.toFixed(1)} miles from ${place.closestPropertyName || "a recommended property"}`,
     ])}
-    <div class="relative h-9 w-9 overflow-hidden rounded-full bg-white shadow-md ring-2 ring-white">
-      <span class="flex h-full w-full items-center justify-center rounded-full bg-white text-[9px] font-black text-[#102426] ring-1 ring-[#d7e6df]">${fallbackLogo}</span>
+    <div class="relative h-7 w-7 overflow-hidden rounded-full bg-white shadow-md ring-2 ring-white">
+      <span class="flex h-full w-full items-center justify-center rounded-full bg-white text-[8px] font-black text-[#102426] ring-1 ring-[#d7e6df]">${fallbackLogo}</span>
       ${logoImageMarkup}
     </div>
+    <div class="-mt-1 h-2.5 w-2.5 rotate-45 rounded-[2px] bg-white shadow-sm ring-1 ring-white"></div>
   `;
 
   return markerElement;
