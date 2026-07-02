@@ -18,8 +18,16 @@ import {
 import { getAllProperties } from "../data/propertyStorage";
 import {
   getFloorPlanCardImage,
+  getPropertyAddressLabel,
   getPropertyPrimaryImage,
+  hasPreciseStreetAddress,
+  isReliableGeocodeResult,
 } from "../data/propertySearchData";
+
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+const DALLAS_CENTER = [-96.797, 32.7767];
+const EMPTY_ARRAY = [];
+const mapboxGeocodeRequests = new Map();
 
 export default function RenterPropertiesList() {
   const { token } = useParams();
@@ -45,6 +53,9 @@ export default function RenterPropertiesList() {
   );
   const [tourError, setTourError] = useState("");
   const [isSubmittingTour, setIsSubmittingTour] = useState(false);
+  const [hoveredPropertyId, setHoveredPropertyId] = useState("");
+  const [mappableRecommendedProperties, setMappableRecommendedProperties] =
+    useState([]);
   const loggedRenterLinkOpenRef = useRef(false);
   const [tourForm, setTourForm] = useState({
     preferredDate: "",
@@ -139,17 +150,27 @@ export default function RenterPropertiesList() {
     loadLead();
   }, [localFallbackLead, token]);
 
-  const recommendedPropertyIds =
-    lead?.recommendedPropertyIds || lead?.recommended_property_ids || [];
-  const recommendedFloorPlanItems =
-    lead?.recommendedFloorPlanItems || lead?.recommended_floor_plan_items || [];
+  const recommendedPropertyIds = useMemo(
+    () => lead?.recommendedPropertyIds || lead?.recommended_property_ids || EMPTY_ARRAY,
+    [lead]
+  );
+  const recommendedFloorPlanItems = useMemo(
+    () => lead?.recommendedFloorPlanItems || lead?.recommended_floor_plan_items || EMPTY_ARRAY,
+    [lead]
+  );
 
-  const allRecommendedProperties = recommendedPropertyIds
-    .map((propertyId) => properties.find((property) => property.id === String(propertyId)))
-    .filter(Boolean);
+  const allRecommendedProperties = useMemo(
+    () =>
+      recommendedPropertyIds
+        .map((propertyId) => properties.find((property) => property.id === String(propertyId)))
+        .filter(Boolean),
+    [properties, recommendedPropertyIds]
+  );
 
-  const recommendedProperties = allRecommendedProperties.filter(
-    (property) => property.status === "Live"
+  const recommendedProperties = useMemo(
+    () =>
+      allRecommendedProperties.filter((property) => property.status === "Live"),
+    [allRecommendedProperties]
   );
   const recommendedFloorPlansByPropertyId = recommendedFloorPlanItems.reduce(
     (itemsByPropertyId, floorPlanItem) => {
@@ -165,6 +186,48 @@ export default function RenterPropertiesList() {
     },
     {}
   );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    Promise.all(
+      recommendedProperties.map(async (property) => {
+        const directCoordinates = getPropertyCoordinates(property);
+
+        if (directCoordinates) {
+          return {
+            ...property,
+            ...directCoordinates,
+          };
+        }
+
+        const geocodedCoordinates =
+          (await geocodePropertyAddress(property)) ||
+          (await geocodePropertyArea(property));
+
+        if (!geocodedCoordinates) return null;
+
+        return {
+          ...property,
+          ...geocodedCoordinates,
+          mapAccuracy: "geocoded",
+        };
+      })
+    )
+      .then((mappedProperties) => {
+        if (isMounted) {
+          setMappableRecommendedProperties(mappedProperties.filter(Boolean));
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) setMappableRecommendedProperties([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [recommendedProperties]);
 
   const openTourForm = (property) => {
     setSelectedTourProperty(property);
@@ -347,17 +410,48 @@ export default function RenterPropertiesList() {
           </div>
 
           {recommendedProperties.length > 0 ? (
-            <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              {recommendedProperties.map((property) => (
-                <RecommendedPropertyCard
-                  key={property.id}
-                  property={property}
-                  recommendedFloorPlans={recommendedFloorPlansByPropertyId[property.id] || []}
-                  requestedPropertyIds={requestedPropertyIds}
-                  selectedTourPropertyId={selectedTourProperty?.id}
-                  onRequestTour={openTourForm}
+            <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(300px,36vw)] md:items-start lg:grid-cols-[minmax(0,1fr)_minmax(340px,36vw)] xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)]">
+              <div className="order-2 min-w-0 md:order-1">
+                <div className="rounded-xl border border-[#d7e6df] bg-white p-4 shadow-sm">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-sm font-black text-[#102426]">
+                        Showing {recommendedProperties.length} recommended {recommendedProperties.length === 1 ? "listing" : "listings"}
+                      </p>
+                      <p className="mt-1 text-xs font-bold text-[#526260]">
+                        Selected by your apartment locator for this renter link.
+                      </p>
+                    </div>
+
+                    <span className="w-fit rounded-full bg-[#f5f8f1] px-3 py-1.5 text-xs font-black text-[#526260] ring-1 ring-[#d7e6df]">
+                      {mappableRecommendedProperties.length} map {mappableRecommendedProperties.length === 1 ? "pin" : "pins"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-4">
+                  {recommendedProperties.map((property) => (
+                    <RecommendedPropertyCard
+                      key={property.id}
+                      property={property}
+                      recommendedFloorPlans={recommendedFloorPlansByPropertyId[property.id] || []}
+                      requestedPropertyIds={requestedPropertyIds}
+                      selectedTourPropertyId={selectedTourProperty?.id}
+                      isHighlighted={hoveredPropertyId === property.id}
+                      onHover={setHoveredPropertyId}
+                      onRequestTour={openTourForm}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <aside className="order-1 md:sticky md:top-24 md:order-2">
+                <RecommendationMapPanel
+                  properties={mappableRecommendedProperties}
+                  hoveredPropertyId={hoveredPropertyId}
+                  onPropertyHover={setHoveredPropertyId}
                 />
-              ))}
+              </aside>
             </div>
           ) : (
             <div className="mt-6 rounded-3xl border border-dashed border-[#b8d9d0] bg-white p-10 text-center shadow-sm">
@@ -555,6 +649,8 @@ function RecommendedPropertyCard({
   recommendedFloorPlans = [],
   requestedPropertyIds,
   selectedTourPropertyId,
+  isHighlighted = false,
+  onHover,
   onRequestTour,
 }) {
   const isTourRequested = requestedPropertyIds.includes(property.id);
@@ -562,7 +658,18 @@ function RecommendedPropertyCard({
   const primaryImage = getPropertyPrimaryImage(property);
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-sm">
+    <article
+      id={`recommendation-${property.id}`}
+      onMouseEnter={() => onHover?.(property.id)}
+      onMouseLeave={() => onHover?.("")}
+      onFocus={() => onHover?.(property.id)}
+      onBlur={() => onHover?.("")}
+      className={`overflow-hidden rounded-3xl border bg-white shadow-sm transition ${
+        isHighlighted
+          ? "border-[#f2b84b] ring-2 ring-[#f2b84b]"
+          : "border-[#d7e6df]"
+      }`}
+    >
       <img
         src={primaryImage}
         alt={property.name}
@@ -680,6 +787,162 @@ function RecommendedPropertyCard({
   );
 }
 
+function RecommendationMapPanel({
+  properties,
+  hoveredPropertyId,
+  onPropertyHover,
+}) {
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+  const markersRef = useRef([]);
+  const [mapboxGl, setMapboxGl] = useState(null);
+  const [mapError, setMapError] = useState("");
+
+  useEffect(() => {
+    if (!MAPBOX_TOKEN) {
+      setMapError("Map is unavailable right now.");
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    loadMapboxGl()
+      .then((loadedMapboxGl) => {
+        if (isMounted) {
+          loadedMapboxGl.accessToken = MAPBOX_TOKEN;
+          setMapboxGl(loadedMapboxGl);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) {
+          setMapError("Could not load the recommendation map.");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapboxGl || !mapContainerRef.current || mapRef.current) return;
+
+    mapRef.current = new mapboxGl.Map({
+      container: mapContainerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: DALLAS_CENTER,
+      zoom: 10.5,
+      attributionControl: false,
+    });
+
+    mapRef.current.addControl(
+      new mapboxGl.NavigationControl({ showCompass: false }),
+      "bottom-right"
+    );
+
+    return () => {
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, [mapboxGl]);
+
+  useEffect(() => {
+    if (!mapboxGl || !mapRef.current) return;
+
+    const map = mapRef.current;
+    const bounds = new mapboxGl.LngLatBounds();
+
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = [];
+
+    properties.forEach((property) => {
+      const markerElement = createRecommendationMapPinElement(property);
+
+      markerElement.addEventListener("mouseenter", () => {
+        onPropertyHover?.(property.id);
+      });
+      markerElement.addEventListener("mouseleave", () => {
+        onPropertyHover?.("");
+      });
+      markerElement.addEventListener("click", () => {
+        onPropertyHover?.(property.id);
+        document
+          .getElementById(`recommendation-${property.id}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+
+      const marker = new mapboxGl.Marker({
+        element: markerElement,
+        anchor: "center",
+      })
+        .setLngLat([property.longitude, property.latitude])
+        .addTo(map);
+
+      markersRef.current.push(marker);
+      bounds.extend([property.longitude, property.latitude]);
+    });
+
+    if (properties.length > 1) {
+      map.fitBounds(bounds, {
+        padding: 70,
+        maxZoom: 12.8,
+        duration: 500,
+      });
+    } else if (properties.length === 1) {
+      map.flyTo({
+        center: [properties[0].longitude, properties[0].latitude],
+        zoom: 13,
+        duration: 500,
+      });
+    }
+  }, [mapboxGl, onPropertyHover, properties]);
+
+  useEffect(() => {
+    markersRef.current.forEach((marker) => {
+      const markerElement = marker.getElement?.();
+      if (!markerElement) return;
+
+      setRecommendationMapPinHighlight(
+        markerElement,
+        markerElement.dataset.propertyId === hoveredPropertyId
+      );
+    });
+  }, [hoveredPropertyId]);
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
+        <div>
+          <p className="text-sm font-black text-[#102426]">Map view</p>
+          <p className="text-xs font-bold text-[#526260]">
+            Tap a pin to jump to that recommendation.
+          </p>
+        </div>
+
+        <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+          {properties.length} {properties.length === 1 ? "pin" : "pins"}
+        </span>
+      </div>
+
+      <div className="relative overflow-hidden">
+        {mapError ? (
+          <div className="flex h-[320px] items-center justify-center bg-[#f5f8f1] p-6 text-center text-sm font-bold text-[#526260] sm:h-[420px] md:h-[calc(100vh-7rem)] md:min-h-[360px] md:max-h-[640px]">
+            {mapError}
+          </div>
+        ) : (
+          <div
+            ref={mapContainerRef}
+            className="h-[340px] w-full bg-[#dcebe4] sm:h-[420px] md:h-[calc(100vh-7rem)] md:min-h-[360px] md:max-h-[640px]"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DealStat({ label, value }) {
   return (
     <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
@@ -687,4 +950,198 @@ function DealStat({ label, value }) {
       <p className="mt-2 text-lg font-black text-[#102426]">{value}</p>
     </div>
   );
+}
+
+function getPropertyCoordinates(property) {
+  const latitude = Number(property.latitude || property.lat);
+  const longitude = Number(property.longitude || property.lng);
+
+  if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+    return {
+      latitude,
+      longitude,
+      mapAccuracy: property.mapAccuracy || "exact",
+    };
+  }
+
+  if (Array.isArray(property.coordinates) && property.coordinates.length >= 2) {
+    const [coordinateLongitude, coordinateLatitude] = property.coordinates.map(Number);
+
+    if (Number.isFinite(coordinateLatitude) && Number.isFinite(coordinateLongitude)) {
+      return {
+        latitude: coordinateLatitude,
+        longitude: coordinateLongitude,
+        mapAccuracy: property.mapAccuracy || "exact",
+      };
+    }
+  }
+
+  return null;
+}
+
+async function geocodePropertyAddress(property) {
+  if (!MAPBOX_TOKEN) return null;
+  if (!hasPreciseStreetAddress(property)) return null;
+
+  const addressLabel = getPropertyAddressLabel(property);
+  if (!addressLabel || addressLabel === "Dallas, TX") return null;
+
+  return geocodeMapboxQuery(addressLabel, {
+    cacheKey: `bma-recommendation-mapbox-geocode:${addressLabel.toLowerCase()}`,
+    requireReliableAddress: true,
+  });
+}
+
+async function geocodePropertyArea(property) {
+  if (!MAPBOX_TOKEN) return null;
+
+  const areaLabel = [property?.city, property?.state, property?.zipcode]
+    .filter(Boolean)
+    .join(", ");
+
+  if (!areaLabel) return null;
+
+  return geocodeMapboxQuery(areaLabel, {
+    cacheKey: `bma-recommendation-mapbox-area-geocode:${areaLabel.toLowerCase()}`,
+    requireReliableAddress: false,
+  });
+}
+
+async function geocodeMapboxQuery(query, options = {}) {
+  const cachedCoordinates = getCachedCoordinates(options.cacheKey);
+  if (cachedCoordinates) return cachedCoordinates;
+
+  if (options.cacheKey && mapboxGeocodeRequests.has(options.cacheKey)) {
+    return mapboxGeocodeRequests.get(options.cacheKey);
+  }
+
+  const geocodeRequest = fetchMapboxGeocode(query, options);
+
+  if (options.cacheKey) {
+    mapboxGeocodeRequests.set(options.cacheKey, geocodeRequest);
+  }
+
+  return geocodeRequest;
+}
+
+async function fetchMapboxGeocode(query, options = {}) {
+  const geocodingUrl = new URL(
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`
+  );
+  geocodingUrl.searchParams.set("access_token", MAPBOX_TOKEN);
+  geocodingUrl.searchParams.set("country", "US");
+  geocodingUrl.searchParams.set("limit", "1");
+
+  const response = await fetch(geocodingUrl);
+  if (!response.ok) return null;
+
+  const geocodingResult = await response.json();
+  const firstFeature = geocodingResult.features?.[0];
+  if (options.requireReliableAddress && !isReliableGeocodeResult(firstFeature)) {
+    return null;
+  }
+
+  const [longitude, latitude] = firstFeature?.center || [];
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  const coordinates = { latitude, longitude };
+  setCachedCoordinates(options.cacheKey, coordinates);
+
+  return coordinates;
+}
+
+function getCachedCoordinates(cacheKey) {
+  if (!cacheKey) return null;
+
+  try {
+    const cachedValue = localStorage.getItem(cacheKey);
+    if (!cachedValue) return null;
+
+    const coordinates = JSON.parse(cachedValue);
+    const latitude = Number(coordinates.latitude);
+    const longitude = Number(coordinates.longitude);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return null;
+    }
+
+    return { latitude, longitude };
+  } catch {
+    return null;
+  }
+}
+
+function setCachedCoordinates(cacheKey, coordinates) {
+  if (!cacheKey) return;
+
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify(coordinates));
+  } catch (error) {
+    console.warn("Could not cache recommendation map coordinates.", error);
+  }
+}
+
+function loadMapboxGl() {
+  if (window.mapboxgl) {
+    return Promise.resolve(window.mapboxgl);
+  }
+
+  if (!document.querySelector("link[data-mapbox-gl='true']")) {
+    const mapboxStyles = document.createElement("link");
+    mapboxStyles.rel = "stylesheet";
+    mapboxStyles.href = "https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css";
+    mapboxStyles.dataset.mapboxGl = "true";
+    document.head.appendChild(mapboxStyles);
+  }
+
+  const existingScript = document.querySelector("script[data-mapbox-gl='true']");
+  if (existingScript) {
+    return new Promise((resolve, reject) => {
+      existingScript.addEventListener("load", () => resolve(window.mapboxgl), {
+        once: true,
+      });
+      existingScript.addEventListener("error", reject, { once: true });
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const mapboxScript = document.createElement("script");
+    mapboxScript.src = "https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js";
+    mapboxScript.async = true;
+    mapboxScript.dataset.mapboxGl = "true";
+    mapboxScript.addEventListener("load", () => resolve(window.mapboxgl), {
+      once: true,
+    });
+    mapboxScript.addEventListener("error", reject, { once: true });
+    document.head.appendChild(mapboxScript);
+  });
+}
+
+function createRecommendationMapPinElement(property) {
+  const markerElement = document.createElement("button");
+  markerElement.type = "button";
+  markerElement.dataset.propertyId = property.id;
+  markerElement.className =
+    "group flex h-8 w-8 items-center justify-center rounded-full focus:outline-none";
+  markerElement.title = property.name;
+  markerElement.setAttribute("aria-label", `${property.name} map pin. Preview recommendation.`);
+  markerElement.innerHTML = `
+    <span
+      data-recommendation-map-pin-dot="true"
+      class="block h-3.5 w-3.5 rounded-full border-2 border-white bg-[#173f3f] shadow-[0_2px_7px_rgba(16,36,38,0.28)] ring-2 ring-[#f2b84b] ring-offset-1 ring-offset-white transition group-hover:scale-125 group-focus:scale-125 group-hover:ring-4"
+    ></span>
+  `;
+
+  return markerElement;
+}
+
+function setRecommendationMapPinHighlight(markerElement, isHighlighted) {
+  const pinDotElement = markerElement.querySelector("[data-recommendation-map-pin-dot='true']");
+  if (!pinDotElement) return;
+
+  pinDotElement.classList.toggle("scale-125", isHighlighted);
+  pinDotElement.classList.toggle("ring-4", isHighlighted);
 }
