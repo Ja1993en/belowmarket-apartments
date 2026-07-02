@@ -656,6 +656,7 @@ function RecommendedPropertyCard({
   const isTourRequested = requestedPropertyIds.includes(property.id);
   const isTourSelected = selectedTourPropertyId === property.id;
   const primaryImage = getPropertyPrimaryImage(property);
+  const addressLabel = getPropertyAddressLabel(property);
 
   return (
     <article
@@ -670,117 +671,131 @@ function RecommendedPropertyCard({
           : "border-[#d7e6df]"
       }`}
     >
-      <img
-        src={primaryImage}
-        alt={property.name}
-        loading="lazy"
-        decoding="async"
-        className="h-56 w-full object-cover"
-      />
-
-      <div className="p-6">
-        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
-          <div>
-            <h3 className="text-2xl font-black text-[#102426]">
-              {property.name}
-            </h3>
-
-            <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#526260]">
-              <MapPin className="h-4 w-4" />
-              {property.area}
-            </p>
-          </div>
+      <div className="grid min-h-[260px] md:grid-cols-[minmax(220px,34%)_minmax(0,1fr)]">
+        <div className="relative min-h-[220px] overflow-hidden md:min-h-full">
+          <img
+            src={primaryImage}
+            alt={property.name}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
 
           {property.belowMarketPercent && (
-            <span className="rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold text-[#1f6f63]">
-              {property.belowMarketPercent} special value
+            <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-xs font-black text-[#1f6f63] shadow-sm ring-1 ring-[#d7e6df]">
+              {property.belowMarketPercent} value
             </span>
           )}
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          <DealStat label="Effective Rent" value={property.effectiveRent} />
-          <DealStat label="Normal Rent" value={property.rent || property.startingRent} />
-          <DealStat label="Special Value" value={property.savings} />
-        </div>
+        <div className="flex min-w-0 flex-col p-4 sm:p-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <h3 className="truncate text-2xl font-black text-[#102426]">
+                {property.name}
+              </h3>
 
-        <div className="mt-5 rounded-2xl bg-[#fff8e6] p-4 ring-1 ring-[#f2d08a]">
-          <p className="text-sm font-bold text-[#8a5b0a]">Current Special</p>
-          <p className="mt-1 font-black text-[#102426]">{property.special}</p>
-        </div>
+              <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#526260]">
+                <MapPin className="h-4 w-4 shrink-0 text-[#2d7dd2]" />
+                <span className="truncate">
+                  {addressLabel || property.area || "Dallas area"}
+                </span>
+              </p>
+            </div>
 
-        {recommendedFloorPlans.length > 0 && (
-          <div className="mt-5 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-            <p className="text-sm font-black text-[#1f6f63]">
-              Locator floor plan picks
-            </p>
-            <p className="mt-1 text-xs font-semibold text-[#526260]">
-              These are the specific layouts your locator highlighted for you.
-            </p>
-
-            <div className="mt-3 grid gap-3">
-              {recommendedFloorPlans.map((floorPlanItem) => (
-                <div
-                  key={`${floorPlanItem.propertyId}-${floorPlanItem.floorPlanId}`}
-                  className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#d7e6df]"
-                >
-                  <div className="flex gap-3">
-                    <img
-                      src={getFloorPlanCardImage(floorPlanItem, primaryImage)}
-                      alt={`${floorPlanItem.floorPlanName} floor plan`}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-16 w-20 shrink-0 rounded-xl object-cover"
-                    />
-
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-black text-[#102426]">
-                        {floorPlanItem.floorPlanName}
-                      </p>
-                      <p className="mt-1 text-xs font-semibold text-[#526260]">
-                        {formatFloorPlanMeta(floorPlanItem)}
-                      </p>
-                      <p className="mt-1 text-xs font-black text-[#8a5b0a]">
-                        {floorPlanItem.effectiveRent || floorPlanItem.rent || "Contact for pricing"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {floorPlanItem.special && (
-                    <p className="mt-2 truncate text-xs font-bold text-[#8a5b0a]">
-                      {floorPlanItem.special}
-                    </p>
-                  )}
-                </div>
-              ))}
+            <div className="shrink-0 rounded-xl bg-[#fff8e6] px-3 py-2 text-left ring-1 ring-[#f2d08a] lg:max-w-[220px]">
+              <p className="text-[10px] font-black uppercase text-[#8a5b0a]">
+                Current special
+              </p>
+              <p className="mt-1 line-clamp-2 text-xs font-black leading-4 text-[#102426]">
+                {property.special || "Ask about current specials"}
+              </p>
             </div>
           </div>
-        )}
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          <Link
-            to={`/properties/${property.id}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-5 py-3 text-sm font-bold text-white hover:bg-[#102426]"
-          >
-            <Building2 className="h-4 w-4" />
-            View Property
-          </Link>
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <DealStat label="Effective" value={property.effectiveRent || "Contact"} />
+            <DealStat label="Listed" value={property.rent || property.startingRent || "Contact"} />
+            <DealStat label="Savings" value={property.savings || "Verify"} />
+          </div>
 
-          <button
-            onClick={() => onRequestTour(property)}
-            disabled={isTourRequested}
-            className={`flex-1 rounded-2xl px-5 py-3 text-sm font-bold ${isTourRequested
-              ? "bg-[#d8efe6] text-[#1f6f63]"
-              : isTourSelected
-                ? "bg-[#173f3f] text-white"
-                : "bg-[#e7f3ee] text-[#173f3f] hover:bg-[#d7e6df]"
+          {recommendedFloorPlans.length > 0 && (
+            <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-black text-[#1f6f63]">
+                    Locator floor plan picks
+                  </p>
+                  <p className="mt-0.5 text-xs font-semibold text-[#526260]">
+                    Specific layouts highlighted for this recommendation.
+                  </p>
+                </div>
+
+                <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-[#526260] ring-1 ring-[#d7e6df]">
+                  {recommendedFloorPlans.length} {recommendedFloorPlans.length === 1 ? "plan" : "plans"}
+                </span>
+              </div>
+
+              <div className="mt-3 grid gap-2 lg:grid-cols-2">
+                {recommendedFloorPlans.slice(0, 4).map((floorPlanItem) => (
+                  <div
+                    key={`${floorPlanItem.propertyId}-${floorPlanItem.floorPlanId}`}
+                    className="min-w-0 rounded-xl bg-white p-2.5 shadow-sm ring-1 ring-[#d7e6df]"
+                  >
+                    <div className="flex min-w-0 gap-3">
+                      <img
+                        src={getFloorPlanCardImage(floorPlanItem, primaryImage)}
+                        alt={`${floorPlanItem.floorPlanName} floor plan`}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-14 w-16 shrink-0 rounded-lg bg-[#f5f8f1] object-cover"
+                      />
+
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black text-[#102426]">
+                          {floorPlanItem.floorPlanName}
+                        </p>
+                        <p className="mt-0.5 line-clamp-1 text-xs font-semibold text-[#526260]">
+                          {formatFloorPlanMeta(floorPlanItem)}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs font-black text-[#8a5b0a]">
+                          {floorPlanItem.effectiveRent || floorPlanItem.rent || "Contact for pricing"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row">
+            <Link
+              to={`/properties/${property.id}`}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+            >
+              <Building2 className="h-4 w-4" />
+              View Property
+            </Link>
+
+            <button
+              onClick={() => onRequestTour(property)}
+              disabled={isTourRequested}
+              className={`flex-1 rounded-xl px-4 py-3 text-sm font-black ${
+                isTourRequested
+                  ? "bg-[#d8efe6] text-[#1f6f63]"
+                  : isTourSelected
+                    ? "bg-[#173f3f] !text-white"
+                    : "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]"
               }`}
-          >
-            {isTourRequested
-              ? "Tour Requested"
-              : isTourSelected
-                ? "Selected"
-                : "Request Tour"}
-          </button>
+            >
+              {isTourRequested
+                ? "Tour Requested"
+                : isTourSelected
+                  ? "Selected"
+                  : "Request Tour"}
+            </button>
+          </div>
         </div>
       </div>
     </article>
