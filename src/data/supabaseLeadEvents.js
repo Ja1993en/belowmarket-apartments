@@ -26,6 +26,23 @@ export async function getSupabaseLeadEvents({ limit = 50 } = {}) {
   return (data || []).map(mapLeadEvent);
 }
 
+export async function getSupabaseLeadEventsForLead(leadId, { limit = 50 } = {}) {
+  if (!leadId) return [];
+
+  const { data, error } = await supabase
+    .from("lead_events")
+    .select("*")
+    .eq("lead_id", leadId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data || []).map(mapLeadEvent);
+}
+
 export async function saveLeadEvent({
   leadId,
   eventType,

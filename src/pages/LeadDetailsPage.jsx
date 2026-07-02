@@ -5,6 +5,7 @@ import {
     getSupabaseLeadById,
     updateSupabaseLead,
 } from "../data/supabaseLeadStorage";
+import { getSupabaseLeadEventsForLead } from "../data/supabaseLeadEvents";
 import {
     deleteSupabaseTourRequest,
     getSupabaseTourRequestsForLead,
@@ -53,6 +54,7 @@ export default function LeadDetailsPage() {
     const [tourRequests, setTourRequests] = useState(
         initialLead ? getTourRequestsForLead(initialLead.id) : []
     );
+    const [leadEvents, setLeadEvents] = useState([]);
     const [properties, setProperties] = useState([]);
     const [isLocalLead, setIsLocalLead] = useState(Boolean(initialLead));
     const [copiedRenterLink, setCopiedRenterLink] = useState(false);
@@ -73,17 +75,23 @@ export default function LeadDetailsPage() {
             setNotesDraft(freshLead?.notes || "");
             setAssignedToDraft(freshLead?.assignedTo || "");
             setTourRequests(freshTourRequests);
+            setLeadEvents([]);
             return;
         }
 
         try {
-            const supabaseLead = await getSupabaseLeadById(leadId);
-            const supabaseTourRequests = await getSupabaseTourRequestsForLead(leadId);
+            const [supabaseLead, supabaseTourRequests, supabaseLeadEvents] =
+                await Promise.all([
+                    getSupabaseLeadById(leadId),
+                    getSupabaseTourRequestsForLead(leadId),
+                    getSupabaseLeadEventsForLead(leadId),
+                ]);
 
             setLead(supabaseLead);
             setNotesDraft(supabaseLead?.notes || "");
             setAssignedToDraft(supabaseLead?.assignedTo || "");
             setTourRequests(supabaseTourRequests);
+            setLeadEvents(supabaseLeadEvents);
         } catch (error) {
             console.error(error);
         }
@@ -110,14 +118,19 @@ export default function LeadDetailsPage() {
         try {
             setIsLoadingLead(true);
 
-            const supabaseLead = await getSupabaseLeadById(leadId);
-            const supabaseTourRequests = await getSupabaseTourRequestsForLead(leadId);
+            const [supabaseLead, supabaseTourRequests, supabaseLeadEvents] =
+                await Promise.all([
+                    getSupabaseLeadById(leadId),
+                    getSupabaseTourRequestsForLead(leadId),
+                    getSupabaseLeadEventsForLead(leadId),
+                ]);
 
             setLead(supabaseLead);
             setIsLocalLead(false);
             setNotesDraft(supabaseLead?.notes || "");
             setAssignedToDraft(supabaseLead?.assignedTo || "");
             setTourRequests(supabaseTourRequests);
+            setLeadEvents(supabaseLeadEvents);
         } catch (error) {
             console.error(error);
         } finally {
@@ -189,6 +202,15 @@ export default function LeadDetailsPage() {
                 createdAt: request.createdAt,
                 category: "Tours",
             })),
+            ...leadEvents
+                .filter((event) => event.eventType === "renter_link_opened")
+                .map((event) => ({
+                    id: `renter-link-opened-${event.id}`,
+                    title: "Recommendation page viewed",
+                    description: getRecommendationViewDescription(event),
+                    createdAt: event.createdAt,
+                    category: "Renter",
+                })),
             ...savedActivityEvents.map((event) => ({
                 ...event,
                 category: event.category || "Admin",
@@ -808,7 +830,7 @@ export default function LeadDetailsPage() {
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                                {["All", "Tours", "Admin"].map((filter) => (
+                                {["All", "Renter", "Tours", "Admin"].map((filter) => (
                                     <button
                                         key={filter}
                                         type="button"
@@ -846,10 +868,7 @@ export default function LeadDetailsPage() {
                                             <p className="font-black text-[#102426]">{event.title}</p>
 
                                             <span
-                                                className={`rounded-full px-2 py-1 text-xs font-bold ${event.category === "Tours"
-                                                    ? "bg-[#d8efe6] text-[#1f6f63]"
-                                                    : "bg-[#e7f3ee] text-[#526260]"
-                                                    }`}
+                                                className={`rounded-full px-2 py-1 text-xs font-bold ${getActivityCategoryClasses(event.category)}`}
                                             >
                                                 {event.category || "Admin"}
                                             </span>
@@ -1205,6 +1224,29 @@ function getPriorityClasses(priority) {
     if (priority === "High") return "bg-[#fde8df] text-[#b33818]";
     if (priority === "Medium") return "bg-[#fff8e6] text-[#8a5b0a]";
     if (priority === "Low") return "bg-[#e7f3ee] text-[#526260]";
+
+    return "bg-[#e7f3ee] text-[#526260]";
+}
+
+function getRecommendationViewDescription(event) {
+    const propertyCount = event.metadata?.recommendedPropertyCount || 0;
+    const floorPlanCount = event.metadata?.recommendedFloorPlanCount || 0;
+    const propertyLabel =
+        propertyCount === 1 ? "1 recommended property" : `${propertyCount} recommended properties`;
+    const floorPlanLabel =
+        floorPlanCount === 1 ? "1 floor plan" : `${floorPlanCount} floor plans`;
+
+    if (floorPlanCount > 0) {
+        return `Renter opened the recommendation link with ${propertyLabel} and ${floorPlanLabel}.`;
+    }
+
+    return `Renter opened the recommendation link with ${propertyLabel}.`;
+}
+
+function getActivityCategoryClasses(category) {
+    if (category === "Renter") return "bg-[#fff8e6] text-[#8a5b0a]";
+    if (category === "Tours") return "bg-[#d8efe6] text-[#1f6f63]";
+    if (category === "Admin") return "bg-[#e7f3ee] text-[#526260]";
 
     return "bg-[#e7f3ee] text-[#526260]";
 }
