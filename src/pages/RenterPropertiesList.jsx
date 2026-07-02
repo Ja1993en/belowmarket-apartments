@@ -985,10 +985,29 @@ function RecommendationMapPanel({
   const markersRef = useRef([]);
   const [mapboxGl, setMapboxGl] = useState(null);
   const [mapError, setMapError] = useState("");
-  const nearbyPlaces = useMemo(
-    () => resolveNearbyPlacesForRecommendations(properties),
-    [properties]
-  );
+  const [nearbyPlaces, setNearbyPlaces] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const localNearbyPlaces = resolveLocalNearbyPlacesForRecommendations(properties);
+
+    setNearbyPlaces(localNearbyPlaces);
+
+    resolveNearbyPlacesForRecommendations(properties)
+      .then((resolvedNearbyPlaces) => {
+        if (isMounted) {
+          setNearbyPlaces(resolvedNearbyPlaces.length > 0 ? resolvedNearbyPlaces : localNearbyPlaces);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (isMounted) setNearbyPlaces(localNearbyPlaces);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [properties]);
 
   useEffect(() => {
     if (!MAPBOX_TOKEN) {
@@ -1418,7 +1437,30 @@ function MapLegendItem({ color, label, distance }) {
   );
 }
 
-function resolveNearbyPlacesForRecommendations(properties) {
+async function resolveNearbyPlacesForRecommendations(properties) {
+  const mappedProperties = properties.filter(
+    (property) =>
+      Number.isFinite(property?.latitude) && Number.isFinite(property?.longitude)
+  );
+
+  if (mappedProperties.length === 0) return [];
+
+  const nearbyPlacesByStore = new Map();
+
+  for (const property of mappedProperties) {
+    for (const placeType of NEARBY_PLACE_TYPES) {
+      const nearbyPlace =
+        (await fetchClosestMapboxPlace(property, placeType)) ||
+        getLocalClosestNearbyPlace(property, placeType);
+
+      addNearbyPlaceToMap(nearbyPlacesByStore, nearbyPlace);
+    }
+  }
+
+  return sortNearbyPlaces([...nearbyPlacesByStore.values()]);
+}
+
+function resolveLocalNearbyPlacesForRecommendations(properties) {
   const mappedProperties = properties.filter(
     (property) =>
       Number.isFinite(property?.latitude) && Number.isFinite(property?.longitude)
@@ -1430,44 +1472,145 @@ function resolveNearbyPlacesForRecommendations(properties) {
 
   mappedProperties.forEach((property) => {
     NEARBY_PLACE_TYPES.forEach((placeType) => {
-      const closestPlace = getClosestNearbyPlace(
-        NEARBY_PLACE_CATALOG.filter((place) => place.type === placeType.type).map(
-          (place) => ({
-            ...placeType,
-            ...place,
-            closestPropertyId: property.id,
-            closestPropertyName: property.name,
-            distanceMiles: getDistanceInMiles(property, place),
-          })
-        )
+      addNearbyPlaceToMap(
+        nearbyPlacesByStore,
+        getLocalClosestNearbyPlace(property, placeType)
       );
-
-      if (!closestPlace || closestPlace.distanceMiles > NEARBY_PLACE_RADIUS_MILES) {
-        return;
-      }
-
-      const storeKey = [
-        closestPlace.type,
-        closestPlace.name,
-        closestPlace.detail,
-        closestPlace.latitude,
-        closestPlace.longitude,
-      ].join(":");
-      const savedPlace = nearbyPlacesByStore.get(storeKey);
-
-      if (!savedPlace || closestPlace.distanceMiles < savedPlace.distanceMiles) {
-        nearbyPlacesByStore.set(storeKey, closestPlace);
-      }
     });
   });
 
-  return [...nearbyPlacesByStore.values()].sort((firstPlace, secondPlace) => {
+  return sortNearbyPlaces([...nearbyPlacesByStore.values()]);
+}
+
+function getLocalClosestNearbyPlace(property, placeType) {
+  return getClosestNearbyPlace(
+    NEARBY_PLACE_CATALOG.filter((place) => place.type === placeType.type).map(
+      (place) => ({
+        ...placeType,
+        ...place,
+        closestPropertyId: property.id,
+        closestPropertyName: property.name,
+        distanceMiles: getDistanceInMiles(property, place),
+        source: "local",
+      })
+    )
+  );
+}
+
+function addNearbyPlaceToMap(nearbyPlacesByStore, nearbyPlace) {
+  if (!nearbyPlace || nearbyPlace.distanceMiles > NEARBY_PLACE_RADIUS_MILES) {
+    return;
+  }
+
+  const storeKey = [
+    nearbyPlace.type,
+    nearbyPlace.name,
+    nearbyPlace.detail,
+    Number(nearbyPlace.latitude).toFixed(5),
+    Number(nearbyPlace.longitude).toFixed(5),
+  ].join(":");
+  const savedPlace = nearbyPlacesByStore.get(storeKey);
+
+  if (!savedPlace || nearbyPlace.distanceMiles < savedPlace.distanceMiles) {
+    nearbyPlacesByStore.set(storeKey, nearbyPlace);
+  }
+}
+
+function sortNearbyPlaces(nearbyPlaces) {
+  return nearbyPlaces.sort((firstPlace, secondPlace) => {
     if (firstPlace.type !== secondPlace.type) {
       return firstPlace.type.localeCompare(secondPlace.type);
     }
 
     return firstPlace.distanceMiles - secondPlace.distanceMiles;
   });
+}
+
+async function fetchClosestMapboxPlace(property, placeType) {
+  if (!MAPBOX_TOKEN) return null;
+
+  const cacheKey = [
+    "bma-recommendation-nearby-place",
+    property.id,
+    placeType.type,
+    Number(property.latitude).toFixed(5),
+    Number(property.longitude).toFixed(5),
+  ].join(":");
+  const cachedPlace = getCachedNearbyPlace(cacheKey);
+  if (cachedPlace) return cachedPlace;
+
+  const searchUrl = new URL(
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(placeType.label)}.json`
+  );
+  searchUrl.searchParams.set("access_token", MAPBOX_TOKEN);
+  searchUrl.searchParams.set("country", "US");
+  searchUrl.searchParams.set("limit", "1");
+  searchUrl.searchParams.set("proximity", `${property.longitude},${property.latitude}`);
+  searchUrl.searchParams.set("types", "poi");
+
+  const response = await fetch(searchUrl);
+  if (!response.ok) return null;
+
+  const searchResult = await response.json();
+  const firstFeature = searchResult.features?.[0];
+  const [longitude, latitude] = firstFeature?.center || [];
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  const nearbyPlace = {
+    ...placeType,
+    name: firstFeature.text || placeType.label,
+    detail: firstFeature.place_name || firstFeature.properties?.address || "Nearby location",
+    latitude,
+    longitude,
+    closestPropertyId: property.id,
+    closestPropertyName: property.name,
+    distanceMiles: getDistanceInMiles(property, { latitude, longitude }),
+    source: "mapbox",
+  };
+
+  setCachedNearbyPlace(cacheKey, nearbyPlace);
+
+  return nearbyPlace;
+}
+
+function getCachedNearbyPlace(cacheKey) {
+  try {
+    const cachedValue = localStorage.getItem(cacheKey);
+    if (!cachedValue) return null;
+
+    const nearbyPlace = JSON.parse(cachedValue);
+    const latitude = Number(nearbyPlace.latitude);
+    const longitude = Number(nearbyPlace.longitude);
+    const distanceMiles = Number(nearbyPlace.distanceMiles);
+
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      !Number.isFinite(distanceMiles)
+    ) {
+      return null;
+    }
+
+    return {
+      ...nearbyPlace,
+      latitude,
+      longitude,
+      distanceMiles,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function setCachedNearbyPlace(cacheKey, nearbyPlace) {
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify(nearbyPlace));
+  } catch (error) {
+    console.warn("Could not cache nearby recommendation place.", error);
+  }
 }
 
 function getClosestNearbyPlace(places) {
