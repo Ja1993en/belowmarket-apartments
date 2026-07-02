@@ -84,9 +84,12 @@ export default function RenterPropertiesList() {
             loggedRenterLinkOpenRef.current = true;
             saveLeadEventInBackground({
               leadId: supabaseLead.id,
-              eventType: "renter_link_opened",
+              eventType: "recommendation_page_viewed",
               metadata: {
                 token,
+                viewedAt: new Date().toISOString(),
+                pageUrl: window.location.href,
+                referrer: document.referrer || "",
                 recommendedPropertyIds: supabaseLead.recommendedPropertyIds || [],
                 recommendedPropertyCount:
                   supabaseLead.recommendedPropertyIds?.length || 0,

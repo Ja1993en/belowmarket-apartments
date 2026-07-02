@@ -160,7 +160,7 @@ export default function AdminDashboard() {
         (event) => event.eventType === "lead_submitted"
     ).length;
     const renterLinkOpenedEventCount = dashboardLeadEvents.filter(
-        (event) => event.eventType === "renter_link_opened"
+        (event) => isRecommendationViewEvent(event.eventType)
     ).length;
     const recommendationSentEventCount = dashboardLeadEvents.filter(
         (event) => event.eventType === "recommendation_sent"
@@ -751,7 +751,8 @@ function getLeadEventLabel(eventType) {
     const eventLabels = {
         lead_submitted: "Lead submitted",
         recommendation_sent: "Recommendation saved",
-        renter_link_opened: "Renter link opened",
+        renter_link_opened: "Recommendation page viewed",
+        recommendation_page_viewed: "Recommendation page viewed",
         tour_requested: "Tour requested",
     };
 
@@ -772,7 +773,7 @@ function getLeadEventDescription(event) {
         return `${propertyCount} properties and ${floorPlanCount} floor plans saved.`;
     }
 
-    if (event.eventType === "renter_link_opened") {
+    if (isRecommendationViewEvent(event.eventType)) {
         const propertyCount = event.metadata?.recommendedPropertyCount || 0;
 
         return `${propertyCount} recommended properties viewed.`;
@@ -785,6 +786,10 @@ function getLeadEventDescription(event) {
     }
 
     return event.propertyName || "A lead event was tracked.";
+}
+
+function isRecommendationViewEvent(eventType) {
+    return ["renter_link_opened", "recommendation_page_viewed"].includes(eventType);
 }
 
 function formatLeadEventTime(createdAt) {

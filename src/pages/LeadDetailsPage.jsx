@@ -203,7 +203,7 @@ export default function LeadDetailsPage() {
                 category: "Tours",
             })),
             ...leadEvents
-                .filter((event) => event.eventType === "renter_link_opened")
+                .filter((event) => isRecommendationViewEvent(event.eventType))
                 .map((event) => ({
                     id: `renter-link-opened-${event.id}`,
                     title: "Recommendation page viewed",
@@ -1249,6 +1249,10 @@ function getActivityCategoryClasses(category) {
     if (category === "Admin") return "bg-[#e7f3ee] text-[#526260]";
 
     return "bg-[#e7f3ee] text-[#526260]";
+}
+
+function isRecommendationViewEvent(eventType) {
+    return ["renter_link_opened", "recommendation_page_viewed"].includes(eventType);
 }
 
 function formatActivityDate(dateValue) {
