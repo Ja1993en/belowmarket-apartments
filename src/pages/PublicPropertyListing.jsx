@@ -54,35 +54,35 @@ const NEARBY_PLACE_TYPES = [
         type: "walmart",
         color: "bg-[#2d7dd2]",
         logo: "W",
-        logoUrl: "/brand-logos/walmart.png",
+        logoUrl: "https://www.google.com/s2/favicons?domain=walmart.com&sz=64",
     },
     {
         label: "Target",
         type: "target",
         color: "bg-[#e4572e]",
         logo: "T",
-        logoUrl: "/brand-logos/target.svg",
+        logoUrl: "https://www.google.com/s2/favicons?domain=target.com&sz=64",
     },
     {
         label: "LA Fitness",
         type: "laFitness",
         color: "bg-[#173f3f]",
         logo: "LA",
-        logoUrl: "/brand-logos/la-fitness.svg",
+        logoUrl: "https://www.google.com/s2/favicons?domain=lafitness.com&sz=64",
     },
     {
         label: "Planet Fitness",
         type: "planetFitness",
         color: "bg-[#8a5b0a]",
         logo: "PF",
-        logoUrl: "/brand-logos/planet-fitness.svg",
+        logoUrl: "https://www.google.com/s2/favicons?domain=planetfitness.com&sz=64",
     },
     {
         label: "Kroger",
         type: "kroger",
         color: "bg-[#1f6f63]",
         logo: "K",
-        logoUrl: "/brand-logos/kroger.svg",
+        logoUrl: "https://www.google.com/s2/favicons?domain=kroger.com&sz=64",
     },
 ];
 const mapboxGeocodeRequests = new Map();
@@ -4298,7 +4298,7 @@ function createNearbyMapMarker(place) {
     const safeLogoUrl = escapeMapAttribute(place.logoUrl);
     const fallbackLogo = escapeMapText(place.logo || label.slice(0, 2).toUpperCase());
     const logoImageMarkup = safeLogoUrl
-        ? `<img src="${safeLogoUrl}" alt="" loading="lazy" class="absolute inset-0 h-full w-full rounded-full bg-white object-contain p-1.5" onerror="this.style.display='none'" />`
+        ? `<img src="${safeLogoUrl}" alt="" loading="lazy" class="absolute inset-0 h-full w-full rounded-full bg-white object-contain p-1" onerror="this.style.display='none'" />`
         : "";
 
     markerElement.className = "group relative flex flex-col items-center outline-none";
@@ -4311,11 +4311,10 @@ function createNearbyMapMarker(place) {
             place.detail,
             `${place.distanceMiles.toFixed(1)} miles away`,
         ])}
-        <div class="relative flex h-9 w-9 items-center justify-center rounded-full border-2 border-white ${place.color} text-[9px] font-black text-white shadow-md">
-            <span>${fallbackLogo}</span>
+        <div class="relative h-9 w-9 overflow-hidden rounded-full bg-white shadow-md ring-2 ring-white">
+            <span class="flex h-full w-full items-center justify-center rounded-full bg-white text-[9px] font-black text-[#102426] ring-1 ring-[#d7e6df]">${fallbackLogo}</span>
             ${logoImageMarkup}
         </div>
-        <div class="-mt-1.5 h-3 w-3 rotate-45 border-b-2 border-r-2 border-white ${place.color} shadow-sm"></div>
     `;
     attachMapMarkerTooltipEvents(markerElement);
 
