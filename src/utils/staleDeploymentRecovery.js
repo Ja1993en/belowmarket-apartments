@@ -6,7 +6,10 @@ const staleDeploymentErrorPatterns = [
   "Importing a module script failed",
   "error loading dynamically imported module",
   "Load failed",
+  "Failed to execute 'put' on 'Cache'",
 ];
+
+const CACHE_CLEANUP_KEY = "bmaBrowserCacheCleaned";
 
 function getErrorText(error) {
   if (!error) return "";
@@ -41,8 +44,40 @@ function reloadOnceForFreshDeployment(error) {
   window.location.reload();
 }
 
+function cleanupLegacyBrowserCaches() {
+  if (sessionStorage.getItem(CACHE_CLEANUP_KEY) === "true") {
+    return;
+  }
+
+  sessionStorage.setItem(CACHE_CLEANUP_KEY, "true");
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) =>
+        Promise.all(registrations.map((registration) => registration.unregister()))
+      )
+      .catch((error) => {
+        console.warn("Could not unregister legacy service workers.", error);
+      });
+  }
+
+  if ("caches" in window) {
+    window.caches
+      .keys()
+      .then((cacheNames) =>
+        Promise.all(cacheNames.map((cacheName) => window.caches.delete(cacheName)))
+      )
+      .catch((error) => {
+        console.warn("Could not clear legacy browser caches.", error);
+      });
+  }
+}
+
 export function registerStaleDeploymentRecovery() {
   if (typeof window === "undefined") return;
+
+  cleanupLegacyBrowserCaches();
 
   window.addEventListener("error", reloadOnceForFreshDeployment, true);
   window.addEventListener("unhandledrejection", reloadOnceForFreshDeployment);
