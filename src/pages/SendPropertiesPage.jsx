@@ -718,7 +718,7 @@ export default function SendPropertiesPage() {
             <button
               type="button"
               onClick={sendRecommendationsEmail}
-              disabled={isSendingEmail || isSavingSelections || selectedPropertyIds.length === 0 || !lead.email}
+              disabled={isSendingEmail || isSavingSelections}
               className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#f2b84b] px-6 py-4 text-sm font-black !text-[#102426] hover:bg-[#dca33c] hover:!text-[#102426] disabled:cursor-not-allowed disabled:bg-[#f2d08a] disabled:!text-[#8a5b0a] sm:w-auto"
             >
               <Mail className="h-4 w-4" />
