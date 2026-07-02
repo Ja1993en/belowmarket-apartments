@@ -9,7 +9,6 @@ import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { isNonRentOnlySpecialText } from "../utils/rentSpecials";
 import {
-  DALLAS_BUDGET_GUIDE,
   getBudgetQualificationMessage,
 } from "../utils/leadQualification";
 import {
@@ -2120,7 +2119,6 @@ function RequestInfoModal({ property, searchParams, onClose, onSubmitted }) {
               value={form.budget}
               onChange={(value) => handleChange("budget", value)}
               placeholder="$1,600"
-              helperText={DALLAS_BUDGET_GUIDE}
               required
             />
             <RequestInfoField

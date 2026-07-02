@@ -7,7 +7,6 @@ import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { getAnyPropertyById } from "../data/propertyStorage";
 import {
-  DALLAS_BUDGET_GUIDE,
   getBudgetQualificationMessage,
 } from "../utils/leadQualification";
 const emptyForm = {
@@ -313,7 +312,6 @@ export default function StartPage() {
                   value={form.budget}
                   onChange={(value) => handleChange("budget", value)}
                   placeholder="$1,600"
-                  helperText={DALLAS_BUDGET_GUIDE}
                   required
                 />
 
