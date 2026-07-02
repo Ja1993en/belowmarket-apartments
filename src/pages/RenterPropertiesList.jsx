@@ -27,7 +27,180 @@ import {
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = [-96.797, 32.7767];
 const EMPTY_ARRAY = [];
+const NEARBY_PLACE_RADIUS_MILES = 12;
 const mapboxGeocodeRequests = new Map();
+
+const NEARBY_PLACE_TYPES = [
+  { label: "Walmart", type: "walmart", color: "bg-[#2d7dd2]" },
+  { label: "Target", type: "target", color: "bg-[#e4572e]" },
+  { label: "LA Fitness", type: "laFitness", color: "bg-[#173f3f]" },
+  { label: "Planet Fitness", type: "planetFitness", color: "bg-[#8a5b0a]" },
+  { label: "Kroger", type: "kroger", color: "bg-[#1f6f63]" },
+];
+
+const NEARBY_PLACE_CATALOG = [
+  {
+    type: "walmart",
+    name: "Walmart Supercenter",
+    detail: "Retail Road, Dallas",
+    latitude: 32.8613,
+    longitude: -96.7614,
+  },
+  {
+    type: "walmart",
+    name: "Walmart Supercenter",
+    detail: "North Cockrell Hill Road, Dallas",
+    latitude: 32.7538,
+    longitude: -96.8906,
+  },
+  {
+    type: "walmart",
+    name: "Walmart Supercenter",
+    detail: "Webb Chapel Road, Dallas",
+    latitude: 32.8674,
+    longitude: -96.8712,
+  },
+  {
+    type: "walmart",
+    name: "Walmart Supercenter",
+    detail: "Market Place Boulevard, Irving",
+    latitude: 32.8369,
+    longitude: -96.9632,
+  },
+  {
+    type: "walmart",
+    name: "Walmart Supercenter",
+    detail: "North Garland Avenue, Garland",
+    latitude: 32.9613,
+    longitude: -96.6462,
+  },
+  {
+    type: "target",
+    name: "Target",
+    detail: "Cityplace Market, Dallas",
+    latitude: 32.8058,
+    longitude: -96.7857,
+  },
+  {
+    type: "target",
+    name: "Target",
+    detail: "Medallion Center, Dallas",
+    latitude: 32.8647,
+    longitude: -96.7522,
+  },
+  {
+    type: "target",
+    name: "Target",
+    detail: "Belt Line Road, Addison",
+    latitude: 32.9534,
+    longitude: -96.8531,
+  },
+  {
+    type: "target",
+    name: "Target",
+    detail: "West Airport Freeway, Irving",
+    latitude: 32.8364,
+    longitude: -96.9947,
+  },
+  {
+    type: "target",
+    name: "Target",
+    detail: "North Garland Avenue, Garland",
+    latitude: 32.9618,
+    longitude: -96.6478,
+  },
+  {
+    type: "laFitness",
+    name: "LA Fitness",
+    detail: "East Mockingbird Lane, Dallas",
+    latitude: 32.8374,
+    longitude: -96.7705,
+  },
+  {
+    type: "laFitness",
+    name: "LA Fitness",
+    detail: "Marsh Lane, Dallas",
+    latitude: 32.9142,
+    longitude: -96.8568,
+  },
+  {
+    type: "laFitness",
+    name: "LA Fitness",
+    detail: "North MacArthur Boulevard, Irving",
+    latitude: 32.8737,
+    longitude: -96.9598,
+  },
+  {
+    type: "laFitness",
+    name: "LA Fitness",
+    detail: "West Campbell Road, Richardson",
+    latitude: 32.9759,
+    longitude: -96.7686,
+  },
+  {
+    type: "planetFitness",
+    name: "Planet Fitness",
+    detail: "Ross Avenue, Dallas",
+    latitude: 32.8137,
+    longitude: -96.7714,
+  },
+  {
+    type: "planetFitness",
+    name: "Planet Fitness",
+    detail: "Buckner Boulevard, Dallas",
+    latitude: 32.7937,
+    longitude: -96.6865,
+  },
+  {
+    type: "planetFitness",
+    name: "Planet Fitness",
+    detail: "Frankford Road, Dallas",
+    latitude: 32.9991,
+    longitude: -96.8296,
+  },
+  {
+    type: "planetFitness",
+    name: "Planet Fitness",
+    detail: "North Belt Line Road, Irving",
+    latitude: 32.8559,
+    longitude: -96.9924,
+  },
+  {
+    type: "kroger",
+    name: "Kroger",
+    detail: "Cedar Springs Road, Dallas",
+    latitude: 32.8137,
+    longitude: -96.8079,
+  },
+  {
+    type: "kroger",
+    name: "Kroger",
+    detail: "East Mockingbird Lane, Dallas",
+    latitude: 32.8365,
+    longitude: -96.7703,
+  },
+  {
+    type: "kroger",
+    name: "Kroger",
+    detail: "Maple Avenue, Dallas",
+    latitude: 32.8182,
+    longitude: -96.8244,
+  },
+  {
+    type: "kroger",
+    name: "Kroger",
+    detail: "Preston Road, Dallas",
+    latitude: 32.9855,
+    longitude: -96.8048,
+  },
+  {
+    type: "kroger",
+    name: "Kroger",
+    detail: "North Garland Avenue, Garland",
+    latitude: 32.9631,
+    longitude: -96.6485,
+  },
+];
 
 export default function RenterPropertiesList() {
   const { token } = useParams();
@@ -812,6 +985,10 @@ function RecommendationMapPanel({
   const markersRef = useRef([]);
   const [mapboxGl, setMapboxGl] = useState(null);
   const [mapError, setMapError] = useState("");
+  const nearbyPlaces = useMemo(
+    () => resolveNearbyPlacesForRecommendations(properties),
+    [properties]
+  );
 
   useEffect(() => {
     if (!MAPBOX_TOKEN) {
@@ -900,9 +1077,21 @@ function RecommendationMapPanel({
       bounds.extend([property.longitude, property.latitude]);
     });
 
-    if (properties.length > 1) {
+    nearbyPlaces.forEach((place) => {
+      const marker = new mapboxGl.Marker({
+        element: createNearbyMapMarker(place),
+        anchor: "bottom",
+      })
+        .setLngLat([place.longitude, place.latitude])
+        .addTo(map);
+
+      markersRef.current.push(marker);
+      bounds.extend([place.longitude, place.latitude]);
+    });
+
+    if (properties.length + nearbyPlaces.length > 1) {
       map.fitBounds(bounds, {
-        padding: 70,
+        padding: window.innerWidth < 640 ? 48 : 70,
         maxZoom: 12.8,
         duration: 500,
       });
@@ -913,7 +1102,7 @@ function RecommendationMapPanel({
         duration: 500,
       });
     }
-  }, [mapboxGl, onPropertyHover, properties]);
+  }, [mapboxGl, nearbyPlaces, onPropertyHover, properties]);
 
   useEffect(() => {
     markersRef.current.forEach((marker) => {
@@ -953,6 +1142,19 @@ function RecommendationMapPanel({
             className="h-[340px] w-full bg-[#dcebe4] sm:h-[420px] md:h-[calc(100vh-7rem)] md:min-h-[360px] md:max-h-[640px]"
           />
         )}
+      </div>
+
+      <div className="flex max-h-32 flex-wrap items-center gap-2 overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <MapLegendItem color="bg-[#f2b84b]" label="Apartments" />
+
+        {NEARBY_PLACE_TYPES.map((placeType) => (
+          <MapLegendItem
+            key={placeType.type}
+            color={placeType.color}
+            label={placeType.label}
+            distance={getNearbyLegendDistance(nearbyPlaces, placeType.type)}
+          />
+        ))}
       </div>
     </div>
   );
@@ -1140,14 +1342,53 @@ function createRecommendationMapPinElement(property) {
   markerElement.type = "button";
   markerElement.dataset.propertyId = property.id;
   markerElement.className =
-    "group flex h-8 w-8 items-center justify-center rounded-full focus:outline-none";
+    "group relative flex -translate-y-1 flex-col items-center focus:outline-none";
   markerElement.title = property.name;
   markerElement.setAttribute("aria-label", `${property.name} map pin. Preview recommendation.`);
   markerElement.innerHTML = `
+    ${getMapMarkerTooltipHtml(property.name, [
+      getPropertyAddressLabel(property) || property.area || "Recommended apartment",
+      property.special || "",
+    ])}
     <span
       data-recommendation-map-pin-dot="true"
-      class="block h-3.5 w-3.5 rounded-full border-2 border-white bg-[#173f3f] shadow-[0_2px_7px_rgba(16,36,38,0.28)] ring-2 ring-[#f2b84b] ring-offset-1 ring-offset-white transition group-hover:scale-125 group-focus:scale-125 group-hover:ring-4"
-    ></span>
+      class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#f2b84b] text-[10px] font-black text-[#102426] shadow-lg ring-1 ring-[#8a5b0a]/25 transition group-hover:scale-110 group-focus:scale-110"
+    >BMA</span>
+    <span class="-mt-1.5 h-3 w-3 rotate-45 border-b-2 border-r-2 border-white bg-[#f2b84b] shadow-sm"></span>
+  `;
+
+  return markerElement;
+}
+
+function createNearbyMapMarker(place) {
+  const colors = {
+    walmart: "bg-[#2d7dd2]",
+    target: "bg-[#e4572e]",
+    laFitness: "bg-[#173f3f]",
+    planetFitness: "bg-[#8a5b0a]",
+    kroger: "bg-[#1f6f63]",
+  };
+  const abbreviations = {
+    walmart: "W",
+    target: "T",
+    laFitness: "LA",
+    planetFitness: "PF",
+    kroger: "K",
+  };
+  const markerElement = document.createElement("div");
+  const label = getCleanNearbyPlaceLabel(place);
+
+  markerElement.className = "group relative flex flex-col items-center outline-none";
+  markerElement.title = `${label} - ${place.distanceMiles.toFixed(1)} miles away`;
+  markerElement.tabIndex = 0;
+  markerElement.setAttribute("role", "button");
+  markerElement.setAttribute("aria-label", markerElement.title);
+  markerElement.innerHTML = `
+    ${getMapMarkerTooltipHtml(label, [
+      place.detail,
+      `${place.distanceMiles.toFixed(1)} miles from the closest recommendation`,
+    ])}
+    <div class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white ${colors[place.type]} text-[10px] font-black text-white shadow-md">${abbreviations[place.type]}</div>
   `;
 
   return markerElement;
@@ -1157,6 +1398,111 @@ function setRecommendationMapPinHighlight(markerElement, isHighlighted) {
   const pinDotElement = markerElement.querySelector("[data-recommendation-map-pin-dot='true']");
   if (!pinDotElement) return;
 
-  pinDotElement.classList.toggle("scale-125", isHighlighted);
+  pinDotElement.classList.toggle("scale-110", isHighlighted);
   pinDotElement.classList.toggle("ring-4", isHighlighted);
+}
+
+function MapLegendItem({ color, label, distance }) {
+  return (
+    <div className="flex w-fit max-w-full flex-none items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] sm:w-auto xl:min-w-[150px]">
+      <span className={`h-3 w-3 shrink-0 rounded-full ${color}`} />
+      <span className="min-w-0 max-w-[7.5rem] truncate sm:max-w-none sm:flex-1">
+        {label}
+      </span>
+      {distance && (
+        <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-[#526260]">
+          {distance}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function resolveNearbyPlacesForRecommendations(properties) {
+  const mappedProperties = properties.filter(
+    (property) =>
+      Number.isFinite(property?.latitude) && Number.isFinite(property?.longitude)
+  );
+
+  if (mappedProperties.length === 0) return [];
+
+  return NEARBY_PLACE_TYPES.map((placeType) => {
+    const matchingPlaces = NEARBY_PLACE_CATALOG.filter(
+      (place) => place.type === placeType.type
+    ).map((place) => {
+      const distanceMiles = Math.min(
+        ...mappedProperties.map((property) => getDistanceInMiles(property, place))
+      );
+
+      return {
+        ...placeType,
+        ...place,
+        distanceMiles,
+      };
+    });
+
+    return getClosestNearbyPlace(matchingPlaces);
+  }).filter(
+    (place) => place && place.distanceMiles <= NEARBY_PLACE_RADIUS_MILES
+  );
+}
+
+function getClosestNearbyPlace(places) {
+  if (places.length === 0) return null;
+
+  return [...places].sort(
+    (firstPlace, secondPlace) => firstPlace.distanceMiles - secondPlace.distanceMiles
+  )[0];
+}
+
+function getNearbyLegendDistance(nearbyPlaces, type) {
+  const matchedPlace = nearbyPlaces.find((place) => place.type === type);
+
+  if (!matchedPlace || !Number.isFinite(matchedPlace.distanceMiles)) return "";
+
+  return `${matchedPlace.distanceMiles.toFixed(1)} mi`;
+}
+
+function getCleanNearbyPlaceLabel(place) {
+  return place?.label || place?.name || "Nearby place";
+}
+
+function getDistanceInMiles(firstPoint, secondPoint) {
+  const earthRadiusMiles = 3958.8;
+  const firstLatitude = degreesToRadians(firstPoint.latitude);
+  const secondLatitude = degreesToRadians(secondPoint.latitude);
+  const latitudeDistance = degreesToRadians(secondPoint.latitude - firstPoint.latitude);
+  const longitudeDistance = degreesToRadians(secondPoint.longitude - firstPoint.longitude);
+  const haversine =
+    Math.sin(latitudeDistance / 2) ** 2 +
+    Math.cos(firstLatitude) *
+      Math.cos(secondLatitude) *
+      Math.sin(longitudeDistance / 2) ** 2;
+
+  return 2 * earthRadiusMiles * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+}
+
+function degreesToRadians(degrees) {
+  return degrees * (Math.PI / 180);
+}
+
+function getMapMarkerTooltipHtml(title, details = []) {
+  const detailRows = details.filter(Boolean);
+
+  return `
+    <div data-map-marker-tooltip="true" class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-64 -translate-x-1/2 rounded-2xl bg-white p-3 text-left text-xs leading-5 text-[#526260] shadow-xl ring-1 ring-[#d7e6df] group-hover:block group-focus:block">
+      <p class="text-sm font-black text-[#102426]">${escapeMapText(title)}</p>
+      ${detailRows
+        .map((detail) => `<p class="mt-1 font-semibold">${escapeMapText(detail)}</p>`)
+        .join("")}
+    </div>
+  `;
+}
+
+function escapeMapText(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
