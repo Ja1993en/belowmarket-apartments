@@ -1386,7 +1386,7 @@ function createNearbyMapMarker(place) {
   markerElement.innerHTML = `
     ${getMapMarkerTooltipHtml(label, [
       place.detail,
-      `${place.distanceMiles.toFixed(1)} miles from the closest recommendation`,
+      `${place.distanceMiles.toFixed(1)} miles from ${place.closestPropertyName || "a recommended property"}`,
     ])}
     <div class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white ${colors[place.type]} text-[10px] font-black text-white shadow-md">${abbreviations[place.type]}</div>
   `;
@@ -1426,25 +1426,48 @@ function resolveNearbyPlacesForRecommendations(properties) {
 
   if (mappedProperties.length === 0) return [];
 
-  return NEARBY_PLACE_TYPES.map((placeType) => {
-    const matchingPlaces = NEARBY_PLACE_CATALOG.filter(
-      (place) => place.type === placeType.type
-    ).map((place) => {
-      const distanceMiles = Math.min(
-        ...mappedProperties.map((property) => getDistanceInMiles(property, place))
+  const nearbyPlacesByStore = new Map();
+
+  mappedProperties.forEach((property) => {
+    NEARBY_PLACE_TYPES.forEach((placeType) => {
+      const closestPlace = getClosestNearbyPlace(
+        NEARBY_PLACE_CATALOG.filter((place) => place.type === placeType.type).map(
+          (place) => ({
+            ...placeType,
+            ...place,
+            closestPropertyId: property.id,
+            closestPropertyName: property.name,
+            distanceMiles: getDistanceInMiles(property, place),
+          })
+        )
       );
 
-      return {
-        ...placeType,
-        ...place,
-        distanceMiles,
-      };
-    });
+      if (!closestPlace || closestPlace.distanceMiles > NEARBY_PLACE_RADIUS_MILES) {
+        return;
+      }
 
-    return getClosestNearbyPlace(matchingPlaces);
-  }).filter(
-    (place) => place && place.distanceMiles <= NEARBY_PLACE_RADIUS_MILES
-  );
+      const storeKey = [
+        closestPlace.type,
+        closestPlace.name,
+        closestPlace.detail,
+        closestPlace.latitude,
+        closestPlace.longitude,
+      ].join(":");
+      const savedPlace = nearbyPlacesByStore.get(storeKey);
+
+      if (!savedPlace || closestPlace.distanceMiles < savedPlace.distanceMiles) {
+        nearbyPlacesByStore.set(storeKey, closestPlace);
+      }
+    });
+  });
+
+  return [...nearbyPlacesByStore.values()].sort((firstPlace, secondPlace) => {
+    if (firstPlace.type !== secondPlace.type) {
+      return firstPlace.type.localeCompare(secondPlace.type);
+    }
+
+    return firstPlace.distanceMiles - secondPlace.distanceMiles;
+  });
 }
 
 function getClosestNearbyPlace(places) {
@@ -1456,7 +1479,11 @@ function getClosestNearbyPlace(places) {
 }
 
 function getNearbyLegendDistance(nearbyPlaces, type) {
-  const matchedPlace = nearbyPlaces.find((place) => place.type === type);
+  const matchedPlaces = nearbyPlaces.filter((place) => place.type === type);
+
+  if (matchedPlaces.length > 1) return `${matchedPlaces.length} pins`;
+
+  const [matchedPlace] = matchedPlaces;
 
   if (!matchedPlace || !Number.isFinite(matchedPlace.distanceMiles)) return "";
 
