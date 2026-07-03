@@ -1193,7 +1193,7 @@ function RecommendationMapPanel({
         )}
       </div>
 
-      <div className="flex max-h-32 flex-wrap items-center gap-2 overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid max-h-32 grid-cols-2 gap-2 overflow-x-hidden overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <MapLegendItem
           color="bg-[#f2b84b]"
           label="Apartments"
@@ -1469,7 +1469,7 @@ function MapLegendItem({
   distance,
 }) {
   return (
-    <div className="flex w-fit max-w-full flex-none items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] sm:w-auto xl:min-w-[150px]">
+    <div className="flex w-full min-w-0 max-w-full items-center gap-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#102426] xl:min-w-[150px]">
       <span
         className={`relative flex h-8 min-w-8 shrink-0 items-center justify-center rounded-xl px-1.5 text-[9px] font-black leading-none shadow-sm ring-1 ring-white ${color} ${logoTextClassName}`}
       >
