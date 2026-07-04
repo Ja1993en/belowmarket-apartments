@@ -736,7 +736,7 @@ export default function PropertySearchPage() {
                           Monthly budget
                         </p>
                         <p className="mt-1 text-xs font-semibold text-[#526260]">
-                          Scroll to choose the range that fits.
+                          Filters use listed rent because approval is usually based on normal monthly rent.
                         </p>
                       </div>
                       <div className="max-h-72 overflow-y-auto">
@@ -2461,6 +2461,9 @@ function SearchResultCard({
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
+          <span className="rounded-full bg-[#fff8e6] px-3 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a] md:px-2 md:py-0.5 md:text-[9px] lg:px-2.5 lg:text-[10px] xl:px-3 xl:py-1 xl:text-[11px]">
+            Approval based on listed rent
+          </span>
           <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df] md:px-2 md:py-0.5 md:text-[9px] lg:px-2.5 lg:text-[10px] xl:px-3 xl:py-1 xl:text-[11px]">
             {floorPlanCount} matching floor plan{floorPlanCount === 1 ? "" : "s"}
           </span>
@@ -3056,7 +3059,7 @@ function getPriceFilteredSearchFloorPlan(property, floorPlan, priceOption) {
 
   if (availableUnits.length > 0) {
     const priceMatchedUnits = availableUnits.filter((unit) =>
-      getUnitFilterRentValues(property, floorPlan, unit).some((rentValue) =>
+      getUnitFilterRentValues(floorPlan, unit).some((rentValue) =>
         rentValueMatchesPriceOption(rentValue, priceOption)
       )
     );
@@ -3066,7 +3069,7 @@ function getPriceFilteredSearchFloorPlan(property, floorPlan, priceOption) {
       : null;
   }
 
-  return getFloorPlanFilterRentValues(property, floorPlan).some((rentValue) =>
+  return getFloorPlanFilterRentValues(floorPlan).some((rentValue) =>
     rentValueMatchesPriceOption(rentValue, priceOption)
   )
     ? floorPlan
@@ -3074,43 +3077,17 @@ function getPriceFilteredSearchFloorPlan(property, floorPlan, priceOption) {
 }
 
 function getPropertyFilterRentValues(property, floorPlans = getSearchFloorPlans(property)) {
-  const priceSummary = getPropertySearchPriceSummary(property, floorPlans);
-  const specialDealUnits = getSearchSpecialDealUnits(property, floorPlans);
-  const specialRentValues = specialDealUnits
-    .filter((dealUnit) => dealUnit.hasRentSpecial)
-    .map((dealUnit) => dealUnit.effectiveRentNumber)
-    .filter((value) => value > 0);
-
-  if (specialRentValues.length > 0) return specialRentValues;
-
-  return [
-    ...getNormalRentValues(property, floorPlans),
-    parseFirstCurrency(priceSummary.effectiveRentLabel),
-    parseFirstCurrency(priceSummary.normalRentLabel),
-  ].filter(Boolean);
+  return getNormalRentValues(property, floorPlans);
 }
 
-function getFloorPlanFilterRentValues(property, floorPlan) {
-  const floorPlanSpecial = getFloorPlanSearchSpecial(floorPlan, property);
+function getFloorPlanFilterRentValues(floorPlan) {
   const availableUnits =
     floorPlan.availableUnits?.filter((unit) => unit.status !== "leased") || [];
 
   if (availableUnits.length > 0) {
     return availableUnits
-      .flatMap((unit) => getUnitFilterRentValues(property, floorPlan, unit))
+      .flatMap((unit) => getUnitFilterRentValues(floorPlan, unit))
       .filter(Boolean);
-  }
-
-  if (floorPlanSpecial.hasSpecial) {
-    const specialDealUnit = createSearchSpecialDealUnit({
-      floorPlan,
-      unitRent: floorPlan.startingRent || floorPlan.rent || property?.rent,
-      specialLabel: floorPlanSpecial.label,
-      freeWeeks: floorPlanSpecial.freeWeeks,
-      rentCreditSpecial: floorPlanSpecial.rentCreditSpecial,
-    });
-
-    if (specialDealUnit.hasRentSpecial) return [specialDealUnit.effectiveRentNumber];
   }
 
   return [
@@ -3120,25 +3097,9 @@ function getFloorPlanFilterRentValues(property, floorPlan) {
   ].filter(Boolean);
 }
 
-function getUnitFilterRentValues(property, floorPlan, unit) {
-  const floorPlanSpecial = getFloorPlanSearchSpecial(floorPlan, property);
-  const unitSpecial = getUnitSearchSpecial(unit, floorPlanSpecial);
+function getUnitFilterRentValues(floorPlan, unit) {
   const unitRent =
     unit.rent || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent;
-
-  if (unitSpecial.hasSpecial) {
-    const specialDealUnit = createSearchSpecialDealUnit({
-      floorPlan,
-      unitRent,
-      specialLabel: unitSpecial.label,
-      freeWeeks: unitSpecial.freeWeeks,
-      rentCreditSpecial: unitSpecial.rentCreditSpecial,
-    });
-
-    return specialDealUnit.hasRentSpecial
-      ? [specialDealUnit.effectiveRentNumber]
-      : parseCurrencyValues(unitRent);
-  }
 
   return parseCurrencyValues(unitRent);
 }
