@@ -2460,10 +2460,11 @@ function SearchResultCard({
           ))}
         </div>
 
+        <p className="mt-1.5 text-[10px] font-semibold leading-4 text-[#526260] md:mt-1 md:text-[8px] lg:text-[9px] xl:mt-1.5 xl:text-[10px]">
+          Approval is usually based on listed rent, not after-special rent.
+        </p>
+
         <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-1.5 md:gap-1 xl:mt-3 xl:gap-2">
-          <span className="rounded-full bg-[#fff8e6] px-3 py-1 text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a] md:px-2 md:py-0.5 md:text-[9px] lg:px-2.5 lg:text-[10px] xl:px-3 xl:py-1 xl:text-[11px]">
-            Approval based on listed rent
-          </span>
           <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-[11px] font-black text-[#526260] ring-1 ring-[#d7e6df] md:px-2 md:py-0.5 md:text-[9px] lg:px-2.5 lg:text-[10px] xl:px-3 xl:py-1 xl:text-[11px]">
             {floorPlanCount} matching floor plan{floorPlanCount === 1 ? "" : "s"}
           </span>
