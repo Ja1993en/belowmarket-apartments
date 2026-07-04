@@ -281,44 +281,42 @@ function ComparePropertiesTab({
 
   if (isMobileModal) {
     return (
-      <div className="mt-2 grid gap-1.5">
+      <div className="mt-4 grid gap-2">
         {rows.map(({ property, priceSummary }) => (
           <div
             key={property.id}
-            className="rounded-lg bg-white p-2 ring-1 ring-[#d7e6df]"
+            className="rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]"
           >
-            <div className="flex min-w-0 items-center gap-2">
-              <Link
-                to={`/properties/${property.id}`}
-                className="flex min-w-0 flex-1 gap-2 hover:opacity-90"
-              >
-                <img
-                  alt={property.name}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-12 w-14 shrink-0 rounded-md object-cover"
-                  src={getPropertyPrimaryImage(property)}
-                />
-                <span className="min-w-0 flex-1 self-center">
-                  <span className="block truncate text-[11px] font-black leading-tight text-[#102426]">
-                    {property.name}
-                  </span>
-                  <span className="mt-0.5 block truncate text-[10px] font-semibold leading-tight text-[#526260]">
-                    {property.area || property.neighborhood || property.city || "Dallas"}
-                  </span>
-                  <span className="mt-0.5 block truncate text-[10px] font-bold leading-tight text-[#8a5b0a]">
-                    {priceSummary.specialLabel || "No special listed"}
-                  </span>
+            <Link
+              to={`/properties/${property.id}`}
+              className="flex min-w-0 gap-3 hover:opacity-90"
+            >
+              <img
+                alt={property.name}
+                loading="lazy"
+                decoding="async"
+                className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                src={getPropertyPrimaryImage(property)}
+              />
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-black text-[#102426]">
+                  {property.name}
                 </span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => onRemove(property.id)}
-                className="h-7 shrink-0 rounded-md border border-[#f2b84b] bg-[#b42318] px-2 text-[10px] font-black leading-none !text-white hover:bg-[#8f1d15] hover:!text-white"
-              >
-                Remove
-              </button>
-            </div>
+                <span className="mt-1 block truncate text-xs font-semibold text-[#526260]">
+                  {property.area || property.neighborhood || property.city || "Dallas"}
+                </span>
+                <span className="mt-1 block truncate text-xs font-bold text-[#8a5b0a]">
+                  {priceSummary.specialLabel || "No special listed"}
+                </span>
+              </span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => onRemove(property.id)}
+              className="mt-3 w-full rounded-xl border border-[#f2b84b] bg-[#b42318] px-3 py-2 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+            >
+              Remove from compare
+            </button>
           </div>
         ))}
       </div>
