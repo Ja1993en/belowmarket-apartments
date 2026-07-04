@@ -2423,9 +2423,9 @@ function SearchResultCard({
           {rentRollupItems.map((item) => (
             <div
               key={item.label}
-              className="min-w-0 flex-1 border-r border-[#d7e6df] px-2 py-2 text-center last:border-r-0 md:px-1.5 md:py-1.5 lg:px-2 xl:px-3 xl:py-2.5"
+              className="min-w-0 flex-1 border-r border-[#d7e6df] px-2 py-2 text-center last:border-r-0"
             >
-              <p className="truncate text-[10px] font-black uppercase leading-none text-[#526260] md:text-[8px] lg:text-[9px] xl:text-[10px]">
+              <p className="truncate text-[10px] font-black uppercase leading-none text-[#526260]">
                 {item.label}
               </p>
               {item.hasAfterSpecialRent ? (
@@ -2433,25 +2433,25 @@ function SearchResultCard({
                   <p className="mt-1 truncate text-sm font-black leading-tight text-[#b7791f] sm:hidden">
                     {item.afterSpecialPrice}
                   </p>
-                  <p className="mt-0.5 truncate text-[6px] font-black uppercase leading-none tracking-normal text-[#526260] sm:hidden">
+                  <p className="mt-0.5 truncate text-[7px] font-black uppercase leading-none tracking-normal text-[#526260] sm:hidden">
                     after special
                   </p>
-                  <p className="mt-1 hidden min-w-0 text-sm font-bold leading-tight text-[#1f6f63] sm:block md:text-[11px] lg:text-xs xl:text-base">
+                  <p className="mt-1 hidden min-w-0 text-sm font-bold leading-tight text-[#1f6f63] sm:block">
                     <span className="whitespace-nowrap font-black text-[#b7791f]">{item.afterSpecialPrice}</span>{" "}
-                    <span className="align-baseline text-[7px] font-black uppercase leading-none tracking-wide text-[#526260] lg:text-[8px] xl:text-[9px]">
+                    <span className="align-baseline text-[7px] font-black uppercase leading-none tracking-wide text-[#526260]">
                       after special
                     </span>
                   </p>
-                  <p className="mt-0.5 truncate text-[9px] font-black leading-tight text-[#526260] md:text-[8px] lg:text-[9px] xl:text-[10px]">
+                  <p className="mt-0.5 truncate text-[9px] font-black leading-tight text-[#526260]">
                     Listed {item.listedPrice}
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#102426] md:text-[11px] lg:text-xs xl:text-base">
+                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#102426]">
                     {item.listedPrice}
                   </p>
-                  <p className="mt-0.5 truncate text-[9px] font-black leading-tight text-[#526260] md:text-[8px] lg:text-[9px] xl:text-[10px]">
+                  <p className="mt-0.5 truncate text-[9px] font-black leading-tight text-[#526260]">
                     Listed rent
                   </p>
                 </>

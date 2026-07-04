@@ -1172,14 +1172,14 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
           {rentRollupItems.map((item) => (
             <div
               key={item.label}
-              className="min-w-0 flex-1 border-r border-[#d7e6df] px-2 py-2.5 text-center last:border-r-0 sm:px-3"
+              className="min-w-0 flex-1 border-r border-[#d7e6df] px-2 py-2 text-center last:border-r-0"
             >
               <p className="truncate text-[10px] font-black uppercase leading-none text-[#526260]">
                 {item.label}
               </p>
               {item.hasAfterSpecialRent ? (
                 <>
-                  <p className="mt-1 truncate text-base font-black leading-tight text-[#b7791f] md:text-sm lg:text-base">
+                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#b7791f]">
                     {item.afterSpecialPrice}
                   </p>
                   <p className="mt-0.5 truncate text-[7px] font-black uppercase leading-none text-[#526260]">
@@ -1191,7 +1191,7 @@ function LandingPropertyCard({ property, isMapHighlighted, onMapHover }) {
                 </>
               ) : (
                 <>
-                  <p className="mt-1 truncate text-base font-black leading-tight text-[#102426] md:text-sm lg:text-base">
+                  <p className="mt-1 truncate text-sm font-black leading-tight text-[#102426]">
                     {item.listedPrice}
                   </p>
                   <p className="mt-0.5 truncate text-[10px] font-black leading-tight text-[#526260]">
