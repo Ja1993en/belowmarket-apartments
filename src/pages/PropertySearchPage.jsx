@@ -1197,7 +1197,7 @@ export default function PropertySearchPage() {
 
       {isCompareModalOpen && hasCompareItems && (
         <div
-          className="fixed inset-0 z-[60] bg-[#102426]/55 p-3 backdrop-blur-sm md:p-5"
+          className="fixed inset-0 z-[60] bg-[#102426]/55 p-2 backdrop-blur-sm sm:p-3 md:p-5"
           role="dialog"
           aria-modal="true"
           aria-label="Compare selected apartments"
@@ -1207,8 +1207,8 @@ export default function PropertySearchPage() {
             }
           }}
         >
-          <div className="mx-auto flex h-full max-w-lg flex-col overflow-hidden rounded-2xl bg-[#f5f8f1] shadow-2xl md:max-w-5xl">
-            <div className="flex items-center justify-between border-b border-[#d7e6df] bg-white px-4 py-3">
+          <div className="mx-auto flex h-full max-w-lg flex-col overflow-hidden rounded-xl bg-[#f5f8f1] shadow-2xl sm:rounded-2xl md:max-w-5xl">
+            <div className="flex items-center justify-between border-b border-[#d7e6df] bg-white px-3 py-2.5 sm:px-4 sm:py-3">
               <div>
                 <p className="text-sm font-black text-[#102426]">
                   Compare selected options
@@ -1226,7 +1226,7 @@ export default function PropertySearchPage() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto p-3 pb-24">
+            <div className="min-h-0 flex-1 overflow-y-auto p-2 pb-20 sm:p-3 sm:pb-24">
               <div className="md:hidden">
                 {renderComparePanel({ isMobileModal: true })}
               </div>
