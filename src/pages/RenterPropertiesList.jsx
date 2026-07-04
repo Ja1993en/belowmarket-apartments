@@ -1193,7 +1193,7 @@ function RecommendationMapPanel({
         )}
       </div>
 
-      <div className="grid max-h-32 grid-cols-1 gap-1.5 overflow-x-hidden overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-[#fbfdfb] p-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid max-h-32 grid-cols-1 gap-2 overflow-x-hidden overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 xl:grid-cols-3">
         <MapLegendItem
           color="bg-[#f2b84b]"
           label="Apartments"
@@ -1469,9 +1469,9 @@ function MapLegendItem({
   distance,
 }) {
   return (
-    <div className="grid min-h-10 w-full min-w-0 max-w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 text-xs font-black text-[#102426] shadow-sm ring-1 ring-[#d7e6df]">
+    <div className="grid min-h-11 w-full min-w-0 max-w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl bg-[#fbfdfb] px-3 py-2 text-xs font-black text-[#102426] ring-1 ring-[#d7e6df]">
       <span
-        className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl px-1.5 text-[9px] font-black leading-none shadow-sm ring-1 ring-white ${color} ${logoTextClassName}`}
+        className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full px-1.5 text-[9px] font-black leading-none shadow-sm ring-1 ring-white ${color} ${logoTextClassName}`}
       >
         <span>{logo}</span>
         {logoUrl && (
@@ -1479,7 +1479,7 @@ function MapLegendItem({
             src={logoUrl}
             alt=""
             loading="lazy"
-            className="absolute inset-0 h-full w-full rounded-xl bg-white object-contain p-1"
+            className="absolute inset-0 h-full w-full rounded-full bg-white object-contain p-1"
             onError={(event) => {
               event.currentTarget.style.display = "none";
             }}
@@ -1489,11 +1489,11 @@ function MapLegendItem({
       <span className="min-w-0 whitespace-normal text-xs font-black leading-4 text-[#102426]">
         {label}
       </span>
-        {distance && (
-          <span className="shrink-0 whitespace-nowrap text-[10px] font-black leading-none text-[#526260]">
-            {distance}
-          </span>
-        )}
+      {distance && (
+        <span className="shrink-0 whitespace-nowrap rounded-lg bg-white px-2 py-1 text-[10px] font-black leading-none text-[#526260] ring-1 ring-[#edf4ef]">
+          {distance}
+        </span>
+      )}
     </div>
   );
 }
