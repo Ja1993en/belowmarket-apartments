@@ -310,7 +310,7 @@ export default function HomePage() {
                 )}
 
                 {featuredDallasDeals.length > 0 ? (
-                    <div className="mt-5 grid auto-cols-[minmax(84vw,1fr)] grid-flow-col gap-4 overflow-x-auto pb-3 sm:auto-cols-[minmax(260px,1fr)] xl:grid-flow-row xl:grid-cols-4 xl:overflow-visible xl:pb-0">
+                    <div className="mt-5 grid auto-cols-[minmax(86vw,1fr)] grid-flow-col gap-4 overflow-x-auto pb-3 sm:auto-cols-[minmax(270px,1fr)] xl:grid-flow-row xl:grid-cols-4 xl:overflow-visible xl:pb-0">
                         {featuredDallasDeals.map((property) => (
                             <SuggestedRentalCard
                                 key={property.id}
@@ -1188,15 +1188,15 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
     const showBeforeSpecials = dealSummary.hasSpecial && normalRentLabel && normalRentLabel !== effectiveRentLabel;
     const bedsLabel = getBedsLabel(property, matchedFloorPlan);
     const addressLabel = getAddressLabel(property);
-    const savingsValue = matchedFloorPlan?.savings || property.savings || "";
-    const hasSavings = parseCurrency(savingsValue) > 0;
-    const badgeLabel = dealSummary.badgeLabel || (hasSavings ? `${savingsValue} savings` : "");
+    const savingsLabel = dealSummary.concessionValueLabel || matchedFloorPlan?.savings || property.savings || "";
+    const hasSavings = parseCurrency(savingsLabel) > 0;
+    const badgeLabel = dealSummary.badgeLabel || (hasSavings ? `${savingsLabel} savings` : "");
     const cardHref = `/properties/${property.id}`;
 
     return (
         <Link
             to={cardHref}
-            className="group overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-[0_16px_36px_rgba(16,36,38,0.12)] transition duration-200 ease-out hover:-translate-y-1.5 hover:border-[#f2b84b] hover:shadow-[0_22px_48px_rgba(16,36,38,0.18)] hover:ring-2 hover:ring-[#f2b84b]/45"
+            className="group overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-[0_14px_34px_rgba(16,36,38,0.12)] transition duration-200 ease-out hover:-translate-y-1.5 hover:border-[#f2b84b] hover:shadow-[0_22px_48px_rgba(16,36,38,0.18)] hover:ring-2 hover:ring-[#f2b84b]/45"
         >
             <div className="relative overflow-hidden bg-[#102426]">
                 <img
@@ -1204,75 +1204,76 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     alt={property.name}
                     loading="lazy"
                     decoding="async"
-                    className="aspect-[5/4] w-full object-cover transition duration-300 group-hover:scale-105 sm:aspect-[4/3]"
+                    className="aspect-[16/11] w-full object-cover transition duration-300 group-hover:scale-105 sm:aspect-[4/3]"
                 />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#102426]/75 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#102426]/90 via-[#102426]/45 to-transparent" />
                 {badgeLabel && (
                     <span className="absolute left-3 top-3 max-w-[calc(100%-24px)] rounded-full bg-[#f2b84b] px-3 py-1.5 text-[11px] font-black uppercase leading-none text-[#102426] shadow-sm">
                         {badgeLabel}
                     </span>
                 )}
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                    <p className="truncate text-lg font-black leading-tight">
+                        {property.name}
+                    </p>
+                    <p className="mt-1 truncate text-xs font-bold text-white/80">
+                        {addressLabel}
+                    </p>
+                </div>
             </div>
 
             <div className="p-3.5 sm:p-4">
-                <div className="min-w-0">
-                    <p className="truncate text-base font-black text-[#102426] group-hover:text-[#1f6f63]">
-                        {property.name}
-                    </p>
-                    <p className="mt-1 truncate text-sm font-semibold text-[#526260]">
-                        {addressLabel}
-                    </p>
-                    <p className="mt-1 w-fit rounded-full bg-[#eef5ff] px-2.5 py-1 text-[11px] font-black text-[#174a7c] ring-1 ring-[#b8d9f0]">
-                        {bedsLabel}
-                    </p>
-                </div>
-
-                <div className="mt-3 rounded-2xl bg-[#102426] p-3 text-white shadow-sm">
+                <div className="rounded-2xl bg-[#fff8e6] p-3 shadow-sm ring-1 ring-[#f2d08a]">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <p className="text-[10px] font-black uppercase tracking-wide text-[#f2b84b]">
+                            <p className="text-[10px] font-black uppercase tracking-wide text-[#8a5b0a]">
                                 {priceCaption}
                             </p>
-                            <p className="mt-1 text-2xl font-black leading-tight text-white">
+                            <p className="mt-1 text-3xl font-black leading-none text-[#102426]">
                                 {primaryRentLabel}
                             </p>
                         </div>
 
-                        {dealSummary.hasSpecial && (
-                            <span className="shrink-0 rounded-full bg-[#f2b84b] px-2.5 py-1 text-[10px] font-black uppercase text-[#102426]">
-                                Deal
+                        {hasSavings && (
+                            <span className="shrink-0 rounded-full bg-[#173f3f] px-2.5 py-1 text-[10px] font-black text-white">
+                                Save {savingsLabel}
                             </span>
                         )}
                     </div>
 
                     {showBeforeSpecials && (
-                        <p className="mt-2 text-xs font-bold leading-5 text-white/75">
+                        <p className="mt-2 text-xs font-bold leading-5 text-[#7a432e]">
                             Listed rent before specials:{" "}
-                            <span className="font-black text-white">
+                            <span className="font-black text-[#102426]">
                                 {normalRentLabel}
                             </span>
                         </p>
                     )}
                 </div>
 
-                {dealSummary.hasSpecial && (
-                    <div className="mt-3 rounded-2xl bg-[#fff8e6] px-3 py-2.5 ring-1 ring-[#f2d08a]">
-                        <p className="text-[10px] font-black uppercase tracking-wide text-[#8a5b0a]">
-                            Special
-                        </p>
-                        <p className="mt-0.5 line-clamp-2 text-sm font-black leading-5 text-[#102426]">
+                <div className="mt-3 grid gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-[#eef5ff] px-2.5 py-1 text-[11px] font-black text-[#174a7c] ring-1 ring-[#b8d9f0]">
+                            {bedsLabel}
+                        </span>
+                        {dealSummary.hasSpecial && (
+                            <span className="rounded-full bg-[#e7f3ee] px-2.5 py-1 text-[11px] font-black text-[#1f6f63] ring-1 ring-[#a9cfc2]">
+                                Special available
+                            </span>
+                        )}
+                    </div>
+
+                    {dealSummary.hasSpecial && (
+                        <p className="line-clamp-2 rounded-2xl bg-[#f5f8f1] px-3 py-2 text-sm font-black leading-5 text-[#102426] ring-1 ring-[#d7e6df]">
                             {dealSummary.specialLabel}
                         </p>
-                        <p className="mt-0.5 text-xs font-bold text-[#7a432e] sm:mt-1">
-                            Account-credit estimate
-                        </p>
-                    </div>
-                )}
+                    )}
+                </div>
 
-                <span className="mt-3 flex items-center justify-between rounded-2xl bg-[#f5f8f1] px-3 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] group-hover:bg-[#e7f3ee]">
-                    <span>View deal</span>
-                    <span className="rounded-full bg-white px-2 py-0.5 text-[10px] uppercase text-[#526260]">
-                        Details
+                <span className="mt-3 flex items-center justify-between rounded-2xl bg-[#173f3f] px-3 py-2.5 text-sm font-black text-white group-hover:bg-[#102426]">
+                    <span>View deal details</span>
+                    <span className="rounded-full bg-white/12 px-2 py-0.5 text-[10px] uppercase text-white/80">
+                        Floor plans
                     </span>
                 </span>
             </div>
