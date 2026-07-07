@@ -141,7 +141,7 @@ export default function HomePage() {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageFaqSchema) }}
             />
-            <header className="bma-topbar sticky top-0 z-40 px-4 py-3">
+            <header className="bma-topbar sticky top-0 z-40 px-3 py-2.5 sm:px-4 sm:py-3">
                 <div className="bma-shell">
                     <div className="mb-1.5 flex items-center justify-between gap-3 xl:hidden">
                         <Link to="/" className="flex min-w-0 items-center gap-2">
@@ -152,7 +152,7 @@ export default function HomePage() {
                                 <span className="block truncate text-sm font-black text-[#102426]">
                                     Below Market Apartments
                                 </span>
-                                <span className="block text-xs font-bold text-[#526260]">
+                                <span className="hidden text-xs font-bold text-[#526260] sm:block">
                                     Verified specials, ranked by deal value
                                 </span>
                             </span>
@@ -202,40 +202,40 @@ export default function HomePage() {
                 </div>
             </header>
 
-            <section className="bma-brand-panel border-b-[6px] border-[#f2b84b] px-4 py-12 text-white">
+            <section className="bma-brand-panel border-b-[6px] border-[#f2b84b] px-3 py-8 text-white sm:px-4 sm:py-10 md:py-12">
                 <div className="mx-auto max-w-5xl text-center">
-                    <p className="mx-auto w-fit rounded-full bg-[#f2b84b]/15 px-4 py-2 text-sm font-black text-[#f9d783]">
+                    <p className="mx-auto w-fit rounded-full bg-[#f2b84b]/15 px-3 py-1.5 text-xs font-black text-[#f9d783] sm:px-4 sm:py-2 sm:text-sm">
                         Below Market Apartments
                     </p>
 
-                    <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-black text-[#fff7df] md:text-6xl">
+                    <h1 className="mx-auto mt-4 max-w-3xl text-3xl font-black leading-tight text-[#fff7df] sm:text-4xl md:mt-5 md:text-6xl">
                         Find below-market apartment deals.
                     </h1>
 
-                    <p className="mx-auto mt-4 max-w-2xl text-[#d7ece6]">
+                    <p className="mx-auto mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#d7ece6] sm:mt-4 sm:text-base">
                         Search by city, neighborhood, ZIP, property name, or special.
                     </p>
 
-                    <form onSubmit={submitSearch} className="bma-panel relative mx-auto mt-8 max-w-3xl p-2">
-                        <div className="bma-value-stripe mb-2 h-2 rounded-full" />
+                    <form onSubmit={submitSearch} className="bma-panel relative mx-auto mt-6 max-w-3xl p-2 sm:mt-8">
+                        <div className="bma-value-stripe mb-2 h-1.5 rounded-full sm:h-2" />
                         <div className="flex flex-col gap-2 sm:flex-row">
                             <div className="relative min-w-0 flex-1">
-                                <Search className="pointer-events-none absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-[#2d7dd2]" />
+                                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#2d7dd2] sm:left-5 sm:h-6 sm:w-6" />
 
                                 <input
                                     type="text"
                                     value={searchTerm}
                                     onChange={(event) => setSearchTerm(event.target.value)}
-                                    placeholder="Enter city, neighborhood, property, or special"
+                                    placeholder="City, ZIP, property, or special"
                                     autoComplete="off"
-                                    className="bma-focus-ring h-16 w-full rounded-lg border border-[#b8d9d0] bg-white pl-14 pr-4 text-left text-lg font-bold text-[#102426]"
+                                    className="bma-focus-ring h-14 w-full rounded-lg border border-[#b8d9d0] bg-white pl-12 pr-4 text-left text-base font-bold text-[#102426] sm:h-16 sm:pl-14 sm:text-lg"
                                     style={{ color: "#000000", caretColor: "#000000" }}
                                 />
                             </div>
 
                             <button
                                 type="submit"
-                                className="bma-btn-gold h-16 px-8 text-base"
+                                className="bma-btn-gold h-12 justify-center px-8 text-base sm:h-16"
                             >
                                 Search
                             </button>
@@ -281,13 +281,13 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <section className="bma-shell px-0 py-6">
+            <section className="bma-shell px-0 py-5 sm:py-6">
                 <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
                     <div>
                         <p className="text-sm font-black text-[#1f6f63]">
                             Suggested rentals
                         </p>
-                        <h2 className="mt-1 text-3xl font-black text-[#102426]">
+                        <h2 className="mt-1 text-2xl font-black text-[#102426] sm:text-3xl">
                             Best Deals in Dallas
                         </h2>
                         <p className="mt-1 text-sm font-semibold text-[#526260]">
@@ -297,7 +297,7 @@ export default function HomePage() {
 
                     <Link
                         to="/start"
-                        className="bma-btn-primary w-fit"
+                        className="bma-btn-primary w-full justify-center sm:w-fit"
                     >
                         Get matched
                     </Link>
@@ -310,7 +310,7 @@ export default function HomePage() {
                 )}
 
                 {featuredDallasDeals.length > 0 ? (
-                    <div className="mt-5 grid auto-cols-[minmax(220px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-2 xl:grid-flow-row xl:grid-cols-4 xl:overflow-visible xl:pb-0">
+                    <div className="mt-5 grid auto-cols-[minmax(76vw,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2 sm:auto-cols-[minmax(240px,1fr)] xl:grid-flow-row xl:grid-cols-4 xl:gap-4 xl:overflow-visible xl:pb-0">
                         {featuredDallasDeals.map((property) => (
                             <SuggestedRentalCard
                                 key={property.id}
@@ -345,11 +345,11 @@ export default function HomePage() {
                                 : "minmax(0, 1fr)",
                         }}
                     >
-                        <div className="bma-brand-panel min-w-0 p-6 text-white md:p-8">
+                        <div className="bma-brand-panel min-w-0 p-4 text-white sm:p-6 md:p-8">
                             <p className="text-sm font-black text-[#f2b84b]">
                                 Our mission
                             </p>
-                            <h2 className="mt-2 max-w-xl text-3xl font-black leading-tight text-[#fff7df]">
+                            <h2 className="mt-2 max-w-xl text-2xl font-black leading-tight text-[#fff7df] sm:text-3xl">
                                 Make apartment deals easier to trust.
                             </h2>
                             <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#d7ece6]">
@@ -368,7 +368,7 @@ export default function HomePage() {
                             </div>
                         </div>
 
-                        <div className="grid min-w-0 content-start gap-4 p-6 md:p-8">
+                        <div className="grid min-w-0 content-start gap-3 p-4 sm:gap-4 sm:p-6 md:p-8">
                             <div className="grid min-w-0 gap-3 md:grid-cols-3">
                                 {HOME_MISSION_POINTS.map((point) => (
                                     <MissionBenefit
@@ -379,7 +379,7 @@ export default function HomePage() {
                                 ))}
                             </div>
 
-                            <div className="min-w-0 rounded-lg bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
+                            <div className="min-w-0 rounded-lg bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] sm:p-4">
                                 <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                                     <div>
                                         <p className="text-sm font-black text-[#1f6f63]">
@@ -1213,8 +1213,8 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                 )}
             </div>
 
-            <div className="p-4">
-                <p className="truncate text-base font-black text-[#102426] group-hover:text-[#1f6f63]">
+            <div className="p-3 sm:p-4">
+                <p className="truncate text-sm font-black text-[#102426] group-hover:text-[#1f6f63] sm:text-base">
                     {property.name}
                 </p>
                 <p className="mt-1 truncate text-sm font-semibold text-[#526260]">
@@ -1224,21 +1224,21 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     {bedsLabel}
                 </p>
 
-                <div className={`mt-3 grid gap-2 ${showNormalRent ? "grid-cols-2" : "grid-cols-1"}`}>
-                    <div className="rounded-lg bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
+                <div className={`mt-3 grid gap-2 ${showNormalRent ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
+                    <div className="rounded-lg bg-[#f5f8f1] p-2.5 ring-1 ring-[#d7e6df] sm:p-3">
                         <p className="text-[10px] font-black uppercase text-[#526260]">
                             {showNormalRent ? "Estimated rent" : primaryRentCaption}
                         </p>
-                        <p className="mt-1 truncate text-lg font-black text-[#102426]">
+                        <p className="mt-0.5 text-base font-black leading-tight text-[#102426] sm:mt-1 sm:text-lg">
                             {primaryRentLabel}
                         </p>
                     </div>
                     {showNormalRent && (
-                        <div className="rounded-lg bg-white p-3 text-left ring-1 ring-[#d7e6df]">
+                        <div className="rounded-lg bg-white p-2.5 text-left ring-1 ring-[#d7e6df] sm:p-3">
                             <p className="text-[10px] font-black uppercase text-[#526260]">
                                 Normal rent
                             </p>
-                            <p className="mt-1 truncate text-lg font-black text-[#102426]">
+                            <p className="mt-0.5 text-base font-black leading-tight text-[#102426] sm:mt-1 sm:text-lg">
                                 {normalRentLabel}
                             </p>
                         </div>
@@ -1246,14 +1246,14 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                 </div>
 
                 {dealSummary.hasSpecial && (
-                    <div className="mt-3 rounded-lg bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a]">
+                    <div className="mt-2.5 rounded-lg bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a] sm:mt-3">
                         <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
                             Special
                         </p>
-                        <p className="mt-0.5 truncate text-sm font-black text-[#102426]">
+                        <p className="mt-0.5 line-clamp-2 text-sm font-black leading-5 text-[#102426]">
                             {dealSummary.specialLabel}
                         </p>
-                        <p className="mt-1 text-xs font-bold text-[#7a432e]">
+                        <p className="mt-0.5 text-xs font-bold text-[#7a432e] sm:mt-1">
                             Account-credit estimate
                         </p>
                     </div>
@@ -1266,9 +1266,9 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
 
 function MissionBenefit({ title, text }) {
     return (
-        <div className="rounded-lg bg-white p-4 ring-1 ring-[#d7e6df]">
+        <div className="rounded-lg bg-white p-3 ring-1 ring-[#d7e6df] sm:p-4">
             <p className="text-sm font-black text-[#102426]">{title}</p>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[#526260]">
+            <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] sm:mt-2">
                 {text}
             </p>
         </div>
@@ -1279,7 +1279,7 @@ function SeoFaqCard({ question, answer }) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className={`rounded-lg bg-white p-4 ring-1 ${isOpen ? "ring-[#f2b84b]" : "ring-[#d7e6df]"}`}>
+        <div className={`rounded-lg bg-white p-3 ring-1 sm:p-4 ${isOpen ? "ring-[#f2b84b]" : "ring-[#d7e6df]"}`}>
             <button
                 type="button"
                 onClick={() => setIsOpen((currentValue) => !currentValue)}
