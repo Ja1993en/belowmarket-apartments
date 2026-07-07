@@ -688,7 +688,7 @@ export default function PropertySearchPage() {
           >
             <div className="grid gap-1.5">
               <div className="grid gap-1.5">
-                <div className="grid gap-1.5 lg:grid-cols-[minmax(280px,520px)_auto_auto] lg:items-center lg:justify-start xl:grid-cols-[minmax(320px,560px)_auto_auto]">
+                <div className="grid gap-1.5 lg:grid-cols-[minmax(380px,560px)_auto_minmax(96px,1fr)] lg:items-center xl:grid-cols-[minmax(460px,640px)_auto_minmax(110px,1fr)]">
                 <div className="relative min-w-0">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2d7dd2]" />
                   <input
@@ -701,7 +701,7 @@ export default function PropertySearchPage() {
                   />
                 </div>
 
-                <div className="flex min-w-0 flex-wrap gap-1.5 overflow-visible rounded-lg bg-[#f5f8f1] p-1 lg:flex-nowrap lg:bg-transparent lg:p-0">
+                <div className="flex min-w-0 flex-wrap gap-1 overflow-visible rounded-lg bg-[#f5f8f1] p-1 ring-1 ring-[#d7e6df] lg:flex-nowrap">
                 <div className="relative">
                   <button
                     type="button"
@@ -904,7 +904,7 @@ export default function PropertySearchPage() {
 
                 <button
                   type="submit"
-                  className="bma-btn-primary h-10 w-full rounded-lg px-4 text-sm !text-white hover:!text-white lg:w-auto lg:px-6"
+                  className="bma-btn-primary h-10 w-full rounded-lg px-4 text-sm !text-white hover:!text-white lg:ml-auto lg:w-auto lg:px-6"
                 >
                   Search
                 </button>
