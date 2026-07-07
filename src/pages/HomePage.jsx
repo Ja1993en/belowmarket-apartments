@@ -310,7 +310,7 @@ export default function HomePage() {
                 )}
 
                 {featuredDallasDeals.length > 0 ? (
-                    <div className="mt-5 grid auto-cols-[minmax(76vw,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2 sm:auto-cols-[minmax(240px,1fr)] xl:grid-flow-row xl:grid-cols-4 xl:gap-4 xl:overflow-visible xl:pb-0">
+                    <div className="mt-5 grid auto-cols-[minmax(84vw,1fr)] grid-flow-col gap-4 overflow-x-auto pb-3 sm:auto-cols-[minmax(260px,1fr)] xl:grid-flow-row xl:grid-cols-4 xl:overflow-visible xl:pb-0">
                         {featuredDallasDeals.map((property) => (
                             <SuggestedRentalCard
                                 key={property.id}
@@ -1196,56 +1196,59 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
     return (
         <Link
             to={cardHref}
-            className="bma-card group overflow-hidden transition duration-200 ease-out hover:-translate-y-1.5 hover:border-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.18)] hover:ring-2 hover:ring-[#f2b84b]/45"
+            className="group overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-[0_16px_36px_rgba(16,36,38,0.12)] transition duration-200 ease-out hover:-translate-y-1.5 hover:border-[#f2b84b] hover:shadow-[0_22px_48px_rgba(16,36,38,0.18)] hover:ring-2 hover:ring-[#f2b84b]/45"
         >
-            <div className="relative">
+            <div className="relative overflow-hidden bg-[#102426]">
                 <img
                     src={primaryImage}
                     alt={property.name}
                     loading="lazy"
                     decoding="async"
-                    className="aspect-[4/3] w-full object-cover"
+                    className="aspect-[5/4] w-full object-cover transition duration-300 group-hover:scale-105 sm:aspect-[4/3]"
                 />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#102426]/75 to-transparent" />
                 {badgeLabel && (
-                    <span className="bma-chip bma-chip-gold absolute left-3 top-3 shadow-sm">
+                    <span className="absolute left-3 top-3 max-w-[calc(100%-24px)] rounded-full bg-[#f2b84b] px-3 py-1.5 text-[11px] font-black uppercase leading-none text-[#102426] shadow-sm">
                         {badgeLabel}
                     </span>
                 )}
             </div>
 
-            <div className="p-3 sm:p-4">
-                <p className="truncate text-sm font-black text-[#102426] group-hover:text-[#1f6f63] sm:text-base">
-                    {property.name}
-                </p>
-                <p className="mt-1 truncate text-sm font-semibold text-[#526260]">
-                    {addressLabel}
-                </p>
-                <p className="mt-1 text-xs font-black text-[#174a7c]">
-                    {bedsLabel}
-                </p>
+            <div className="p-3.5 sm:p-4">
+                <div className="min-w-0">
+                    <p className="truncate text-base font-black text-[#102426] group-hover:text-[#1f6f63]">
+                        {property.name}
+                    </p>
+                    <p className="mt-1 truncate text-sm font-semibold text-[#526260]">
+                        {addressLabel}
+                    </p>
+                    <p className="mt-1 w-fit rounded-full bg-[#eef5ff] px-2.5 py-1 text-[11px] font-black text-[#174a7c] ring-1 ring-[#b8d9f0]">
+                        {bedsLabel}
+                    </p>
+                </div>
 
-                <div className="mt-3 rounded-xl bg-[#e7f3ee] p-3 ring-1 ring-[#a9cfc2]">
+                <div className="mt-3 rounded-2xl bg-[#102426] p-3 text-white shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <p className="text-[10px] font-black uppercase tracking-wide text-[#1f6f63]">
+                            <p className="text-[10px] font-black uppercase tracking-wide text-[#f2b84b]">
                                 {priceCaption}
                             </p>
-                            <p className="mt-1 text-xl font-black leading-tight text-[#102426]">
+                            <p className="mt-1 text-2xl font-black leading-tight text-white">
                                 {primaryRentLabel}
                             </p>
                         </div>
 
                         {dealSummary.hasSpecial && (
-                            <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase text-[#1f6f63] ring-1 ring-[#a9cfc2]">
+                            <span className="shrink-0 rounded-full bg-[#f2b84b] px-2.5 py-1 text-[10px] font-black uppercase text-[#102426]">
                                 Deal
                             </span>
                         )}
                     </div>
 
                     {showBeforeSpecials && (
-                        <p className="mt-2 text-xs font-bold leading-5 text-[#526260]">
+                        <p className="mt-2 text-xs font-bold leading-5 text-white/75">
                             Listed rent before specials:{" "}
-                            <span className="font-black text-[#102426]">
+                            <span className="font-black text-white">
                                 {normalRentLabel}
                             </span>
                         </p>
@@ -1253,8 +1256,8 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                 </div>
 
                 {dealSummary.hasSpecial && (
-                    <div className="mt-2.5 rounded-lg bg-[#fff8e6] px-3 py-2 ring-1 ring-[#f2d08a] sm:mt-3">
-                        <p className="text-[11px] font-black uppercase text-[#8a5b0a]">
+                    <div className="mt-3 rounded-2xl bg-[#fff8e6] px-3 py-2.5 ring-1 ring-[#f2d08a]">
+                        <p className="text-[10px] font-black uppercase tracking-wide text-[#8a5b0a]">
                             Special
                         </p>
                         <p className="mt-0.5 line-clamp-2 text-sm font-black leading-5 text-[#102426]">
@@ -1266,6 +1269,12 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     </div>
                 )}
 
+                <span className="mt-3 flex items-center justify-between rounded-2xl bg-[#f5f8f1] px-3 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] group-hover:bg-[#e7f3ee]">
+                    <span>View deal</span>
+                    <span className="rounded-full bg-white px-2 py-0.5 text-[10px] uppercase text-[#526260]">
+                        Details
+                    </span>
+                </span>
             </div>
         </Link>
     );
