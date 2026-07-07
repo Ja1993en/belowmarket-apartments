@@ -1515,8 +1515,8 @@ function MapboxSearchMap({
           type: "fill",
           source: "search-area",
           paint: {
-            "fill-color": "#2d7dd2",
-            "fill-opacity": 0.18,
+            "fill-color": "#1f6f63",
+            "fill-opacity": 0.16,
           },
         });
       }
@@ -1527,7 +1527,7 @@ function MapboxSearchMap({
           type: "line",
           source: "search-area",
           paint: {
-            "line-color": "#174a7c",
+            "line-color": "#1f6f63",
             "line-width": 3,
             "line-dasharray": [2, 1],
           },
@@ -1767,7 +1767,7 @@ function MapboxSearchMap({
       )}
       {isDrawingArea && (
         <div
-          className="absolute inset-0 z-[5] cursor-crosshair touch-none bg-[#2d7dd2]/5"
+          className="absolute inset-0 z-[5] cursor-crosshair touch-none bg-[#1f6f63]/10"
           role="application"
           aria-label="Draw a search area on the map"
           onPointerDown={startDrawingArea}
@@ -1801,7 +1801,7 @@ function MapboxSearchMap({
           }}
           className={`rounded-2xl px-4 py-3 text-sm font-black shadow-sm ring-1 ${
             isDrawingArea
-              ? "bg-[#2d7dd2] text-white ring-[#2d7dd2]"
+              ? "bg-[#1f6f63] text-white ring-[#1f6f63]"
               : "bg-white/95 text-[#173f3f] ring-[#d7e6df] hover:bg-[#f5f8f1]"
           }`}
         >
@@ -1839,7 +1839,7 @@ function MapboxSearchMap({
             >
               Clear area
             </button>
-            <p className="w-full rounded-2xl bg-white/95 px-4 py-2 text-xs font-black text-[#174a7c] shadow-sm ring-1 ring-[#b8d9f0] sm:w-auto">
+            <p className="w-full rounded-2xl bg-white/95 px-4 py-2 text-xs font-black text-[#173f3f] shadow-sm ring-1 ring-[#a9cfc2] sm:w-auto">
               {selectedArea.type === "polygon"
                 ? "Showing apartments inside your drawn area"
                 : `Showing apartments within ${selectedArea.radiusMiles} mi of your selected area`}
@@ -1863,7 +1863,7 @@ function MapboxSearchMap({
         </p>
       )}
       {isDrawingArea && (
-        <p className="pointer-events-none absolute bottom-4 left-4 z-10 max-w-[calc(100%-2rem)] rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#174a7c] shadow-lg ring-1 ring-[#b8d9f0]">
+        <p className="pointer-events-none absolute bottom-4 left-4 z-10 max-w-[calc(100%-2rem)] rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#173f3f] shadow-lg ring-1 ring-[#a9cfc2]">
           Drag to draw your search area, then release to filter results
         </p>
       )}
