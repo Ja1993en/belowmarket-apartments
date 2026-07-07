@@ -1184,8 +1184,8 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
     const normalRentLabel = dealSummary.normalRentLabel || getRentalPriceLabel(property, matchedFloorPlan);
     const effectiveRentLabel = dealSummary.effectiveRentLabel || normalRentLabel;
     const primaryRentLabel = dealSummary.hasSpecial ? effectiveRentLabel : normalRentLabel;
-    const primaryRentCaption = dealSummary.hasSpecial ? "Net Effective" : "Normal Rent";
-    const showNormalRent = dealSummary.hasSpecial && normalRentLabel && normalRentLabel !== effectiveRentLabel;
+    const priceCaption = dealSummary.hasSpecial ? "After specials" : "Listed rent";
+    const showBeforeSpecials = dealSummary.hasSpecial && normalRentLabel && normalRentLabel !== effectiveRentLabel;
     const bedsLabel = getBedsLabel(property, matchedFloorPlan);
     const addressLabel = getAddressLabel(property);
     const savingsValue = matchedFloorPlan?.savings || property.savings || "";
@@ -1224,24 +1224,31 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     {bedsLabel}
                 </p>
 
-                <div className={`mt-3 grid gap-2 ${showNormalRent ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
-                    <div className="rounded-lg bg-[#f5f8f1] p-2.5 ring-1 ring-[#d7e6df] sm:p-3">
-                        <p className="text-[10px] font-black uppercase text-[#526260]">
-                            {showNormalRent ? "Estimated rent" : primaryRentCaption}
-                        </p>
-                        <p className="mt-0.5 text-base font-black leading-tight text-[#102426] sm:mt-1 sm:text-lg">
-                            {primaryRentLabel}
-                        </p>
-                    </div>
-                    {showNormalRent && (
-                        <div className="rounded-lg bg-white p-2.5 text-left ring-1 ring-[#d7e6df] sm:p-3">
-                            <p className="text-[10px] font-black uppercase text-[#526260]">
-                                Normal rent
+                <div className="mt-3 rounded-xl bg-[#e7f3ee] p-3 ring-1 ring-[#a9cfc2]">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <p className="text-[10px] font-black uppercase tracking-wide text-[#1f6f63]">
+                                {priceCaption}
                             </p>
-                            <p className="mt-0.5 text-base font-black leading-tight text-[#102426] sm:mt-1 sm:text-lg">
-                                {normalRentLabel}
+                            <p className="mt-1 text-xl font-black leading-tight text-[#102426]">
+                                {primaryRentLabel}
                             </p>
                         </div>
+
+                        {dealSummary.hasSpecial && (
+                            <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase text-[#1f6f63] ring-1 ring-[#a9cfc2]">
+                                Deal
+                            </span>
+                        )}
+                    </div>
+
+                    {showBeforeSpecials && (
+                        <p className="mt-2 text-xs font-bold leading-5 text-[#526260]">
+                            Listed rent before specials:{" "}
+                            <span className="font-black text-[#102426]">
+                                {normalRentLabel}
+                            </span>
+                        </p>
                     )}
                 </div>
 
