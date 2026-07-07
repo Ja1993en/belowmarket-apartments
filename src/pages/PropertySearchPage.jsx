@@ -688,8 +688,8 @@ export default function PropertySearchPage() {
           >
             <div className="grid gap-1.5">
               <div className="grid gap-1.5">
-                <div className="grid gap-1.5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
-                <div className="relative min-w-0 flex-1">
+                <div className="grid gap-1.5 lg:grid-cols-[minmax(280px,520px)_auto_auto] lg:items-center lg:justify-start xl:grid-cols-[minmax(320px,560px)_auto_auto]">
+                <div className="relative min-w-0">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2d7dd2]" />
                   <input
                     type="search"
