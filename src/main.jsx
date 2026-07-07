@@ -4,6 +4,7 @@ import './layouts/index.css'
 import App from './App.jsx'
 import { registerStaleDeploymentRecovery } from './utils/staleDeploymentRecovery'
 
+window.__BMA_DEPLOYMENT_MARKER__ = 'stale-asset-refresh-2026-07-07'
 registerStaleDeploymentRecovery()
 
 createRoot(document.getElementById('root')).render(
