@@ -37,6 +37,73 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (() => {
+        const reloadKey = "bmaInitialModuleReloaded";
+        const staleAssetPatterns = [
+          "Expected a JavaScript-or-Wasm module script",
+          "Failed to load module script",
+          "Failed to fetch dynamically imported module",
+          "Importing a module script failed",
+        ];
+
+        function getErrorText(event) {
+          return [
+            event?.message,
+            event?.reason?.message,
+            event?.reason,
+            event?.target?.src,
+          ]
+            .filter(Boolean)
+            .join(" ");
+        }
+
+        function isStaleAssetError(event) {
+          const errorText = getErrorText(event);
+          const failedSource = event?.target?.src || "";
+
+          return (
+            failedSource.includes("/assets/") ||
+            staleAssetPatterns.some((pattern) => errorText.includes(pattern))
+          );
+        }
+
+        async function clearOldCaches() {
+          try {
+            if ("caches" in window) {
+              const cacheNames = await window.caches.keys();
+              await Promise.all(cacheNames.map((cacheName) => window.caches.delete(cacheName)));
+            }
+          } catch {
+            // Reload still fixes normal stale deployment cases if cache cleanup is blocked.
+          }
+
+          try {
+            if ("serviceWorker" in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(registrations.map((registration) => registration.unregister()));
+            }
+          } catch {
+            // Ignore service worker cleanup failures and continue with the reload.
+          }
+        }
+
+        async function reloadForFreshAssets(event) {
+          if (!isStaleAssetError(event)) return;
+          if (sessionStorage.getItem(reloadKey) === "true") return;
+
+          sessionStorage.setItem(reloadKey, "true");
+          await clearOldCaches();
+          window.location.reload();
+        }
+
+        window.addEventListener("error", reloadForFreshAssets, true);
+        window.addEventListener("unhandledrejection", reloadForFreshAssets);
+        window.addEventListener("load", () => {
+          window.setTimeout(() => sessionStorage.removeItem(reloadKey), 4000);
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
