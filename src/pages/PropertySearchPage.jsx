@@ -2394,10 +2394,10 @@ function SearchResultCard({
         <button
           type="button"
           onClick={onRequestInfo}
-          className="absolute right-2 top-2 z-20 inline-flex items-center justify-center gap-1 rounded-full bg-[#f2b84b]/95 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wide text-[#102426] shadow-[0_8px_18px_rgba(16,36,38,0.18)] ring-1 ring-[#d49a24] transition hover:bg-[#f9d783] md:hidden"
+          className="absolute inset-x-0 bottom-0 z-20 inline-flex items-center justify-center gap-1.5 bg-[#f2b84b]/95 py-1.5 text-center text-[11px] font-black uppercase tracking-wide text-[#102426] shadow-[0_-6px_16px_rgba(16,36,38,0.14)] transition hover:bg-[#f9d783] md:hidden"
         >
-          <MessageSquare className="h-3 w-3 shrink-0" />
-          <span>Ask</span>
+          <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+          <span>Ask a Locator</span>
         </button>
       </div>
 
@@ -2460,7 +2460,7 @@ function SearchResultCard({
           ))}
         </div>
 
-        <p className="mt-1.5 text-[10px] font-semibold leading-4 text-[#78908a] md:mt-1 md:text-[8px] lg:text-[9px] xl:mt-1.5 xl:text-[10px]">
+        <p className="mt-1.5 text-[10px] font-semibold leading-4 text-[#526260] md:mt-1 md:text-[8px] lg:text-[9px] xl:mt-1.5 xl:text-[10px]">
           Approval is usually based on listed rent, not after-special rent.
         </p>
 
@@ -2478,14 +2478,22 @@ function SearchResultCard({
           ))}
         </div>
 
-        <div className="mt-auto grid grid-cols-[1.15fr_0.85fr] gap-1 pt-3 md:grid-cols-[1.15fr_0.85fr_auto] md:pt-1.5 xl:gap-1.5 xl:pt-3">
+        <div className="mt-auto grid grid-cols-2 gap-1 pt-3 md:grid-cols-3 md:pt-1.5 xl:gap-1.5 xl:pt-3">
           <Link
             to={cardHref}
             className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-2 py-2 text-center text-[11px] font-black text-white transition hover:bg-[#102426] sm:text-xs md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5"
           >
             <Building2 className="h-3.5 w-3.5 shrink-0" />
-            <span>View Deal</span>
+            <span>View Property</span>
           </Link>
+          <button
+            type="button"
+            onClick={onRequestInfo}
+            className="hidden rounded-lg bg-[#f2b84b] px-2 py-2 text-center text-[11px] font-black text-[#102426] transition hover:bg-[#f9d783] md:inline-flex md:items-center md:justify-center md:gap-1.5 md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5"
+          >
+            <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+            <span>Ask a Locator</span>
+          </button>
           <button
             type="button"
             onClick={onToggleCompare}
@@ -2497,14 +2505,6 @@ function SearchResultCard({
           >
             <Scale className="h-3.5 w-3.5 shrink-0" />
             <span>{isCompared ? "Added" : "Compare"}</span>
-          </button>
-          <button
-            type="button"
-            onClick={onRequestInfo}
-            className="hidden rounded-lg bg-[#fff8e6] px-2 py-2 text-center text-[11px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a] transition hover:bg-[#f9d783] md:inline-flex md:items-center md:justify-center md:gap-1.5 md:px-2 md:py-2 md:text-[11px] lg:px-2.5 lg:text-xs xl:py-2.5"
-          >
-            <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-            <span>Ask</span>
           </button>
         </div>
       </div>
