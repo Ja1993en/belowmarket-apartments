@@ -1255,9 +1255,8 @@ function SuggestedRentalCard({ property, matchedFloorPlan }) {
                     </div>
                 )}
 
-                <span className="mt-3 flex items-center justify-between rounded-2xl bg-[#173f3f] px-3 py-2.5 text-sm font-black text-white group-hover:bg-[#102426]">
+                <span className="mt-3 flex items-center justify-center rounded-2xl bg-[#173f3f] px-3 py-2.5 text-sm font-black text-white group-hover:bg-[#102426]">
                     View deal details
-                    <span className="text-xs font-black text-[#f2b84b]">Floor plans</span>
                 </span>
             </div>
         </Link>
