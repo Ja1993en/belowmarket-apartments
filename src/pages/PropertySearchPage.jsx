@@ -684,36 +684,24 @@ export default function PropertySearchPage() {
           <form
             ref={searchFormRef}
             onSubmit={submitSearch}
-            className="relative rounded-2xl border border-[#d7e6df] bg-white p-2 shadow-sm sm:p-3 xl:p-2.5"
+            className="relative rounded-xl border border-[#d7e6df] bg-white p-1.5 shadow-sm sm:p-2"
           >
-            <div className="grid gap-2 xl:flex xl:items-center xl:gap-3">
-              <div className="hidden items-center gap-2 xl:flex xl:shrink-0">
-                <Link to="/" className="flex items-center gap-2">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#173f3f] text-xs font-black text-[#f2b84b] xl:h-10 xl:w-10">
-                    BMA
-                  </span>
-                  <span className="hidden text-sm font-black text-[#102426] md:block">
-                    Below Market Apartments
-                  </span>
-                </Link>
-
-              </div>
-
-              <div className="grid gap-2 xl:flex xl:min-w-0 xl:flex-1 xl:items-center xl:gap-3">
-                <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] xl:min-w-0 xl:flex-1 xl:items-center">
+            <div className="grid gap-1.5">
+              <div className="grid gap-1.5">
+                <div className="grid gap-1.5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
                 <div className="relative min-w-0 flex-1">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2d7dd2] sm:left-4 sm:h-5 sm:w-5" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2d7dd2]" />
                   <input
                     type="search"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     placeholder="City, neighborhood, property, or special"
                     autoComplete="off"
-                    className="bma-focus-ring h-11 w-full rounded-xl border border-[#b8d9d0] bg-[#f9fbf8] pl-9 pr-3 text-sm font-bold text-[#102426] outline-none sm:h-12 sm:pl-11 sm:pr-4 sm:text-base"
+                    className="bma-focus-ring h-10 w-full rounded-lg border border-[#b8d9d0] bg-[#f9fbf8] pl-9 pr-3 text-sm font-bold text-[#102426] outline-none sm:h-11"
                   />
                 </div>
 
-                <div className="flex min-w-0 flex-wrap gap-1.5 overflow-visible rounded-xl bg-[#f5f8f1] p-1 lg:flex-nowrap xl:bg-transparent xl:p-0">
+                <div className="flex min-w-0 flex-wrap gap-1.5 overflow-visible rounded-lg bg-[#f5f8f1] p-1 lg:flex-nowrap lg:bg-transparent lg:p-0">
                 <div className="relative">
                   <button
                     type="button"
@@ -729,7 +717,7 @@ export default function PropertySearchPage() {
                       setIsBedsFilterOpen(false);
                       setIsSpecialFilterOpen(false);
                     }}
-                    className={`h-8 shrink-0 rounded-lg border px-2.5 text-[10px] font-black sm:px-3 sm:text-xs xl:h-9 ${
+                    className={`h-7 shrink-0 rounded-md border px-2 text-[10px] font-black sm:h-8 sm:px-2.5 sm:text-xs ${
                       selectedPriceRange
                         ? "border-[#2d7dd2] bg-[#eef5ff] text-[#174a7c] hover:bg-[#dbeeff]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
@@ -802,7 +790,7 @@ export default function PropertySearchPage() {
                       setIsPriceFilterOpen(false);
                       setIsSpecialFilterOpen(false);
                     }}
-                    className={`h-8 shrink-0 rounded-lg border px-2.5 text-[10px] font-black sm:px-3 sm:text-xs xl:h-9 ${
+                    className={`h-7 shrink-0 rounded-md border px-2 text-[10px] font-black sm:h-8 sm:px-2.5 sm:text-xs ${
                       selectedBedroomFilter
                         ? "border-[#1f6f63] bg-[#e7f3ee] text-[#1f6f63] hover:bg-[#d8efe6]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
@@ -865,7 +853,7 @@ export default function PropertySearchPage() {
                       setIsPriceFilterOpen(false);
                       setIsBedsFilterOpen(false);
                     }}
-                    className={`h-8 shrink-0 rounded-lg border px-2.5 text-[10px] font-black sm:px-3 sm:text-xs xl:h-9 ${
+                    className={`h-7 shrink-0 rounded-md border px-2 text-[10px] font-black sm:h-8 sm:px-2.5 sm:text-xs ${
                       selectedSpecialWeeks
                         ? "border-[#f2b84b] bg-[#fff8e6] text-[#8a5b0a] hover:bg-[#fff0c7]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
@@ -916,18 +904,11 @@ export default function PropertySearchPage() {
 
                 <button
                   type="submit"
-                  className="bma-btn-primary h-11 w-full px-4 text-sm !text-white hover:!text-white sm:h-12 lg:w-auto lg:px-7"
+                  className="bma-btn-primary h-10 w-full rounded-lg px-4 text-sm !text-white hover:!text-white lg:w-auto lg:px-6"
                 >
                   Search
                 </button>
               </div>
-
-              <Link
-                to="/start"
-                className="bma-btn-gold !hidden h-12 shrink-0 xl:!flex"
-              >
-                Find Apartment Locator
-              </Link>
             </div>
           </div>
 
