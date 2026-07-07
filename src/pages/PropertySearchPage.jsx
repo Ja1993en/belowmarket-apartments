@@ -1046,14 +1046,15 @@ export default function PropertySearchPage() {
             </div>
 
             {hasMultipleResultsPages && (
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
                 <button
                   type="button"
                   onClick={() => handleResultsPageChange(safeResultsPage - 1)}
                   disabled={safeResultsPage === 1}
-                  className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] disabled:cursor-not-allowed disabled:text-[#9aa7a4] disabled:hover:bg-white"
+                  className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Previous results page"
                 >
-                  Previous
+                  &lt;
                 </button>
 
                 {paginationPages.map((pageItem) =>
@@ -1070,10 +1071,10 @@ export default function PropertySearchPage() {
                       type="button"
                       onClick={() => handleResultsPageChange(pageItem)}
                       aria-current={pageItem === safeResultsPage ? "page" : undefined}
-                      className={`h-10 min-w-10 rounded-xl px-3 text-sm font-black ring-1 ${
+                      className={`h-10 min-w-10 rounded-full px-3 text-sm font-black ${
                         pageItem === safeResultsPage
-                          ? "bg-[#173f3f] text-white ring-[#173f3f]"
-                          : "bg-white text-[#173f3f] ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                          ? "bg-[#173f3f] !text-white hover:!text-white"
+                          : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df]"
                       }`}
                     >
                       {pageItem}
@@ -1085,9 +1086,10 @@ export default function PropertySearchPage() {
                   type="button"
                   onClick={() => handleResultsPageChange(safeResultsPage + 1)}
                   disabled={safeResultsPage === totalResultsPages}
-                  className="rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] disabled:cursor-not-allowed disabled:text-[#9aa7a4] disabled:hover:bg-white"
+                  className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Next results page"
                 >
-                  Next
+                  &gt;
                 </button>
               </div>
             )}
