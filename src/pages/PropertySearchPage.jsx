@@ -247,6 +247,16 @@ export default function PropertySearchPage() {
       const mappableProperty = mappablePropertiesById.get(property.id);
       if (!mappableProperty) return false;
 
+      if (selectedArea.type === "polygon") {
+        return isPointInsidePolygon(
+          {
+            latitude: mappableProperty.latitude,
+            longitude: mappableProperty.longitude,
+          },
+          selectedArea.polygon
+        );
+      }
+
       const distanceFromCenter = getDistanceMiles(
         selectedArea.center,
         {
@@ -1436,10 +1446,15 @@ function MapboxSearchMap({
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const isChoosingAreaRef = useRef(false);
+  const isDrawingAreaRef = useRef(false);
+  const drawAreaPointsRef = useRef([]);
+  const isDrawingAreaActiveRef = useRef(false);
   const hoverClearTimerRef = useRef(null);
   const [mapboxGl, setMapboxGl] = useState(null);
   const [mapError, setMapError] = useState("");
   const [isChoosingArea, setIsChoosingArea] = useState(false);
+  const [isDrawingArea, setIsDrawingArea] = useState(false);
+  const [drawAreaPoints, setDrawAreaPoints] = useState([]);
   const [areaRadiusMiles, setAreaRadiusMiles] = useState(DEFAULT_AREA_RADIUS_MILES);
   const hoveredProperty = useMemo(
     () =>
@@ -1532,19 +1547,20 @@ function MapboxSearchMap({
 
   useEffect(() => {
     isChoosingAreaRef.current = isChoosingArea;
+    isDrawingAreaRef.current = isDrawingArea;
 
     if (!mapRef.current) return;
 
     const areaSource = mapRef.current.getSource("search-area");
     if (!areaSource) return;
 
-    areaSource.setData(createAreaGeoJson(selectedArea));
-  }, [isChoosingArea, selectedArea]);
+    areaSource.setData(createAreaGeoJson(selectedArea, drawAreaPoints));
+  }, [drawAreaPoints, isChoosingArea, isDrawingArea, selectedArea]);
 
   useEffect(() => {
     if (!mapRef.current) return;
 
-    if (isChoosingArea) {
+    if (isChoosingArea || isDrawingArea) {
       mapRef.current.dragPan.disable();
       mapRef.current.getCanvas().style.cursor = "crosshair";
       return;
@@ -1552,7 +1568,7 @@ function MapboxSearchMap({
 
     mapRef.current.dragPan.enable();
     mapRef.current.getCanvas().style.cursor = "";
-  }, [isChoosingArea]);
+  }, [isChoosingArea, isDrawingArea]);
 
   const chooseAreaAtMapPoint = (event) => {
     if (!isChoosingArea || !mapRef.current) return;
@@ -1566,6 +1582,58 @@ function MapboxSearchMap({
       radiusMiles: areaRadiusMiles,
     });
     setIsChoosingArea(false);
+  };
+
+  const startDrawingArea = (event) => {
+    if (!isDrawingArea || !mapRef.current) return;
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+
+    const firstPoint = getPointerMapPoint(mapRef.current, event);
+    if (!firstPoint) return;
+
+    isDrawingAreaActiveRef.current = true;
+    drawAreaPointsRef.current = [firstPoint];
+    setDrawAreaPoints([firstPoint]);
+  };
+
+  const updateDrawingArea = (event) => {
+    if (!isDrawingArea || !isDrawingAreaActiveRef.current || !mapRef.current) return;
+
+    event.preventDefault();
+    const nextPoint = getPointerMapPoint(mapRef.current, event);
+    if (!nextPoint) return;
+
+    const currentPoints = drawAreaPointsRef.current;
+    const lastPoint = currentPoints[currentPoints.length - 1];
+    if (lastPoint && getDistanceMiles(lastPoint, nextPoint) < 0.03) return;
+
+    const nextPoints = [...currentPoints, nextPoint];
+    drawAreaPointsRef.current = nextPoints;
+    setDrawAreaPoints(nextPoints);
+  };
+
+  const finishDrawingArea = (event) => {
+    if (!isDrawingAreaActiveRef.current) return;
+
+    event.preventDefault();
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    isDrawingAreaActiveRef.current = false;
+
+    const polygon = drawAreaPointsRef.current;
+    drawAreaPointsRef.current = [];
+    setDrawAreaPoints([]);
+
+    if (polygon.length >= 3) {
+      onAreaChange({
+        type: "polygon",
+        polygon,
+        center: getPolygonCenter(polygon),
+      });
+    }
+
+    setIsDrawingArea(false);
   };
 
   const selectAreaRadius = (radiusMiles) => {
@@ -1604,6 +1672,11 @@ function MapboxSearchMap({
             radiusMiles: areaRadiusMiles,
           });
           setIsChoosingArea(false);
+          return;
+        }
+
+        if (isDrawingAreaRef.current) {
+          event.stopPropagation();
           return;
         }
 
@@ -1692,10 +1765,25 @@ function MapboxSearchMap({
           onClick={chooseAreaAtMapPoint}
         />
       )}
+      {isDrawingArea && (
+        <div
+          className="absolute inset-0 z-[5] cursor-crosshair touch-none bg-[#2d7dd2]/5"
+          role="application"
+          aria-label="Draw a search area on the map"
+          onPointerDown={startDrawingArea}
+          onPointerMove={updateDrawingArea}
+          onPointerUp={finishDrawingArea}
+          onPointerCancel={finishDrawingArea}
+        />
+      )}
       <div className="absolute left-4 top-4 z-10 flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2">
         <button
           type="button"
-          onClick={() => setIsChoosingArea((currentValue) => !currentValue)}
+          onClick={() => {
+            setIsDrawingArea(false);
+            setDrawAreaPoints([]);
+            setIsChoosingArea((currentValue) => !currentValue);
+          }}
           className={`rounded-2xl px-4 py-3 text-sm font-black shadow-sm ring-1 ${
             isChoosingArea
               ? "bg-[#2d7dd2] text-white ring-[#2d7dd2]"
@@ -1704,36 +1792,57 @@ function MapboxSearchMap({
         >
           {isChoosingArea ? "Tap map" : "Choose area"}
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            setIsChoosingArea(false);
+            setDrawAreaPoints([]);
+            setIsDrawingArea((currentValue) => !currentValue);
+          }}
+          className={`rounded-2xl px-4 py-3 text-sm font-black shadow-sm ring-1 ${
+            isDrawingArea
+              ? "bg-[#2d7dd2] text-white ring-[#2d7dd2]"
+              : "bg-white/95 text-[#173f3f] ring-[#d7e6df] hover:bg-[#f5f8f1]"
+          }`}
+        >
+          {isDrawingArea ? "Drawing..." : "Draw area"}
+        </button>
         {selectedArea && (
           <>
-            <div className="flex overflow-hidden rounded-2xl bg-white/95 shadow-sm ring-1 ring-[#d7e6df]">
-              {AREA_RADIUS_OPTIONS.map((radiusMiles) => (
-                <button
-                  key={radiusMiles}
-                  type="button"
-                  onClick={() => selectAreaRadius(radiusMiles)}
-                  className={`px-3 py-3 text-sm font-black ${
-                    areaRadiusMiles === radiusMiles
-                      ? "bg-[#173f3f] !text-white hover:!text-white"
-                      : "text-[#173f3f] hover:bg-[#f5f8f1]"
-                  }`}
-                >
-                  {radiusMiles} mi
-                </button>
-              ))}
-            </div>
+            {selectedArea.type !== "polygon" && (
+              <div className="flex overflow-hidden rounded-2xl bg-white/95 shadow-sm ring-1 ring-[#d7e6df]">
+                {AREA_RADIUS_OPTIONS.map((radiusMiles) => (
+                  <button
+                    key={radiusMiles}
+                    type="button"
+                    onClick={() => selectAreaRadius(radiusMiles)}
+                    className={`px-3 py-3 text-sm font-black ${
+                      areaRadiusMiles === radiusMiles
+                        ? "bg-[#173f3f] !text-white hover:!text-white"
+                        : "text-[#173f3f] hover:bg-[#f5f8f1]"
+                    }`}
+                  >
+                    {radiusMiles} mi
+                  </button>
+                ))}
+              </div>
+            )}
             <button
               type="button"
               onClick={() => {
                 onAreaChange(null);
                 setIsChoosingArea(false);
+                setIsDrawingArea(false);
+                setDrawAreaPoints([]);
               }}
               className="rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#e4572e] shadow-sm ring-1 ring-[#f4c8b8] hover:bg-[#fff0ea]"
             >
               Clear area
             </button>
             <p className="w-full rounded-2xl bg-white/95 px-4 py-2 text-xs font-black text-[#174a7c] shadow-sm ring-1 ring-[#b8d9f0] sm:w-auto">
-              Showing apartments within {selectedArea.radiusMiles} mi of your selected area
+              {selectedArea.type === "polygon"
+                ? "Showing apartments inside your drawn area"
+                : `Showing apartments within ${selectedArea.radiusMiles} mi of your selected area`}
             </p>
           </>
         )}
@@ -1751,6 +1860,11 @@ function MapboxSearchMap({
       {isChoosingArea && (
         <p className="pointer-events-none absolute bottom-4 left-4 z-10 rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#174a7c] shadow-lg ring-1 ring-[#b8d9f0]">
           Tap the map to search within {areaRadiusMiles} miles
+        </p>
+      )}
+      {isDrawingArea && (
+        <p className="pointer-events-none absolute bottom-4 left-4 z-10 max-w-[calc(100%-2rem)] rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#174a7c] shadow-lg ring-1 ring-[#b8d9f0]">
+          Drag to draw your search area, then release to filter results
         </p>
       )}
       {mappableProperties.length === 0 && (
@@ -2852,11 +2966,59 @@ function propertyHasStrongMapDeal(property) {
   return maxFreeWeeks >= 8;
 }
 
-function createAreaGeoJson(area) {
+function createAreaGeoJson(area, previewPoints = []) {
+  if (previewPoints.length >= 2) {
+    const coordinates = previewPoints.map((point) => [
+      point.longitude,
+      point.latitude,
+    ]);
+
+    if (previewPoints.length >= 3) {
+      coordinates.push([previewPoints[0].longitude, previewPoints[0].latitude]);
+    }
+
+    return {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: previewPoints.length >= 3 ? "Polygon" : "LineString",
+            coordinates:
+              previewPoints.length >= 3 ? [coordinates] : coordinates,
+          },
+        },
+      ],
+    };
+  }
+
   if (!area) {
     return {
       type: "FeatureCollection",
       features: [],
+    };
+  }
+
+  if (area.type === "polygon" && area.polygon?.length >= 3) {
+    const coordinates = area.polygon.map((point) => [
+      point.longitude,
+      point.latitude,
+    ]);
+    coordinates.push([area.polygon[0].longitude, area.polygon[0].latitude]);
+
+    return {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "Polygon",
+            coordinates: [coordinates],
+          },
+        },
+      ],
     };
   }
 
@@ -2882,6 +3044,61 @@ function createAreaGeoJson(area) {
       },
     ],
   };
+}
+
+function getPolygonCenter(points) {
+  if (!points?.length) {
+    return {
+      latitude: DALLAS_CENTER[1],
+      longitude: DALLAS_CENTER[0],
+    };
+  }
+
+  const totals = points.reduce(
+    (sum, point) => ({
+      latitude: sum.latitude + point.latitude,
+      longitude: sum.longitude + point.longitude,
+    }),
+    { latitude: 0, longitude: 0 }
+  );
+
+  return {
+    latitude: totals.latitude / points.length,
+    longitude: totals.longitude / points.length,
+  };
+}
+
+function isPointInsidePolygon(point, polygon = []) {
+  if (polygon.length < 3) return false;
+
+  let isInside = false;
+  const x = point.longitude;
+  const y = point.latitude;
+
+  for (
+    let currentIndex = 0, previousIndex = polygon.length - 1;
+    currentIndex < polygon.length;
+    previousIndex = currentIndex, currentIndex += 1
+  ) {
+    const currentPoint = polygon[currentIndex];
+    const previousPoint = polygon[previousIndex];
+    const currentX = currentPoint.longitude;
+    const currentY = currentPoint.latitude;
+    const previousX = previousPoint.longitude;
+    const previousY = previousPoint.latitude;
+    const crossesLatitude =
+      currentY > y !== previousY > y;
+    const crossingLongitude =
+      ((previousX - currentX) * (y - currentY)) /
+        (previousY - currentY || Number.EPSILON) +
+      currentX;
+
+    if (crossesLatitude && x < crossingLongitude) {
+      isInside = !isInside;
+    }
+  }
+
+  return isInside;
 }
 
 function getDestinationPoint(center, distanceMiles, bearingDegrees) {
