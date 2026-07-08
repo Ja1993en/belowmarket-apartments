@@ -646,7 +646,7 @@ export default function PropertySearchPage() {
     <main className="min-h-screen bg-[#f5f8f1] pb-24 text-[#102426]">
       <section className="bma-topbar sticky top-0 z-40 px-3 py-2">
         <div className="bma-shell">
-          <div className="mb-1.5 flex items-center justify-between gap-3 xl:hidden">
+          <div className="mb-1.5 flex items-center justify-between gap-3">
             <Link to="/" className="flex min-w-0 items-center gap-2">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] text-[10px] font-black text-[#f2b84b]">
                 BMA
