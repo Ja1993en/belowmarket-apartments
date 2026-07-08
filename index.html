@@ -11,18 +11,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
       (() => {
-        const reloadKey = "bmaInitialModuleReloaded";
+        const reloadKey = "bmaInitialAssetReloadedV2";
+        const reloadWindowMs = 15000;
         const staleAssetPatterns = [
           "Expected a JavaScript-or-Wasm module script",
           "Failed to load module script",
           "Failed to fetch dynamically imported module",
           "Importing a module script failed",
+          "Refused to apply style",
+          "not a supported stylesheet MIME type",
+          "MIME type",
         ];
         const memoryFlags = new Set();
 
         function getSessionFlag(key) {
           try {
-            return sessionStorage.getItem(key) === "true" || memoryFlags.has(key);
+            const storedValue = sessionStorage.getItem(key);
+            const storedTime = Number(storedValue);
+
+            return (
+              memoryFlags.has(key) ||
+              storedValue === "true" ||
+              (Number.isFinite(storedTime) && Date.now() - storedTime < reloadWindowMs)
+            );
           } catch {
             return memoryFlags.has(key);
           }
@@ -32,7 +43,7 @@
           memoryFlags.add(key);
 
           try {
-            sessionStorage.setItem(key, "true");
+            sessionStorage.setItem(key, String(Date.now()));
           } catch {
             // Some iPhone Safari privacy modes block session storage.
           }
@@ -54,6 +65,7 @@
             event?.reason?.message,
             event?.reason,
             event?.target?.src,
+            event?.target?.href,
           ]
             .filter(Boolean)
             .join(" ");
@@ -61,7 +73,7 @@
 
         function isStaleAssetError(event) {
           const errorText = getErrorText(event);
-          const failedSource = event?.target?.src || "";
+          const failedSource = event?.target?.src || event?.target?.href || "";
 
           return (
             failedSource.includes("/assets/") ||

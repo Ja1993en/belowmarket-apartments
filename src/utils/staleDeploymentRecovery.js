@@ -1,4 +1,5 @@
-const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloaded";
+const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloadedV2";
+const STALE_DEPLOYMENT_RELOAD_WINDOW_MS = 15000;
 
 const staleDeploymentErrorPatterns = [
   "Failed to fetch dynamically imported module",
@@ -7,13 +8,24 @@ const staleDeploymentErrorPatterns = [
   "error loading dynamically imported module",
   "Load failed",
   "Failed to execute 'put' on 'Cache'",
+  "Refused to apply style",
+  "not a supported stylesheet MIME type",
+  "MIME type",
 ];
 
 const memoryFlags = new Set();
 
 function getSessionFlag(key) {
   try {
-    return sessionStorage.getItem(key) === "true" || memoryFlags.has(key);
+    const storedValue = sessionStorage.getItem(key);
+    const storedTime = Number(storedValue);
+
+    return (
+      memoryFlags.has(key) ||
+      storedValue === "true" ||
+      (Number.isFinite(storedTime) &&
+        Date.now() - storedTime < STALE_DEPLOYMENT_RELOAD_WINDOW_MS)
+    );
   } catch {
     return memoryFlags.has(key);
   }
@@ -23,7 +35,7 @@ function setSessionFlag(key) {
   memoryFlags.add(key);
 
   try {
-    sessionStorage.setItem(key, "true");
+    sessionStorage.setItem(key, String(Date.now()));
   } catch {
     // Some iPhone Safari privacy modes block session storage.
   }
@@ -48,6 +60,7 @@ function getErrorText(error) {
     error.reason,
     error.filename,
     error.target?.src,
+    error.target?.href,
   ]
     .filter(Boolean)
     .join(" ");
@@ -55,9 +68,11 @@ function getErrorText(error) {
 
 function isStaleDeploymentError(error) {
   const errorText = getErrorText(error);
+  const failedSource = error?.target?.src || error?.target?.href || "";
 
-  return staleDeploymentErrorPatterns.some((pattern) =>
-    errorText.includes(pattern)
+  return (
+    failedSource.includes("/assets/") ||
+    staleDeploymentErrorPatterns.some((pattern) => errorText.includes(pattern))
   );
 }
 
