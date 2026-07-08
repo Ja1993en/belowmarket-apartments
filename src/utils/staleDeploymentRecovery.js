@@ -10,6 +10,35 @@ const staleDeploymentErrorPatterns = [
 ];
 
 const CACHE_CLEANUP_KEY = "bmaBrowserCacheCleaned";
+const memoryFlags = new Set();
+
+function getSessionFlag(key) {
+  try {
+    return sessionStorage.getItem(key) === "true" || memoryFlags.has(key);
+  } catch {
+    return memoryFlags.has(key);
+  }
+}
+
+function setSessionFlag(key) {
+  memoryFlags.add(key);
+
+  try {
+    sessionStorage.setItem(key, "true");
+  } catch {
+    // Some iPhone Safari privacy modes block session storage.
+  }
+}
+
+function removeSessionFlag(key) {
+  memoryFlags.delete(key);
+
+  try {
+    sessionStorage.removeItem(key);
+  } catch {
+    // Some iPhone Safari privacy modes block session storage.
+  }
+}
 
 function getErrorText(error) {
   if (!error) return "";
@@ -36,20 +65,20 @@ function isStaleDeploymentError(error) {
 function reloadOnceForFreshDeployment(error) {
   if (!isStaleDeploymentError(error)) return;
 
-  if (sessionStorage.getItem(STALE_DEPLOYMENT_RELOAD_KEY) === "true") {
+  if (getSessionFlag(STALE_DEPLOYMENT_RELOAD_KEY)) {
     return;
   }
 
-  sessionStorage.setItem(STALE_DEPLOYMENT_RELOAD_KEY, "true");
+  setSessionFlag(STALE_DEPLOYMENT_RELOAD_KEY);
   window.location.reload();
 }
 
 function cleanupLegacyBrowserCaches() {
-  if (sessionStorage.getItem(CACHE_CLEANUP_KEY) === "true") {
+  if (getSessionFlag(CACHE_CLEANUP_KEY)) {
     return;
   }
 
-  sessionStorage.setItem(CACHE_CLEANUP_KEY, "true");
+  setSessionFlag(CACHE_CLEANUP_KEY);
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker
@@ -83,7 +112,7 @@ export function registerStaleDeploymentRecovery() {
   window.addEventListener("unhandledrejection", reloadOnceForFreshDeployment);
   window.addEventListener("load", () => {
     window.setTimeout(() => {
-      sessionStorage.removeItem(STALE_DEPLOYMENT_RELOAD_KEY);
+      removeSessionFlag(STALE_DEPLOYMENT_RELOAD_KEY);
     }, 3000);
   });
 }

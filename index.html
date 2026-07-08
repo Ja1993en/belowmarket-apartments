@@ -18,6 +18,35 @@
           "Failed to fetch dynamically imported module",
           "Importing a module script failed",
         ];
+        const memoryFlags = new Set();
+
+        function getSessionFlag(key) {
+          try {
+            return sessionStorage.getItem(key) === "true" || memoryFlags.has(key);
+          } catch {
+            return memoryFlags.has(key);
+          }
+        }
+
+        function setSessionFlag(key) {
+          memoryFlags.add(key);
+
+          try {
+            sessionStorage.setItem(key, "true");
+          } catch {
+            // Some iPhone Safari privacy modes block session storage.
+          }
+        }
+
+        function removeSessionFlag(key) {
+          memoryFlags.delete(key);
+
+          try {
+            sessionStorage.removeItem(key);
+          } catch {
+            // Some iPhone Safari privacy modes block session storage.
+          }
+        }
 
         function getErrorText(event) {
           return [
@@ -62,9 +91,9 @@
 
         async function reloadForFreshAssets(event) {
           if (!isStaleAssetError(event)) return;
-          if (sessionStorage.getItem(reloadKey) === "true") return;
+          if (getSessionFlag(reloadKey)) return;
 
-          sessionStorage.setItem(reloadKey, "true");
+          setSessionFlag(reloadKey);
           await clearOldCaches();
           window.location.reload();
         }
@@ -72,7 +101,7 @@
         window.addEventListener("error", reloadForFreshAssets, true);
         window.addEventListener("unhandledrejection", reloadForFreshAssets);
         window.addEventListener("load", () => {
-          window.setTimeout(() => sessionStorage.removeItem(reloadKey), 4000);
+          window.setTimeout(() => removeSessionFlag(reloadKey), 4000);
         });
       })();
     </script>
