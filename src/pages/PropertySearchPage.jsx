@@ -718,18 +718,18 @@ export default function PropertySearchPage() {
                   </button>
 
                   {isPriceFilterOpen && (
-                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-72 overflow-hidden rounded-lg border border-[#d7e6df] bg-white shadow-2xl">
-                      <div className="border-b border-[#edf4ef] px-4 py-3">
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-72 overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-2xl sm:w-80">
+                      <div className="border-b border-[#edf4ef] px-4 py-3.5">
                         <p className="text-xs font-black uppercase text-[#526260]">
                           Monthly budget
                         </p>
-                        <p className="mt-1 text-xs font-semibold text-[#526260]">
+                        <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260]">
                           Filters use listed rent because approval is usually based on normal monthly rent.
                         </p>
                       </div>
-                      <div className="border-b border-[#edf4ef] p-3">
-                        <div className="grid grid-cols-2 gap-2">
-                          <label className="grid gap-1">
+                      <div className="p-4">
+                        <div className="grid grid-cols-2 gap-3">
+                          <label className="grid gap-1.5">
                             <span className="text-[10px] font-black uppercase text-[#526260]">
                               Min
                             </span>
@@ -742,10 +742,10 @@ export default function PropertySearchPage() {
                                 setSelectedArea(null);
                               }}
                               placeholder="900"
-                              className="h-10 rounded-lg border border-[#d7e6df] bg-[#f9fbf8] px-3 text-sm font-black text-[#102426] outline-none focus:border-[#2d7dd2]"
+                              className="h-11 w-full rounded-xl border border-[#d7e6df] bg-[#f9fbf8] px-3 text-sm font-black text-[#102426] outline-none transition focus:border-[#2d7dd2] focus:bg-white"
                             />
                           </label>
-                          <label className="grid gap-1">
+                          <label className="grid gap-1.5">
                             <span className="text-[10px] font-black uppercase text-[#526260]">
                               Max
                             </span>
@@ -758,11 +758,11 @@ export default function PropertySearchPage() {
                                 setSelectedArea(null);
                               }}
                               placeholder="1600"
-                              className="h-10 rounded-lg border border-[#d7e6df] bg-[#f9fbf8] px-3 text-sm font-black text-[#102426] outline-none focus:border-[#2d7dd2]"
+                              className="h-11 w-full rounded-xl border border-[#d7e6df] bg-[#f9fbf8] px-3 text-sm font-black text-[#102426] outline-none transition focus:border-[#2d7dd2] focus:bg-white"
                             />
                           </label>
                         </div>
-                        <p className="mt-2 text-[11px] font-semibold leading-4 text-[#526260]">
+                        <p className="mt-3 text-[11px] font-semibold leading-4 text-[#526260]">
                           Enter numbers only. Leave either side blank if it does not matter.
                         </p>
                       </div>
@@ -774,7 +774,7 @@ export default function PropertySearchPage() {
                           setIsPriceFilterOpen(false);
                           setSelectedArea(null);
                         }}
-                        className="w-full border-t border-[#edf4ef] px-4 py-3 text-left text-sm font-black text-[#e4572e] hover:bg-[#fff0ea]"
+                        className="w-full border-t border-[#edf4ef] px-4 py-3 text-left text-sm font-black text-[#c9341c] transition hover:bg-[#fff0ea]"
                       >
                         Clear price filter
                       </button>
