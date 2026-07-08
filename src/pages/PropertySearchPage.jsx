@@ -187,6 +187,8 @@ export default function PropertySearchPage() {
   const [searchTerm, setSearchTerm] = useState(searchFromUrl);
   const [selectedArea, setSelectedArea] = useState(null);
   const [selectedPriceRange, setSelectedPriceRange] = useState("");
+  const [customPriceMin, setCustomPriceMin] = useState("");
+  const [customPriceMax, setCustomPriceMax] = useState("");
   const [selectedBedroomFilter, setSelectedBedroomFilter] = useState("");
   const [selectedSpecialWeeks, setSelectedSpecialWeeks] = useState("");
   const [isPriceFilterOpen, setIsPriceFilterOpen] = useState(false);
@@ -224,18 +226,23 @@ export default function PropertySearchPage() {
       propertyHasWeeksFreeSpecial(property, Number(selectedSpecialWeeks))
     );
   }, [searchMatchedProperties, selectedSpecialWeeks]);
+  const selectedPriceFilter = useMemo(
+    () =>
+      getSelectedPriceFilter(
+        selectedPriceRange,
+        customPriceMin,
+        customPriceMax
+      ),
+    [customPriceMax, customPriceMin, selectedPriceRange]
+  );
   const filterMatchedProperties = useMemo(() => {
     return specialMatchedProperties.filter((property) => {
       return (
-        propertyMatchesPriceFilter(
-          property,
-          selectedPriceRange,
-          selectedBedroomFilter
-        ) &&
+        propertyMatchesPriceFilter(property, selectedPriceFilter, selectedBedroomFilter) &&
         propertyMatchesBedroomFilter(property, selectedBedroomFilter)
       );
     });
-  }, [selectedBedroomFilter, selectedPriceRange, specialMatchedProperties]);
+  }, [selectedBedroomFilter, selectedPriceFilter, specialMatchedProperties]);
   const filteredProperties = useMemo(() => {
     if (!selectedArea) return filterMatchedProperties;
 
@@ -280,7 +287,7 @@ export default function PropertySearchPage() {
   const selectedSpecialLabel = selectedSpecialWeeks
     ? `${selectedSpecialWeeks} weeks free`
     : "";
-  const selectedPriceLabel = getSelectedPriceLabel(selectedPriceRange);
+  const selectedPriceLabel = selectedPriceFilter?.label || "";
   const selectedBedroomLabel = getSelectedBedroomLabel(selectedBedroomFilter);
   const suggestions = useMemo(
     () => getPropertySearchSuggestions(properties, searchTerm),
@@ -487,6 +494,8 @@ export default function PropertySearchPage() {
   useEffect(() => {
     setCurrentResultsPage(1);
   }, [
+    customPriceMax,
+    customPriceMin,
     searchFromUrl,
     selectedArea,
     selectedBedroomFilter,
@@ -706,8 +715,10 @@ export default function PropertySearchPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (selectedPriceRange) {
+                      if (selectedPriceFilter) {
                         setSelectedPriceRange("");
+                        setCustomPriceMin("");
+                        setCustomPriceMax("");
                         setIsPriceFilterOpen(false);
                         setSelectedArea(null);
                         return;
@@ -718,17 +729,17 @@ export default function PropertySearchPage() {
                       setIsSpecialFilterOpen(false);
                     }}
                     className={`h-7 shrink-0 rounded-md border px-2 text-[10px] font-black sm:h-8 sm:px-2.5 sm:text-xs ${
-                      selectedPriceRange
+                      selectedPriceFilter
                         ? "border-[#2d7dd2] bg-[#eef5ff] text-[#174a7c] hover:bg-[#dbeeff]"
                         : "border-[#d7e6df] bg-white text-[#102426] hover:bg-[#f5f8f1]"
                     }`}
-                    title={selectedPriceRange ? "Remove price filter" : "Open price filter"}
+                    title={selectedPriceFilter ? "Remove price filter" : "Open price filter"}
                   >
-                    {selectedPriceLabel || "Price"} {selectedPriceRange ? "x" : ""}
+                    {selectedPriceLabel || "Price"} {selectedPriceFilter ? "x" : ""}
                   </button>
 
                   {isPriceFilterOpen && (
-                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-64 overflow-hidden rounded-lg border border-[#d7e6df] bg-white shadow-2xl">
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-72 overflow-hidden rounded-lg border border-[#d7e6df] bg-white shadow-2xl">
                       <div className="border-b border-[#edf4ef] px-4 py-3">
                         <p className="text-xs font-black uppercase text-[#526260]">
                           Monthly budget
@@ -737,13 +748,56 @@ export default function PropertySearchPage() {
                           Filters use listed rent because approval is usually based on normal monthly rent.
                         </p>
                       </div>
-                      <div className="max-h-72 overflow-y-auto">
+                      <div className="border-b border-[#edf4ef] p-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="grid gap-1">
+                            <span className="text-[10px] font-black uppercase text-[#526260]">
+                              Low
+                            </span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={customPriceMin}
+                              onChange={(event) => {
+                                setCustomPriceMin(event.target.value);
+                                setSelectedPriceRange("");
+                                setSelectedArea(null);
+                              }}
+                              placeholder="900"
+                              className="h-10 rounded-lg border border-[#d7e6df] bg-[#f9fbf8] px-3 text-sm font-black text-[#102426] outline-none focus:border-[#2d7dd2]"
+                            />
+                          </label>
+                          <label className="grid gap-1">
+                            <span className="text-[10px] font-black uppercase text-[#526260]">
+                              High
+                            </span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={customPriceMax}
+                              onChange={(event) => {
+                                setCustomPriceMax(event.target.value);
+                                setSelectedPriceRange("");
+                                setSelectedArea(null);
+                              }}
+                              placeholder="1600"
+                              className="h-10 rounded-lg border border-[#d7e6df] bg-[#f9fbf8] px-3 text-sm font-black text-[#102426] outline-none focus:border-[#2d7dd2]"
+                            />
+                          </label>
+                        </div>
+                        <p className="mt-2 text-[11px] font-semibold leading-4 text-[#526260]">
+                          Enter one or both amounts, or choose a preset below.
+                        </p>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
                       {PRICE_FILTER_OPTIONS.map((option) => (
                         <button
                           key={option.label}
                           type="button"
                           onClick={() => {
                             setSelectedPriceRange(option.label);
+                            setCustomPriceMin("");
+                            setCustomPriceMax("");
                             setIsPriceFilterOpen(false);
                             setSelectedArea(null);
                           }}
@@ -764,6 +818,8 @@ export default function PropertySearchPage() {
                         type="button"
                         onClick={() => {
                           setSelectedPriceRange("");
+                          setCustomPriceMin("");
+                          setCustomPriceMax("");
                           setIsPriceFilterOpen(false);
                           setSelectedArea(null);
                         }}
@@ -1021,7 +1077,7 @@ export default function PropertySearchPage() {
                   isCompared={comparePropertyIds.includes(property.id)}
                   isMapHighlighted={highlightedMapPropertyId === property.id}
                   selectedBedroomFilter={selectedBedroomFilter}
-                  selectedPriceRange={selectedPriceRange}
+                  selectedPriceRange={selectedPriceFilter}
                   cardRef={(node) => {
                     if (node) {
                       resultCardRefs.current.set(property.id, node);
@@ -1116,7 +1172,7 @@ export default function PropertySearchPage() {
                   mappableProperties={mappableFilteredProperties}
                   selectedArea={selectedArea}
                   selectedBedroomFilter={selectedBedroomFilter}
-                  selectedPriceRange={selectedPriceRange}
+                  selectedPriceRange={selectedPriceFilter}
                   onAreaChange={setSelectedArea}
                   onPropertyHover={setHoveredMapPropertyId}
                   onPropertySelect={handleMapPropertySelect}
@@ -1163,7 +1219,7 @@ export default function PropertySearchPage() {
                 mappableProperties={mappableFilteredProperties}
                 selectedArea={selectedArea}
                 selectedBedroomFilter={selectedBedroomFilter}
-                selectedPriceRange={selectedPriceRange}
+                selectedPriceRange={selectedPriceFilter}
                 onAreaChange={setSelectedArea}
                 onPropertyHover={setHoveredMapPropertyId}
                 onPropertySelect={handleMobileMapPropertySelect}
@@ -1173,7 +1229,7 @@ export default function PropertySearchPage() {
                 <MobileMapPropertySheet
                   property={mobileMapSelectedProperty}
                   selectedBedroomFilter={selectedBedroomFilter}
-                  selectedPriceRange={selectedPriceRange}
+                  selectedPriceRange={selectedPriceFilter}
                   onClose={() => setMobileMapSelectedPropertyId("")}
                   onViewDetails={() =>
                     handleMobileMapViewDetails(mobileMapSelectedProperty.id)
@@ -3142,14 +3198,10 @@ function propertyHasWeeksFreeSpecial(property, targetWeeks) {
 
 function propertyMatchesPriceFilter(
   property,
-  selectedPriceRange,
+  selectedPriceFilter,
   selectedBedroomFilter = ""
 ) {
-  if (!selectedPriceRange) return true;
-
-  const priceOption = PRICE_FILTER_OPTIONS.find(
-    (option) => option.label === selectedPriceRange
-  );
+  const priceOption = getPriceFilterOption(selectedPriceFilter);
   if (!priceOption) return true;
 
   const bedroomFilteredFloorPlans = getBedroomFilteredSearchFloorPlans(
@@ -3187,30 +3239,73 @@ function propertyMatchesBedroomFilter(property, selectedBedroomFilter) {
   return bedroomCounts.includes(Number(selectedBedroomFilter));
 }
 
-function getSelectedPriceLabel(selectedPriceRange) {
-  return (
-    PRICE_FILTER_OPTIONS.find((option) => option.label === selectedPriceRange)?.label || ""
-  );
-}
-
 function getSelectedBedroomLabel(selectedBedroomFilter) {
   return (
     BED_FILTER_OPTIONS.find((option) => option.value === selectedBedroomFilter)?.label || ""
   );
 }
 
+function getSelectedPriceFilter(selectedPriceRange, customPriceMin, customPriceMax) {
+  const customMin = parseBudgetInput(customPriceMin);
+  const customMax = parseBudgetInput(customPriceMax);
+
+  if (Number.isFinite(customMin) || Number.isFinite(customMax)) {
+    let min = Number.isFinite(customMin) ? customMin : 0;
+    let max = Number.isFinite(customMax) ? customMax : null;
+
+    if (Number.isFinite(max) && max < min) {
+      [min, max] = [max, min];
+    }
+
+    return {
+      label:
+        max === null
+          ? `${formatCurrency(min)}+`
+          : min > 0
+            ? `${formatCurrency(min)} - ${formatCurrency(max)}`
+            : `Up to ${formatCurrency(max)}`,
+      min,
+      max,
+      type: "custom",
+    };
+  }
+
+  return getPriceFilterOption(selectedPriceRange);
+}
+
+function getPriceFilterOption(selectedPriceFilter) {
+  if (!selectedPriceFilter) return null;
+
+  if (typeof selectedPriceFilter === "object") {
+    return selectedPriceFilter;
+  }
+
+  return (
+    PRICE_FILTER_OPTIONS.find((option) => option.label === selectedPriceFilter) || null
+  );
+}
+
+function parseBudgetInput(value) {
+  if (value === null || value === undefined) return null;
+
+  const normalizedValue = String(value).trim().replace(/[^\d.]/g, "");
+  if (!normalizedValue) return null;
+
+  const numericValue = Number(normalizedValue);
+
+  return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : null;
+}
+
 function getSearchDisplayFloorPlans(
   property,
   selectedBedroomFilter = "",
-  selectedPriceRange = ""
+  selectedPriceFilter = ""
 ) {
   const bedroomFilteredFloorPlans = getBedroomFilteredSearchFloorPlans(
     property,
     selectedBedroomFilter
   );
-  const priceOption = PRICE_FILTER_OPTIONS.find(
-    (option) => option.label === selectedPriceRange
-  );
+  const priceOption = getPriceFilterOption(selectedPriceFilter);
 
   if (!priceOption) return bedroomFilteredFloorPlans;
 
