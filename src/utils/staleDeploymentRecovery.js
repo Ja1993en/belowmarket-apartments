@@ -9,7 +9,6 @@ const staleDeploymentErrorPatterns = [
   "Failed to execute 'put' on 'Cache'",
 ];
 
-const CACHE_CLEANUP_KEY = "bmaBrowserCacheCleaned";
 const memoryFlags = new Set();
 
 function getSessionFlag(key) {
@@ -73,40 +72,8 @@ function reloadOnceForFreshDeployment(error) {
   window.location.reload();
 }
 
-function cleanupLegacyBrowserCaches() {
-  if (getSessionFlag(CACHE_CLEANUP_KEY)) {
-    return;
-  }
-
-  setSessionFlag(CACHE_CLEANUP_KEY);
-
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker
-      .getRegistrations()
-      .then((registrations) =>
-        Promise.all(registrations.map((registration) => registration.unregister()))
-      )
-      .catch((error) => {
-        console.warn("Could not unregister legacy service workers.", error);
-      });
-  }
-
-  if ("caches" in window) {
-    window.caches
-      .keys()
-      .then((cacheNames) =>
-        Promise.all(cacheNames.map((cacheName) => window.caches.delete(cacheName)))
-      )
-      .catch((error) => {
-        console.warn("Could not clear legacy browser caches.", error);
-      });
-  }
-}
-
 export function registerStaleDeploymentRecovery() {
   if (typeof window === "undefined") return;
-
-  cleanupLegacyBrowserCaches();
 
   window.addEventListener("error", reloadOnceForFreshDeployment, true);
   window.addEventListener("unhandledrejection", reloadOnceForFreshDeployment);
