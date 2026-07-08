@@ -41,7 +41,6 @@ const SPECIAL_FILTER_OPTIONS = [
   { label: "6 weeks free", weeks: 6 },
   { label: "8 weeks free", weeks: 8 },
 ];
-const PRICE_FILTER_OPTIONS = createPriceFilterOptions();
 const BED_FILTER_OPTIONS = [
   { label: "Studio", value: "studio" },
   { label: "1 bd", value: "1" },
@@ -134,22 +133,6 @@ function rememberFloorPlanSectionTarget() {
   }
 }
 
-function createPriceFilterOptions() {
-  const ranges = [{ label: "Under $800", min: 0, max: 800 }];
-
-  for (let min = 800; min < 3000; min += 100) {
-    ranges.push({
-      label: `${formatCurrency(min)} - ${formatCurrency(min + 100)}`,
-      min,
-      max: min + 100,
-    });
-  }
-
-  ranges.push({ label: "$3,000+", min: 3000, max: null });
-
-  return ranges;
-}
-
 function getPaginationPages(currentPage, totalPages) {
   if (totalPages <= 5) {
     return Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -186,7 +169,6 @@ export default function PropertySearchPage() {
   const searchFromUrl = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(searchFromUrl);
   const [selectedArea, setSelectedArea] = useState(null);
-  const [selectedPriceRange, setSelectedPriceRange] = useState("");
   const [customPriceMin, setCustomPriceMin] = useState("");
   const [customPriceMax, setCustomPriceMax] = useState("");
   const [selectedBedroomFilter, setSelectedBedroomFilter] = useState("");
@@ -229,11 +211,10 @@ export default function PropertySearchPage() {
   const selectedPriceFilter = useMemo(
     () =>
       getSelectedPriceFilter(
-        selectedPriceRange,
         customPriceMin,
         customPriceMax
       ),
-    [customPriceMax, customPriceMin, selectedPriceRange]
+    [customPriceMax, customPriceMin]
   );
   const filterMatchedProperties = useMemo(() => {
     return specialMatchedProperties.filter((property) => {
@@ -499,7 +480,6 @@ export default function PropertySearchPage() {
     searchFromUrl,
     selectedArea,
     selectedBedroomFilter,
-    selectedPriceRange,
     selectedSpecialWeeks,
   ]);
 
@@ -716,7 +696,6 @@ export default function PropertySearchPage() {
                     type="button"
                     onClick={() => {
                       if (selectedPriceFilter) {
-                        setSelectedPriceRange("");
                         setCustomPriceMin("");
                         setCustomPriceMax("");
                         setIsPriceFilterOpen(false);
@@ -752,7 +731,7 @@ export default function PropertySearchPage() {
                         <div className="grid grid-cols-2 gap-2">
                           <label className="grid gap-1">
                             <span className="text-[10px] font-black uppercase text-[#526260]">
-                              Low
+                              Min
                             </span>
                             <input
                               type="text"
@@ -760,7 +739,6 @@ export default function PropertySearchPage() {
                               value={customPriceMin}
                               onChange={(event) => {
                                 setCustomPriceMin(event.target.value);
-                                setSelectedPriceRange("");
                                 setSelectedArea(null);
                               }}
                               placeholder="900"
@@ -769,7 +747,7 @@ export default function PropertySearchPage() {
                           </label>
                           <label className="grid gap-1">
                             <span className="text-[10px] font-black uppercase text-[#526260]">
-                              High
+                              Max
                             </span>
                             <input
                               type="text"
@@ -777,7 +755,6 @@ export default function PropertySearchPage() {
                               value={customPriceMax}
                               onChange={(event) => {
                                 setCustomPriceMax(event.target.value);
-                                setSelectedPriceRange("");
                                 setSelectedArea(null);
                               }}
                               placeholder="1600"
@@ -786,38 +763,12 @@ export default function PropertySearchPage() {
                           </label>
                         </div>
                         <p className="mt-2 text-[11px] font-semibold leading-4 text-[#526260]">
-                          Enter one or both amounts, or choose a preset below.
+                          Enter numbers only. Leave either side blank if it does not matter.
                         </p>
-                      </div>
-                      <div className="max-h-64 overflow-y-auto">
-                      {PRICE_FILTER_OPTIONS.map((option) => (
-                        <button
-                          key={option.label}
-                          type="button"
-                          onClick={() => {
-                            setSelectedPriceRange(option.label);
-                            setCustomPriceMin("");
-                            setCustomPriceMax("");
-                            setIsPriceFilterOpen(false);
-                            setSelectedArea(null);
-                          }}
-                          className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-black hover:bg-[#f5f8f1] ${
-                            selectedPriceRange === option.label
-                              ? "bg-[#eef5ff] text-[#174a7c]"
-                              : "text-[#102426]"
-                          }`}
-                        >
-                          {option.label}
-                          {selectedPriceRange === option.label && (
-                            <span className="text-xs uppercase text-[#1f6f63]">Active</span>
-                          )}
-                        </button>
-                      ))}
                       </div>
                       <button
                         type="button"
                         onClick={() => {
-                          setSelectedPriceRange("");
                           setCustomPriceMin("");
                           setCustomPriceMax("");
                           setIsPriceFilterOpen(false);
@@ -3245,7 +3196,7 @@ function getSelectedBedroomLabel(selectedBedroomFilter) {
   );
 }
 
-function getSelectedPriceFilter(selectedPriceRange, customPriceMin, customPriceMax) {
+function getSelectedPriceFilter(customPriceMin, customPriceMax) {
   const customMin = parseBudgetInput(customPriceMin);
   const customMax = parseBudgetInput(customPriceMax);
 
@@ -3270,7 +3221,7 @@ function getSelectedPriceFilter(selectedPriceRange, customPriceMin, customPriceM
     };
   }
 
-  return getPriceFilterOption(selectedPriceRange);
+  return null;
 }
 
 function getPriceFilterOption(selectedPriceFilter) {
@@ -3280,9 +3231,7 @@ function getPriceFilterOption(selectedPriceFilter) {
     return selectedPriceFilter;
   }
 
-  return (
-    PRICE_FILTER_OPTIONS.find((option) => option.label === selectedPriceFilter) || null
-  );
+  return null;
 }
 
 function parseBudgetInput(value) {
