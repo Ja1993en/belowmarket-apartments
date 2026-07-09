@@ -366,6 +366,7 @@ function ComparePropertiesTab({
           const dealScore = getSearchDealScore(property, priceSummary);
           const propertyLocation =
             property.area || property.neighborhood || property.city || "Dallas area";
+          const actionButtonClass = `${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} flex min-h-9 items-center justify-center whitespace-nowrap text-center font-black leading-none`;
 
           return (
             <div
@@ -434,14 +435,14 @@ function ComparePropertiesTab({
                 <Link
                   to={getFloorPlansRoute(property.id)}
                   onClick={rememberFloorPlanSectionTarget}
-                  className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} bg-[#173f3f] text-center font-black !text-white hover:bg-[#102426] hover:!text-white`}
+                  className={`${actionButtonClass} border border-[#173f3f] bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white`}
                 >
-                  Choose floor plan
+                  Add floor plan
                 </Link>
                 <button
                   type="button"
                   onClick={() => onRemove(property.id)}
-                  className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} border border-[#f2b84b] bg-[#b42318] text-center font-black !text-white hover:bg-[#8f1d15] hover:!text-white`}
+                  className={`${actionButtonClass} border border-[#f2b84b] bg-[#b42318] !text-white hover:bg-[#8f1d15] hover:!text-white`}
                 >
                   Remove
                 </button>
