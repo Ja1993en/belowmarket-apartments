@@ -190,6 +190,8 @@ export default function PropertySearchPage() {
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isMobileMapModalOpen, setIsMobileMapModalOpen] = useState(false);
   const [requestInfoProperty, setRequestInfoProperty] = useState(null);
+  const [desktopMapTopOffset, setDesktopMapTopOffset] = useState(128);
+  const topbarRef = useRef(null);
   const resultCardRefs = useRef(new Map());
   const resultsTopRef = useRef(null);
   const searchFormRef = useRef(null);
@@ -351,8 +353,8 @@ export default function PropertySearchPage() {
     compareFloorPlanRows.length > 0 || propertyCompareRows.length > 0;
   const compareItemCount = compareFloorPlanRows.length + propertyCompareRows.length;
   const desktopMapStickyClass = hasCompareItems
-    ? "hidden md:sticky md:top-[128px] md:order-2 md:block"
-    : "hidden md:sticky md:top-[128px] md:order-2 md:block";
+    ? "hidden md:sticky md:order-2 md:block"
+    : "hidden md:sticky md:order-2 md:block";
   const desktopMapSurfaceClass = hasCompareItems
     ? "bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[clamp(320px,calc(100vh-16rem),560px)]"
     : "bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[clamp(340px,calc(100vh-12rem),620px)]";
@@ -621,6 +623,35 @@ export default function PropertySearchPage() {
     };
   }, [isBedsFilterOpen, isPriceFilterOpen, isSpecialFilterOpen]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !topbarRef.current) return undefined;
+
+    const updateDesktopMapTopOffset = () => {
+      const topbarHeight =
+        topbarRef.current?.getBoundingClientRect().height || 0;
+      const nextOffset = Math.ceil(topbarHeight + 12);
+
+      setDesktopMapTopOffset((currentOffset) =>
+        currentOffset === nextOffset ? currentOffset : nextOffset
+      );
+    };
+
+    updateDesktopMapTopOffset();
+
+    const topbarResizeObserver =
+      "ResizeObserver" in window
+        ? new window.ResizeObserver(updateDesktopMapTopOffset)
+        : null;
+
+    topbarResizeObserver?.observe(topbarRef.current);
+    window.addEventListener("resize", updateDesktopMapTopOffset);
+
+    return () => {
+      topbarResizeObserver?.disconnect();
+      window.removeEventListener("resize", updateDesktopMapTopOffset);
+    };
+  }, []);
+
   const renderComparePanel = ({ isMobileModal = false } = {}) => (
     <CompareSavedOptionsPanel
       activeTab={activeCompareTab}
@@ -644,7 +675,10 @@ export default function PropertySearchPage() {
 
   return (
     <main className="min-h-screen bg-[#f5f8f1] pb-24 text-[#102426]">
-      <section className="bma-topbar sticky top-0 z-40 px-3 py-2">
+      <section
+        ref={topbarRef}
+        className="bma-topbar sticky top-0 z-40 px-3 py-2"
+      >
         <div className="bma-shell">
           <div className="mb-1.5 flex items-center justify-between gap-3">
             <Link to="/" className="flex min-w-0 items-center gap-2">
@@ -1104,7 +1138,10 @@ export default function PropertySearchPage() {
             )}
           </div>
 
-          <div className={desktopMapStickyClass}>
+          <div
+            className={desktopMapStickyClass}
+            style={{ top: `${desktopMapTopOffset}px` }}
+          >
             <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
               <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
                 <div>
