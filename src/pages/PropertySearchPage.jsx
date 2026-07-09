@@ -1803,9 +1803,6 @@ function MapboxSearchMap({
             >
               Clear area
             </button>
-            <p className="rounded-lg bg-white/90 px-2.5 py-1.5 text-[10px] font-black text-[#173f3f] shadow-sm ring-1 ring-[#a9cfc2]">
-              Drawn area active
-            </p>
           </>
         )}
       </div>
