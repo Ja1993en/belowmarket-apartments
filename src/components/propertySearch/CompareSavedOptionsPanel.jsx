@@ -113,7 +113,11 @@ export default function CompareSavedOptionsPanel({
               }`}
             >
               <span className="flex min-w-0 items-start justify-between gap-1 sm:items-center sm:gap-2">
-                <span className="min-w-0 whitespace-normal leading-tight sm:truncate">
+                <span
+                  className={`min-w-0 whitespace-normal font-bold leading-tight sm:truncate ${
+                    activeTab === tab.label ? "text-white/90" : "text-[#526260]"
+                  }`}
+                >
                   {tab.label}
                 </span>
                 <span className="shrink-0 rounded-full bg-white/75 px-1.5 py-0.5 text-[8px] text-[#173f3f] sm:px-2 sm:text-[10px]">
