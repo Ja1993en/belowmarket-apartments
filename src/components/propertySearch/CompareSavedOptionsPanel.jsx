@@ -60,8 +60,8 @@ export default function CompareSavedOptionsPanel({
       }
     >
       {!isCompact && (
-        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
-          <div>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-sm font-black text-[#1f6f63]">
               Your compare list
             </p>
@@ -75,7 +75,7 @@ export default function CompareSavedOptionsPanel({
           <button
             type="button"
             onClick={onClearCompare}
-            className="inline-flex w-fit shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-2.5 py-1.5 text-[11px] font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
+            className="inline-flex min-w-max flex-none items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-2.5 py-1.5 text-[11px] font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
           >
             <Trash2 className="h-4 w-4 shrink-0" />
             <span className="whitespace-nowrap">Clear all</span>
