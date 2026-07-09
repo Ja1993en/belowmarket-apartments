@@ -191,6 +191,7 @@ export default function PropertySearchPage() {
   const [isMobileMapModalOpen, setIsMobileMapModalOpen] = useState(false);
   const [requestInfoProperty, setRequestInfoProperty] = useState(null);
   const [desktopMapTopOffset, setDesktopMapTopOffset] = useState(128);
+  const [desktopMapSurfaceHeight, setDesktopMapSurfaceHeight] = useState(460);
   const topbarRef = useRef(null);
   const resultCardRefs = useRef(new Map());
   const resultsTopRef = useRef(null);
@@ -626,31 +627,47 @@ export default function PropertySearchPage() {
   useEffect(() => {
     if (typeof window === "undefined" || !topbarRef.current) return undefined;
 
-    const updateDesktopMapTopOffset = () => {
+    const updateDesktopMapLayout = () => {
       const topbarHeight =
         topbarRef.current?.getBoundingClientRect().height || 0;
       const nextOffset = Math.ceil(topbarHeight + 12);
+      const mapCardHeaderHeight = 62;
+      const bottomBreathingRoom = hasCompareItems ? 104 : 18;
+      const availableMapHeight =
+        window.innerHeight -
+        nextOffset -
+        mapCardHeaderHeight -
+        bottomBreathingRoom;
+      const maxMapHeight = hasCompareItems ? 560 : 620;
+      const nextMapHeight = Math.max(
+        240,
+        Math.min(maxMapHeight, Math.floor(availableMapHeight))
+      );
 
       setDesktopMapTopOffset((currentOffset) =>
         currentOffset === nextOffset ? currentOffset : nextOffset
       );
+
+      setDesktopMapSurfaceHeight((currentHeight) =>
+        currentHeight === nextMapHeight ? currentHeight : nextMapHeight
+      );
     };
 
-    updateDesktopMapTopOffset();
+    updateDesktopMapLayout();
 
     const topbarResizeObserver =
       "ResizeObserver" in window
-        ? new window.ResizeObserver(updateDesktopMapTopOffset)
+        ? new window.ResizeObserver(updateDesktopMapLayout)
         : null;
 
     topbarResizeObserver?.observe(topbarRef.current);
-    window.addEventListener("resize", updateDesktopMapTopOffset);
+    window.addEventListener("resize", updateDesktopMapLayout);
 
     return () => {
       topbarResizeObserver?.disconnect();
-      window.removeEventListener("resize", updateDesktopMapTopOffset);
+      window.removeEventListener("resize", updateDesktopMapLayout);
     };
-  }, []);
+  }, [hasCompareItems]);
 
   const renderComparePanel = ({ isMobileModal = false } = {}) => (
     <CompareSavedOptionsPanel
@@ -1154,7 +1171,10 @@ export default function PropertySearchPage() {
                   {mappableFilteredProperties.length} pins
                 </span>
               </div>
-              <div className={desktopMapSurfaceClass}>
+              <div
+                className={desktopMapSurfaceClass}
+                style={{ height: `${desktopMapSurfaceHeight}px` }}
+              >
                 <SearchMap
                   properties={filteredProperties}
                   mappableProperties={mappableFilteredProperties}
