@@ -97,7 +97,7 @@ export default function CompareSavedOptionsPanel({
                 : compareDetailRows.length;
 
           const helperText = count > 0 ? tab.helper : tab.emptyText;
-          const mobileLabel = isCompact && tab.label === "Floor Plans" ? "Plans" : tab.label;
+          const mobileLabel = tab.label === "Floor Plans" ? "Plans" : tab.label;
 
           return (
             <button
@@ -115,8 +115,8 @@ export default function CompareSavedOptionsPanel({
                   : "bg-[#f5f8f1] text-[#173f3f] ring-[#d7e6df] hover:bg-[#d7e6df]"
               }`}
             >
-              <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "grid min-w-0 gap-1"}>
-                <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "flex min-w-0 items-center justify-between gap-1.5"}>
+              <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "grid min-w-0 justify-items-center gap-0.5 sm:justify-items-stretch sm:gap-1"}>
+                <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "grid min-w-0 justify-items-center gap-0.5 sm:flex sm:items-center sm:justify-between sm:gap-1.5"}>
                   <span
                     className={`min-w-0 max-w-full truncate font-black leading-tight ${
                       isCompact ? "text-[10px]" : "text-[11px] sm:text-sm"
