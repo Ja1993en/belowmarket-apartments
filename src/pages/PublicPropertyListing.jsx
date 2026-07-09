@@ -3351,7 +3351,6 @@ export default function PublicPropertyListing() {
             {isCompareBoardOpen && shouldShowCompareList && (
                 <CompareChartModal
                     compareItemCount={compareItemCount}
-                    onClearCompare={handleClearCompareBoard}
                     onClose={() => setIsCompareBoardOpen(false)}
                 >
                     {compareMessage && (
@@ -3380,7 +3379,6 @@ export default function PublicPropertyListing() {
 function CompareChartModal({
     children,
     compareItemCount,
-    onClearCompare,
     onClose,
 }) {
     return (
@@ -3402,15 +3400,7 @@ function CompareChartModal({
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-[1fr_1fr] gap-2 sm:flex sm:shrink-0">
-                        <button
-                            type="button"
-                            onClick={onClearCompare}
-                            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#f4b6aa] bg-[#fff0ea]/80 px-4 py-2.5 text-sm font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
-                        >
-                            <Trash2 className="h-4 w-4 shrink-0" />
-                            <span>Clear all</span>
-                        </button>
+                    <div className="sm:shrink-0">
                         <button
                             type="button"
                             onClick={onClose}
