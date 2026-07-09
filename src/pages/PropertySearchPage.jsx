@@ -1776,17 +1776,19 @@ function MapboxSearchMap({
       <div className="absolute left-4 top-4 z-10 flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2">
         <button
           type="button"
+          aria-pressed={isDrawingArea}
           onClick={() => {
             setDrawAreaPoints([]);
             setIsDrawingArea((currentValue) => !currentValue);
           }}
-          className={`rounded-2xl px-4 py-3 text-sm font-black shadow-sm ring-1 ${
+          className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-black shadow-sm ring-1 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md ${
             isDrawingArea
-              ? "bg-[#1f6f63] text-white ring-[#1f6f63]"
-              : "bg-white/95 text-[#173f3f] ring-[#d7e6df] hover:bg-[#f5f8f1]"
+              ? "bg-[#173f3f] !text-white ring-[#173f3f] hover:!text-white"
+              : "bg-white/95 text-[#173f3f] ring-[#d7e6df] hover:bg-white"
           }`}
         >
-          {isDrawingArea ? "Drawing..." : "Draw area"}
+          <MapPin className="h-3.5 w-3.5 shrink-0" />
+          <span>{isDrawingArea ? "Drawing" : "Draw"}</span>
         </button>
         {selectedArea && (
           <>
