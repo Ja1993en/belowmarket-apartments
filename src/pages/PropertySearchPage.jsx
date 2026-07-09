@@ -1893,42 +1893,42 @@ function MapPropertyHoverPreview({
 
   return (
     <div
-      className="pointer-events-auto absolute bottom-4 left-4 z-20 w-[min(20rem,calc(100%-2rem))] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-[#d7e6df]"
+      className="pointer-events-auto absolute bottom-4 left-4 z-20 w-[min(18rem,calc(100%-2rem))] overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-[#d7e6df]"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {hasGoldBar && <div className="h-1.5 bg-[#f2b84b]" />}
-      <div className="p-4">
-        <p className="truncate text-base font-black text-[#102426]">
+      {hasGoldBar && <div className="h-1 bg-[#f2b84b]" />}
+      <div className="p-3">
+        <p className="truncate text-sm font-black text-[#102426]">
           {property.name || "Property"}
         </p>
-        <p className="mt-1 truncate text-xs font-bold text-[#526260]">
+        <p className="mt-0.5 truncate text-[11px] font-bold text-[#526260]">
           {getPropertyAddressLabel(property)}
         </p>
 
-        <div className="mt-3 flex items-end justify-between gap-3">
+        <div className="mt-2.5 flex items-end justify-between gap-2">
           <div className="min-w-0">
             <p className="text-[10px] font-black uppercase text-[#1f6f63]">
               {rentEyebrow}
             </p>
-            <p className="mt-1 truncate text-lg font-black text-[#102426]">
+            <p className="mt-0.5 truncate text-base font-black text-[#102426]">
               {rentLabel}
             </p>
           </div>
-          <span className="shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#1f6f63]">
+          <span className="shrink-0 rounded-full bg-[#e7f3ee] px-2.5 py-1 text-[11px] font-black text-[#1f6f63]">
             {getBedsLabel(property, displayFloorPlans)}
           </span>
         </div>
 
         {priceSummary.hasSpecial && (
-          <p className="mt-3 truncate rounded-xl bg-[#fff8e6] px-3 py-2 text-sm font-black text-[#684307] ring-1 ring-[#f2d08a]">
+          <p className="mt-2.5 truncate rounded-lg bg-[#fff8e6] px-2.5 py-1.5 text-xs font-black text-[#684307] ring-1 ring-[#f2d08a]">
             {priceSummary.specialLabel}
           </p>
         )}
 
         <Link
           to={`/properties/${property.id}`}
-          className="mt-3 inline-flex rounded-xl bg-[#173f3f] px-4 py-2 text-sm font-black text-white hover:bg-[#102426]"
+          className="mt-2.5 inline-flex rounded-lg bg-[#173f3f] px-3 py-2 text-xs font-black text-white hover:bg-[#102426]"
         >
           View property
         </Link>
