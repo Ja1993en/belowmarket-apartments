@@ -191,6 +191,8 @@ function CompareDecisionSummary({
     .filter((row) => row.sqftNumber > 0)
     .sort((firstRow, secondRow) => secondRow.sqftNumber - firstRow.sqftNumber)[0];
   const bestSpecialRow = rows.find((row) => isMeaningfulCompareSpecial(row.special));
+  const selectedCount = floorPlanCount + propertyCount;
+  const selectedSummary = `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"} • ${propertyCount} propert${propertyCount === 1 ? "y" : "ies"}`;
   const summaryItems = [
     {
       label: "Lowest estimate",
@@ -210,40 +212,52 @@ function CompareDecisionSummary({
       note: largestLayoutRow?.title || "Choose a floor plan",
       tone: "sage",
     },
-    {
-      label: "Options selected",
-      value: `${floorPlanCount + propertyCount}`,
-      note: `${floorPlanCount} floor plans • ${propertyCount} properties`,
-      tone: "white",
-    },
   ];
 
   return (
     <div
       className={
         isCompact
-          ? "mt-2 grid grid-cols-2 gap-1.5"
-          : "mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
+          ? "mt-2 rounded-xl bg-white p-2 ring-1 ring-[#d7e6df]"
+          : "mt-4 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]"
       }
     >
-      {summaryItems.map((item) => (
-        <div
-          key={item.label}
-          className={`${getDecisionSummaryToneClass(item.tone)} ${
-            isCompact ? "rounded-lg px-2 py-1.5" : "rounded-2xl px-3 py-3"
-          }`}
-        >
-          <p className={`${isCompact ? "text-[8px]" : "text-[10px]"} font-black uppercase text-[#526260]`}>
-            {item.label}
-          </p>
-          <p className={`${isCompact ? "mt-0.5 text-xs" : "mt-1 text-base"} truncate font-black text-[#102426]`}>
-            {item.value}
-          </p>
-          <p className={`${isCompact ? "mt-0.5 text-[10px]" : "mt-1 text-xs"} truncate font-bold text-[#526260]`}>
-            {item.note}
+      <div className={isCompact ? "grid gap-2" : "grid gap-3 xl:grid-cols-[minmax(155px,0.32fr)_minmax(0,1fr)] xl:items-center"}>
+        <div className={isCompact ? "flex items-center justify-between gap-2 rounded-lg bg-[#f5f8f1] px-2.5 py-2" : "min-w-0 rounded-xl bg-white px-3 py-2 ring-1 ring-[#d7e6df]"}>
+          <div className="min-w-0">
+            <p className={`${isCompact ? "text-[9px]" : "text-[10px]"} font-black uppercase text-[#526260]`}>
+              Compare snapshot
+            </p>
+            <p className={`${isCompact ? "text-sm" : "text-base"} mt-0.5 truncate font-black text-[#102426]`}>
+              {selectedCount} selected
+            </p>
+          </div>
+          <p className={`${isCompact ? "text-[10px] text-right" : "mt-1 text-xs"} shrink-0 font-bold text-[#526260]`}>
+            {selectedSummary}
           </p>
         </div>
-      ))}
+
+        <div className={isCompact ? "grid gap-1.5" : "grid gap-2 sm:grid-cols-3"}>
+          {summaryItems.map((item) => (
+            <div
+              key={item.label}
+              className={`${getDecisionSummaryToneClass(item.tone)} ${isCompact ? "rounded-lg px-2.5 py-2" : "rounded-xl px-3 py-2"}`}
+            >
+              <div className="flex min-w-0 items-baseline justify-between gap-2">
+                <p className={`${isCompact ? "text-[9px]" : "text-[10px]"} shrink-0 font-black uppercase text-[#526260]`}>
+                  {item.label}
+                </p>
+                <p className={`${isCompact ? "text-xs" : "text-sm"} min-w-0 truncate text-right font-black text-[#102426]`}>
+                  {item.value}
+                </p>
+              </div>
+              <p className={`${isCompact ? "mt-0.5 text-[10px]" : "mt-1 text-xs"} truncate font-bold text-[#526260]`}>
+                {item.note}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
