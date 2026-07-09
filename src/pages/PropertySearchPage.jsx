@@ -1907,11 +1907,7 @@ function MapPropertyHoverPreview({
 
         <div className="flex items-center justify-between gap-2 border-t border-[#edf4ef] pt-1.5">
           <div className="min-w-0">
-            <p
-              className={`text-[8px] font-black uppercase leading-none ${
-                priceSummary.hasRentSpecial ? "text-[#8a5b0a]" : "text-[#526260]"
-              }`}
-            >
+            <p className="text-[8px] font-black uppercase leading-none text-[#526260]">
               {rentEyebrow}
             </p>
             <p className="mt-0.5 truncate text-xs font-black leading-4 text-[#102426]">
