@@ -3451,9 +3451,10 @@ function PropertyCompareDock({
                     <button
                         type="button"
                         onClick={onClearCompare}
-                        className="rounded-lg bg-[#c9341c] px-4 py-3 text-sm font-black !text-white transition hover:bg-[#a92a18] hover:!text-white"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-4 py-3 text-sm font-black !text-[#b42318] transition hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
                     >
-                        Clear
+                        <Trash2 className="h-4 w-4 shrink-0" />
+                        <span>Clear</span>
                     </button>
                 </div>
             </div>

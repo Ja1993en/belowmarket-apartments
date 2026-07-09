@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Building2, ChevronLeft, ChevronRight, MapPin, MessageSquare, Navigation, Scale, Search, X } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, MapPin, MessageSquare, Navigation, Scale, Search, Trash2, X } from "lucide-react";
 import CompareSavedOptionsPanel from "../components/propertySearch/CompareSavedOptionsPanel";
 import { getPublicPropertySummaries } from "../data/propertyStorage";
 import { saveLocalLead } from "../data/leadStorage";
@@ -1502,9 +1502,10 @@ function CompareDock({
           <button
             type="button"
             onClick={onClearCompare}
-            className="rounded-lg bg-[#c9341c] px-3 py-2 text-xs font-black !text-white transition hover:bg-[#a92a18] hover:!text-white sm:px-3.5 sm:py-2.5"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-3 py-2 text-xs font-black !text-[#b42318] transition hover:bg-[#fde1d9] hover:!text-[#8f1d15] sm:px-3.5 sm:py-2.5"
           >
-            Clear
+            <Trash2 className="h-3.5 w-3.5 shrink-0" />
+            <span>Clear</span>
           </button>
         </div>
       </div>
