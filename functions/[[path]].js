@@ -32,6 +32,10 @@ export async function onRequest({ request, env }) {
   const response = await env.ASSETS.fetch(request);
   const contentType = response.headers.get("content-type") || "";
 
+  if (isAssetRequest(url.pathname) && contentType.includes("text/html")) {
+    return buildMissingAssetResponse();
+  }
+
   if (!contentType.includes("text/html")) {
     return response;
   }
@@ -47,6 +51,21 @@ export async function onRequest({ request, env }) {
     status: response.status,
     statusText: response.statusText,
     headers,
+  });
+}
+
+function isAssetRequest(pathname) {
+  return pathname.startsWith("/assets/");
+}
+
+function buildMissingAssetResponse() {
+  return new Response("Asset not found. Refresh the page to load the latest deployment.", {
+    status: 404,
+    headers: {
+      "cache-control": "no-store, no-cache, must-revalidate",
+      "content-type": "text/plain; charset=UTF-8",
+      "x-content-type-options": "nosniff",
+    },
   });
 }
 
