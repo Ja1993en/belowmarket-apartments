@@ -1,4 +1,4 @@
-import { Search, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getPropertyPrimaryImage } from "../../data/propertySearchData";
 import { formatAvailability as formatAvailabilityLabel } from "../../utils/displayFormatters";
@@ -72,24 +72,14 @@ export default function CompareSavedOptionsPanel({
               This is where every property you tap Compare will land. Review rent, specials, and floor plans before you tour.
             </p>
           </div>
-          <div className="flex flex-none items-center gap-1.5">
-            <Link
-              to="/start"
-              className="inline-flex min-w-max flex-none items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-[#f2b84b] px-2.5 py-1.5 text-[11px] font-black !text-[#102426] ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426]"
-            >
-              <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span className="whitespace-nowrap">Ask a Locator</span>
-            </Link>
-
-            <button
-              type="button"
-              onClick={onClearCompare}
-              className="inline-flex min-w-max flex-none items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-2.5 py-1.5 text-[11px] font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
-            >
-              <Trash2 className="h-4 w-4 shrink-0" />
-              <span className="whitespace-nowrap">Clear all</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onClearCompare}
+            className="inline-flex min-w-max flex-none items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-2.5 py-1.5 text-[11px] font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
+          >
+            <Trash2 className="h-4 w-4 shrink-0" />
+            <span className="whitespace-nowrap">Clear all</span>
+          </button>
         </div>
       )}
 
