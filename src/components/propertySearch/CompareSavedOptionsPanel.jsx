@@ -491,7 +491,7 @@ function ComparePropertiesTab({
                   }}
                   className={`${actionButtonClass} border border-[#173f3f] bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white`}
                 >
-                  {hasFloorPlans ? "Add another plan" : "Needs floor plan"}
+                  {hasFloorPlans ? "Add another plan" : "Add floor plan"}
                 </Link>
                 <button
                   type="button"
@@ -652,7 +652,8 @@ function CompareDetailsTab({ rows, mode, isCompact, onBeforeFloorPlanNavigation 
                   {row.special}
                 </td>
                 <td className="max-w-[160px] px-4 py-4 align-top text-xs font-semibold text-[#526260]">
-                  {row.availabilityLink ? (
+                  {row.availabilityLink &&
+                  formatAvailabilityLabel(row.availability) !== "Needs floor plan" ? (
                     <Link
                       to={row.availabilityLink}
                       onClick={() => {

@@ -1334,7 +1334,7 @@ export default function PublicPropertyListing() {
             ),
             image: getPropertyPrimaryImage(compareProperty),
             linkTo: getFloorPlansRoute(compareProperty.id),
-            actionLabel: "Needs floor plan",
+            actionLabel: "Add floor plan",
             floorPlan: null,
         })),
     ];

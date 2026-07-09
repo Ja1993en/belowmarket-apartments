@@ -362,7 +362,7 @@ export default function PropertySearchPage() {
         availability: property.availability || "Needs floor plan",
         availabilityLink: getFloorPlansRoute(property.id),
         linkTo: getFloorPlansRoute(property.id),
-        actionLabel: "Needs floor plan",
+        actionLabel: "Add floor plan",
         image: getPropertyPrimaryImage(property),
       })),
     [propertyCompareRows]
