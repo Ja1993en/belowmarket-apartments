@@ -87,7 +87,7 @@ export default function CompareSavedOptionsPanel({
         isCompact={isCompact}
       />
 
-      <div className={`${isCompact ? "grid grid-cols-3 gap-1" : "mt-4 grid grid-cols-3 gap-1.5 sm:gap-2"}`}>
+      <div className={`${isCompact ? "grid grid-cols-3 gap-1.5" : "mt-4 grid grid-cols-3 gap-1.5 sm:gap-2"}`}>
         {COMPARE_TABS.map((tab) => {
           const count =
             tab.label === "Floor Plans"
@@ -107,26 +107,26 @@ export default function CompareSavedOptionsPanel({
               onClick={() => setActiveTab(tab.label)}
               className={`min-w-0 overflow-hidden text-center font-black ring-1 transition sm:text-left ${
                 isCompact
-                  ? "rounded-lg px-1 py-1.5"
-                  : "rounded-2xl px-2.5 py-2 sm:px-3 sm:py-2.5"
+                  ? "rounded-xl px-2 py-2.5"
+                  : "rounded-2xl px-3 py-3 sm:px-3.5 sm:py-3"
               } ${
                 activeTab === tab.label
                   ? "bg-[#173f3f] text-white"
                   : "bg-[#f5f8f1] text-[#173f3f] ring-[#d7e6df] hover:bg-[#d7e6df]"
               }`}
             >
-              <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "grid min-w-0 justify-items-center gap-0.5 sm:justify-items-stretch sm:gap-1"}>
-                <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "grid min-w-0 justify-items-center gap-0.5 sm:flex sm:items-center sm:justify-between sm:gap-1.5"}>
+              <span className={isCompact ? "grid min-w-0 justify-items-center gap-1" : "grid min-w-0 justify-items-center gap-1 sm:justify-items-stretch sm:gap-1.5"}>
+                <span className={isCompact ? "grid min-w-0 justify-items-center gap-1" : "grid min-w-0 justify-items-center gap-1 sm:flex sm:items-center sm:justify-between sm:gap-1.5"}>
                   <span
                     className={`min-w-0 max-w-full truncate font-black leading-tight ${
-                      isCompact ? "text-[10px]" : "text-[11px] sm:text-sm"
+                      isCompact ? "text-xs" : "text-xs sm:text-sm"
                     } ${activeTab === tab.label ? "text-white" : "text-[#173f3f]"}`}
                   >
                     {mobileLabel}
                   </span>
                   <span
-                    className={`inline-flex shrink-0 items-center justify-center rounded-full bg-white/85 font-black text-[#173f3f] ${
-                      isCompact ? "h-4 min-w-4 px-1 text-[8px]" : "h-4 min-w-4 px-1.5 text-[9px] sm:h-5 sm:min-w-5 sm:px-2 sm:text-[10px]"
+                    className={`inline-flex shrink-0 items-center justify-center rounded-full bg-white font-black text-[#173f3f] shadow-sm ${
+                      isCompact ? "h-5 min-w-5 px-1.5 text-[10px]" : "h-5 min-w-5 px-2 text-[10px] sm:h-6 sm:min-w-6 sm:px-2.5 sm:text-xs"
                     }`}
                   >
                     {count}
@@ -134,7 +134,7 @@ export default function CompareSavedOptionsPanel({
                 </span>
                 <span
                   className={`block min-w-0 max-w-full truncate font-bold leading-tight ${
-                    isCompact ? "text-[8px]" : "text-[9px] sm:text-[11px]"
+                    isCompact ? "text-[9px]" : "text-[10px] sm:text-xs"
                   } ${activeTab === tab.label ? "text-white/80" : "text-[#526260]"}`}
                 >
                   {helperText}
