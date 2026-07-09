@@ -631,16 +631,17 @@ export default function PropertySearchPage() {
       const topbarHeight =
         topbarRef.current?.getBoundingClientRect().height || 0;
       const nextOffset = Math.ceil(topbarHeight + 12);
+      const viewportHeight = window.visualViewport?.height || window.innerHeight;
       const mapCardHeaderHeight = 62;
-      const bottomBreathingRoom = hasCompareItems ? 104 : 18;
+      const bottomBreathingRoom = hasCompareItems ? 140 : 64;
       const availableMapHeight =
-        window.innerHeight -
+        viewportHeight -
         nextOffset -
         mapCardHeaderHeight -
         bottomBreathingRoom;
-      const maxMapHeight = hasCompareItems ? 560 : 620;
+      const maxMapHeight = hasCompareItems ? 520 : 580;
       const nextMapHeight = Math.max(
-        240,
+        220,
         Math.min(maxMapHeight, Math.floor(availableMapHeight))
       );
 
@@ -662,10 +663,15 @@ export default function PropertySearchPage() {
 
     topbarResizeObserver?.observe(topbarRef.current);
     window.addEventListener("resize", updateDesktopMapLayout);
+    window.visualViewport?.addEventListener("resize", updateDesktopMapLayout);
 
     return () => {
       topbarResizeObserver?.disconnect();
       window.removeEventListener("resize", updateDesktopMapLayout);
+      window.visualViewport?.removeEventListener(
+        "resize",
+        updateDesktopMapLayout
+      );
     };
   }, [hasCompareItems]);
 
