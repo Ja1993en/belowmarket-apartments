@@ -1291,31 +1291,34 @@ export default function PropertySearchPage() {
           }}
         >
           <div className="mx-auto flex h-full max-w-lg flex-col overflow-hidden rounded-xl bg-[#f5f8f1] shadow-2xl sm:rounded-2xl md:max-w-5xl">
-            <div className="flex items-center justify-between border-b border-[#d7e6df] bg-white px-3 py-2.5 sm:px-4 sm:py-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-black text-[#102426]">
-                  Compare selected properties
-                </p>
-                <p className="mt-0.5 text-xs font-bold text-[#526260]">
-                  {compareItemCount} propert{compareItemCount === 1 ? "y" : "ies"} selected
-                </p>
+            <div className="flex items-center gap-3 border-b border-[#d7e6df] bg-white px-3 py-2.5 sm:px-4 sm:py-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 items-center gap-2">
+                  <p className="truncate text-sm font-black text-[#102426]">
+                    Compare
+                  </p>
+                  <span className="inline-flex shrink-0 rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[10px] font-black text-[#173f3f] ring-1 ring-[#a9cfc2]">
+                    {compareItemCount} selected
+                  </span>
+                </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+
+              <div className="flex shrink-0 items-center gap-1.5">
                 <Link
                   to="/start"
-                  className="inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-[#f2b84b] px-2.5 text-[11px] font-black !text-[#102426] ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:px-3 sm:text-xs"
+                  className="inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[#f2b84b] px-2.5 text-[10px] font-black !text-[#102426] ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:h-9 sm:px-3 sm:text-xs"
                 >
-                  <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <Search className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden="true" />
                   <span>Ask a Locator</span>
                 </Link>
 
                 <button
                   type="button"
                   onClick={() => setIsCompareModalOpen(false)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f8f1] text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee] sm:h-9 sm:w-9"
                   aria-label="Close comparison modal"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
             </div>
