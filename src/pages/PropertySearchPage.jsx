@@ -633,16 +633,15 @@ export default function PropertySearchPage() {
       const nextOffset = Math.ceil(topbarHeight + 12);
       const viewportHeight = window.visualViewport?.height || window.innerHeight;
       const mapCardHeaderHeight = 62;
-      const bottomBreathingRoom = hasCompareItems ? 100 : 24;
+      const bottomBreathingRoom = hasCompareItems ? 88 : 16;
       const availableMapHeight =
         viewportHeight -
         nextOffset -
         mapCardHeaderHeight -
         bottomBreathingRoom;
-      const maxMapHeight = hasCompareItems ? 560 : 620;
       const nextMapHeight = Math.max(
         220,
-        Math.min(maxMapHeight, Math.floor(availableMapHeight))
+        Math.floor(availableMapHeight)
       );
 
       setDesktopMapTopOffset((currentOffset) =>
