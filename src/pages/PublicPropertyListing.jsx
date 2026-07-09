@@ -1245,14 +1245,19 @@ export default function PublicPropertyListing() {
             compareProperties.find((compareProperty) => compareProperty.id === comparePropertyId)
         )
         .filter(Boolean);
-    const compareFloorPlanPropertyIds = new Set(
-        compareFloorPlanItems.map((item) => item.propertyId)
+    const compareFloorPlanCountsByPropertyId = compareFloorPlanItems.reduce(
+        (counts, item) => {
+            counts[item.propertyId] = (counts[item.propertyId] || 0) + 1;
+            return counts;
+        },
+        {}
     );
+    const compareFloorPlanPropertyIds = new Set(Object.keys(compareFloorPlanCountsByPropertyId));
     const propertyOnlyCompareProperties = selectedCompareProperties.filter(
         (compareProperty) => !compareFloorPlanPropertyIds.has(compareProperty.id)
     );
     const shouldShowCompareList =
-        propertyOnlyCompareProperties.length > 0 || compareFloorPlanItems.length > 0;
+        selectedCompareProperties.length > 0 || compareFloorPlanItems.length > 0;
     const compareFloorPlanKeys = new Set(
         compareFloorPlanItems.map((item) => getCompareFloorPlanItemKey(item))
     );
@@ -1293,8 +1298,11 @@ export default function PublicPropertyListing() {
             floorPlan: matchingFloorPlan,
         };
     });
-    const propertyCompareRows = propertyOnlyCompareProperties.map((compareProperty) => ({
-        property: compareProperty,
+    const propertyCompareRows = selectedCompareProperties.map((compareProperty) => ({
+        property: {
+            ...compareProperty,
+            floorPlanCount: compareFloorPlanCountsByPropertyId[compareProperty.id] || 0,
+        },
         priceSummary: getPropertyComparePriceSummary(compareProperty),
     }));
     const compareDetailRows = [
@@ -1324,7 +1332,7 @@ export default function PublicPropertyListing() {
             floorPlan: null,
         })),
     ];
-    const compareItemCount = compareFloorPlanItems.length + propertyOnlyCompareProperties.length;
+    const compareItemCount = compareFloorPlanItems.length + selectedCompareProperties.length;
     const compareSummaryItems = getCompareSummaryItems({
         floorPlanCount: compareFloorPlanItems.length,
         propertyOnlyCount: propertyOnlyCompareProperties.length,
@@ -1371,8 +1379,13 @@ export default function PublicPropertyListing() {
 
         setCompareFloorPlanItems(nextCompareFloorPlanItems);
 
-        if (!isFloorPlanCompared && property?.id && comparePropertyIds.includes(property.id)) {
-            setComparePropertyIds(removeComparePropertyId(property.id));
+        if (
+            !isFloorPlanCompared &&
+            property?.id &&
+            !comparePropertyIds.includes(property.id) &&
+            comparePropertyIds.length < MAX_COMPARE_PROPERTIES
+        ) {
+            setComparePropertyIds(toggleComparePropertyId(property.id));
         }
 
         setCompareMessage(

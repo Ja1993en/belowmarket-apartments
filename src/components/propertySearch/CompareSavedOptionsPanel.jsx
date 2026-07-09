@@ -368,9 +368,12 @@ function ComparePropertiesTab({
       <div className={isSmallCard ? "grid gap-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
         {rows.map(({ property, priceSummary }) => {
           const dealScore = getSearchDealScore(property, priceSummary);
+          const floorPlanCount = property.floorPlanCount || 0;
+          const hasFloorPlans = floorPlanCount > 0;
           const propertyLocation =
             property.area || property.neighborhood || property.city || "Dallas area";
           const actionButtonClass = `${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} flex min-h-9 items-center justify-center whitespace-nowrap text-center font-black leading-none`;
+          const floorPlanLabel = `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"} added`;
 
           return (
             <div
@@ -402,8 +405,14 @@ function ComparePropertiesTab({
                     </div>
 
                     <div className="flex shrink-0 flex-col items-end gap-1">
-                      <span className="rounded-full bg-[#fff8e6] px-2 py-0.5 text-[9px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                        Property only
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-black ring-1 ${
+                          hasFloorPlans
+                            ? "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]"
+                            : "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
+                        }`}
+                      >
+                        {hasFloorPlans ? floorPlanLabel : "Property only"}
                       </span>
                       <span className="rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[9px] font-black text-[#1f6f63] ring-1 ring-[#a9cfc2]">
                         {dealScore}/100
@@ -432,7 +441,9 @@ function ComparePropertiesTab({
               </div>
 
               <p className={`${isSmallCard ? "mx-2.5 mb-2 rounded-lg px-2 py-1.5 text-[10px] leading-4" : "mx-3 mb-3 rounded-xl px-3 py-2 text-xs leading-5"} bg-[#fff8e6] font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]`}>
-                Choose a floor plan to unlock exact rent, size, and savings.
+                {hasFloorPlans
+                  ? "Exact layouts are ready in the Floor Plans tab."
+                  : "Add a floor plan for exact rent, size, and savings."}
               </p>
 
               <div className={`${isSmallCard ? "grid-cols-2 gap-1.5 px-2.5 py-2.5" : "grid-cols-2 gap-2 px-3 py-3"} grid border-t border-[#edf4ef] bg-[#f5f8f1]`}>
@@ -441,7 +452,7 @@ function ComparePropertiesTab({
                   onClick={rememberFloorPlanSectionTarget}
                   className={`${actionButtonClass} border border-[#173f3f] bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white`}
                 >
-                  Add floor plan
+                  {hasFloorPlans ? "Add another plan" : "Add floor plan"}
                 </Link>
                 <button
                   type="button"

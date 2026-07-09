@@ -299,13 +299,24 @@ export default function PropertySearchPage() {
       })),
     [compareFloorPlanItems, properties]
   );
+  const compareFloorPlanCountsByPropertyId = useMemo(
+    () =>
+      compareFloorPlanRows.reduce((counts, row) => {
+        counts[row.propertyId] = (counts[row.propertyId] || 0) + 1;
+        return counts;
+      }, {}),
+    [compareFloorPlanRows]
+  );
   const propertyCompareRows = useMemo(
     () =>
       compareProperties.map((property) => ({
-        property,
+        property: {
+          ...property,
+          floorPlanCount: compareFloorPlanCountsByPropertyId[property.id] || 0,
+        },
         priceSummary: getPropertySearchPriceSummary(property),
       })),
-    [compareProperties]
+    [compareFloorPlanCountsByPropertyId, compareProperties]
   );
   const floorPlanDetailRows = useMemo(
     () =>
