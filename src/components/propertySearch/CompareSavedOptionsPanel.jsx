@@ -434,7 +434,7 @@ function ComparePropertiesTab({
                 <Link
                   to={getFloorPlansRoute(property.id)}
                   onClick={rememberFloorPlanSectionTarget}
-                  className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} bg-[#173f3f] text-center font-black text-white hover:bg-[#102426]`}
+                  className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} bg-[#173f3f] text-center font-black !text-white hover:bg-[#102426] hover:!text-white`}
                 >
                   Choose floor plan
                 </Link>
