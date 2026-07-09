@@ -19,6 +19,7 @@ import {
     MAX_COMPARE_FLOOR_PLANS,
     MAX_COMPARE_PROPERTIES,
     removeCompareFloorPlanItem,
+    removeCompareFloorPlanItemsForProperty,
     removeComparePropertyId,
     toggleCompareFloorPlanItem,
     toggleComparePropertyId,
@@ -1240,7 +1241,12 @@ export default function PublicPropertyListing() {
     const selectedGalleryPhoto = selectedPhoto || propertyGalleryImages[0];
     const isPropertySaved = property ? savedPropertyIds.includes(property.id) : false;
     const isPropertyCompared = property ? comparePropertyIds.includes(property.id) : false;
-    const selectedCompareProperties = comparePropertyIds
+    const selectedCompareProperties = [
+        ...new Set([
+            ...comparePropertyIds,
+            ...compareFloorPlanItems.map((item) => item.propertyId),
+        ]),
+    ]
         .map((comparePropertyId) =>
             compareProperties.find((compareProperty) => compareProperty.id === comparePropertyId)
         )
@@ -2213,9 +2219,10 @@ export default function PublicPropertyListing() {
             onRemoveFloorPlan={(row) =>
                 setCompareFloorPlanItems(removeCompareFloorPlanItem(row))
             }
-            onRemoveProperty={(propertyId) =>
-                setComparePropertyIds(removeComparePropertyId(propertyId))
-            }
+            onRemoveProperty={(propertyId) => {
+                setComparePropertyIds(removeComparePropertyId(propertyId));
+                setCompareFloorPlanItems(removeCompareFloorPlanItemsForProperty(propertyId));
+            }}
             propertyCompareRows={propertyCompareRows}
             setActiveTab={setActiveCompareTab}
         />

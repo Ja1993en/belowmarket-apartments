@@ -17,6 +17,7 @@ import {
   getCompareFloorPlanItems,
   getComparePropertyIds,
   removeCompareFloorPlanItem,
+  removeCompareFloorPlanItemsForProperty,
   removeComparePropertyId,
   toggleComparePropertyId,
 } from "../data/renterPreferenceStorage";
@@ -281,13 +282,19 @@ export default function PropertySearchPage() {
   );
   const shouldShowSearchSuggestions = isSearchFocused && suggestions.length > 0;
   const compareProperties = useMemo(
-    () =>
-      comparePropertyIds
+    () => {
+      const comparedPropertyIds = new Set([
+        ...comparePropertyIds,
+        ...compareFloorPlanItems.map((item) => item.propertyId),
+      ]);
+
+      return Array.from(comparedPropertyIds)
         .map((propertyId) =>
           properties.find((property) => property.id === propertyId)
         )
-        .filter(Boolean),
-    [comparePropertyIds, properties]
+        .filter(Boolean);
+    },
+    [compareFloorPlanItems, comparePropertyIds, properties]
   );
   const compareFloorPlanRows = useMemo(
     () =>
@@ -709,9 +716,10 @@ export default function PropertySearchPage() {
       onRemoveFloorPlan={(row) =>
         setCompareFloorPlanItems(removeCompareFloorPlanItem(row))
       }
-      onRemoveProperty={(propertyId) =>
-        setComparePropertyIds(removeComparePropertyId(propertyId))
-      }
+      onRemoveProperty={(propertyId) => {
+        setComparePropertyIds(removeComparePropertyId(propertyId));
+        setCompareFloorPlanItems(removeCompareFloorPlanItemsForProperty(propertyId));
+      }}
       propertyCompareRows={propertyCompareRows}
       setActiveTab={setActiveCompareTab}
     />

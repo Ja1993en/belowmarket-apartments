@@ -65,6 +65,15 @@ export function removeCompareFloorPlanItem(floorPlanItem) {
   return nextItems;
 }
 
+export function removeCompareFloorPlanItemsForProperty(propertyId) {
+  const nextItems = getCompareFloorPlanItems().filter(
+    (item) => item.propertyId !== propertyId
+  );
+
+  writeStoredItems(COMPARE_FLOOR_PLANS_KEY, nextItems);
+  return nextItems;
+}
+
 export function getCompareFloorPlanItemKey(item) {
   return `${item.propertyId}:${item.floorPlanId}`;
 }
