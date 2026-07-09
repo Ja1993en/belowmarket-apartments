@@ -34,8 +34,6 @@ import {
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const DALLAS_CENTER = [-96.797, 32.7767];
-const DEFAULT_AREA_RADIUS_MILES = 2;
-const AREA_RADIUS_OPTIONS = [1, 2, 3, 5];
 const SPECIAL_FILTER_OPTIONS = [
   { label: "4 weeks free", weeks: 4 },
   { label: "6 weeks free", weeks: 6 },
@@ -1495,17 +1493,14 @@ function MapboxSearchMap({
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
-  const isChoosingAreaRef = useRef(false);
   const isDrawingAreaRef = useRef(false);
   const drawAreaPointsRef = useRef([]);
   const isDrawingAreaActiveRef = useRef(false);
   const hoverClearTimerRef = useRef(null);
   const [mapboxGl, setMapboxGl] = useState(null);
   const [mapError, setMapError] = useState("");
-  const [isChoosingArea, setIsChoosingArea] = useState(false);
   const [isDrawingArea, setIsDrawingArea] = useState(false);
   const [drawAreaPoints, setDrawAreaPoints] = useState([]);
-  const [areaRadiusMiles, setAreaRadiusMiles] = useState(DEFAULT_AREA_RADIUS_MILES);
   const hoveredProperty = useMemo(
     () =>
       properties.find((property) => property.id === hoveredPropertyId) ||
@@ -1596,7 +1591,6 @@ function MapboxSearchMap({
   }, [mapboxGl]);
 
   useEffect(() => {
-    isChoosingAreaRef.current = isChoosingArea;
     isDrawingAreaRef.current = isDrawingArea;
 
     if (!mapRef.current) return;
@@ -1605,12 +1599,12 @@ function MapboxSearchMap({
     if (!areaSource) return;
 
     areaSource.setData(createAreaGeoJson(selectedArea, drawAreaPoints));
-  }, [drawAreaPoints, isChoosingArea, isDrawingArea, selectedArea]);
+  }, [drawAreaPoints, isDrawingArea, selectedArea]);
 
   useEffect(() => {
     if (!mapRef.current) return;
 
-    if (isChoosingArea || isDrawingArea) {
+    if (isDrawingArea) {
       mapRef.current.dragPan.disable();
       mapRef.current.getCanvas().style.cursor = "crosshair";
       return;
@@ -1618,21 +1612,7 @@ function MapboxSearchMap({
 
     mapRef.current.dragPan.enable();
     mapRef.current.getCanvas().style.cursor = "";
-  }, [isChoosingArea, isDrawingArea]);
-
-  const chooseAreaAtMapPoint = (event) => {
-    if (!isChoosingArea || !mapRef.current) return;
-
-    event.preventDefault();
-    const areaCenter = getPointerMapPoint(mapRef.current, event);
-    if (!areaCenter) return;
-
-    onAreaChange({
-      center: areaCenter,
-      radiusMiles: areaRadiusMiles,
-    });
-    setIsChoosingArea(false);
-  };
+  }, [isDrawingArea]);
 
   const startDrawingArea = (event) => {
     if (!isDrawingArea || !mapRef.current) return;
@@ -1686,16 +1666,6 @@ function MapboxSearchMap({
     setIsDrawingArea(false);
   };
 
-  const selectAreaRadius = (radiusMiles) => {
-    setAreaRadiusMiles(radiusMiles);
-    if (selectedArea) {
-      onAreaChange({
-        ...selectedArea,
-        radiusMiles,
-      });
-    }
-  };
-
   useEffect(() => {
     if (!mapboxGl || !mapRef.current) return;
 
@@ -1710,20 +1680,6 @@ function MapboxSearchMap({
 
       markerElement.addEventListener("click", (event) => {
         event.preventDefault();
-
-        if (isChoosingAreaRef.current) {
-          event.stopPropagation();
-
-          onAreaChange({
-            center: {
-              latitude: property.latitude,
-              longitude: property.longitude,
-            },
-            radiusMiles: areaRadiusMiles,
-          });
-          setIsChoosingArea(false);
-          return;
-        }
 
         if (isDrawingAreaRef.current) {
           event.stopPropagation();
@@ -1767,7 +1723,6 @@ function MapboxSearchMap({
       });
     }
   }, [
-    areaRadiusMiles,
     mapboxGl,
     mappableProperties,
     onAreaChange,
@@ -1807,14 +1762,6 @@ function MapboxSearchMap({
   return (
     <div className="relative h-full bg-[#dcebe4]">
       <div ref={mapContainerRef} className="h-full w-full" />
-      {isChoosingArea && (
-        <button
-          aria-label="Set search area here"
-          className="absolute inset-0 z-[5] cursor-crosshair border-0 bg-[#2d7dd2]/5 p-0"
-          type="button"
-          onClick={chooseAreaAtMapPoint}
-        />
-      )}
       {isDrawingArea && (
         <div
           className="absolute inset-0 z-[5] cursor-crosshair touch-none bg-[#1f6f63]/10"
@@ -1830,22 +1777,6 @@ function MapboxSearchMap({
         <button
           type="button"
           onClick={() => {
-            setIsDrawingArea(false);
-            setDrawAreaPoints([]);
-            setIsChoosingArea((currentValue) => !currentValue);
-          }}
-          className={`rounded-2xl px-4 py-3 text-sm font-black shadow-sm ring-1 ${
-            isChoosingArea
-              ? "bg-[#2d7dd2] text-white ring-[#2d7dd2]"
-              : "bg-white/95 text-[#173f3f] ring-[#d7e6df] hover:bg-[#f5f8f1]"
-          }`}
-        >
-          {isChoosingArea ? "Tap map" : "Choose area"}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setIsChoosingArea(false);
             setDrawAreaPoints([]);
             setIsDrawingArea((currentValue) => !currentValue);
           }}
@@ -1859,29 +1790,10 @@ function MapboxSearchMap({
         </button>
         {selectedArea && (
           <>
-            {selectedArea.type !== "polygon" && (
-              <div className="flex overflow-hidden rounded-2xl bg-white/95 shadow-sm ring-1 ring-[#d7e6df]">
-                {AREA_RADIUS_OPTIONS.map((radiusMiles) => (
-                  <button
-                    key={radiusMiles}
-                    type="button"
-                    onClick={() => selectAreaRadius(radiusMiles)}
-                    className={`px-3 py-3 text-sm font-black ${
-                      areaRadiusMiles === radiusMiles
-                        ? "bg-[#173f3f] !text-white hover:!text-white"
-                        : "text-[#173f3f] hover:bg-[#f5f8f1]"
-                    }`}
-                  >
-                    {radiusMiles} mi
-                  </button>
-                ))}
-              </div>
-            )}
             <button
               type="button"
               onClick={() => {
                 onAreaChange(null);
-                setIsChoosingArea(false);
                 setIsDrawingArea(false);
                 setDrawAreaPoints([]);
               }}
@@ -1890,15 +1802,13 @@ function MapboxSearchMap({
               Clear area
             </button>
             <p className="w-full rounded-2xl bg-white/95 px-4 py-2 text-xs font-black text-[#173f3f] shadow-sm ring-1 ring-[#a9cfc2] sm:w-auto">
-              {selectedArea.type === "polygon"
-                ? "Showing apartments inside your drawn area"
-                : `Showing apartments within ${selectedArea.radiusMiles} mi of your selected area`}
+              Showing apartments inside your drawn area
             </p>
           </>
         )}
       </div>
 
-      {hoveredProperty && !isChoosingArea && (
+      {hoveredProperty && (
         <MapPropertyHoverPreview
           property={hoveredProperty}
           selectedBedroomFilter={selectedBedroomFilter}
@@ -1906,11 +1816,6 @@ function MapboxSearchMap({
           onMouseEnter={keepHoveredPropertyPreview}
           onMouseLeave={hideHoveredPropertyPreview}
         />
-      )}
-      {isChoosingArea && (
-        <p className="pointer-events-none absolute bottom-4 left-4 z-10 rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#174a7c] shadow-lg ring-1 ring-[#b8d9f0]">
-          Tap the map to search within {areaRadiusMiles} miles
-        </p>
       )}
       {isDrawingArea && (
         <p className="pointer-events-none absolute bottom-4 left-4 z-10 max-w-[calc(100%-2rem)] rounded-2xl bg-white/95 px-4 py-3 text-sm font-black text-[#173f3f] shadow-lg ring-1 ring-[#a9cfc2]">
