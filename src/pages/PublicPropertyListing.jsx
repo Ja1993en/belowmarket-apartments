@@ -1326,7 +1326,7 @@ export default function PublicPropertyListing() {
             normalRent: compareProperty.marketRent || compareProperty.rent || compareProperty.startingRent || "Contact",
             effectiveRent: compareProperty.effectiveRent || compareProperty.rent || compareProperty.startingRent || "Contact",
             special: compareProperty.special || "No special listed",
-            availability: compareProperty.availability || "Add floor plan",
+            availability: compareProperty.availability || "Needs floor plan",
             availabilityLink: getFloorPlansRoute(compareProperty.id),
             savings: compareProperty.savings || getCompareSavingsLabel(
                 compareProperty.marketRent || compareProperty.rent,
@@ -1334,7 +1334,7 @@ export default function PublicPropertyListing() {
             ),
             image: getPropertyPrimaryImage(compareProperty),
             linkTo: getFloorPlansRoute(compareProperty.id),
-            actionLabel: "Add floor plan",
+            actionLabel: "Needs floor plan",
             floorPlan: null,
         })),
     ];
@@ -2222,6 +2222,15 @@ export default function PublicPropertyListing() {
             onRemoveProperty={(propertyId) => {
                 setComparePropertyIds(removeComparePropertyId(propertyId));
                 setCompareFloorPlanItems(removeCompareFloorPlanItemsForProperty(propertyId));
+            }}
+            onBeforeFloorPlanNavigation={() => {
+                setIsCompareBoardOpen(false);
+                window.setTimeout(() => {
+                    floorPlansSectionRef.current?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                    });
+                }, 0);
             }}
             propertyCompareRows={propertyCompareRows}
             setActiveTab={setActiveCompareTab}

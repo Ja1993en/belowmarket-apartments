@@ -47,6 +47,7 @@ export default function CompareSavedOptionsPanel({
   onClearCompare,
   onRemoveFloorPlan,
   onRemoveProperty,
+  onBeforeFloorPlanNavigation,
   propertyCompareRows,
   setActiveTab,
 }) {
@@ -162,6 +163,7 @@ export default function CompareSavedOptionsPanel({
           getSearchDealScore={getSearchDealScore}
           isCompact={isCompact}
           isMobileModal={isMobileModal}
+          onBeforeFloorPlanNavigation={onBeforeFloorPlanNavigation}
           onRemove={onRemoveProperty}
         />
       )}
@@ -171,6 +173,7 @@ export default function CompareSavedOptionsPanel({
           rows={compareDetailRows}
           mode={compareDetailMode}
           isCompact={isCompact}
+          onBeforeFloorPlanNavigation={onBeforeFloorPlanNavigation}
         />
       )}
     </div>
@@ -380,6 +383,7 @@ function ComparePropertiesTab({
   getSearchDealScore,
   isCompact,
   isMobileModal,
+  onBeforeFloorPlanNavigation,
   onRemove,
 }) {
   if (rows.length === 0) {
@@ -481,10 +485,13 @@ function ComparePropertiesTab({
               <div className={`${isSmallCard ? "grid-cols-2 gap-1.5 px-2.5 py-2.5" : "grid-cols-2 gap-2 px-3 py-3"} grid border-t border-[#edf4ef] bg-[#f5f8f1]`}>
                 <Link
                   to={getFloorPlansRoute(property.id)}
-                  onClick={rememberFloorPlanSectionTarget}
+                  onClick={() => {
+                    rememberFloorPlanSectionTarget();
+                    onBeforeFloorPlanNavigation?.();
+                  }}
                   className={`${actionButtonClass} border border-[#173f3f] bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white`}
                 >
-                  {hasFloorPlans ? "Add another plan" : "Add floor plan"}
+                  {hasFloorPlans ? "Add another plan" : "Needs floor plan"}
                 </Link>
                 <button
                   type="button"
@@ -503,7 +510,7 @@ function ComparePropertiesTab({
   );
 }
 
-function CompareDetailsTab({ rows, mode, isCompact }) {
+function CompareDetailsTab({ rows, mode, isCompact, onBeforeFloorPlanNavigation }) {
   if (rows.length === 0) {
     return <CompareEmptyState text="Choose floor plans or properties to compare exact details." />;
   }
@@ -573,7 +580,10 @@ function CompareDetailsTab({ rows, mode, isCompact }) {
                 </p>
                 <Link
                   to={row.linkTo}
-                  onClick={rememberFloorPlanSectionTarget}
+                  onClick={() => {
+                    rememberFloorPlanSectionTarget();
+                    onBeforeFloorPlanNavigation?.();
+                  }}
                   className="rounded-lg bg-[#173f3f] px-2 py-1.5 text-center text-[11px] font-black text-white hover:bg-[#102426]"
                 >
                   {row.actionLabel || "View"}
@@ -645,7 +655,10 @@ function CompareDetailsTab({ rows, mode, isCompact }) {
                   {row.availabilityLink ? (
                     <Link
                       to={row.availabilityLink}
-                      onClick={rememberFloorPlanSectionTarget}
+                      onClick={() => {
+                        rememberFloorPlanSectionTarget();
+                        onBeforeFloorPlanNavigation?.();
+                      }}
                       className="font-black text-[#173f3f] underline decoration-[#f2b84b] decoration-2 underline-offset-4 hover:text-[#1f6f63]"
                     >
                       {formatAvailabilityLabel(row.availability) || "Availability not listed"}
@@ -657,7 +670,10 @@ function CompareDetailsTab({ rows, mode, isCompact }) {
                 <td className="px-4 py-4 align-top">
                   <Link
                     to={row.linkTo}
-                    onClick={rememberFloorPlanSectionTarget}
+                    onClick={() => {
+                      rememberFloorPlanSectionTarget();
+                      onBeforeFloorPlanNavigation?.();
+                    }}
                     className="inline-flex rounded-xl bg-[#173f3f] px-3 py-2 text-xs font-black text-white hover:bg-[#102426]"
                   >
                     {row.actionLabel || "View"}

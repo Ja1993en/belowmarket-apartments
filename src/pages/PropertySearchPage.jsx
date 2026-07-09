@@ -359,10 +359,10 @@ export default function PropertySearchPage() {
         normalRent: priceSummary.normalRentLabel,
         effectiveRent: priceSummary.effectiveRentLabel,
         special: priceSummary.specialLabel || property.special || "No special listed",
-        availability: property.availability || "Add floor plan",
+        availability: property.availability || "Needs floor plan",
         availabilityLink: getFloorPlansRoute(property.id),
         linkTo: getFloorPlansRoute(property.id),
-        actionLabel: "Add floor plan",
+        actionLabel: "Needs floor plan",
         image: getPropertyPrimaryImage(property),
       })),
     [propertyCompareRows]
@@ -720,6 +720,7 @@ export default function PropertySearchPage() {
         setComparePropertyIds(removeComparePropertyId(propertyId));
         setCompareFloorPlanItems(removeCompareFloorPlanItemsForProperty(propertyId));
       }}
+      onBeforeFloorPlanNavigation={() => setIsCompareModalOpen(false)}
       propertyCompareRows={propertyCompareRows}
       setActiveTab={setActiveCompareTab}
     />
