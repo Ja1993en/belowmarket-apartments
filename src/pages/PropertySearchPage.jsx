@@ -351,8 +351,8 @@ export default function PropertySearchPage() {
     compareFloorPlanRows.length > 0 || propertyCompareRows.length > 0;
   const compareItemCount = compareFloorPlanRows.length + propertyCompareRows.length;
   const desktopMapStickyClass = hasCompareItems
-    ? "hidden md:sticky md:top-[128px] md:order-2 md:block"
-    : "hidden md:sticky md:top-[128px] md:order-2 md:block";
+    ? "hidden md:sticky md:top-24 md:order-2 md:block"
+    : "hidden md:sticky md:top-24 md:order-2 md:block";
   const desktopMapSurfaceClass = hasCompareItems
     ? "bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[clamp(320px,calc(100vh-16rem),560px)]"
     : "bma-map-surface relative h-[360px] rounded-none border-0 shadow-none md:h-[clamp(340px,calc(100vh-12rem),620px)]";
