@@ -75,10 +75,10 @@ export default function CompareSavedOptionsPanel({
           <button
             type="button"
             onClick={onClearCompare}
-            className="inline-flex w-fit items-center justify-center gap-1.5 rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-2.5 py-1.5 text-[11px] font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
+            className="inline-flex w-fit shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-2.5 py-1.5 text-[11px] font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
           >
-            <Trash2 className="h-3 w-3 shrink-0" />
-            <span>Clear all</span>
+            <Trash2 className="h-4 w-4 shrink-0" />
+            <span className="whitespace-nowrap">Clear all</span>
           </button>
         </div>
       )}
