@@ -96,42 +96,48 @@ export default function CompareSavedOptionsPanel({
                 ? propertyCompareRows.length
                 : compareDetailRows.length;
 
+          const helperText = count > 0 ? tab.helper : tab.emptyText;
+
           return (
             <button
               key={tab.label}
               type="button"
               aria-pressed={activeTab === tab.label}
               onClick={() => setActiveTab(tab.label)}
-              className={`min-w-0 text-left font-black ring-1 transition ${
+              className={`min-w-0 overflow-hidden text-left font-black ring-1 transition ${
                 isCompact
-                  ? "rounded-lg px-1.5 py-1.5 text-[10px]"
-                  : "rounded-2xl px-2.5 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm"
+                  ? "rounded-lg px-1.5 py-1.5"
+                  : "rounded-2xl px-2.5 py-2 sm:px-3 sm:py-2.5"
               } ${
                 activeTab === tab.label
                   ? "bg-[#173f3f] text-white"
                   : "bg-[#f5f8f1] text-[#173f3f] ring-[#d7e6df] hover:bg-[#d7e6df]"
               }`}
             >
-              <span className="flex min-w-0 items-start justify-between gap-1 sm:items-center sm:gap-2">
+              <span className="grid min-w-0 gap-0.5 sm:gap-1">
+                <span className="flex min-w-0 items-center justify-between gap-1.5">
+                  <span
+                    className={`min-w-0 truncate font-black leading-tight ${
+                      isCompact ? "text-[10px]" : "text-[11px] sm:text-sm"
+                    } ${activeTab === tab.label ? "text-white" : "text-[#173f3f]"}`}
+                  >
+                    {tab.label}
+                  </span>
+                  <span
+                    className={`inline-flex shrink-0 items-center justify-center rounded-full bg-white/85 font-black text-[#173f3f] ${
+                      isCompact ? "h-4 min-w-4 px-1 text-[8px]" : "h-4 min-w-4 px-1.5 text-[9px] sm:h-5 sm:min-w-5 sm:px-2 sm:text-[10px]"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </span>
                 <span
-                  className={`min-w-0 whitespace-normal font-bold leading-tight sm:truncate ${
-                    activeTab === tab.label ? "text-white/90" : "text-[#526260]"
-                  }`}
+                  className={`block min-w-0 truncate font-bold leading-tight ${
+                    isCompact ? "text-[8px]" : "text-[9px] sm:text-[11px]"
+                  } ${activeTab === tab.label ? "text-white/80" : "text-[#526260]"}`}
                 >
-                  {tab.label}
+                  {helperText}
                 </span>
-                <span className="shrink-0 rounded-full bg-white/75 px-1.5 py-0.5 text-[8px] text-[#173f3f] sm:px-2 sm:text-[10px]">
-                  {count || tab.emptyText}
-                </span>
-              </span>
-              <span
-                className={`mt-1 block truncate font-bold ${
-                  isCompact ? "text-[8px]" : "text-[10px] sm:text-xs"
-                } ${
-                  activeTab === tab.label ? "text-white/80" : "text-[#526260]"
-                }`}
-              >
-                {tab.helper}
               </span>
             </button>
           );
