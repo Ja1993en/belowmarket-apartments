@@ -5,17 +5,17 @@ import { formatAvailability as formatAvailabilityLabel } from "../../utils/displ
 const COMPARE_TABS = [
   {
     label: "Properties",
-    helper: "Saved communities",
+    helper: "Communities saved",
     emptyText: "Start here",
   },
   {
     label: "Floor Plans",
-    helper: "Exact layouts",
+    helper: "Exact picks",
     emptyText: "Add layouts",
   },
   {
     label: "Details",
-    helper: "Full table",
+    helper: "Decision chart",
     emptyText: "Review",
   },
 ];
@@ -79,6 +79,13 @@ export default function CompareSavedOptionsPanel({
           </button>
         </div>
       )}
+
+      <CompareDecisionSummary
+        rows={compareDetailRows}
+        floorPlanCount={compareFloorPlanRows.length}
+        propertyCount={propertyCompareRows.length}
+        isCompact={isCompact}
+      />
 
       <div className={`${isCompact ? "grid grid-cols-3 gap-1" : "mt-4 grid grid-cols-3 gap-1.5 sm:gap-2"}`}>
         {COMPARE_TABS.map((tab) => {
@@ -157,11 +164,82 @@ export default function CompareSavedOptionsPanel({
   );
 }
 
-function CompareMetric({ label, value }) {
+function CompareDecisionSummary({
+  rows,
+  floorPlanCount,
+  propertyCount,
+  isCompact,
+}) {
+  if (rows.length === 0) return null;
+
+  const lowestRentRow = rows
+    .map((row) => ({
+      ...row,
+      rentNumber: parseCompareMoney(row.effectiveRent || row.normalRent),
+    }))
+    .filter((row) => row.rentNumber > 0)
+    .sort((firstRow, secondRow) => firstRow.rentNumber - secondRow.rentNumber)[0];
+  const largestLayoutRow = rows
+    .map((row) => ({
+      ...row,
+      sqftNumber: parseCompareNumber(row.sqft),
+    }))
+    .filter((row) => row.sqftNumber > 0)
+    .sort((firstRow, secondRow) => secondRow.sqftNumber - firstRow.sqftNumber)[0];
+  const bestSpecialRow = rows.find((row) => isMeaningfulCompareSpecial(row.special));
+  const summaryItems = [
+    {
+      label: "Lowest estimate",
+      value: lowestRentRow?.effectiveRent || lowestRentRow?.normalRent || "Verify",
+      note: lowestRentRow?.title || "Select priced options",
+      tone: "green",
+    },
+    {
+      label: "Best special",
+      value: bestSpecialRow?.special || "No special listed",
+      note: bestSpecialRow?.title || "Ask what applies",
+      tone: "gold",
+    },
+    {
+      label: "Largest layout",
+      value: largestLayoutRow?.sqft || "Varies",
+      note: largestLayoutRow?.title || "Choose a floor plan",
+      tone: "sage",
+    },
+    {
+      label: "Options selected",
+      value: `${floorPlanCount + propertyCount}`,
+      note: `${floorPlanCount} floor plans • ${propertyCount} properties`,
+      tone: "white",
+    },
+  ];
+
   return (
-    <div className="mt-2 border-t border-[#d7e6df] pt-2 sm:mt-3 sm:pt-3">
-      <p className="text-[10px] font-black uppercase text-[#526260]">{label}</p>
-      <p className="mt-1 truncate text-xs font-black text-[#102426] sm:text-sm">{value}</p>
+    <div
+      className={
+        isCompact
+          ? "mt-2 grid grid-cols-2 gap-1.5"
+          : "mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
+      }
+    >
+      {summaryItems.map((item) => (
+        <div
+          key={item.label}
+          className={`${getDecisionSummaryToneClass(item.tone)} ${
+            isCompact ? "rounded-lg px-2 py-1.5" : "rounded-2xl px-3 py-3"
+          }`}
+        >
+          <p className={`${isCompact ? "text-[8px]" : "text-[10px]"} font-black uppercase text-[#526260]`}>
+            {item.label}
+          </p>
+          <p className={`${isCompact ? "mt-0.5 text-xs" : "mt-1 text-base"} truncate font-black text-[#102426]`}>
+            {item.value}
+          </p>
+          <p className={`${isCompact ? "mt-0.5 text-[10px]" : "mt-1 text-xs"} truncate font-bold text-[#526260]`}>
+            {item.note}
+          </p>
+        </div>
+      ))}
     </div>
   );
 }
@@ -221,9 +299,9 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) 
           </div>
 
           <div className={`${isCompact ? "mt-1.5 gap-1.5" : "mt-3 gap-2"} grid grid-cols-2`}>
-            <CompareTile label="Starting" value={row.rent || "Contact"} isCompact={isCompact} />
+            <CompareTile label="Listed" value={row.rent || "Contact"} isCompact={isCompact} />
             <CompareTile
-              label="Effective"
+              label="Estimated"
               value={row.effectiveRent || row.rent || "Contact"}
               highlight
               isCompact={isCompact}
@@ -279,116 +357,77 @@ function ComparePropertiesTab({
     return <CompareEmptyState text="No properties selected yet. Tap Compare on properties you want to save side by side." />;
   }
 
-  if (isMobileModal) {
-    return (
-      <div className="mt-4 grid min-w-0 gap-2">
-        {rows.map(({ property, priceSummary }) => (
-          <div
-            key={property.id}
-            className="min-w-0 max-w-full overflow-hidden rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]"
-          >
-            <Link
-              to={`/properties/${property.id}`}
-              className="flex min-w-0 max-w-full gap-3 hover:opacity-90"
-            >
-              <img
-                alt={property.name}
-                loading="lazy"
-                decoding="async"
-                className="h-14 w-14 shrink-0 rounded-xl object-cover"
-                src={getPropertyPrimaryImage(property)}
-              />
-              <span className="min-w-0 flex-1 overflow-hidden">
-                <span className="block truncate text-sm font-black text-[#102426]">
-                  {property.name}
-                </span>
-                <span className="mt-1 block truncate text-xs font-semibold text-[#526260]">
-                  {property.area || property.neighborhood || property.city || "Dallas"}
-                </span>
-                <span className="mt-1 block truncate text-xs font-bold text-[#8a5b0a]">
-                  {priceSummary.specialLabel || "No special listed"}
-                </span>
-              </span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => onRemove(property.id)}
-              className="mt-3 w-full max-w-full rounded-xl border border-[#f2b84b] bg-[#b42318] px-3 py-2 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
-            >
-              Remove from compare
-            </button>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  const isSmallCard = isCompact || isMobileModal;
 
   return (
-    <div className="mt-4">
-      <div className={isCompact ? "grid gap-2" : "grid gap-2 sm:grid-cols-2 lg:grid-cols-4"}>
+    <div className={isSmallCard ? "mt-2.5" : "mt-4"}>
+      <div className={isSmallCard ? "grid gap-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
         {rows.map(({ property, priceSummary }) => (
           <div
             key={property.id}
             className={
-              isCompact
-                ? "min-w-0 rounded-xl bg-white p-2.5 ring-1 ring-[#d7e6df]"
-                : "min-w-0 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] sm:p-4"
+              isSmallCard
+                ? "grid min-w-0 gap-2 rounded-xl bg-white p-2.5 ring-1 ring-[#d7e6df]"
+                : "grid min-w-0 gap-3 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] sm:p-4"
             }
           >
-            <div className="flex items-start justify-between gap-2">
+            <div className={isSmallCard ? "grid grid-cols-[4rem_minmax(0,1fr)] gap-2" : "grid grid-cols-[5.25rem_minmax(0,1fr)] gap-3"}>
+              <img
+                alt={property.name}
+                loading="lazy"
+                decoding="async"
+                className={`${isSmallCard ? "h-16 w-16 rounded-lg" : "h-20 w-20 rounded-xl"} bg-white object-cover ring-1 ring-[#d7e6df]`}
+                src={getPropertyPrimaryImage(property)}
+              />
               <div className="min-w-0">
-                <p className="min-w-0 truncate text-sm font-black text-[#102426]">
-                  {property.name}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className={`${isSmallCard ? "text-xs" : "text-sm"} truncate font-black text-[#102426]`}>
+                      {property.name}
+                    </p>
+                    <p className={`${isSmallCard ? "text-[11px]" : "text-xs"} mt-0.5 truncate font-bold text-[#526260]`}>
+                      {property.area || property.neighborhood || property.city || "Dallas area"}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[9px] font-black text-[#1f6f63] ring-1 ring-[#a9cfc2]">
+                    {getSearchDealScore(property, priceSummary)}/100
+                  </span>
+                </div>
+                <p className={`${isSmallCard ? "mt-1 line-clamp-1 text-[11px]" : "mt-2 line-clamp-2 text-xs"} font-black leading-4 text-[#8a5b0a]`}>
+                  {priceSummary.specialLabel || "No special listed"}
                 </p>
-                {isCompact && (
-                  <p className="mt-0.5 text-[11px] font-black text-[#1f6f63]">
-                    Deal score {getSearchDealScore(property, priceSummary)}/100
-                  </p>
-                )}
               </div>
+            </div>
+
+            <div className={`${isSmallCard ? "gap-1.5" : "gap-2"} grid grid-cols-2`}>
+              <CompareTile
+                label="Estimated"
+                value={priceSummary.effectiveRentLabel}
+                highlight
+                isCompact={isSmallCard}
+              />
+              <CompareTile
+                label="Listed"
+                value={priceSummary.normalRentLabel}
+                isCompact={isSmallCard}
+              />
+            </div>
+
+            <div className={`${isSmallCard ? "grid grid-cols-2 gap-1.5" : "grid gap-2 sm:grid-cols-2"}`}>
+              <Link
+                to={`/properties/${property.id}`}
+                className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} bg-[#173f3f] text-center font-black text-white hover:bg-[#102426]`}
+              >
+                View property
+              </Link>
               <button
                 type="button"
                 onClick={() => onRemove(property.id)}
-                className="shrink-0 rounded-full border border-[#f2b84b] bg-[#b42318] px-2 py-1 text-[10px] font-black !text-white hover:bg-[#8f1d15] hover:!text-white sm:px-3 sm:text-xs"
+                className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} border border-[#f2b84b] bg-[#b42318] text-center font-black !text-white hover:bg-[#8f1d15] hover:!text-white`}
               >
                 Remove
               </button>
             </div>
-            {!isCompact && (
-              <CompareMetric
-                label="Deal score"
-                value={`${getSearchDealScore(property, priceSummary)}/100`}
-              />
-            )}
-            <div className={isCompact ? "mt-1.5 grid grid-cols-2 gap-1.5" : ""}>
-              {isCompact ? (
-                <>
-                  <CompareTile label="Effective" value={priceSummary.effectiveRentLabel} highlight isCompact />
-                  <CompareTile label="Normal" value={priceSummary.normalRentLabel} isCompact />
-                </>
-              ) : (
-                <>
-                  <CompareMetric label="Effective" value={priceSummary.effectiveRentLabel} />
-                  <CompareMetric label="Normal" value={priceSummary.normalRentLabel} />
-                  <CompareMetric
-                    label="Special"
-                    value={priceSummary.specialLabel || "None listed"}
-                  />
-                </>
-              )}
-            </div>
-            {isCompact && (
-              <p className="mt-1.5 line-clamp-1 rounded-lg bg-[#fff8e6] px-2 py-1.5 text-[11px] font-black leading-4 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                {priceSummary.specialLabel || "No special listed"}
-              </p>
-            )}
-            <Link
-              to={getFloorPlansRoute(property.id)}
-              onClick={rememberFloorPlanSectionTarget}
-              className={`${isCompact ? "mt-1.5 rounded-lg px-2 py-1.5 text-[11px]" : "mt-3 rounded-xl px-3 py-2 text-xs sm:mt-4 sm:py-2.5"} block bg-[#173f3f] text-center font-black text-white hover:bg-[#102426]`}
-            >
-              View floor plans
-            </Link>
           </div>
         ))}
       </div>
@@ -403,17 +442,30 @@ function CompareDetailsTab({ rows, mode, isCompact }) {
 
   return (
     <>
-      <p
+      <div
         className={
           isCompact
-            ? "mt-2 rounded-lg bg-[#fff8e6] px-2.5 py-1.5 text-[11px] font-bold leading-4 text-[#8a5b0a] ring-1 ring-[#f2d08a]"
-            : "mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold leading-6 text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+            ? "mt-2 rounded-lg bg-[#fff8e6] px-2.5 py-2 ring-1 ring-[#f2d08a]"
+            : "mt-4 flex flex-col justify-between gap-3 rounded-2xl bg-[#fff8e6] px-4 py-3 ring-1 ring-[#f2d08a] md:flex-row md:items-center"
         }
       >
-        {mode === "floorPlans"
-          ? "Details is comparing exact floor plans for the clearest rent, size, and special comparison."
-          : "For the most accurate comparison, choose floor plans from each property. Until then, Details compares the selected properties."}
-      </p>
+        <div className="min-w-0">
+          <p className={`${isCompact ? "text-[10px]" : "text-xs"} font-black uppercase text-[#8a5b0a]`}>
+            Side-by-side decision chart
+          </p>
+          <p className={`${isCompact ? "mt-1 text-[11px] leading-4" : "mt-1 text-sm leading-6"} font-bold text-[#8a5b0a]`}>
+            {mode === "floorPlans"
+              ? "Exact floor plans are compared first so rent, size, and specials line up cleanly."
+              : "Choose floor plans from each property for the sharpest comparison. Until then, this compares selected properties."}
+          </p>
+        </div>
+        <Link
+          to="/start"
+          className={`${isCompact ? "mt-2 rounded-lg px-3 py-2 text-[11px]" : "rounded-xl px-4 py-2.5 text-sm"} shrink-0 bg-[#f2b84b] text-center font-black text-[#102426] hover:bg-[#dca33c]`}
+        >
+          Ask a locator to verify
+        </Link>
+      </div>
 
       {isCompact && (
         <div className="mt-2.5 grid gap-1.5">
@@ -439,8 +491,8 @@ function CompareDetailsTab({ rows, mode, isCompact }) {
               </div>
 
               <div className="mt-1.5 grid grid-cols-2 gap-1.5">
-                <CompareTile label="Normal" value={row.normalRent} isCompact />
-                <CompareTile label="Effective" value={row.effectiveRent} highlight isCompact />
+                <CompareTile label="Listed" value={row.normalRent} isCompact />
+                <CompareTile label="Estimated" value={row.effectiveRent} highlight isCompact />
               </div>
 
               <p className="mt-1.5 line-clamp-1 rounded-lg bg-[#fff8e6] px-2 py-1.5 text-[11px] font-black leading-4 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
@@ -474,8 +526,8 @@ function CompareDetailsTab({ rows, mode, isCompact }) {
                 "Type",
                 "Beds",
                 "Sq ft",
-                "Normal",
-                "Effective",
+                "Listed",
+                "Estimated",
                 "Special",
                 "Availability",
                 "Action",
@@ -565,6 +617,42 @@ function CompareTile({ label, value, highlight = false, isCompact = false }) {
       <p className={`${isCompact ? "text-[8px]" : "text-[10px]"} font-black uppercase`}>{label}</p>
       <p className={`${isCompact ? "mt-0.5 text-[11px]" : "mt-1 text-sm"} truncate font-black`}>{value}</p>
     </div>
+  );
+}
+
+function getDecisionSummaryToneClass(tone) {
+  return {
+    gold: "bg-[#fff8e6] ring-1 ring-[#f2d08a]",
+    green: "bg-[#e7f3ee] ring-1 ring-[#a9cfc2]",
+    sage: "bg-[#f5f8f1] ring-1 ring-[#d7e6df]",
+    white: "bg-white ring-1 ring-[#d7e6df]",
+  }[tone] || "bg-white ring-1 ring-[#d7e6df]";
+}
+
+function parseCompareMoney(value) {
+  const numericValue = String(value || "")
+    .replace(/,/g, "")
+    .match(/\$?\s*(\d+(?:\.\d+)?)/);
+
+  return numericValue ? Number(numericValue[1]) : 0;
+}
+
+function parseCompareNumber(value) {
+  const numericValue = String(value || "")
+    .replace(/,/g, "")
+    .match(/(\d+(?:\.\d+)?)/);
+
+  return numericValue ? Number(numericValue[1]) : 0;
+}
+
+function isMeaningfulCompareSpecial(value) {
+  const specialText = String(value || "").trim().toLowerCase();
+
+  return Boolean(
+    specialText &&
+      specialText !== "no special listed" &&
+      specialText !== "none listed" &&
+      specialText !== "special not listed"
   );
 }
 
