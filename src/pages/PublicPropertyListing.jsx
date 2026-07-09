@@ -1338,7 +1338,7 @@ export default function PublicPropertyListing() {
             floorPlan: null,
         })),
     ];
-    const compareItemCount = compareFloorPlanItems.length + selectedCompareProperties.length;
+    const compareItemCount = selectedCompareProperties.length;
     const compareSummaryItems = getCompareSummaryItems({
         floorPlanCount: compareFloorPlanItems.length,
         propertyOnlyCount: propertyOnlyCompareProperties.length,
@@ -2434,7 +2434,7 @@ export default function PublicPropertyListing() {
                                                         Compare board
                                                     </p>
                                                     <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#173f3f]">
-                                                        {compareItemCount} selected
+                                                        {compareItemCount} propert{compareItemCount === 1 ? "y" : "ies"}
                                                     </span>
                                                 </div>
                                                 <h3 className="mt-2 text-xl font-black text-[#102426]">
@@ -3387,8 +3387,8 @@ function CompareChartModal({
                             Comparison chart
                         </p>
                         <h2 className="mt-1 text-xl font-black text-[#102426]">
-                            Compare {compareItemCount} selected option
-                            {compareItemCount === 1 ? "" : "s"}
+                            Compare {compareItemCount} selected propert
+                            {compareItemCount === 1 ? "y" : "ies"}
                         </h2>
                     </div>
 
@@ -3433,7 +3433,7 @@ function PropertyCompareDock({
                     </p>
                     <p className="mt-0.5 truncate text-xs font-bold text-[#526260]">
                         {compareMessage ||
-                            `${compareItemCount} option${compareItemCount === 1 ? "" : "s"} selected. View them side by side before you tour.`}
+                            `${compareItemCount} propert${compareItemCount === 1 ? "y" : "ies"} selected. View them side by side before you tour.`}
                     </p>
                 </div>
 

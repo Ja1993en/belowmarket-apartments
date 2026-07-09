@@ -373,7 +373,7 @@ export default function PropertySearchPage() {
     floorPlanDetailRows.length > 0 ? "floorPlans" : "properties";
   const hasCompareItems =
     compareFloorPlanRows.length > 0 || propertyCompareRows.length > 0;
-  const compareItemCount = compareFloorPlanRows.length + propertyCompareRows.length;
+  const compareItemCount = propertyCompareRows.length;
   const desktopMapStickyClass = hasCompareItems
     ? "hidden md:sticky md:order-2 md:block"
     : "hidden md:sticky md:order-2 md:block";
@@ -1293,10 +1293,10 @@ export default function PropertySearchPage() {
             <div className="flex items-center justify-between border-b border-[#d7e6df] bg-white px-3 py-2.5 sm:px-4 sm:py-3">
               <div>
                 <p className="text-sm font-black text-[#102426]">
-                  Compare selected options
+                  Compare selected properties
                 </p>
                 <p className="mt-0.5 text-xs font-bold text-[#526260]">
-                  {compareItemCount} option{compareItemCount === 1 ? "" : "s"} selected
+                  {compareItemCount} propert{compareItemCount === 1 ? "y" : "ies"} selected
                 </p>
               </div>
               <button
@@ -1486,7 +1486,7 @@ function CompareDock({
             Compare list ready
           </p>
           <p className="mt-0.5 truncate text-xs font-bold text-[#526260]">
-            {`${compareItemCount} option${compareItemCount === 1 ? "" : "s"} selected. View them side by side before you tour.`}
+            {`${compareItemCount} propert${compareItemCount === 1 ? "y" : "ies"} selected. View them side by side before you tour.`}
           </p>
         </div>
 
