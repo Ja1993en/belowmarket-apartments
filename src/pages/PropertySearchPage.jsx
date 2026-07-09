@@ -1855,7 +1855,7 @@ function MapPropertyHoverPreview({
   const rentLabel = priceSummary.hasRentSpecial
     ? priceSummary.effectiveRentLabel
     : priceSummary.normalRentLabel;
-  const rentEyebrow = priceSummary.hasRentSpecial ? "Estimated after special" : "Listed rent";
+  const rentEyebrow = priceSummary.hasRentSpecial ? "Estimated rent after special" : "Listed rent";
   const previewImage = getPropertyPrimaryImage(property);
   const locationLabel =
     property.area ||
