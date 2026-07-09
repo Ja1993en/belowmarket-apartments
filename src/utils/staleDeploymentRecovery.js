@@ -1,4 +1,4 @@
-const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloadedV2";
+const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloadedV3";
 const STALE_DEPLOYMENT_RELOAD_WINDOW_MS = 15000;
 
 const staleDeploymentErrorPatterns = [
