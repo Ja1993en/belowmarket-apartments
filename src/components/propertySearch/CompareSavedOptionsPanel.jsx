@@ -396,9 +396,14 @@ function ComparePropertiesTab({
                       </p>
                     </div>
 
-                    <span className="shrink-0 rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[9px] font-black text-[#1f6f63] ring-1 ring-[#a9cfc2]">
-                      {dealScore}/100
-                    </span>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <span className="rounded-full bg-[#fff8e6] px-2 py-0.5 text-[9px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                        Property only
+                      </span>
+                      <span className="rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[9px] font-black text-[#1f6f63] ring-1 ring-[#a9cfc2]">
+                        {dealScore}/100
+                      </span>
+                    </div>
                   </div>
 
                   <p className={`${isSmallCard ? "mt-1 line-clamp-1 text-[11px]" : "mt-2 line-clamp-2 text-xs"} font-black leading-4 text-[#8a5b0a]`}>
@@ -421,12 +426,17 @@ function ComparePropertiesTab({
                 />
               </div>
 
+              <p className={`${isSmallCard ? "mx-2.5 mb-2 rounded-lg px-2 py-1.5 text-[10px] leading-4" : "mx-3 mb-3 rounded-xl px-3 py-2 text-xs leading-5"} bg-[#fff8e6] font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]`}>
+                Choose a floor plan to unlock exact rent, size, and savings.
+              </p>
+
               <div className={`${isSmallCard ? "grid-cols-2 gap-1.5 px-2.5 py-2.5" : "grid-cols-2 gap-2 px-3 py-3"} grid border-t border-[#edf4ef] bg-[#f5f8f1]`}>
                 <Link
-                  to={`/properties/${property.id}`}
+                  to={getFloorPlansRoute(property.id)}
+                  onClick={rememberFloorPlanSectionTarget}
                   className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} bg-[#173f3f] text-center font-black text-white hover:bg-[#102426]`}
                 >
-                  View property
+                  Choose floor plan
                 </Link>
                 <button
                   type="button"
