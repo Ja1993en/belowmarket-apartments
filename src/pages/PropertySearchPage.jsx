@@ -1952,48 +1952,71 @@ function MapPropertyHoverPreview({
     ? priceSummary.effectiveRentLabel
     : priceSummary.normalRentLabel;
   const rentEyebrow = priceSummary.hasRentSpecial ? "Net effective" : "Listed rent";
+  const previewImage = getPropertyPrimaryImage(property);
+  const locationLabel =
+    property.area ||
+    property.neighborhood ||
+    property.city ||
+    getPropertyAddressLabel(property);
+  const bedsLabel = getBedsLabel(property, displayFloorPlans);
 
   return (
     <div
-      className="pointer-events-auto absolute bottom-4 left-4 z-20 w-[min(18rem,calc(100%-2rem))] overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-[#d7e6df]"
+      className="pointer-events-auto absolute bottom-4 left-4 z-20 w-[min(15.5rem,calc(100%-2rem))] overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-[#d7e6df]"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {hasGoldBar && <div className="h-1 bg-[#f2b84b]" />}
-      <div className="p-3">
-        <p className="truncate text-sm font-black text-[#102426]">
-          {property.name || "Property"}
-        </p>
-        <p className="mt-0.5 truncate text-[11px] font-bold text-[#526260]">
-          {getPropertyAddressLabel(property)}
-        </p>
-
-        <div className="mt-2.5 flex items-end justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
-              {rentEyebrow}
+      {hasGoldBar && <div className="h-0.5 bg-[#f2b84b]" />}
+      <div className="grid gap-2 p-2.5">
+        <div className="flex min-w-0 gap-2.5">
+          {previewImage ? (
+            <img
+              src={previewImage}
+              alt={property.name || "Property"}
+              loading="lazy"
+              decoding="async"
+              className="h-14 w-14 shrink-0 rounded-lg bg-[#f5f8f1] object-cover"
+            />
+          ) : (
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] text-[10px] font-black text-[#f2b84b]">
+              BMA
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[13px] font-black leading-4 text-[#102426]">
+              {property.name || "Property"}
             </p>
-            <p className="mt-0.5 truncate text-base font-black text-[#102426]">
-              {rentLabel}
+            <p className="mt-0.5 truncate text-[10px] font-bold leading-4 text-[#526260]">
+              {locationLabel}
+            </p>
+            <p className="mt-0.5 truncate text-[10px] font-black leading-4 text-[#1f6f63]">
+              {bedsLabel}
             </p>
           </div>
-          <span className="shrink-0 rounded-full bg-[#e7f3ee] px-2.5 py-1 text-[11px] font-black text-[#1f6f63]">
-            {getBedsLabel(property, displayFloorPlans)}
-          </span>
         </div>
 
         {priceSummary.hasSpecial && (
-          <p className="mt-2.5 truncate rounded-lg bg-[#fff8e6] px-2.5 py-1.5 text-xs font-black text-[#684307] ring-1 ring-[#f2d08a]">
+          <p className="truncate rounded-md bg-[#fff8e6] px-2 py-1 text-[11px] font-black leading-4 text-[#684307] ring-1 ring-[#f2d08a]">
             {priceSummary.specialLabel}
           </p>
         )}
 
-        <Link
-          to={`/properties/${property.id}`}
-          className="mt-2.5 inline-flex rounded-lg bg-[#173f3f] px-3 py-2 text-xs font-black text-white hover:bg-[#102426]"
-        >
-          View property
-        </Link>
+        <div className="flex items-center justify-between gap-2 border-t border-[#edf4ef] pt-2">
+          <div className="min-w-0">
+            <p className="text-[9px] font-black uppercase leading-none text-[#526260]">
+              {rentEyebrow}
+            </p>
+            <p className="mt-0.5 truncate text-sm font-black leading-4 text-[#102426]">
+              {rentLabel}
+            </p>
+          </div>
+          <Link
+            to={`/properties/${property.id}`}
+            className="shrink-0 rounded-lg bg-[#173f3f] px-2.5 py-1.5 text-[11px] font-black !text-white hover:bg-[#102426] hover:!text-white"
+          >
+            View
+          </Link>
+        </div>
       </div>
     </div>
   );
