@@ -1326,7 +1326,7 @@ export default function PublicPropertyListing() {
             normalRent: compareProperty.marketRent || compareProperty.rent || compareProperty.startingRent || "Contact",
             effectiveRent: compareProperty.effectiveRent || compareProperty.rent || compareProperty.startingRent || "Contact",
             special: compareProperty.special || "No special listed",
-            availability: compareProperty.availability || "View floor plans",
+            availability: compareProperty.availability || "Add floor plan",
             availabilityLink: getFloorPlansRoute(compareProperty.id),
             savings: compareProperty.savings || getCompareSavingsLabel(
                 compareProperty.marketRent || compareProperty.rent,
@@ -1334,7 +1334,7 @@ export default function PublicPropertyListing() {
             ),
             image: getPropertyPrimaryImage(compareProperty),
             linkTo: getFloorPlansRoute(compareProperty.id),
-            actionLabel: "View floor plans",
+            actionLabel: "Add floor plan",
             floorPlan: null,
         })),
     ];

@@ -359,10 +359,10 @@ export default function PropertySearchPage() {
         normalRent: priceSummary.normalRentLabel,
         effectiveRent: priceSummary.effectiveRentLabel,
         special: priceSummary.specialLabel || property.special || "No special listed",
-        availability: property.availability || "View floor plans",
+        availability: property.availability || "Add floor plan",
         availabilityLink: getFloorPlansRoute(property.id),
         linkTo: getFloorPlansRoute(property.id),
-        actionLabel: "View floor plans",
+        actionLabel: "Add floor plan",
         image: getPropertyPrimaryImage(property),
       })),
     [propertyCompareRows]
