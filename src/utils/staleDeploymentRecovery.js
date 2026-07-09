@@ -1,4 +1,4 @@
-const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloadedV4";
+const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloadedV5";
 const STALE_DEPLOYMENT_RELOAD_WINDOW_MS = 15000;
 
 const staleDeploymentErrorPatterns = [
@@ -66,12 +66,35 @@ function getErrorText(error) {
     .join(" ");
 }
 
+function isBuiltAssetUrl(value) {
+  if (!value) return false;
+
+  const textValue = String(value);
+
+  if (/\/assets\/[^\s"'<>]+\.(js|css)(\?|#|\s|$)/i.test(textValue)) {
+    return true;
+  }
+
+  try {
+    const parsedUrl = new URL(textValue, window.location.href);
+
+    return (
+      parsedUrl.origin === window.location.origin &&
+      parsedUrl.pathname.startsWith("/assets/") &&
+      /\.(js|css)$/i.test(parsedUrl.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 function isStaleDeploymentError(error) {
   const errorText = getErrorText(error);
   const failedSource = error?.target?.src || error?.target?.href || "";
 
   return (
-    failedSource.includes("/assets/") ||
+    isBuiltAssetUrl(failedSource) ||
+    isBuiltAssetUrl(errorText) ||
     staleDeploymentErrorPatterns.some((pattern) => errorText.includes(pattern))
   );
 }

@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
       (() => {
-        const reloadKey = "bmaInitialAssetReloadedV4";
+        const reloadKey = "bmaInitialAssetReloadedV5";
         const reloadWindowMs = 15000;
         const staleAssetPatterns = [
           "Expected a JavaScript-or-Wasm module script",
@@ -71,12 +71,35 @@
             .join(" ");
         }
 
+        function isBuiltAssetUrl(value) {
+          if (!value) return false;
+
+          const textValue = String(value);
+
+          if (/\/assets\/[^\s"'<>]+\.(js|css)(\?|#|\s|$)/i.test(textValue)) {
+            return true;
+          }
+
+          try {
+            const parsedUrl = new URL(textValue, window.location.href);
+
+            return (
+              parsedUrl.origin === window.location.origin &&
+              parsedUrl.pathname.startsWith("/assets/") &&
+              /\.(js|css)$/i.test(parsedUrl.pathname)
+            );
+          } catch {
+            return false;
+          }
+        }
+
         function isStaleAssetError(event) {
           const errorText = getErrorText(event);
           const failedSource = event?.target?.src || event?.target?.href || "";
 
           return (
-            failedSource.includes("/assets/") ||
+            isBuiltAssetUrl(failedSource) ||
+            isBuiltAssetUrl(errorText) ||
             staleAssetPatterns.some((pattern) => errorText.includes(pattern))
           );
         }
