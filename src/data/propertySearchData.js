@@ -5,12 +5,25 @@ export function getPublicSearchProperties(properties = []) {
   return properties.filter((property) => property.status === "Live");
 }
 
-export function getPropertySearchSuggestions(properties, query, limit = 6) {
+export function getPropertySearchSuggestions(properties, query, limit = 6, options = {}) {
   const normalizedQuery = normalizeSearchValue(query);
   const queryTokens = getSearchTokens(query);
-  if (!normalizedQuery && queryTokens.length === 0) return [];
+  if (!normalizedQuery && queryTokens.length === 0) {
+    return options.includeDefault ? getDefaultSearchSuggestions(properties, limit) : [];
+  }
 
   const suggestions = new Map();
+  const trimmedQuery = String(query || "").trim();
+
+  if (trimmedQuery) {
+    suggestions.set(`Search:${trimmedQuery.toLowerCase()}`, {
+      type: "Search",
+      label: trimmedQuery,
+      detail: "Search apartments, specials, and neighborhoods",
+      value: trimmedQuery,
+      score: -1,
+    });
+  }
 
   properties.forEach((property) => {
     getSuggestionCandidates(property).forEach((candidate) => {
@@ -58,6 +71,91 @@ export function getPropertySearchSuggestions(properties, query, limit = 6) {
       return firstSuggestion.label.localeCompare(secondSuggestion.label);
     })
     .slice(0, limit);
+}
+
+function getDefaultSearchSuggestions(properties, limit) {
+  const suggestions = [];
+  const seenSuggestions = new Set();
+
+  const addSuggestion = (suggestion) => {
+    if (!suggestion?.label || !suggestion?.value) return;
+
+    const suggestionKey = `${suggestion.type}:${String(suggestion.value).toLowerCase()}`;
+    if (seenSuggestions.has(suggestionKey)) return;
+
+    seenSuggestions.add(suggestionKey);
+    suggestions.push(suggestion);
+  };
+
+  addSuggestion({
+    type: "City",
+    label: "Dallas, TX",
+    detail: "Search all Dallas-area apartment specials",
+    value: "Dallas, TX",
+  });
+
+  ["8 weeks free", "6 weeks free", "4 weeks free"].forEach((specialLabel) => {
+    const hasMatchingSpecial = properties.some((property) =>
+      normalizeSearchValue(getSearchablePropertyText(property)).includes(
+        normalizeSearchValue(specialLabel)
+      )
+    );
+
+    if (hasMatchingSpecial) {
+      addSuggestion({
+        type: "Special",
+        label: specialLabel,
+        detail: "See properties advertising this special",
+        value: specialLabel,
+      });
+    }
+  });
+
+  const areaCounts = new Map();
+
+  properties.forEach((property) => {
+    const areaLabel = property.area || property.neighborhood || "";
+    if (!areaLabel) return;
+
+    const currentArea = areaCounts.get(areaLabel) || {
+      label: areaLabel,
+      count: 0,
+      cityState: [property.city, property.state].filter(Boolean).join(", "),
+    };
+
+    currentArea.count += 1;
+    areaCounts.set(areaLabel, currentArea);
+  });
+
+  [...areaCounts.values()]
+    .sort((firstArea, secondArea) => {
+      if (secondArea.count !== firstArea.count) {
+        return secondArea.count - firstArea.count;
+      }
+
+      return firstArea.label.localeCompare(secondArea.label);
+    })
+    .slice(0, 3)
+    .forEach((area) => {
+      addSuggestion({
+        type: "Area",
+        label: area.label,
+        detail: `${area.count} ${area.count === 1 ? "property" : "properties"} nearby`,
+        value: area.label,
+      });
+    });
+
+  properties.slice(0, 2).forEach((property) => {
+    addSuggestion({
+      type: "Property",
+      label: property.name,
+      detail: getPropertyAddressLabel(property),
+      value: property.name,
+      propertyId: property.id,
+    });
+  });
+
+  return suggestions.slice(0, limit);
 }
 
 export function matchesPropertySearch(property, query) {
@@ -198,6 +296,7 @@ function getSuggestionCandidates(property) {
       label: property.name,
       detail: addressLabel,
       value: property.name,
+      propertyId: property.id,
       searchText: [
         property.name,
         property.area,
@@ -408,12 +507,13 @@ function getSuggestionScore(normalizedValue, normalizedQuery, queryTokens) {
 
 function getSuggestionTypePriority(type) {
   return {
-    City: 0,
-    Area: 1,
-    Property: 2,
-    ZIP: 3,
-    Special: 4,
-    Manager: 5,
+    Search: 0,
+    City: 1,
+    Area: 2,
+    Property: 3,
+    ZIP: 4,
+    Special: 5,
+    Manager: 6,
   }[type] ?? 10;
 }
 

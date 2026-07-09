@@ -166,6 +166,7 @@ export default function PropertySearchPage() {
   const navigate = useNavigate();
   const searchFromUrl = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(searchFromUrl);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedArea, setSelectedArea] = useState(null);
   const [customPriceMin, setCustomPriceMin] = useState("");
   const [customPriceMax, setCustomPriceMax] = useState("");
@@ -272,9 +273,13 @@ export default function PropertySearchPage() {
   const selectedPriceLabel = selectedPriceFilter?.label || "";
   const selectedBedroomLabel = getSelectedBedroomLabel(selectedBedroomFilter);
   const suggestions = useMemo(
-    () => getPropertySearchSuggestions(properties, searchTerm),
-    [properties, searchTerm]
+    () =>
+      getPropertySearchSuggestions(properties, searchTerm, 8, {
+        includeDefault: isSearchFocused,
+      }),
+    [isSearchFocused, properties, searchTerm]
   );
+  const shouldShowSearchSuggestions = isSearchFocused && suggestions.length > 0;
   const compareProperties = useMemo(
     () =>
       comparePropertyIds
@@ -534,11 +539,19 @@ export default function PropertySearchPage() {
 
     const query = searchTerm.trim();
     setSelectedArea(null);
+    setIsSearchFocused(false);
     setSearchParams(query ? { search: query } : {});
   };
 
   const selectSuggestion = (suggestion) => {
+    setIsSearchFocused(false);
     setSearchTerm(suggestion.value);
+
+    if (suggestion.type === "Property" && suggestion.propertyId) {
+      navigate(`/properties/${suggestion.propertyId}`);
+      return;
+    }
+
     setSearchParams({ search: suggestion.value });
     setSelectedArea(null);
   };
@@ -738,6 +751,15 @@ export default function PropertySearchPage() {
                     type="search"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
+                    onFocus={() => {
+                      setIsSearchFocused(true);
+                      setIsPriceFilterOpen(false);
+                      setIsBedsFilterOpen(false);
+                      setIsSpecialFilterOpen(false);
+                    }}
+                    onBlur={() => {
+                      window.setTimeout(() => setIsSearchFocused(false), 120);
+                    }}
                     placeholder="City, neighborhood, property, or special"
                     autoComplete="off"
                     className="bma-focus-ring h-10 w-full rounded-lg border border-[#b8d9d0] bg-[#f9fbf8] pl-9 pr-3 text-sm font-bold text-[#102426] outline-none sm:h-11"
@@ -973,31 +995,12 @@ export default function PropertySearchPage() {
             </div>
           </div>
 
-            {suggestions.length > 0 && searchTerm.trim() !== searchFromUrl.trim() && (
-              <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-50 overflow-hidden rounded-lg border border-[#d7e6df] bg-white shadow-2xl lg:right-auto lg:w-[min(560px,calc(100%-1rem))]">
-                {suggestions.map((suggestion) => (
-                  <button
-                    key={`${suggestion.type}-${suggestion.value}`}
-                    type="button"
-                    onClick={() => selectSuggestion(suggestion)}
-                    className="flex w-full items-center justify-between gap-3 border-b border-[#edf4ef] px-4 py-3 text-left last:border-b-0 hover:bg-[#f5f8f1]"
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-black text-[#102426]">
-                        {suggestion.label}
-                      </span>
-                      {suggestion.detail && (
-                        <span className="block truncate text-xs font-bold text-[#526260]">
-                          {suggestion.detail}
-                        </span>
-                      )}
-                    </span>
-                    <span className="shrink-0 rounded-full bg-[#e7f3ee] px-3 py-1 text-[11px] font-black uppercase text-[#1f6f63]">
-                      {suggestion.type}
-                    </span>
-                  </button>
-                ))}
-              </div>
+            {shouldShowSearchSuggestions && (
+              <SearchSuggestionsPanel
+                suggestions={suggestions}
+                searchTerm={searchTerm}
+                onSelectSuggestion={selectSuggestion}
+              />
             )}
           </form>
 
@@ -1316,6 +1319,109 @@ export default function PropertySearchPage() {
       )}
     </main>
   );
+}
+
+function SearchSuggestionsPanel({ suggestions, searchTerm, onSelectSuggestion }) {
+  const hasQuery = Boolean(searchTerm.trim());
+
+  return (
+    <div className="absolute left-2 right-2 top-[calc(100%+8px)] z-50 overflow-hidden rounded-xl border border-[#d7e6df] bg-white text-left shadow-2xl lg:right-auto lg:w-[min(620px,calc(100%-1rem))]">
+      <div className="flex items-center justify-between gap-3 border-b border-[#edf4ef] bg-[#f5f8f1] px-3 py-2.5">
+        <div className="min-w-0">
+          <p className="text-[10px] font-black uppercase tracking-wide text-[#1f6f63]">
+            {hasQuery ? "Suggested searches" : "Start with a popular search"}
+          </p>
+          <p className="mt-0.5 truncate text-xs font-bold text-[#526260]">
+            Search by location, property, ZIP, or active special.
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+          {suggestions.length} options
+        </span>
+      </div>
+
+      <div className="max-h-[22rem] overflow-y-auto overscroll-contain p-1.5">
+        {suggestions.map((suggestion) => (
+          <button
+            key={`${suggestion.type}-${suggestion.value}`}
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => onSelectSuggestion(suggestion)}
+            className="group grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-3 rounded-lg px-2.5 py-2.5 text-left transition hover:bg-[#f5f8f1]"
+          >
+            <SearchSuggestionIcon type={suggestion.type} />
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-black text-[#102426]">
+                {getSearchSuggestionActionLabel(suggestion)}
+              </span>
+              {suggestion.detail && (
+                <span className="mt-0.5 block truncate text-xs font-bold text-[#526260]">
+                  {suggestion.detail}
+                </span>
+              )}
+            </span>
+            <span className="shrink-0 rounded-full bg-[#e7f3ee] px-2.5 py-1 text-[10px] font-black uppercase text-[#1f6f63] ring-1 ring-[#d7e6df] group-hover:bg-white">
+              {getSearchSuggestionTypeLabel(suggestion.type)}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SearchSuggestionIcon({ type }) {
+  const iconClassName = "h-4 w-4";
+
+  if (type === "Property") {
+    return (
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#173f3f] text-white">
+        <Building2 className={iconClassName} aria-hidden="true" />
+      </span>
+    );
+  }
+
+  if (type === "Special") {
+    return (
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#fff8e6] text-sm font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+        %
+      </span>
+    );
+  }
+
+  if (type === "Search") {
+    return (
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#eef5ff] text-[#174a7c] ring-1 ring-[#b8d9f0]">
+        <Search className={iconClassName} aria-hidden="true" />
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#e7f3ee] text-[#1f6f63] ring-1 ring-[#a9cfc2]">
+      <MapPin className={iconClassName} aria-hidden="true" />
+    </span>
+  );
+}
+
+function getSearchSuggestionActionLabel(suggestion) {
+  if (suggestion.type === "Search") {
+    return `Search "${suggestion.label}"`;
+  }
+
+  if (suggestion.type === "Property") {
+    return suggestion.propertyId ? `View ${suggestion.label}` : suggestion.label;
+  }
+
+  return suggestion.label;
+}
+
+function getSearchSuggestionTypeLabel(type) {
+  if (type === "City" || type === "Area" || type === "ZIP") {
+    return "Location";
+  }
+
+  return type;
 }
 
 function SearchMap({
