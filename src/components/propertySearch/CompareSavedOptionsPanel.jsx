@@ -97,6 +97,7 @@ export default function CompareSavedOptionsPanel({
                 : compareDetailRows.length;
 
           const helperText = count > 0 ? tab.helper : tab.emptyText;
+          const mobileLabel = isCompact && tab.label === "Floor Plans" ? "Plans" : tab.label;
 
           return (
             <button
@@ -104,9 +105,9 @@ export default function CompareSavedOptionsPanel({
               type="button"
               aria-pressed={activeTab === tab.label}
               onClick={() => setActiveTab(tab.label)}
-              className={`min-w-0 overflow-hidden text-left font-black ring-1 transition ${
+              className={`min-w-0 overflow-hidden text-center font-black ring-1 transition sm:text-left ${
                 isCompact
-                  ? "rounded-lg px-1.5 py-1.5"
+                  ? "rounded-lg px-1 py-1.5"
                   : "rounded-2xl px-2.5 py-2 sm:px-3 sm:py-2.5"
               } ${
                 activeTab === tab.label
@@ -114,14 +115,14 @@ export default function CompareSavedOptionsPanel({
                   : "bg-[#f5f8f1] text-[#173f3f] ring-[#d7e6df] hover:bg-[#d7e6df]"
               }`}
             >
-              <span className="grid min-w-0 gap-0.5 sm:gap-1">
-                <span className="flex min-w-0 items-center justify-between gap-1.5">
+              <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "grid min-w-0 gap-1"}>
+                <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "flex min-w-0 items-center justify-between gap-1.5"}>
                   <span
-                    className={`min-w-0 truncate font-black leading-tight ${
+                    className={`min-w-0 max-w-full truncate font-black leading-tight ${
                       isCompact ? "text-[10px]" : "text-[11px] sm:text-sm"
                     } ${activeTab === tab.label ? "text-white" : "text-[#173f3f]"}`}
                   >
-                    {tab.label}
+                    {mobileLabel}
                   </span>
                   <span
                     className={`inline-flex shrink-0 items-center justify-center rounded-full bg-white/85 font-black text-[#173f3f] ${
@@ -132,7 +133,7 @@ export default function CompareSavedOptionsPanel({
                   </span>
                 </span>
                 <span
-                  className={`block min-w-0 truncate font-bold leading-tight ${
+                  className={`block min-w-0 max-w-full truncate font-bold leading-tight ${
                     isCompact ? "text-[8px]" : "text-[9px] sm:text-[11px]"
                   } ${activeTab === tab.label ? "text-white/80" : "text-[#526260]"}`}
                 >
