@@ -362,74 +362,83 @@ function ComparePropertiesTab({
   return (
     <div className={isSmallCard ? "mt-2.5" : "mt-4"}>
       <div className={isSmallCard ? "grid gap-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
-        {rows.map(({ property, priceSummary }) => (
-          <div
-            key={property.id}
-            className={
-              isSmallCard
-                ? "grid min-w-0 gap-2 rounded-xl bg-white p-2.5 ring-1 ring-[#d7e6df]"
-                : "grid min-w-0 gap-3 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] sm:p-4"
-            }
-          >
-            <div className={isSmallCard ? "grid grid-cols-[4rem_minmax(0,1fr)] gap-2" : "grid grid-cols-[5.25rem_minmax(0,1fr)] gap-3"}>
-              <img
-                alt={property.name}
-                loading="lazy"
-                decoding="async"
-                className={`${isSmallCard ? "h-16 w-16 rounded-lg" : "h-20 w-20 rounded-xl"} bg-white object-cover ring-1 ring-[#d7e6df]`}
-                src={getPropertyPrimaryImage(property)}
-              />
-              <div className="min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className={`${isSmallCard ? "text-xs" : "text-sm"} truncate font-black text-[#102426]`}>
-                      {property.name}
-                    </p>
-                    <p className={`${isSmallCard ? "text-[11px]" : "text-xs"} mt-0.5 truncate font-bold text-[#526260]`}>
-                      {property.area || property.neighborhood || property.city || "Dallas area"}
-                    </p>
+        {rows.map(({ property, priceSummary }) => {
+          const dealScore = getSearchDealScore(property, priceSummary);
+          const propertyLocation =
+            property.area || property.neighborhood || property.city || "Dallas area";
+
+          return (
+            <div
+              key={property.id}
+              className={
+                isSmallCard
+                  ? "min-w-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-[#d7e6df]"
+                  : "min-w-0 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#d7e6df]"
+              }
+            >
+              <div className={isSmallCard ? "grid grid-cols-[72px_minmax(0,1fr)] gap-2 p-2.5" : "grid grid-cols-[96px_minmax(0,1fr)] gap-3 p-3"}>
+                <img
+                  alt={property.name}
+                  loading="lazy"
+                  decoding="async"
+                  className={`${isSmallCard ? "h-[72px] w-[72px] rounded-lg" : "h-24 w-24 rounded-xl"} bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]`}
+                  src={getPropertyPrimaryImage(property)}
+                />
+
+                <div className="grid min-w-0 grid-rows-[auto_1fr_auto]">
+                  <div className="flex min-w-0 items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className={`${isSmallCard ? "text-xs" : "text-sm"} truncate font-black text-[#102426]`}>
+                        {property.name}
+                      </p>
+                      <p className={`${isSmallCard ? "text-[11px]" : "text-xs"} mt-0.5 truncate font-bold text-[#526260]`}>
+                        {propertyLocation}
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[9px] font-black text-[#1f6f63] ring-1 ring-[#a9cfc2]">
+                      {dealScore}/100
+                    </span>
                   </div>
-                  <span className="shrink-0 rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[9px] font-black text-[#1f6f63] ring-1 ring-[#a9cfc2]">
-                    {getSearchDealScore(property, priceSummary)}/100
-                  </span>
+
+                  <p className={`${isSmallCard ? "mt-1 line-clamp-1 text-[11px]" : "mt-2 line-clamp-2 text-xs"} font-black leading-4 text-[#8a5b0a]`}>
+                    {priceSummary.specialLabel || "No special listed"}
+                  </p>
                 </div>
-                <p className={`${isSmallCard ? "mt-1 line-clamp-1 text-[11px]" : "mt-2 line-clamp-2 text-xs"} font-black leading-4 text-[#8a5b0a]`}>
-                  {priceSummary.specialLabel || "No special listed"}
-                </p>
+              </div>
+
+              <div className={`${isSmallCard ? "grid-cols-2 gap-1.5 px-2.5 pb-2.5" : "grid-cols-2 gap-2 px-3 pb-3"} grid`}>
+                <CompareTile
+                  label="After special"
+                  value={priceSummary.effectiveRentLabel}
+                  highlight
+                  isCompact={isSmallCard}
+                />
+                <CompareTile
+                  label="Listed"
+                  value={priceSummary.normalRentLabel}
+                  isCompact={isSmallCard}
+                />
+              </div>
+
+              <div className={`${isSmallCard ? "grid-cols-2 gap-1.5 px-2.5 py-2.5" : "grid-cols-2 gap-2 px-3 py-3"} grid border-t border-[#edf4ef] bg-[#f5f8f1]`}>
+                <Link
+                  to={`/properties/${property.id}`}
+                  className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} bg-[#173f3f] text-center font-black text-white hover:bg-[#102426]`}
+                >
+                  View property
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => onRemove(property.id)}
+                  className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} border border-[#f2b84b] bg-[#b42318] text-center font-black !text-white hover:bg-[#8f1d15] hover:!text-white`}
+                >
+                  Remove
+                </button>
               </div>
             </div>
-
-            <div className={`${isSmallCard ? "gap-1.5" : "gap-2"} grid grid-cols-2`}>
-              <CompareTile
-                label="Estimated"
-                value={priceSummary.effectiveRentLabel}
-                highlight
-                isCompact={isSmallCard}
-              />
-              <CompareTile
-                label="Listed"
-                value={priceSummary.normalRentLabel}
-                isCompact={isSmallCard}
-              />
-            </div>
-
-            <div className={`${isSmallCard ? "grid grid-cols-2 gap-1.5" : "grid gap-2 sm:grid-cols-2"}`}>
-              <Link
-                to={`/properties/${property.id}`}
-                className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} bg-[#173f3f] text-center font-black text-white hover:bg-[#102426]`}
-              >
-                View property
-              </Link>
-              <button
-                type="button"
-                onClick={() => onRemove(property.id)}
-                className={`${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} border border-[#f2b84b] bg-[#b42318] text-center font-black !text-white hover:bg-[#8f1d15] hover:!text-white`}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -615,7 +624,7 @@ function CompareTile({ label, value, highlight = false, isCompact = false }) {
       }`}
     >
       <p className={`${isCompact ? "text-[8px]" : "text-[10px]"} font-black uppercase`}>{label}</p>
-      <p className={`${isCompact ? "mt-0.5 text-[11px]" : "mt-1 text-sm"} truncate font-black`}>{value}</p>
+      <p className={`${isCompact ? "mt-0.5 text-[11px]" : "mt-1 text-sm"} font-black leading-tight`}>{value}</p>
     </div>
   );
 }
