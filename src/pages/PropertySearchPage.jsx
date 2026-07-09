@@ -1962,57 +1962,57 @@ function MapPropertyHoverPreview({
 
   return (
     <div
-      className="pointer-events-auto absolute bottom-4 left-4 z-20 w-[min(15.5rem,calc(100%-2rem))] overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-[#d7e6df]"
+      className="pointer-events-auto absolute bottom-4 left-4 z-20 w-[min(13.5rem,calc(100%-2rem))] overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-[#d7e6df]"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
       {hasGoldBar && <div className="h-0.5 bg-[#f2b84b]" />}
-      <div className="grid gap-2 p-2.5">
-        <div className="flex min-w-0 gap-2.5">
+      <div className="grid gap-1.5 p-2">
+        <div className="flex min-w-0 gap-2">
           {previewImage ? (
             <img
               src={previewImage}
               alt={property.name || "Property"}
               loading="lazy"
               decoding="async"
-              className="h-14 w-14 shrink-0 rounded-lg bg-[#f5f8f1] object-cover"
+              className="h-11 w-11 shrink-0 rounded-md bg-[#f5f8f1] object-cover"
             />
           ) : (
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] text-[10px] font-black text-[#f2b84b]">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-[#173f3f] text-[9px] font-black text-[#f2b84b]">
               BMA
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-black leading-4 text-[#102426]">
+            <p className="truncate text-xs font-black leading-4 text-[#102426]">
               {property.name || "Property"}
             </p>
-            <p className="mt-0.5 truncate text-[10px] font-bold leading-4 text-[#526260]">
+            <p className="truncate text-[9px] font-bold leading-3 text-[#526260]">
               {locationLabel}
             </p>
-            <p className="mt-0.5 truncate text-[10px] font-black leading-4 text-[#1f6f63]">
+            <p className="truncate text-[9px] font-black leading-3 text-[#1f6f63]">
               {bedsLabel}
             </p>
           </div>
         </div>
 
         {priceSummary.hasSpecial && (
-          <p className="truncate rounded-md bg-[#fff8e6] px-2 py-1 text-[11px] font-black leading-4 text-[#684307] ring-1 ring-[#f2d08a]">
+          <p className="truncate rounded-md bg-[#fff8e6] px-1.5 py-0.5 text-[10px] font-black leading-4 text-[#684307] ring-1 ring-[#f2d08a]">
             {priceSummary.specialLabel}
           </p>
         )}
 
-        <div className="flex items-center justify-between gap-2 border-t border-[#edf4ef] pt-2">
+        <div className="flex items-center justify-between gap-2 border-t border-[#edf4ef] pt-1.5">
           <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase leading-none text-[#526260]">
+            <p className="text-[8px] font-black uppercase leading-none text-[#526260]">
               {rentEyebrow}
             </p>
-            <p className="mt-0.5 truncate text-sm font-black leading-4 text-[#102426]">
+            <p className="mt-0.5 truncate text-xs font-black leading-4 text-[#102426]">
               {rentLabel}
             </p>
           </div>
           <Link
             to={`/properties/${property.id}`}
-            className="shrink-0 rounded-lg bg-[#173f3f] px-2.5 py-1.5 text-[11px] font-black !text-white hover:bg-[#102426] hover:!text-white"
+            className="shrink-0 rounded-md bg-[#173f3f] px-2 py-1 text-[10px] font-black !text-white hover:bg-[#102426] hover:!text-white"
           >
             View
           </Link>
