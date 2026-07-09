@@ -633,13 +633,13 @@ export default function PropertySearchPage() {
       const nextOffset = Math.ceil(topbarHeight + 12);
       const viewportHeight = window.visualViewport?.height || window.innerHeight;
       const mapCardHeaderHeight = 62;
-      const bottomBreathingRoom = hasCompareItems ? 130 : 54;
+      const bottomBreathingRoom = hasCompareItems ? 100 : 24;
       const availableMapHeight =
         viewportHeight -
         nextOffset -
         mapCardHeaderHeight -
         bottomBreathingRoom;
-      const maxMapHeight = hasCompareItems ? 530 : 590;
+      const maxMapHeight = hasCompareItems ? 560 : 620;
       const nextMapHeight = Math.max(
         220,
         Math.min(maxMapHeight, Math.floor(availableMapHeight))
