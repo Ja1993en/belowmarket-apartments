@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getPropertyPrimaryImage } from "../../data/propertySearchData";
 import { formatAvailability as formatAvailabilityLabel } from "../../utils/displayFormatters";
@@ -73,9 +74,10 @@ export default function CompareSavedOptionsPanel({
           <button
             type="button"
             onClick={onClearCompare}
-            className="w-fit rounded-lg border border-[#f2b84b] bg-[#b42318] px-2.5 py-1.5 text-[11px] font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+            className="inline-flex w-fit items-center justify-center gap-1.5 rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-2.5 py-1.5 text-[11px] font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
           >
-            Clear compare
+            <Trash2 className="h-3 w-3 shrink-0" />
+            <span>Clear compare</span>
           </button>
         </div>
       )}
@@ -309,9 +311,10 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) 
                   <button
                     type="button"
                     onClick={() => onRemove(row)}
-                    className="shrink-0 rounded-full border border-[#f2b84b] bg-[#b42318] px-3 py-1 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+                    className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full border border-[#f4b6aa] bg-[#fff0ea]/80 px-3 py-1 text-xs font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
                   >
-                    Remove
+                    <Trash2 className="h-3 w-3 shrink-0" />
+                    <span>Remove</span>
                   </button>
                 )}
               </div>
@@ -355,9 +358,10 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) 
               <button
                 type="button"
                 onClick={() => onRemove(row)}
-                className="rounded-lg border border-[#f2b84b] bg-[#b42318] px-2 py-1.5 text-center text-[11px] font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-2 py-1.5 text-center text-[11px] font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
               >
-                Remove
+                <Trash2 className="h-3 w-3 shrink-0" />
+                <span>Remove</span>
               </button>
             ) : (
               <span className="rounded-xl bg-white px-3 py-2 text-center text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
@@ -485,9 +489,10 @@ function ComparePropertiesTab({
                 <button
                   type="button"
                   onClick={() => onRemove(property.id)}
-                  className={`${actionButtonClass} border border-[#f2b84b] bg-[#b42318] !text-white hover:bg-[#8f1d15] hover:!text-white`}
+                  className={`${actionButtonClass} gap-1.5 border border-[#f4b6aa] bg-[#fff0ea]/80 !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]`}
                 >
-                  Remove
+                  <Trash2 className="h-3 w-3 shrink-0" />
+                  <span>Remove</span>
                 </button>
               </div>
             </div>

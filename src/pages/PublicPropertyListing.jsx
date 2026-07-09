@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { Bath, BedDouble, Building2, Ruler, Scale, Search } from "lucide-react";
+import { Bath, BedDouble, Building2, Ruler, Scale, Search, Trash2 } from "lucide-react";
 import {
     DEFAULT_PROPERTY_IMAGE,
     getPhotoImageUrl,
@@ -2461,9 +2461,10 @@ export default function PublicPropertyListing() {
                                                 <button
                                                     type="button"
                                                     onClick={handleClearCompareBoard}
-                                                    className="w-fit rounded-2xl border border-[#f2b84b] bg-[#b42318] px-4 py-2 text-sm font-bold !text-white hover:bg-[#8f1d15] hover:!text-white"
+                                                    className="inline-flex w-fit items-center justify-center gap-1.5 rounded-2xl border border-[#f4b6aa] bg-[#fff0ea]/80 px-4 py-2 text-sm font-bold !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
                                                 >
-                                                    Clear all
+                                                    <Trash2 className="h-4 w-4 shrink-0" />
+                                                    <span>Clear all</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -3396,9 +3397,10 @@ function CompareChartModal({
                         <button
                             type="button"
                             onClick={onClearCompare}
-                            className="rounded-xl border border-[#f2b84b] bg-[#b42318] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+                            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#f4b6aa] bg-[#fff0ea]/80 px-4 py-2.5 text-sm font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
                         >
-                            Clear all
+                            <Trash2 className="h-4 w-4 shrink-0" />
+                            <span>Clear all</span>
                         </button>
                         <button
                             type="button"
@@ -4514,9 +4516,10 @@ function ComparedFloorPlanCard({
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="flex items-center justify-center rounded-xl border border-[#f2b84b] bg-[#b42318] px-3 py-2 text-xs font-black !text-white hover:bg-[#8f1d15] hover:!text-white"
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-[#f4b6aa] bg-[#fff0ea]/80 px-3 py-2 text-xs font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
                 >
-                    Remove
+                    <Trash2 className="h-3 w-3 shrink-0" />
+                    <span>Remove</span>
                 </button>
             </div>
 
