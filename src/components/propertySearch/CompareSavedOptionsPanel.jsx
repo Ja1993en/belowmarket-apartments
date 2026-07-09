@@ -367,7 +367,6 @@ function ComparePropertiesTab({
     <div className={isSmallCard ? "mt-2.5" : "mt-4"}>
       <div className={isSmallCard ? "grid gap-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
         {rows.map(({ property, priceSummary }) => {
-          const dealScore = getSearchDealScore(property, priceSummary);
           const floorPlanCount = property.floorPlanCount || 0;
           const hasFloorPlans = floorPlanCount > 0;
           const propertyLocation =
@@ -413,9 +412,6 @@ function ComparePropertiesTab({
                         }`}
                       >
                         {hasFloorPlans ? floorPlanLabel : "Property only"}
-                      </span>
-                      <span className="rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[9px] font-black text-[#1f6f63] ring-1 ring-[#a9cfc2]">
-                        {dealScore}/100
                       </span>
                     </div>
                   </div>
