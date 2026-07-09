@@ -47,6 +47,11 @@ export async function onRequest({ request, env }) {
   headers.set("content-type", "text/html; charset=UTF-8");
   headers.delete("content-length");
 
+  if (shouldClearBrowserCache(url)) {
+    headers.set("cache-control", "no-store, no-cache, must-revalidate");
+    headers.set("clear-site-data", '"cache"');
+  }
+
   return new Response(html, {
     status: response.status,
     statusText: response.statusText,
@@ -56,6 +61,10 @@ export async function onRequest({ request, env }) {
 
 function isAssetRequest(pathname) {
   return pathname.startsWith("/assets/");
+}
+
+function shouldClearBrowserCache(url) {
+  return url.searchParams.get("bma_cache_clear") === "1";
 }
 
 function buildMissingAssetResponse() {

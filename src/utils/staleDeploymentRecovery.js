@@ -1,4 +1,4 @@
-const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloadedV3";
+const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloadedV4";
 const STALE_DEPLOYMENT_RELOAD_WINDOW_MS = 15000;
 
 const staleDeploymentErrorPatterns = [
@@ -76,7 +76,50 @@ function isStaleDeploymentError(error) {
   );
 }
 
-function reloadOnceForFreshDeployment(error) {
+async function clearOldCaches() {
+  try {
+    if ("caches" in window) {
+      const cacheNames = await window.caches.keys();
+      await Promise.all(cacheNames.map((cacheName) => window.caches.delete(cacheName)));
+    }
+  } catch {
+    // Reload still fixes normal stale deployment cases if cache cleanup is blocked.
+  }
+
+  try {
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+    }
+  } catch {
+    // Ignore service worker cleanup failures and continue with the reload.
+  }
+}
+
+function getFreshDeploymentUrl() {
+  const freshUrl = new URL(window.location.href);
+
+  freshUrl.searchParams.set("bma_cache_clear", "1");
+  freshUrl.searchParams.set("bma_refresh", String(Date.now()));
+
+  return freshUrl.toString();
+}
+
+function cleanRefreshParams() {
+  const currentUrl = new URL(window.location.href);
+
+  if (!currentUrl.searchParams.has("bma_cache_clear")) return;
+
+  currentUrl.searchParams.delete("bma_cache_clear");
+  currentUrl.searchParams.delete("bma_refresh");
+  window.history.replaceState(
+    null,
+    "",
+    `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
+  );
+}
+
+async function reloadOnceForFreshDeployment(error) {
   if (!isStaleDeploymentError(error)) return;
 
   if (getSessionFlag(STALE_DEPLOYMENT_RELOAD_KEY)) {
@@ -84,7 +127,8 @@ function reloadOnceForFreshDeployment(error) {
   }
 
   setSessionFlag(STALE_DEPLOYMENT_RELOAD_KEY);
-  window.location.reload();
+  await clearOldCaches();
+  window.location.replace(getFreshDeploymentUrl());
 }
 
 export function registerStaleDeploymentRecovery() {
@@ -94,6 +138,7 @@ export function registerStaleDeploymentRecovery() {
   window.addEventListener("unhandledrejection", reloadOnceForFreshDeployment);
   window.addEventListener("load", () => {
     window.setTimeout(() => {
+      cleanRefreshParams();
       removeSessionFlag(STALE_DEPLOYMENT_RELOAD_KEY);
     }, 3000);
   });

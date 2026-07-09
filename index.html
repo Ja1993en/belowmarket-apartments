@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
       (() => {
-        const reloadKey = "bmaInitialAssetReloadedV3";
+        const reloadKey = "bmaInitialAssetReloadedV4";
         const reloadWindowMs = 15000;
         const staleAssetPatterns = [
           "Expected a JavaScript-or-Wasm module script",
@@ -101,19 +101,45 @@
           }
         }
 
+        function getFreshDeploymentUrl() {
+          const freshUrl = new URL(window.location.href);
+
+          freshUrl.searchParams.set("bma_cache_clear", "1");
+          freshUrl.searchParams.set("bma_refresh", String(Date.now()));
+
+          return freshUrl.toString();
+        }
+
+        function cleanRefreshParams() {
+          const currentUrl = new URL(window.location.href);
+
+          if (!currentUrl.searchParams.has("bma_cache_clear")) return;
+
+          currentUrl.searchParams.delete("bma_cache_clear");
+          currentUrl.searchParams.delete("bma_refresh");
+          window.history.replaceState(
+            null,
+            "",
+            `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
+          );
+        }
+
         async function reloadForFreshAssets(event) {
           if (!isStaleAssetError(event)) return;
           if (getSessionFlag(reloadKey)) return;
 
           setSessionFlag(reloadKey);
           await clearOldCaches();
-          window.location.reload();
+          window.location.replace(getFreshDeploymentUrl());
         }
 
         window.addEventListener("error", reloadForFreshAssets, true);
         window.addEventListener("unhandledrejection", reloadForFreshAssets);
         window.addEventListener("load", () => {
-          window.setTimeout(() => removeSessionFlag(reloadKey), 4000);
+          window.setTimeout(() => {
+            cleanRefreshParams();
+            removeSessionFlag(reloadKey);
+          }, 4000);
         });
       })();
     </script>
