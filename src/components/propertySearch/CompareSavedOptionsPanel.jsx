@@ -403,17 +403,13 @@ function ComparePropertiesTab({
                       </p>
                     </div>
 
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[9px] font-black ring-1 ${
-                          hasFloorPlans
-                            ? "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]"
-                            : "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
-                        }`}
-                      >
-                        {hasFloorPlans ? floorPlanLabel : "Property only"}
-                      </span>
-                    </div>
+                    {!hasFloorPlans && (
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span className="rounded-full bg-[#fff8e6] px-2 py-0.5 text-[9px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                          Property only
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <p className={`${isSmallCard ? "mt-1 line-clamp-1 text-[11px]" : "mt-2 line-clamp-2 text-xs"} font-black leading-4 text-[#8a5b0a]`}>
@@ -436,12 +432,27 @@ function ComparePropertiesTab({
                 />
               </div>
 
-              <p className={`${isSmallCard ? "mx-2.5 mb-2 rounded-lg px-2 py-1.5 text-[10px] leading-4" : "mx-3 mb-3 rounded-xl px-3 py-2 text-xs leading-5"} bg-[#fff8e6] font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]`}>
-                {hasFloorPlans
-                  ? "Exact layouts are ready in the Floor Plans tab."
-                  : "Add a floor plan for exact rent, size, and savings."}
-              </p>
-
+              {hasFloorPlans ? (
+                <div className={`${isSmallCard ? "mx-2.5 mb-2 rounded-lg px-2 py-1.5" : "mx-3 mb-3 rounded-xl px-3 py-2"} bg-[#e7f3ee] ring-1 ring-[#a9cfc2]`}>
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#1f6f63] text-[9px] font-black !text-white">
+                      ✓
+                    </span>
+                    <span className="min-w-0">
+                      <span className={`${isSmallCard ? "text-[11px]" : "text-xs"} block font-black text-[#1f6f63]`}>
+                        {floorPlanLabel}
+                      </span>
+                      <span className={`${isSmallCard ? "text-[10px]" : "text-[11px]"} mt-0.5 block font-bold leading-4 text-[#526260]`}>
+                        See exact layout in Floor Plans.
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p className={`${isSmallCard ? "mx-2.5 mb-2 rounded-lg px-2 py-1.5 text-[10px] leading-4" : "mx-3 mb-3 rounded-xl px-3 py-2 text-xs leading-5"} bg-[#fff8e6] font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]`}>
+                  Add a floor plan for exact rent, size, and savings.
+                </p>
+              )}
               <div className={`${isSmallCard ? "grid-cols-2 gap-1.5 px-2.5 py-2.5" : "grid-cols-2 gap-2 px-3 py-3"} grid border-t border-[#edf4ef] bg-[#f5f8f1]`}>
                 <Link
                   to={getFloorPlansRoute(property.id)}
