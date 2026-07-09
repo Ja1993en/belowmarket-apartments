@@ -499,7 +499,7 @@ function CompareDetailsTab({ rows, mode, isCompact }) {
                 <img
                   src={row.image}
                   alt={`${row.title} ${row.type.toLowerCase()} preview`}
-                  className="h-14 w-16 shrink-0 rounded-lg bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                  className="h-20 w-24 shrink-0 rounded-lg bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-black text-[#102426]">
@@ -570,7 +570,7 @@ function CompareDetailsTab({ rows, mode, isCompact }) {
                     <img
                       src={row.image}
                       alt={`${row.title} ${row.type.toLowerCase()} preview`}
-                      className="h-16 w-20 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                      className="h-20 w-28 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
                     />
                     <div className="min-w-0">
                       <p className="max-w-[160px] truncate font-black text-[#102426]">

@@ -4636,7 +4636,7 @@ function CompareDetailsTable({ rows, onRequestFloorPlan, onViewProperty }) {
                                         alt={`${row.title} floor plan`}
                                         loading="lazy"
                                         decoding="async"
-                                        className="h-16 w-16 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                                        className="h-20 w-24 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
                                     />
                                 )}
 
@@ -4713,7 +4713,7 @@ function CompareDetailsTable({ rows, onRequestFloorPlan, onViewProperty }) {
                                                 alt={`${row.title} floor plan`}
                                                 loading="lazy"
                                                 decoding="async"
-                                                className="h-14 w-14 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
+                                                className="h-20 w-24 shrink-0 rounded-xl bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]"
                                             />
                                         )}
 
