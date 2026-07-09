@@ -1,5 +1,8 @@
-const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloadedV5";
-const STALE_DEPLOYMENT_RELOAD_WINDOW_MS = 15000;
+const STALE_DEPLOYMENT_RELOAD_KEY = "bmaStaleDeploymentReloadedV6";
+const STALE_DEPLOYMENT_RELOAD_ATTEMPT_KEY = `${STALE_DEPLOYMENT_RELOAD_KEY}:attempts`;
+const STALE_DEPLOYMENT_MAX_RELOAD_ATTEMPTS = 4;
+const STALE_DEPLOYMENT_RELOAD_RETRY_DELAY_MS = 900;
+const STALE_DEPLOYMENT_RELOAD_WINDOW_MS = 45000;
 
 const staleDeploymentErrorPatterns = [
   "Failed to fetch dynamically imported module",
@@ -46,6 +49,51 @@ function removeSessionFlag(key) {
 
   try {
     sessionStorage.removeItem(key);
+  } catch {
+    // Some iPhone Safari privacy modes block session storage.
+  }
+}
+
+function getUrlReloadAttempt() {
+  try {
+    const urlAttempt = Number(new URL(window.location.href).searchParams.get("bma_retry"));
+
+    return Number.isFinite(urlAttempt) ? urlAttempt : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function getReloadAttempts() {
+  const urlAttempt = getUrlReloadAttempt();
+
+  try {
+    const storedAttempts = Number(sessionStorage.getItem(STALE_DEPLOYMENT_RELOAD_ATTEMPT_KEY));
+    const safeStoredAttempts = Number.isFinite(storedAttempts) ? storedAttempts : 0;
+
+    return Math.max(safeStoredAttempts, urlAttempt);
+  } catch {
+    return Math.max(memoryFlags.has(STALE_DEPLOYMENT_RELOAD_ATTEMPT_KEY) ? 1 : 0, urlAttempt);
+  }
+}
+
+function setReloadAttempts(attemptCount) {
+  if (attemptCount > 0) {
+    memoryFlags.add(STALE_DEPLOYMENT_RELOAD_ATTEMPT_KEY);
+  }
+
+  try {
+    sessionStorage.setItem(STALE_DEPLOYMENT_RELOAD_ATTEMPT_KEY, String(attemptCount));
+  } catch {
+    // Some iPhone Safari privacy modes block session storage.
+  }
+}
+
+function clearReloadAttempts() {
+  memoryFlags.delete(STALE_DEPLOYMENT_RELOAD_ATTEMPT_KEY);
+
+  try {
+    sessionStorage.removeItem(STALE_DEPLOYMENT_RELOAD_ATTEMPT_KEY);
   } catch {
     // Some iPhone Safari privacy modes block session storage.
   }
@@ -119,11 +167,12 @@ async function clearOldCaches() {
   }
 }
 
-function getFreshDeploymentUrl() {
+function getFreshDeploymentUrl(nextReloadAttempt) {
   const freshUrl = new URL(window.location.href);
 
   freshUrl.searchParams.set("bma_cache_clear", "1");
   freshUrl.searchParams.set("bma_refresh", String(Date.now()));
+  freshUrl.searchParams.set("bma_retry", String(nextReloadAttempt));
 
   return freshUrl.toString();
 }
@@ -135,6 +184,7 @@ function cleanRefreshParams() {
 
   currentUrl.searchParams.delete("bma_cache_clear");
   currentUrl.searchParams.delete("bma_refresh");
+  currentUrl.searchParams.delete("bma_retry");
   window.history.replaceState(
     null,
     "",
@@ -145,13 +195,20 @@ function cleanRefreshParams() {
 async function reloadOnceForFreshDeployment(error) {
   if (!isStaleDeploymentError(error)) return;
 
-  if (getSessionFlag(STALE_DEPLOYMENT_RELOAD_KEY)) {
+  const currentReloadAttempts = getReloadAttempts();
+
+  if (currentReloadAttempts >= STALE_DEPLOYMENT_MAX_RELOAD_ATTEMPTS) {
     return;
   }
 
+  const nextReloadAttempt = currentReloadAttempts + 1;
+
+  setReloadAttempts(nextReloadAttempt);
   setSessionFlag(STALE_DEPLOYMENT_RELOAD_KEY);
   await clearOldCaches();
-  window.location.replace(getFreshDeploymentUrl());
+  window.setTimeout(() => {
+    window.location.replace(getFreshDeploymentUrl(nextReloadAttempt));
+  }, currentReloadAttempts === 0 ? 0 : STALE_DEPLOYMENT_RELOAD_RETRY_DELAY_MS);
 }
 
 export function registerStaleDeploymentRecovery() {
@@ -162,7 +219,8 @@ export function registerStaleDeploymentRecovery() {
   window.addEventListener("load", () => {
     window.setTimeout(() => {
       cleanRefreshParams();
+      clearReloadAttempts();
       removeSessionFlag(STALE_DEPLOYMENT_RELOAD_KEY);
-    }, 3000);
+    }, 10000);
   });
 }
