@@ -1,4 +1,5 @@
-import { ArrowRight, BadgeCheck, Sparkles, Trash2 } from "lucide-react";
+import { ArrowRight, BadgeCheck, ChevronDown, ChevronUp, Sparkles, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { getPropertyPrimaryImage } from "../../data/propertySearchData";
 import { formatAvailability as formatAvailabilityLabel } from "../../utils/displayFormatters";
@@ -188,6 +189,8 @@ function CompareDecisionSummary({
   isCompact,
   onBeforeFloorPlanNavigation,
 }) {
+  const [isLocatorPickExpanded, setIsLocatorPickExpanded] = useState(false);
+
   if (rows.length === 0) return null;
 
   const lowestRentRow = rows
@@ -264,6 +267,9 @@ function CompareDecisionSummary({
           value: "Choose exact layouts",
         },
       ];
+  const visibleLocatorPickChips = isLocatorPickExpanded
+    ? locatorPickChips
+    : locatorPickChips.slice(0, 3);
   const standOutItems = hasLocatorPick
     ? [
         {
@@ -328,22 +334,49 @@ function CompareDecisionSummary({
             </p>
           </div>
         </div>
-        <span className={isCompact ? "shrink-0 rounded-full bg-[#f2b84b] px-2 py-1 text-[9px] font-black text-[#102426]" : "shrink-0 rounded-full bg-[#f2b84b] px-3 py-1.5 text-xs font-black text-[#102426]"}>
-          Best first option
-        </span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {!isCompact && (
+            <span className="shrink-0 rounded-full bg-[#f2b84b] px-3 py-1.5 text-xs font-black text-[#102426]">
+              Best first option
+            </span>
+          )}
+          <button
+            type="button"
+            aria-expanded={isLocatorPickExpanded}
+            onClick={() => setIsLocatorPickExpanded((isExpanded) => !isExpanded)}
+            className={isCompact ? "inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-black text-white ring-1 ring-white/20 hover:bg-white/15" : "inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/15"}
+          >
+            <span>{isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
+            {isLocatorPickExpanded ? (
+              <ChevronUp className={isCompact ? "h-3 w-3" : "h-4 w-4"} />
+            ) : (
+              <ChevronDown className={isCompact ? "h-3 w-3" : "h-4 w-4"} />
+            )}
+          </button>
+        </div>
       </div>
 
-      <div className={isCompact ? "grid gap-3 p-3" : "grid gap-4 p-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]"}>
+      <div
+        className={
+          isCompact
+            ? "grid gap-3 p-3"
+            : isLocatorPickExpanded
+              ? "grid gap-4 p-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]"
+              : "p-4"
+        }
+      >
         <div className="min-w-0">
           <h3 className={isCompact ? "text-lg font-black leading-tight text-[#102426]" : "text-2xl font-black leading-tight text-[#102426]"}>
             {locatorPickTitle}
           </h3>
-          <p className={isCompact ? "mt-2 text-xs font-semibold leading-5 text-[#526260]" : "mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]"}>
-            {locatorPickDescription}
-          </p>
+          {isLocatorPickExpanded && (
+            <p className={isCompact ? "mt-2 text-xs font-semibold leading-5 text-[#526260]" : "mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]"}>
+              {locatorPickDescription}
+            </p>
+          )}
 
           <div className={isCompact ? "mt-3 flex flex-wrap gap-1.5" : "mt-4 flex flex-wrap gap-2"}>
-            {locatorPickChips.map((chip) => (
+            {visibleLocatorPickChips.map((chip) => (
               <div
                 key={chip.label}
                 className={isCompact ? "rounded-lg bg-[#f5f8f1] px-2 py-1.5 ring-1 ring-[#d7e6df]" : "rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]"}
@@ -358,49 +391,53 @@ function CompareDecisionSummary({
             ))}
           </div>
 
-          <div className={isCompact ? "mt-3 grid grid-cols-2 gap-1.5" : "mt-4 flex flex-wrap gap-2"}>
-            <Link
-              to={locatorPickLink}
-              onClick={() => {
-                if (locatorPickLink.includes("floor-plans")) {
-                  rememberFloorPlanSectionTarget();
-                }
-                onBeforeFloorPlanNavigation?.();
-              }}
-              className={isCompact ? "inline-flex items-center justify-center gap-1 rounded-lg bg-[#173f3f] px-3 py-2 text-[11px] font-black !text-white hover:bg-[#102426] hover:!text-white" : "inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"}
-            >
-              <span>{hasLocatorPick ? "View floor plan" : "Add floor plan"}</span>
-              <ArrowRight className={isCompact ? "h-3 w-3" : "h-4 w-4"} />
-            </Link>
-            <Link
-              to="/start"
-              className={isCompact ? "inline-flex items-center justify-center rounded-lg bg-[#f2b84b] px-3 py-2 text-[11px] font-black text-[#102426] hover:bg-[#dca33c]" : "inline-flex items-center justify-center rounded-xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black text-[#102426] hover:bg-[#dca33c]"}
-            >
-              Request tour
-            </Link>
-          </div>
+          {isLocatorPickExpanded && (
+            <div className={isCompact ? "mt-3 grid grid-cols-2 gap-1.5" : "mt-4 flex flex-wrap gap-2"}>
+              <Link
+                to={locatorPickLink}
+                onClick={() => {
+                  if (locatorPickLink.includes("floor-plans")) {
+                    rememberFloorPlanSectionTarget();
+                  }
+                  onBeforeFloorPlanNavigation?.();
+                }}
+                className={isCompact ? "inline-flex items-center justify-center gap-1 rounded-lg bg-[#173f3f] px-3 py-2 text-[11px] font-black !text-white hover:bg-[#102426] hover:!text-white" : "inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"}
+              >
+                <span>{hasLocatorPick ? "View floor plan" : "Add floor plan"}</span>
+                <ArrowRight className={isCompact ? "h-3 w-3" : "h-4 w-4"} />
+              </Link>
+              <Link
+                to="/start"
+                className={isCompact ? "inline-flex items-center justify-center rounded-lg bg-[#f2b84b] px-3 py-2 text-[11px] font-black text-[#102426] hover:bg-[#dca33c]" : "inline-flex items-center justify-center rounded-xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black text-[#102426] hover:bg-[#dca33c]"}
+              >
+                Request tour
+              </Link>
+            </div>
+          )}
         </div>
 
-        <div className={isCompact ? "rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]" : "rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]"}>
-          <p className={isCompact ? "text-xs font-black text-[#102426]" : "text-sm font-black text-[#102426]"}>
-            Why this stands out
-          </p>
-          <div className={isCompact ? "mt-2 grid gap-2" : "mt-3 grid gap-3"}>
-            {standOutItems.slice(0, 3).map((item) => (
-              <div key={item.label} className="flex gap-2">
-                <BadgeCheck className={isCompact ? "mt-0.5 h-4 w-4 shrink-0 text-[#1f6f63]" : "mt-0.5 h-5 w-5 shrink-0 text-[#1f6f63]"} />
-                <div className="min-w-0">
-                  <p className={isCompact ? "text-[11px] font-black text-[#173f3f]" : "text-sm font-black text-[#173f3f]"}>
-                    {item.label}
-                  </p>
-                  <p className={isCompact ? "mt-0.5 line-clamp-2 text-[10px] font-semibold leading-4 text-[#526260]" : "mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[#526260]"}>
-                    {item.text}
-                  </p>
+        {isLocatorPickExpanded && (
+          <div className={isCompact ? "rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]" : "rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]"}>
+            <p className={isCompact ? "text-xs font-black text-[#102426]" : "text-sm font-black text-[#102426]"}>
+              Why this stands out
+            </p>
+            <div className={isCompact ? "mt-2 grid gap-2" : "mt-3 grid gap-3"}>
+              {standOutItems.slice(0, 3).map((item) => (
+                <div key={item.label} className="flex gap-2">
+                  <BadgeCheck className={isCompact ? "mt-0.5 h-4 w-4 shrink-0 text-[#1f6f63]" : "mt-0.5 h-5 w-5 shrink-0 text-[#1f6f63]"} />
+                  <div className="min-w-0">
+                    <p className={isCompact ? "text-[11px] font-black text-[#173f3f]" : "text-sm font-black text-[#173f3f]"}>
+                      {item.label}
+                    </p>
+                    <p className={isCompact ? "mt-0.5 line-clamp-2 text-[10px] font-semibold leading-4 text-[#526260]" : "mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[#526260]"}>
+                      {item.text}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
