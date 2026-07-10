@@ -2241,30 +2241,30 @@ export default function PublicPropertyListing() {
 
         <main className="min-h-screen bg-[#f5f8f1] pb-32 text-[#102426] md:pb-32">
             <header className="sticky top-0 z-40 border-b border-[#d7e6df] bg-white/95 shadow-sm backdrop-blur">
-                <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 py-2 md:px-6">
-                    <Link to="/" className="flex min-w-0 items-center gap-2.5">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] text-[11px] font-black text-[#f2b84b]">
-                            BMA
-                        </span>
-                        <span className="hidden truncate text-sm font-black text-[#102426] sm:block">
-                            Below Market Apartments
-                        </span>
-                    </Link>
+                <div className="mx-auto max-w-7xl px-4 py-2 md:px-6">
+                    <div className="mb-1.5 flex items-center justify-between gap-3">
+                        <Link to="/" className="flex min-w-0 items-center gap-2">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] text-[10px] font-black text-[#f2b84b]">
+                                BMA
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block truncate text-sm font-black text-[#102426]">
+                                    Below Market Apartments
+                                </span>
+                                <span className="block text-xs font-bold text-[#526260]">
+                                    Verified specials, ranked by deal value
+                                </span>
+                            </span>
+                        </Link>
 
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setLeadRequestFloorPlan(null);
-                            setLeadSubmitted(false);
-                            setLeadForm(getEmptyLeadForm());
-                            setShowMobileIntakeModal(true);
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-[#f2b84b] px-3.5 py-2.5 text-xs font-black text-[#102426] hover:bg-[#f9d783] md:hidden"
-                    >
-                        <Search className="h-3.5 w-3.5" aria-hidden="true" />
-                        Ask an Apartment Locator
-                    </button>
-
+                        <Link
+                            to="/start"
+                            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#f2b84b] px-3 py-2 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
+                        >
+                            <Search className="h-3.5 w-3.5" aria-hidden="true" />
+                            Ask a Locator
+                        </Link>
+                    </div>
                 </div>
             </header>
 
