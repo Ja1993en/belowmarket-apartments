@@ -1306,10 +1306,10 @@ export default function PropertySearchPage() {
               <div className="flex shrink-0 items-center gap-1.5">
                 <Link
                   to="/start"
-                  className="inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[#f2b84b] px-2.5 text-[10px] font-black !text-[#102426] ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:h-9 sm:px-3 sm:text-xs"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#f2b84b] px-3 py-2 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
                 >
-                  <Search className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden="true" />
-                  <span>Ask a Locator</span>
+                  <Search className="h-3.5 w-3.5" aria-hidden="true" />
+                  Ask a Locator
                 </Link>
 
                 <button
