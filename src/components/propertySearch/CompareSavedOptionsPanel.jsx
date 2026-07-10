@@ -227,7 +227,7 @@ function CompareDecisionSummary({
   const selectedSummary = `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"} • ${propertyCount} propert${propertyCount === 1 ? "y" : "ies"}`;
   const summaryItems = [
     {
-      label: "Lowest estimate",
+      label: "Lowest after-special rent",
       value: lowestRentRow?.effectiveRent || lowestRentRow?.normalRent || "Verify",
       note: lowestRentRow?.title || "Select priced options",
       tone: "green",
