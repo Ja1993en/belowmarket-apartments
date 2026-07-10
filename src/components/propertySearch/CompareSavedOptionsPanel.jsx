@@ -850,6 +850,9 @@ function CompareDetailsTab({ rows, mode, isCompact, onBeforeFloorPlanNavigation 
 }
 
 function CompareTile({ label, value, highlight = false, isCompact = false }) {
+  const displayLabel =
+    label === "Listed" ? "Listed rent" : label === "Estimated" ? "Estimated rent" : label;
+
   return (
     <div
       className={`${isCompact ? "rounded-lg px-2 py-1.5" : "rounded-xl px-3 py-2"} ${
@@ -858,7 +861,7 @@ function CompareTile({ label, value, highlight = false, isCompact = false }) {
           : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df]"
       }`}
     >
-      <p className={`${isCompact ? "text-[8px]" : "text-[10px]"} font-black uppercase`}>{label}</p>
+      <p className={`${isCompact ? "text-[8px]" : "text-[10px]"} whitespace-nowrap font-black uppercase`}>{displayLabel}</p>
       <p className={`${isCompact ? "mt-0.5 text-[10px] sm:text-[11px]" : "mt-1 text-xs sm:text-sm"} whitespace-nowrap font-black leading-tight`}>{value}</p>
     </div>
   );
