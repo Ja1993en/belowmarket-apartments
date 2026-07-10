@@ -298,12 +298,29 @@ export default function PropertySearchPage() {
   );
   const compareFloorPlanRows = useMemo(
     () =>
-      compareFloorPlanItems.map((item) => ({
-        ...item,
-        compareKey: getCompareFloorPlanItemKey(item),
-        property:
-          properties.find((property) => property.id === item.propertyId) || null,
-      })),
+      compareFloorPlanItems.map((item) => {
+        const property =
+          properties.find((propertyItem) => propertyItem.id === item.propertyId) || null;
+        const floorPlan = findSearchCompareFloorPlan(property, item);
+        const rent =
+          item.rent || floorPlan?.totalMonthlyRent || floorPlan?.rent || floorPlan?.startingRent || "";
+        const effectiveRent =
+          item.effectiveRent || floorPlan?.effectiveRent || rent;
+        const special =
+          item.special || floorPlan?.special?.label || floorPlan?.currentSpecial || "";
+
+        return {
+          ...item,
+          rent,
+          normalRent: rent,
+          effectiveRent,
+          special,
+          available: item.available || floorPlan?.available || floorPlan?.availability || "",
+          compareKey: getCompareFloorPlanItemKey(item),
+          property,
+          floorPlan,
+        };
+      }),
     [compareFloorPlanItems, properties]
   );
   const propertyCompareRows = useMemo(
@@ -3567,26 +3584,26 @@ function getSelectedComparePriceSummary(property, selectedFloorPlanRows = []) {
   if (selectedFloorPlanRows.length === 0) return propertyPriceSummary;
 
   const normalRentValues = selectedFloorPlanRows.flatMap((row) =>
-    parseCurrencyValues(row.rent || row.normalRent)
+    getSelectedCompareFloorPlanNormalRentValues(property, row)
   );
   const effectiveRentValues = selectedFloorPlanRows.flatMap((row) =>
-    parseCurrencyValues(row.effectiveRent || row.rent || row.normalRent)
+    getSelectedCompareFloorPlanEffectiveRentValues(property, row)
   );
   const specialLabels = [
     ...new Set(
       selectedFloorPlanRows
-        .map((row) => row.special)
+        .map((row) => getSelectedCompareFloorPlanSpecialLabel(property, row))
         .filter((label) => label && label !== "No special listed" && label !== "Special not listed")
     ),
   ];
+  const hasSelectedRentSpecial = selectedFloorPlanRows.some((row) =>
+    hasSelectedCompareFloorPlanRentSpecial(property, row)
+  );
 
   return {
     ...propertyPriceSummary,
     hasSpecial: specialLabels.length > 0 || propertyPriceSummary.hasSpecial,
-    hasRentSpecial:
-      effectiveRentValues.length > 0 &&
-      normalRentValues.length > 0 &&
-      Math.min(...effectiveRentValues) < Math.max(...normalRentValues),
+    hasRentSpecial: hasSelectedRentSpecial,
     normalRentLabel: formatSelectedCompareRentRange(
       normalRentValues,
       propertyPriceSummary.normalRentLabel
@@ -3600,6 +3617,59 @@ function getSelectedComparePriceSummary(property, selectedFloorPlanRows = []) {
       : propertyPriceSummary.specialLabel,
     isSelectedFloorPlanSummary: true,
   };
+}
+
+function getSelectedCompareFloorPlanNormalRentValues(property, row) {
+  if (row.floorPlan) {
+    const floorPlanRentValues = getSearchFloorPlanListedRentValues(property, row.floorPlan);
+    if (floorPlanRentValues.length > 0) return floorPlanRentValues;
+  }
+
+  return parseCurrencyValues(row.normalRent || row.rent);
+}
+
+function getSelectedCompareFloorPlanEffectiveRentValues(property, row) {
+  if (row.floorPlan) {
+    const floorPlanEffectiveRentValues = getSearchFloorPlanEffectiveRentValues(
+      property,
+      row.floorPlan
+    );
+
+    if (floorPlanEffectiveRentValues.length > 0) return floorPlanEffectiveRentValues;
+  }
+
+  const enteredEffectiveRentValues = parseCurrencyValues(row.effectiveRent);
+  if (enteredEffectiveRentValues.length > 0) return enteredEffectiveRentValues;
+
+  return getSelectedCompareFloorPlanNormalRentValues(property, row);
+}
+
+function getSelectedCompareFloorPlanSpecialLabel(property, row) {
+  return (
+    row.special ||
+    row.floorPlan?.currentSpecial ||
+    row.floorPlan?.special?.label ||
+    property?.special ||
+    ""
+  );
+}
+
+function hasSelectedCompareFloorPlanRentSpecial(property, row) {
+  if (row.floorPlan) {
+    const floorPlanEffectiveRentValues = getSearchFloorPlanEffectiveRentValues(
+      property,
+      row.floorPlan
+    );
+
+    if (floorPlanEffectiveRentValues.length > 0) return true;
+  }
+
+  const normalRentValues = getSelectedCompareFloorPlanNormalRentValues(property, row);
+  const effectiveRentValues = parseCurrencyValues(row.effectiveRent);
+
+  if (normalRentValues.length === 0 || effectiveRentValues.length === 0) return false;
+
+  return Math.min(...effectiveRentValues) < Math.min(...normalRentValues);
 }
 
 function formatSelectedCompareRentRange(values, fallback = "Contact for pricing") {
@@ -3798,6 +3868,35 @@ function isAvailableSearchFloorPlan(floorPlan) {
   }
 
   return true;
+}
+
+function findSearchCompareFloorPlan(property, item) {
+  if (!property || !item) return null;
+
+  const itemKey = getCompareFloorPlanItemKey(item);
+
+  return (
+    getSearchFloorPlans(property).find((floorPlan) => {
+      const floorPlanId = String(
+        floorPlan.id || getSearchFloorPlanCompareId(floorPlan.name)
+      );
+
+      return (
+        getCompareFloorPlanItemKey({
+          propertyId: property.id,
+          floorPlanId,
+        }) === itemKey
+      );
+    }) || null
+  );
+}
+
+function getSearchFloorPlanCompareId(name) {
+  return String(name || "floor-plan")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function getSearchFloorPlans(property) {

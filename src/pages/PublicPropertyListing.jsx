@@ -984,7 +984,7 @@ export default function PublicPropertyListing() {
     useEffect(() => {
         let isMounted = true;
 
-        getPublicPropertySummaries()
+        getPublicPropertySummaries({ includeFloorPlans: true })
             .then((savedProperties) => {
                 if (isMounted) setCompareProperties(savedProperties);
             })
@@ -1268,14 +1268,33 @@ export default function PublicPropertyListing() {
         compareFloorPlanItems.map((item) => getCompareFloorPlanItemKey(item))
     );
     const floorPlanCompareRows = compareFloorPlanItems.map((item) => {
-        const matchingFloorPlan =
+        const matchingProperty =
+            compareProperties.find((compareProperty) => compareProperty.id === item.propertyId) ||
+            (item.propertyId === property?.id ? property : null);
+        const matchingFloorPlans =
             item.propertyId === property?.id
-                ? listingFloorPlans.find(
+                ? listingFloorPlans
+                : matchingProperty?.floorPlans || [];
+        const matchingFloorPlan =
+            matchingProperty
+                ? matchingFloorPlans.find(
                     (plan) =>
-                        getCompareFloorPlanItemKey(getFloorPlanCompareItem(property, plan)) ===
+                        getCompareFloorPlanItemKey(getFloorPlanCompareItem(matchingProperty, plan)) ===
                         getCompareFloorPlanItemKey(item)
                 )
                 : null;
+        const listedRent =
+            item.rent ||
+            matchingFloorPlan?.totalMonthlyRent ||
+            matchingFloorPlan?.rent ||
+            matchingFloorPlan?.startingRent ||
+            "Contact";
+        const estimatedRent =
+            item.effectiveRent ||
+            matchingFloorPlan?.effectiveRent ||
+            listedRent;
+        const availableValue =
+            item.available || matchingFloorPlan?.available || matchingFloorPlan?.availability || "";
 
         return {
             id: getCompareFloorPlanItemKey(item),
@@ -1290,14 +1309,18 @@ export default function PublicPropertyListing() {
             beds: formatBedroomLabel(item.beds, item.floorPlanName),
             baths: formatBathroomLabel(item.baths),
             sqft: item.sqft ? `${item.sqft} sq ft` : "Sq ft not listed",
-            rent: item.rent || "Contact",
-            normalRent: item.rent || "Contact",
-            effectiveRent: item.effectiveRent || item.rent || "Contact",
-            special: item.special || "No special listed",
-            available: item.available,
-            availability: formatAvailabilityLabel(item.available) || "Availability not listed",
+            rent: listedRent,
+            normalRent: listedRent,
+            effectiveRent: estimatedRent,
+            special:
+                item.special ||
+                matchingFloorPlan?.special?.label ||
+                matchingFloorPlan?.currentSpecial ||
+                "No special listed",
+            available: availableValue,
+            availability: formatAvailabilityLabel(availableValue) || "Availability not listed",
             availabilityLink: getFloorPlansRoute(item.propertyId),
-            savings: getCompareSavingsLabel(item.rent, item.effectiveRent),
+            savings: getCompareSavingsLabel(listedRent, estimatedRent),
             image: item.image || matchingFloorPlan?.image || "",
             linkTo: getFloorPlansRoute(item.propertyId),
             actionLabel: "View floor plans",
@@ -4404,10 +4427,11 @@ function getFloorPlanCompareItem(property, plan) {
         beds: plan.beds,
         baths: plan.baths,
         sqft: plan.sqft,
-        rent: plan.rent,
-        effectiveRent: plan.effectiveRent,
+        rent: plan.totalMonthlyRent || plan.rent || plan.startingRent || "",
+        effectiveRent:
+            plan.effectiveRent || plan.totalMonthlyRent || plan.rent || plan.startingRent || "",
         special: specialLabel,
-        available: plan.available,
+        available: plan.available || plan.availability || "",
         image: plan.image || getPropertyPrimaryImage(property),
     };
 }
@@ -5381,6 +5405,25 @@ function getSelectedPropertyComparePriceSummary(property, selectedFloorPlanRows 
 
     if (selectedFloorPlanRows.length === 0) return propertyPriceSummary;
 
+    const selectedFloorPlans = selectedFloorPlanRows
+        .map((row) => row.floorPlan)
+        .filter(Boolean);
+
+    if (selectedFloorPlans.length > 0) {
+        return {
+            ...propertyPriceSummary,
+            ...getPropertyLevelRentSummary({
+                effectiveRentLabel: propertyPriceSummary.effectiveRentLabel,
+                hasPropertySpecial: Boolean(property.special || property.specialLabel),
+                listingFloorPlans: selectedFloorPlans,
+                propertySpecialLabel:
+                    property.special?.label || property.special || property.specialLabel || "",
+                startingRentLabel: propertyPriceSummary.normalRentLabel,
+            }),
+            isSelectedFloorPlanSummary: true,
+        };
+    }
+
     const normalRentValues = selectedFloorPlanRows.flatMap((row) =>
         parseCurrencyValues(row.normalRent || row.rent)
     );
@@ -5588,7 +5631,11 @@ function getPropertyLevelRentSummary({
             return [
                 createPropertySummaryRow({
                     floorPlan,
-                    rentLabel: floorPlan.rent || startingRentLabel,
+                    rentLabel:
+                        floorPlan.totalMonthlyRent ||
+                        floorPlan.rent ||
+                        floorPlan.startingRent ||
+                        startingRentLabel,
                     specialFallbackLabel: propertySpecialLabel,
                 }),
             ];
@@ -5597,7 +5644,12 @@ function getPropertyLevelRentSummary({
         return availableUnits.map((unit) =>
             createPropertySummaryRow({
                 floorPlan,
-                rentLabel: unit.rent || floorPlan.rent || startingRentLabel,
+                rentLabel:
+                    unit.rent ||
+                    floorPlan.totalMonthlyRent ||
+                    floorPlan.rent ||
+                    floorPlan.startingRent ||
+                    startingRentLabel,
                 unit,
                 specialFallbackLabel: propertySpecialLabel,
             })
@@ -5643,7 +5695,9 @@ function createPropertySummaryRow({
     specialFallbackLabel,
     unit,
 }) {
-    const normalRent = parseCurrency(rentLabel || floorPlan.rent);
+    const normalRent = parseCurrency(
+        rentLabel || floorPlan.totalMonthlyRent || floorPlan.rent || floorPlan.startingRent
+    );
     const specialLabel =
         unit?.currentSpecial ||
         unit?.special?.label ||
