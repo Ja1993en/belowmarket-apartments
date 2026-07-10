@@ -331,7 +331,7 @@ function CompareDecisionSummary({
             onClick={() => setIsLocatorPickExpanded((isExpanded) => !isExpanded)}
             className={isCompact ? "inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-black text-white ring-1 ring-white/20 hover:bg-white/15" : "inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-center text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/15 sm:rounded-full"}
           >
-            <span className="text-white/75">{isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
+            <span>{isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
             {isLocatorPickExpanded ? (
               <ChevronUp className={isCompact ? "h-3 w-3" : "h-4 w-4"} />
             ) : (
