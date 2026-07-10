@@ -200,23 +200,8 @@ function CompareDecisionSummary({
     }))
     .filter((row) => row.rentNumber > 0)
     .sort((firstRow, secondRow) => firstRow.rentNumber - secondRow.rentNumber)[0];
-  const bestValueRow = rows
-    .filter(isCompareFloorPlanRow)
-    .map((row) => {
-      const rentNumber = parseCompareMoney(row.effectiveRent || row.normalRent);
-      const sqftNumber = parseCompareNumber(row.sqft);
-
-      if (!(rentNumber > 0 && sqftNumber > 0)) return null;
-
-      return {
-        ...row,
-        rentNumber,
-        sqftNumber,
-        rentPerSqft: rentNumber / sqftNumber,
-      };
-    })
-    .filter(Boolean)
-    .sort((firstRow, secondRow) => firstRow.rentPerSqft - secondRow.rentPerSqft)[0];
+  const locatorScoreRows = getLocatorScoreRows(rows);
+  const locatorScoreRow = locatorScoreRows[0];
   const bestSpecialRow = rows.find((row) => isMeaningfulCompareSpecial(row.special));
   const selectedCount = floorPlanCount + propertyCount;
   const selectedSummary =
@@ -227,14 +212,14 @@ function CompareDecisionSummary({
     propertyCount +
     " propert" +
     (propertyCount === 1 ? "y" : "ies");
-  const hasLocatorPick = Boolean(bestValueRow);
-  const locatorPickRow = bestValueRow || lowestRentRow || bestSpecialRow || rows[0];
+  const hasLocatorPick = Boolean(locatorScoreRow);
+  const locatorPickRow = locatorScoreRow || lowestRentRow || bestSpecialRow || rows[0];
   const locatorPickLink = locatorPickRow?.linkTo || "/properties";
   const locatorPickTitle = hasLocatorPick
     ? getCompareOptionTitle(locatorPickRow)
     : "Add floor plans to unlock locator pick";
   const locatorPickDescription = hasLocatorPick
-    ? "Best first option based on after-special rent, value per square foot, and current special."
+    ? "Best first option based on after-special rent, listed rent, value per square foot, availability, and current special."
     : "Exact floor plans let BMA compare rent, size, and savings like a locator would.";
   const locatorPickChips = hasLocatorPick
     ? [
@@ -273,8 +258,8 @@ function CompareDecisionSummary({
   const standOutItems = hasLocatorPick
     ? [
         {
-          label: "Best value per sq ft",
-          text: "$" + locatorPickRow.rentPerSqft.toFixed(2) + " per sq ft among selected plans.",
+          label: "Best overall locator score",
+          text: "Strongest mix of rent, size, availability, and special strength."
         },
         isMeaningfulCompareSpecial(locatorPickRow.special)
           ? {
@@ -880,6 +865,90 @@ function CompareTile({ label, value, highlight = false, isCompact = false }) {
     </div>
   );
 }
+function getLocatorScoreRows(rows) {
+  const candidates = rows
+    .filter(isCompareFloorPlanRow)
+    .map((row) => {
+      const rentNumber = parseCompareMoney(row.effectiveRent || row.normalRent);
+      const listedRentNumber = parseCompareMoney(row.normalRent || row.effectiveRent);
+      const sqftNumber = parseCompareNumber(row.sqft);
+
+      if (!(rentNumber > 0 && sqftNumber > 0)) return null;
+
+      return {
+        ...row,
+        rentNumber,
+        listedRentNumber,
+        sqftNumber,
+        rentPerSqft: rentNumber / sqftNumber,
+        specialStrength: getCompareSpecialStrength(row.special),
+        availabilityCount: getCompareAvailabilityCount(row.availability),
+      };
+    })
+    .filter(Boolean);
+
+  if (candidates.length === 0) return [];
+
+  return candidates
+    .map((row) => ({
+      ...row,
+      locatorScore:
+        getLowerNumberScore(row.rentNumber, candidates.map((candidate) => candidate.rentNumber)) * 0.28 +
+        getLowerNumberScore(row.rentPerSqft, candidates.map((candidate) => candidate.rentPerSqft)) * 0.24 +
+        getHigherNumberScore(row.specialStrength, candidates.map((candidate) => candidate.specialStrength)) * 0.2 +
+        getLowerNumberScore(row.listedRentNumber, candidates.map((candidate) => candidate.listedRentNumber)) * 0.12 +
+        getHigherNumberScore(row.availabilityCount, candidates.map((candidate) => candidate.availabilityCount)) * 0.08 +
+        getHigherNumberScore(row.sqftNumber, candidates.map((candidate) => candidate.sqftNumber)) * 0.08,
+    }))
+    .sort((firstRow, secondRow) => secondRow.locatorScore - firstRow.locatorScore);
+}
+
+function getLowerNumberScore(value, values) {
+  const validValues = values.filter((number) => number > 0);
+  const minValue = Math.min(...validValues);
+  const maxValue = Math.max(...validValues);
+
+  if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) return 0;
+  if (minValue === maxValue) return 100;
+
+  return ((maxValue - value) / (maxValue - minValue)) * 100;
+}
+
+function getHigherNumberScore(value, values) {
+  const validValues = values.filter((number) => number > 0);
+  const minValue = Math.min(...validValues);
+  const maxValue = Math.max(...validValues);
+
+  if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) return 0;
+  if (minValue === maxValue) return 100;
+
+  return ((value - minValue) / (maxValue - minValue)) * 100;
+}
+
+function getCompareSpecialStrength(value) {
+  const specialText = String(value || "").toLowerCase();
+  let score = 0;
+  const weeksMatch = specialText.match(/(\d+(?:\.\d+)?)\s*(?:week|weeks)/);
+  const dollarsMatch = specialText.match(/\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)/);
+
+  if (weeksMatch) score += Number(weeksMatch[1]) * 12;
+  if (dollarsMatch) score += Math.min(Number(dollarsMatch[1].replace(/,/g, "")) / 25, 25);
+  if (/free/.test(specialText)) score += 10;
+  if (/waiv|waived|app|admin|deposit|\$0|zero deposit|no deposit/.test(specialText)) score += 8;
+
+  return score;
+}
+
+function getCompareAvailabilityCount(value) {
+  const availabilityText = String(value || "").toLowerCase();
+  const numericValue = parseCompareNumber(availabilityText);
+
+  if (numericValue > 0) return Math.min(numericValue, 12);
+  if (/available|ready|now/.test(availabilityText)) return 1;
+
+  return 0;
+}
+
 function isCompareFloorPlanRow(row) {
   const rowType = String(row?.type || "").toLowerCase();
 
