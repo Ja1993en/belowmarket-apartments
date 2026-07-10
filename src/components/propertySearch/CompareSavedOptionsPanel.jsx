@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { ArrowRight, BadgeCheck, Sparkles, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getPropertyPrimaryImage } from "../../data/propertySearchData";
 import { formatAvailability as formatAvailabilityLabel } from "../../utils/displayFormatters";
@@ -88,6 +88,7 @@ export default function CompareSavedOptionsPanel({
         floorPlanCount={compareFloorPlanRows.length}
         propertyCount={propertyCompareRows.length}
         isCompact={isCompact}
+        onBeforeFloorPlanNavigation={onBeforeFloorPlanNavigation}
       />
 
       <div className={`${isCompact ? "grid grid-cols-3 gap-1" : "mt-4 grid grid-cols-3 gap-1.5 sm:gap-2"}`}>
@@ -185,6 +186,7 @@ function CompareDecisionSummary({
   floorPlanCount,
   propertyCount,
   isCompact,
+  onBeforeFloorPlanNavigation,
 }) {
   if (rows.length === 0) return null;
 
@@ -205,93 +207,262 @@ function CompareDecisionSummary({
 
       return {
         ...row,
+        rentNumber,
+        sqftNumber,
         rentPerSqft: rentNumber / sqftNumber,
       };
     })
     .filter(Boolean)
     .sort((firstRow, secondRow) => firstRow.rentPerSqft - secondRow.rentPerSqft)[0];
-  const bestValueTitle = bestValueRow
-    ? `${bestValueRow.title}${bestValueRow.propertyName ? ` at ${bestValueRow.propertyName}` : ""}`
-    : floorPlanCount > 0
-      ? "Need rent + sq ft"
-      : "Add floor plans";
-  const bestValueNote = bestValueRow
-    ? [bestValueRow.beds, bestValueRow.sqft, `$${bestValueRow.rentPerSqft.toFixed(2)}/sq ft`]
-        .filter(Boolean)
-        .join(" • ")
-    : floorPlanCount > 0
-      ? "Value needs pricing and size"
-      : "Exact layouts unlock value score";
   const bestSpecialRow = rows.find((row) => isMeaningfulCompareSpecial(row.special));
   const selectedCount = floorPlanCount + propertyCount;
-  const selectedSummary = `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"} • ${propertyCount} propert${propertyCount === 1 ? "y" : "ies"}`;
+  const selectedSummary =
+    floorPlanCount +
+    " floor plan" +
+    (floorPlanCount === 1 ? "" : "s") +
+    " • " +
+    propertyCount +
+    " propert" +
+    (propertyCount === 1 ? "y" : "ies");
+  const hasLocatorPick = Boolean(bestValueRow);
+  const locatorPickRow = bestValueRow || lowestRentRow || bestSpecialRow || rows[0];
+  const locatorPickLink = locatorPickRow?.linkTo || "/properties";
+  const locatorPickTitle = hasLocatorPick
+    ? getCompareOptionTitle(locatorPickRow)
+    : "Add floor plans to unlock locator pick";
+  const locatorPickDescription = hasLocatorPick
+    ? "Best first option based on after-special rent, value per square foot, and current special."
+    : "Exact floor plans let BMA compare rent, size, and savings like a locator would.";
+  const locatorPickChips = hasLocatorPick
+    ? [
+        {
+          label: "After special",
+          value: locatorPickRow.effectiveRent || locatorPickRow.normalRent || "Verify",
+        },
+        {
+          label: "Value",
+          value: "$" + locatorPickRow.rentPerSqft.toFixed(2) + "/sq ft",
+        },
+        {
+          label: "Layout",
+          value: [locatorPickRow.beds, locatorPickRow.sqft].filter(Boolean).join(" • "),
+        },
+        isMeaningfulCompareSpecial(locatorPickRow.special)
+          ? {
+              label: "Special",
+              value: locatorPickRow.special,
+            }
+          : null,
+      ].filter(Boolean)
+    : [
+        {
+          label: "Selected",
+          value: selectedSummary,
+        },
+        {
+          label: "Next step",
+          value: "Choose exact layouts",
+        },
+      ];
+  const standOutItems = hasLocatorPick
+    ? [
+        {
+          label: "Best value per sq ft",
+          text: "$" + locatorPickRow.rentPerSqft.toFixed(2) + " per sq ft among selected plans.",
+        },
+        isMeaningfulCompareSpecial(locatorPickRow.special)
+          ? {
+              label: "Current special",
+              text: locatorPickRow.special,
+            }
+          : bestSpecialRow
+            ? {
+                label: "Strongest special",
+                text: bestSpecialRow.special,
+              }
+            : null,
+        lowestRentRow
+          ? {
+              label: "Lowest after-special rent",
+              text: lowestRentRow.effectiveRent || lowestRentRow.normalRent || "Verify pricing",
+            }
+          : null,
+      ].filter(Boolean)
+    : [
+        {
+          label: "Needs exact floor plans",
+          text: "Pick a layout so BMA can compare real rent, size, and specials.",
+        },
+        bestSpecialRow
+          ? {
+              label: "Strongest special so far",
+              text: bestSpecialRow.special,
+            }
+          : null,
+      ].filter(Boolean);
   const summaryItems = [
     {
-      label: "Lowest after-special rent",
+      label: "Lowest after-special",
       value: lowestRentRow?.effectiveRent || lowestRentRow?.normalRent || "Verify",
-      note: lowestRentRow?.title || "Select priced options",
+      note: lowestRentRow ? getCompareOptionShortTitle(lowestRentRow) : "Select priced options",
       tone: "green",
     },
     {
       label: "Strongest special",
       value: bestSpecialRow?.special || "No special listed",
-      note: bestSpecialRow?.title || "Ask what applies",
+      note: bestSpecialRow ? getCompareOptionShortTitle(bestSpecialRow) : "Ask what applies",
       tone: "gold",
     },
     {
       label: "Best value",
-      value: bestValueTitle,
-      note: bestValueNote,
+      value: bestValueRow ? "$" + bestValueRow.rentPerSqft.toFixed(2) + "/sq ft" : "Add floor plans",
+      note: bestValueRow ? getCompareOptionShortTitle(bestValueRow) : "Exact layouts unlock score",
       tone: bestValueRow ? "value" : "sage",
     },
   ];
 
   return (
-    <div
+    <section
       className={
         isCompact
-          ? "mt-2 rounded-xl bg-white p-2 ring-1 ring-[#d7e6df]"
-          : "mt-4 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]"
+          ? "mt-2 overflow-hidden rounded-xl bg-white ring-1 ring-[#d7e6df]"
+          : "mt-4 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#d7e6df]"
       }
     >
-      <div className={isCompact ? "grid gap-2" : "grid gap-3 xl:grid-cols-[minmax(155px,0.32fr)_minmax(0,1fr)] xl:items-center"}>
-        <div className={isCompact ? "flex items-center justify-between gap-2 rounded-lg bg-[#f5f8f1] px-2.5 py-2" : "min-w-0 rounded-xl bg-white px-3 py-2 ring-1 ring-[#d7e6df]"}>
+      <div
+        className={
+          isCompact
+            ? "flex items-center justify-between gap-2 bg-[#173f3f] px-3 py-2"
+            : "flex items-center justify-between gap-3 bg-[#173f3f] px-4 py-3"
+        }
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <span className={isCompact ? "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f2b84b]" : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f2b84b]"}>
+            <Sparkles className={isCompact ? "h-3.5 w-3.5 text-[#102426]" : "h-4 w-4 text-[#102426]"} />
+          </span>
           <div className="min-w-0">
-            <p className={`${isCompact ? "text-[9px]" : "text-[10px]"} font-black uppercase text-[#526260]`}>
-              Compare snapshot
+            <p className={isCompact ? "text-sm font-black text-white" : "text-lg font-black text-white"}>
+              Locator pick
             </p>
-            <p className={`${isCompact ? "text-sm" : "text-base"} mt-0.5 truncate font-black text-[#102426]`}>
-              {selectedCount} selected
+            <p className={isCompact ? "truncate text-[10px] font-bold text-white/75" : "truncate text-xs font-bold text-white/75"}>
+              {selectedCount} selected • {selectedSummary}
             </p>
           </div>
-          <p className={`${isCompact ? "text-[10px] text-right" : "mt-1 text-xs"} shrink-0 font-bold text-[#526260]`}>
-            {selectedSummary}
-          </p>
         </div>
+        <span className={isCompact ? "shrink-0 rounded-full bg-[#f2b84b] px-2 py-1 text-[9px] font-black text-[#102426]" : "shrink-0 rounded-full bg-[#f2b84b] px-3 py-1.5 text-xs font-black text-[#102426]"}>
+          Best first option
+        </span>
+      </div>
 
-        <div className={isCompact ? "grid gap-1.5" : "grid gap-2 sm:grid-cols-3"}>
-          {summaryItems.map((item) => (
-            <div
-              key={item.label}
-              className={`${getDecisionSummaryToneClass(item.tone)} ${isCompact ? "rounded-lg px-2.5 py-2" : "rounded-xl px-3 py-2"}`}
-            >
-              <div className="flex min-w-0 items-baseline justify-between gap-2">
-                <p className={`${isCompact ? "text-[9px]" : "text-[10px]"} shrink-0 font-black uppercase text-[#526260]`}>
-                  {item.label}
+      <div className={isCompact ? "grid gap-3 p-3" : "grid gap-4 p-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]"}>
+        <div className="min-w-0">
+          <h3 className={isCompact ? "text-lg font-black leading-tight text-[#102426]" : "text-2xl font-black leading-tight text-[#102426]"}>
+            {locatorPickTitle}
+          </h3>
+          <p className={isCompact ? "mt-2 text-xs font-semibold leading-5 text-[#526260]" : "mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]"}>
+            {locatorPickDescription}
+          </p>
+
+          <div className={isCompact ? "mt-3 flex flex-wrap gap-1.5" : "mt-4 flex flex-wrap gap-2"}>
+            {locatorPickChips.map((chip) => (
+              <div
+                key={chip.label}
+                className={isCompact ? "rounded-lg bg-[#f5f8f1] px-2 py-1.5 ring-1 ring-[#d7e6df]" : "rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]"}
+              >
+                <p className={isCompact ? "text-[8px] font-black uppercase text-[#526260]" : "text-[9px] font-black uppercase text-[#526260]"}>
+                  {chip.label}
                 </p>
-                <p className={`${isCompact ? "text-xs" : "text-sm"} min-w-0 truncate text-right font-black text-[#102426]`}>
-                  {item.value}
+                <p className={isCompact ? "mt-0.5 max-w-[9rem] truncate text-[11px] font-black text-[#102426]" : "mt-0.5 max-w-[14rem] truncate text-sm font-black text-[#102426]"}>
+                  {chip.value}
                 </p>
               </div>
-              <p className={`${isCompact ? "mt-0.5 text-[10px]" : "mt-1 text-xs"} truncate font-bold text-[#526260]`}>
-                {item.note}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div className={isCompact ? "mt-3 grid grid-cols-2 gap-1.5" : "mt-4 flex flex-wrap gap-2"}>
+            <Link
+              to={locatorPickLink}
+              onClick={() => {
+                if (locatorPickLink.includes("floor-plans")) {
+                  rememberFloorPlanSectionTarget();
+                }
+                onBeforeFloorPlanNavigation?.();
+              }}
+              className={isCompact ? "inline-flex items-center justify-center gap-1 rounded-lg bg-[#173f3f] px-3 py-2 text-[11px] font-black !text-white hover:bg-[#102426] hover:!text-white" : "inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"}
+            >
+              <span>{hasLocatorPick ? "View floor plan" : "Add floor plan"}</span>
+              <ArrowRight className={isCompact ? "h-3 w-3" : "h-4 w-4"} />
+            </Link>
+            <Link
+              to="/start"
+              className={isCompact ? "inline-flex items-center justify-center rounded-lg bg-[#f2b84b] px-3 py-2 text-[11px] font-black text-[#102426] hover:bg-[#dca33c]" : "inline-flex items-center justify-center rounded-xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black text-[#102426] hover:bg-[#dca33c]"}
+            >
+              Request tour
+            </Link>
+          </div>
+        </div>
+
+        <div className={isCompact ? "rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]" : "rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]"}>
+          <p className={isCompact ? "text-xs font-black text-[#102426]" : "text-sm font-black text-[#102426]"}>
+            Why this stands out
+          </p>
+          <div className={isCompact ? "mt-2 grid gap-2" : "mt-3 grid gap-3"}>
+            {standOutItems.slice(0, 3).map((item) => (
+              <div key={item.label} className="flex gap-2">
+                <BadgeCheck className={isCompact ? "mt-0.5 h-4 w-4 shrink-0 text-[#1f6f63]" : "mt-0.5 h-5 w-5 shrink-0 text-[#1f6f63]"} />
+                <div className="min-w-0">
+                  <p className={isCompact ? "text-[11px] font-black text-[#173f3f]" : "text-sm font-black text-[#173f3f]"}>
+                    {item.label}
+                  </p>
+                  <p className={isCompact ? "mt-0.5 line-clamp-2 text-[10px] font-semibold leading-4 text-[#526260]" : "mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[#526260]"}>
+                    {item.text}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+
+      <div className={isCompact ? "grid gap-1.5 border-t border-[#d7e6df] bg-[#f5f8f1] p-2.5" : "grid gap-2 border-t border-[#d7e6df] bg-[#f5f8f1] p-3 sm:grid-cols-3"}>
+        {summaryItems.map((item) => (
+          <div
+            key={item.label}
+            className={[
+              getDecisionSummaryToneClass(item.tone),
+              isCompact ? "rounded-lg px-2.5 py-2" : "rounded-xl px-3 py-2",
+            ].join(" ")}
+          >
+            <div className="flex min-w-0 items-baseline justify-between gap-2">
+              <p className={isCompact ? "shrink-0 text-[9px] font-black uppercase text-[#526260]" : "shrink-0 text-[10px] font-black uppercase text-[#526260]"}>
+                {item.label}
+              </p>
+              <p className={isCompact ? "min-w-0 truncate text-right text-xs font-black text-[#102426]" : "min-w-0 truncate text-right text-sm font-black text-[#102426]"}>
+                {item.value}
+              </p>
+            </div>
+            <p className={isCompact ? "mt-0.5 truncate text-[10px] font-bold text-[#526260]" : "mt-1 truncate text-xs font-bold text-[#526260]"}>
+              {item.note}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
+}
+
+function getCompareOptionTitle(row) {
+  if (!row) return "Selected option";
+
+  return [row.title, row.propertyName ? "at " + row.propertyName : ""]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function getCompareOptionShortTitle(row) {
+  if (!row) return "Selected option";
+
+  return row.title || row.propertyName || "Selected option";
 }
 
 function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) {
