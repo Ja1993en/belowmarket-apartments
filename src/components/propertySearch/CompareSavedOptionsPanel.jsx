@@ -303,7 +303,7 @@ function CompareDecisionSummary({
         className={
           isCompact
             ? "flex items-center justify-between gap-2 bg-[#173f3f] px-3 py-2"
-            : "flex items-center justify-between gap-3 bg-[#173f3f] px-4 py-3"
+            : "flex flex-col items-stretch gap-3 bg-[#173f3f] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         }
       >
         <div className="flex min-w-0 items-center gap-2">
@@ -319,9 +319,9 @@ function CompareDecisionSummary({
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className={isCompact ? "flex shrink-0 items-center gap-1.5" : "grid shrink-0 grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-1.5"}>
           {!isCompact && (
-            <span className="shrink-0 rounded-full bg-[#f2b84b] px-3 py-1.5 text-xs font-black text-[#102426]">
+            <span className="inline-flex min-h-8 shrink-0 items-center justify-center rounded-lg bg-[#f2b84b] px-3 py-1.5 text-center text-xs font-black text-[#102426] sm:rounded-full">
               Best first option
             </span>
           )}
@@ -329,7 +329,7 @@ function CompareDecisionSummary({
             type="button"
             aria-expanded={isLocatorPickExpanded}
             onClick={() => setIsLocatorPickExpanded((isExpanded) => !isExpanded)}
-            className={isCompact ? "inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-black text-white ring-1 ring-white/20 hover:bg-white/15" : "inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/15"}
+            className={isCompact ? "inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-black text-white ring-1 ring-white/20 hover:bg-white/15" : "inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-center text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/15 sm:rounded-full"}
           >
             <span>{isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
             {isLocatorPickExpanded ? (
@@ -347,11 +347,11 @@ function CompareDecisionSummary({
             ? "grid gap-3 p-3"
             : isLocatorPickExpanded
               ? "grid gap-4 p-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]"
-              : "p-4"
+              : "p-3 sm:p-4"
         }
       >
         <div className="min-w-0">
-          <h3 className={isCompact ? "text-lg font-black leading-tight text-[#102426]" : "text-2xl font-black leading-tight text-[#102426]"}>
+          <h3 className={isCompact ? "text-lg font-black leading-tight text-[#102426]" : "text-xl font-black leading-tight text-[#102426] sm:text-2xl"}>
             {locatorPickTitle}
           </h3>
           {isLocatorPickExpanded && (
@@ -360,16 +360,16 @@ function CompareDecisionSummary({
             </p>
           )}
 
-          <div className={isCompact ? "mt-3 flex flex-wrap gap-1.5" : "mt-4 flex flex-wrap gap-2"}>
+          <div className={isCompact ? "mt-3 flex flex-wrap gap-1.5" : "mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"}>
             {visibleLocatorPickChips.map((chip) => (
               <div
                 key={chip.label}
-                className={isCompact ? "rounded-lg bg-[#f5f8f1] px-2 py-1.5 ring-1 ring-[#d7e6df]" : "rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]"}
+                className={isCompact ? "rounded-lg bg-[#f5f8f1] px-2 py-1.5 ring-1 ring-[#d7e6df]" : "min-w-0 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]"}
               >
                 <p className={isCompact ? "text-[8px] font-black uppercase text-[#526260]" : "text-[9px] font-black uppercase text-[#526260]"}>
                   {chip.label}
                 </p>
-                <p className={isCompact ? "mt-0.5 max-w-[9rem] truncate text-[11px] font-black text-[#102426]" : "mt-0.5 max-w-[14rem] truncate text-sm font-black text-[#102426]"}>
+                <p className={isCompact ? "mt-0.5 max-w-[9rem] truncate text-[11px] font-black text-[#102426]" : "mt-0.5 min-w-0 truncate text-xs font-black text-[#102426] sm:max-w-[14rem] sm:text-sm"}>
                   {chip.value}
                 </p>
               </div>
