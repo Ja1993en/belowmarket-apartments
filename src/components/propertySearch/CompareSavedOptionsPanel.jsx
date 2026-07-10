@@ -196,7 +196,7 @@ function CompareDecisionSummary({
     .filter((row) => row.rentNumber > 0)
     .sort((firstRow, secondRow) => firstRow.rentNumber - secondRow.rentNumber)[0];
   const bestValueRow = rows
-    .filter((row) => row.type === "Floor Plan")
+    .filter(isCompareFloorPlanRow)
     .map((row) => {
       const rentNumber = parseCompareMoney(row.effectiveRent || row.normalRent);
       const sqftNumber = parseCompareNumber(row.sqft);
@@ -212,12 +212,16 @@ function CompareDecisionSummary({
     .sort((firstRow, secondRow) => firstRow.rentPerSqft - secondRow.rentPerSqft)[0];
   const bestValueTitle = bestValueRow
     ? `${bestValueRow.title}${bestValueRow.propertyName ? ` at ${bestValueRow.propertyName}` : ""}`
-    : "Add floor plans";
+    : floorPlanCount > 0
+      ? "Need rent + sq ft"
+      : "Add floor plans";
   const bestValueNote = bestValueRow
     ? [bestValueRow.beds, bestValueRow.sqft, `$${bestValueRow.rentPerSqft.toFixed(2)}/sq ft`]
         .filter(Boolean)
         .join(" • ")
-    : "Exact layouts unlock value score";
+    : floorPlanCount > 0
+      ? "Value needs pricing and size"
+      : "Exact layouts unlock value score";
   const bestSpecialRow = rows.find((row) => isMeaningfulCompareSpecial(row.special));
   const selectedCount = floorPlanCount + propertyCount;
   const selectedSummary = `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"} • ${propertyCount} propert${propertyCount === 1 ? "y" : "ies"}`;
@@ -729,6 +733,15 @@ function getDecisionSummaryToneClass(tone) {
     value: "bg-white ring-2 ring-[#f2b84b]",
     white: "bg-white ring-1 ring-[#d7e6df]",
   }[tone] || "bg-white ring-1 ring-[#d7e6df]";
+}
+
+function isCompareFloorPlanRow(row) {
+  const rowType = String(row?.type || "").toLowerCase();
+
+  return (
+    rowType.includes("floor plan") ||
+    Boolean(row?.floorPlanId || row?.floorPlanName)
+  );
 }
 
 function parseCompareMoney(value) {
