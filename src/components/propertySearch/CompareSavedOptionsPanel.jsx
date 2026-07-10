@@ -605,13 +605,6 @@ function ComparePropertiesTab({
                       </p>
                     </div>
 
-                    {!hasFloorPlans && (
-                      <div className="flex shrink-0 flex-col items-end gap-1">
-                        <span className="rounded-full bg-[#fff8e6] px-2 py-0.5 text-[9px] font-black text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                          Property only
-                        </span>
-                      </div>
-                    )}
                   </div>
 
                   <p className={`${isSmallCard ? "mt-1 line-clamp-1 text-[11px]" : "mt-2 line-clamp-2 text-xs"} font-black leading-4 text-[#8a5b0a]`}>
