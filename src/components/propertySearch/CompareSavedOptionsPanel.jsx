@@ -813,21 +813,7 @@ function CompareDetailsTab({ rows, mode, isCompact, onBeforeFloorPlanNavigation 
                   {row.special}
                 </td>
                 <td className="max-w-[160px] px-4 py-4 align-top text-xs font-semibold text-[#526260]">
-                  {row.availabilityLink &&
-                  formatAvailabilityLabel(row.availability) !== "Needs floor plan" ? (
-                    <Link
-                      to={row.availabilityLink}
-                      onClick={() => {
-                        rememberFloorPlanSectionTarget();
-                        onBeforeFloorPlanNavigation?.();
-                      }}
-                      className="font-black text-[#173f3f] underline decoration-[#f2b84b] decoration-2 underline-offset-4 hover:text-[#1f6f63]"
-                    >
-                      {formatAvailabilityLabel(row.availability) || "Availability not listed"}
-                    </Link>
-                  ) : (
-                    formatAvailabilityLabel(row.availability) || "Availability not listed"
-                  )}
+                  {formatAvailabilityLabel(row.availability) || "Availability not listed"}
                 </td>
                 <td className="px-4 py-4 align-top">
                   <Link
