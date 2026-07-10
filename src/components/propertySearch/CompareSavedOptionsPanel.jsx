@@ -195,13 +195,29 @@ function CompareDecisionSummary({
     }))
     .filter((row) => row.rentNumber > 0)
     .sort((firstRow, secondRow) => firstRow.rentNumber - secondRow.rentNumber)[0];
-  const largestLayoutRow = rows
-    .map((row) => ({
-      ...row,
-      sqftNumber: parseCompareNumber(row.sqft),
-    }))
-    .filter((row) => row.sqftNumber > 0)
-    .sort((firstRow, secondRow) => secondRow.sqftNumber - firstRow.sqftNumber)[0];
+  const bestValueRow = rows
+    .filter((row) => row.type === "Floor Plan")
+    .map((row) => {
+      const rentNumber = parseCompareMoney(row.effectiveRent || row.normalRent);
+      const sqftNumber = parseCompareNumber(row.sqft);
+
+      if (!(rentNumber > 0 && sqftNumber > 0)) return null;
+
+      return {
+        ...row,
+        rentPerSqft: rentNumber / sqftNumber,
+      };
+    })
+    .filter(Boolean)
+    .sort((firstRow, secondRow) => firstRow.rentPerSqft - secondRow.rentPerSqft)[0];
+  const bestValueTitle = bestValueRow
+    ? `${bestValueRow.title}${bestValueRow.propertyName ? ` at ${bestValueRow.propertyName}` : ""}`
+    : "Add floor plans";
+  const bestValueNote = bestValueRow
+    ? [bestValueRow.beds, bestValueRow.sqft, `$${bestValueRow.rentPerSqft.toFixed(2)}/sq ft`]
+        .filter(Boolean)
+        .join(" • ")
+    : "Exact layouts unlock value score";
   const bestSpecialRow = rows.find((row) => isMeaningfulCompareSpecial(row.special));
   const selectedCount = floorPlanCount + propertyCount;
   const selectedSummary = `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"} • ${propertyCount} propert${propertyCount === 1 ? "y" : "ies"}`;
@@ -213,16 +229,16 @@ function CompareDecisionSummary({
       tone: "green",
     },
     {
-      label: "Best special",
+      label: "Strongest special",
       value: bestSpecialRow?.special || "No special listed",
       note: bestSpecialRow?.title || "Ask what applies",
       tone: "gold",
     },
     {
-      label: "Largest layout",
-      value: largestLayoutRow?.sqft || "Varies",
-      note: largestLayoutRow?.title || "Choose a floor plan",
-      tone: "sage",
+      label: "Best value",
+      value: bestValueTitle,
+      note: bestValueNote,
+      tone: bestValueRow ? "value" : "sage",
     },
   ];
 
@@ -710,6 +726,7 @@ function getDecisionSummaryToneClass(tone) {
     gold: "bg-[#fff8e6] ring-1 ring-[#f2d08a]",
     green: "bg-[#e7f3ee] ring-1 ring-[#a9cfc2]",
     sage: "bg-[#f5f8f1] ring-1 ring-[#d7e6df]",
+    value: "bg-white ring-2 ring-[#f2b84b]",
     white: "bg-white ring-1 ring-[#d7e6df]",
   }[tone] || "bg-white ring-1 ring-[#d7e6df]";
 }
