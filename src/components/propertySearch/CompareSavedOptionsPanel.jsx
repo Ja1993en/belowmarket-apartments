@@ -574,7 +574,7 @@ function ComparePropertiesTab({
           const propertyLocation =
             property.area || property.neighborhood || property.city || "Dallas area";
           const actionButtonClass = `${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} flex min-h-9 items-center justify-center whitespace-nowrap text-center font-black leading-none`;
-          const floorPlanLabel = `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"} added`;
+          const floorPlanLabel = `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"} selected`;
 
           return (
             <div
@@ -638,7 +638,7 @@ function ComparePropertiesTab({
                         {floorPlanLabel}
                       </span>
                       <span className={`${isSmallCard ? "text-[10px]" : "text-[11px]"} mt-0.5 block font-bold leading-4 text-[#526260]`}>
-                        See exact layout in Floor Plans.
+                        Pricing reflects selected layout{floorPlanCount === 1 ? "" : "s"}.
                       </span>
                     </span>
                   </div>

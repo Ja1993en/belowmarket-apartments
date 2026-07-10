@@ -306,24 +306,22 @@ export default function PropertySearchPage() {
       })),
     [compareFloorPlanItems, properties]
   );
-  const compareFloorPlanCountsByPropertyId = useMemo(
-    () =>
-      compareFloorPlanRows.reduce((counts, row) => {
-        counts[row.propertyId] = (counts[row.propertyId] || 0) + 1;
-        return counts;
-      }, {}),
-    [compareFloorPlanRows]
-  );
   const propertyCompareRows = useMemo(
     () =>
-      compareProperties.map((property) => ({
-        property: {
-          ...property,
-          floorPlanCount: compareFloorPlanCountsByPropertyId[property.id] || 0,
-        },
-        priceSummary: getPropertySearchPriceSummary(property),
-      })),
-    [compareFloorPlanCountsByPropertyId, compareProperties]
+      compareProperties.map((property) => {
+        const selectedFloorPlanRows = compareFloorPlanRows.filter(
+          (row) => row.propertyId === property.id
+        );
+
+        return {
+          property: {
+            ...property,
+            floorPlanCount: selectedFloorPlanRows.length,
+          },
+          priceSummary: getSelectedComparePriceSummary(property, selectedFloorPlanRows),
+        };
+      }),
+    [compareFloorPlanRows, compareProperties]
   );
   const floorPlanDetailRows = useMemo(
     () =>
@@ -3561,6 +3559,60 @@ function getPropertySearchPriceSummary(property, floorPlans = getSearchFloorPlan
     ),
     specialLabel: formatSearchSpecialSummary(specialLabels),
   };
+}
+
+function getSelectedComparePriceSummary(property, selectedFloorPlanRows = []) {
+  const propertyPriceSummary = getPropertySearchPriceSummary(property);
+
+  if (selectedFloorPlanRows.length === 0) return propertyPriceSummary;
+
+  const normalRentValues = selectedFloorPlanRows.flatMap((row) =>
+    parseCurrencyValues(row.rent || row.normalRent)
+  );
+  const effectiveRentValues = selectedFloorPlanRows.flatMap((row) =>
+    parseCurrencyValues(row.effectiveRent || row.rent || row.normalRent)
+  );
+  const specialLabels = [
+    ...new Set(
+      selectedFloorPlanRows
+        .map((row) => row.special)
+        .filter((label) => label && label !== "No special listed" && label !== "Special not listed")
+    ),
+  ];
+
+  return {
+    ...propertyPriceSummary,
+    hasSpecial: specialLabels.length > 0 || propertyPriceSummary.hasSpecial,
+    hasRentSpecial:
+      effectiveRentValues.length > 0 &&
+      normalRentValues.length > 0 &&
+      Math.min(...effectiveRentValues) < Math.max(...normalRentValues),
+    normalRentLabel: formatSelectedCompareRentRange(
+      normalRentValues,
+      propertyPriceSummary.normalRentLabel
+    ),
+    effectiveRentLabel: formatSelectedCompareRentRange(
+      effectiveRentValues,
+      propertyPriceSummary.effectiveRentLabel
+    ),
+    specialLabel: specialLabels.length
+      ? formatSearchSpecialSummary(specialLabels)
+      : propertyPriceSummary.specialLabel,
+    isSelectedFloorPlanSummary: true,
+  };
+}
+
+function formatSelectedCompareRentRange(values, fallback = "Contact for pricing") {
+  const cleanValues = values.filter((value) => Number(value) > 0);
+
+  if (cleanValues.length === 0) return fallback;
+
+  const minValue = Math.min(...cleanValues);
+  const maxValue = Math.max(...cleanValues);
+
+  if (minValue === maxValue) return formatCurrency(minValue);
+
+  return `${formatCurrency(minValue)} - ${formatCurrency(maxValue)}`;
 }
 
 function getSearchRentRollupItems(property, floorPlans = getSearchFloorPlans(property)) {

@@ -1304,13 +1304,22 @@ export default function PublicPropertyListing() {
             floorPlan: matchingFloorPlan,
         };
     });
-    const propertyCompareRows = selectedCompareProperties.map((compareProperty) => ({
-        property: {
-            ...compareProperty,
-            floorPlanCount: compareFloorPlanCountsByPropertyId[compareProperty.id] || 0,
-        },
-        priceSummary: getPropertyComparePriceSummary(compareProperty),
-    }));
+    const propertyCompareRows = selectedCompareProperties.map((compareProperty) => {
+        const selectedFloorPlanRows = floorPlanCompareRows.filter(
+            (row) => row.propertyId === compareProperty.id
+        );
+
+        return {
+            property: {
+                ...compareProperty,
+                floorPlanCount: selectedFloorPlanRows.length,
+            },
+            priceSummary: getSelectedPropertyComparePriceSummary(
+                compareProperty,
+                selectedFloorPlanRows
+            ),
+        };
+    });
     const compareDetailRows = [
         ...floorPlanCompareRows,
         ...propertyOnlyCompareProperties.map((compareProperty) => ({
@@ -5365,6 +5374,48 @@ function getPropertyComparePriceSummary(property) {
         normalRentLabel,
         specialLabel: property.special || property.specialLabel || "",
     };
+}
+
+function getSelectedPropertyComparePriceSummary(property, selectedFloorPlanRows = []) {
+    const propertyPriceSummary = getPropertyComparePriceSummary(property);
+
+    if (selectedFloorPlanRows.length === 0) return propertyPriceSummary;
+
+    const normalRentValues = selectedFloorPlanRows.flatMap((row) =>
+        parseCurrencyValues(row.normalRent || row.rent)
+    );
+    const effectiveRentValues = selectedFloorPlanRows.flatMap((row) =>
+        parseCurrencyValues(row.effectiveRent || row.normalRent || row.rent)
+    );
+    const specialLabels = [
+        ...new Set(
+            selectedFloorPlanRows
+                .map((row) => row.special)
+                .filter((label) => label && label !== "No special listed")
+        ),
+    ];
+
+    return {
+        ...propertyPriceSummary,
+        effectiveRentLabel: formatRentRange(
+            effectiveRentValues,
+            propertyPriceSummary.effectiveRentLabel
+        ),
+        normalRentLabel: formatRentRange(
+            normalRentValues,
+            propertyPriceSummary.normalRentLabel
+        ),
+        specialLabel: specialLabels.length
+            ? formatSpecialSummary(specialLabels)
+            : propertyPriceSummary.specialLabel,
+        isSelectedFloorPlanSummary: true,
+    };
+}
+
+function parseCurrencyValues(value) {
+    return [...String(value || "").matchAll(/\$?\s*([\d,]+(?:\.\d+)?)/g)]
+        .map((match) => Number(match[1].replace(/,/g, "")))
+        .filter((parsedValue) => Number.isFinite(parsedValue) && parsedValue > 0);
 }
 
 function getPropertyCompareDealScore(property, priceSummary) {
