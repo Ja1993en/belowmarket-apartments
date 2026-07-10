@@ -444,7 +444,10 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) 
 
   return (
     <div className={isCompact ? "mt-2.5 grid gap-1.5" : "mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
-      {rows.map((row) => (
+      {rows.map((row) => {
+        const hasSpecial = Boolean(row.special && row.special !== "No special listed");
+
+        return (
         <div
           key={row.compareKey}
           className={
@@ -490,6 +493,19 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) 
             </div>
           </div>
 
+          {hasSpecial && (
+            <div className={`${isCompact ? "mt-1.5 rounded-lg bg-[#fff8e6] px-2 py-1.5 ring-1 ring-[#f2d08a]" : "mt-3"}`}>
+              <p className={`${isCompact ? "line-clamp-1 text-[11px] leading-4" : "truncate text-xs"} font-black text-[#8a5b0a]`}>
+                {row.special}
+              </p>
+              {isCompact && (
+                <p className="mt-0.5 truncate text-[10px] font-bold text-[#526260]">
+                  {formatAvailabilityLabel(row.available) || "Availability not listed"}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className={`${isCompact ? "mt-1.5 gap-1.5" : "mt-3 gap-2"} grid grid-cols-2`}>
             <CompareTile label="Listed" value={row.rent || "Contact"} isCompact={isCompact} />
             <CompareTile
@@ -500,16 +516,11 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) 
             />
           </div>
 
-          <div className={`${isCompact ? "mt-1.5 rounded-lg bg-[#fff8e6] px-2 py-1.5 ring-1 ring-[#f2d08a]" : ""}`}>
-            <p className={`${isCompact ? "line-clamp-1 text-[11px] leading-4" : "truncate text-xs"} font-black text-[#8a5b0a]`}>
-              {row.special || "No special listed"}
+          {isCompact && !hasSpecial && (
+            <p className="mt-1.5 truncate text-[10px] font-bold text-[#526260]">
+              {formatAvailabilityLabel(row.available) || "Availability not listed"}
             </p>
-            {isCompact && (
-              <p className="mt-0.5 truncate text-[10px] font-bold text-[#526260]">
-                {formatAvailabilityLabel(row.available) || "Availability not listed"}
-              </p>
-            )}
-          </div>
+          )}
 
           <div className={`${isCompact ? "mt-1.5 grid grid-cols-2 gap-1.5" : "mt-3 grid gap-2 sm:grid-cols-2"}`}>
             <Link
@@ -534,7 +545,8 @@ function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) 
             )}
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
