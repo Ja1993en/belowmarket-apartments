@@ -300,27 +300,6 @@ function CompareDecisionSummary({
             }
           : null,
       ].filter(Boolean);
-  const summaryItems = [
-    {
-      label: "Lowest after-special",
-      value: lowestRentRow?.effectiveRent || lowestRentRow?.normalRent || "Verify",
-      note: lowestRentRow ? getCompareOptionShortTitle(lowestRentRow) : "Select priced options",
-      tone: "green",
-    },
-    {
-      label: "Strongest special",
-      value: bestSpecialRow?.special || "No special listed",
-      note: bestSpecialRow ? getCompareOptionShortTitle(bestSpecialRow) : "Ask what applies",
-      tone: "gold",
-    },
-    {
-      label: "Best value",
-      value: bestValueRow ? "$" + bestValueRow.rentPerSqft.toFixed(2) + "/sq ft" : "Add floor plans",
-      note: bestValueRow ? getCompareOptionShortTitle(bestValueRow) : "Exact layouts unlock score",
-      tone: bestValueRow ? "value" : "sage",
-    },
-  ];
-
   return (
     <section
       className={
@@ -423,30 +402,6 @@ function CompareDecisionSummary({
           </div>
         </div>
       </div>
-
-      <div className={isCompact ? "grid gap-1.5 border-t border-[#d7e6df] bg-[#f5f8f1] p-2.5" : "grid gap-2 border-t border-[#d7e6df] bg-[#f5f8f1] p-3 sm:grid-cols-3"}>
-        {summaryItems.map((item) => (
-          <div
-            key={item.label}
-            className={[
-              getDecisionSummaryToneClass(item.tone),
-              isCompact ? "rounded-lg px-2.5 py-2" : "rounded-xl px-3 py-2",
-            ].join(" ")}
-          >
-            <div className="flex min-w-0 items-baseline justify-between gap-2">
-              <p className={isCompact ? "shrink-0 text-[9px] font-black uppercase text-[#526260]" : "shrink-0 text-[10px] font-black uppercase text-[#526260]"}>
-                {item.label}
-              </p>
-              <p className={isCompact ? "min-w-0 truncate text-right text-xs font-black text-[#102426]" : "min-w-0 truncate text-right text-sm font-black text-[#102426]"}>
-                {item.value}
-              </p>
-            </div>
-            <p className={isCompact ? "mt-0.5 truncate text-[10px] font-bold text-[#526260]" : "mt-1 truncate text-xs font-bold text-[#526260]"}>
-              {item.note}
-            </p>
-          </div>
-        ))}
-      </div>
     </section>
   );
 }
@@ -458,13 +413,6 @@ function getCompareOptionTitle(row) {
     .filter(Boolean)
     .join(" ");
 }
-
-function getCompareOptionShortTitle(row) {
-  if (!row) return "Selected option";
-
-  return row.title || row.propertyName || "Selected option";
-}
-
 function CompareFloorPlanTab({ rows, formatBedroomLabel, isCompact, onRemove }) {
   if (rows.length === 0) {
     return (
@@ -895,17 +843,6 @@ function CompareTile({ label, value, highlight = false, isCompact = false }) {
     </div>
   );
 }
-
-function getDecisionSummaryToneClass(tone) {
-  return {
-    gold: "bg-[#fff8e6] ring-1 ring-[#f2d08a]",
-    green: "bg-[#e7f3ee] ring-1 ring-[#a9cfc2]",
-    sage: "bg-[#f5f8f1] ring-1 ring-[#d7e6df]",
-    value: "bg-white ring-2 ring-[#f2b84b]",
-    white: "bg-white ring-1 ring-[#d7e6df]",
-  }[tone] || "bg-white ring-1 ring-[#d7e6df]";
-}
-
 function isCompareFloorPlanRow(row) {
   const rowType = String(row?.type || "").toLowerCase();
 
