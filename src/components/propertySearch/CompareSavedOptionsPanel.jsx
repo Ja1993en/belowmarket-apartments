@@ -859,7 +859,7 @@ function CompareTile({ label, value, highlight = false, isCompact = false }) {
       }`}
     >
       <p className={`${isCompact ? "text-[8px]" : "text-[10px]"} font-black uppercase`}>{label}</p>
-      <p className={`${isCompact ? "mt-0.5 text-[11px]" : "mt-1 text-sm"} font-black leading-tight`}>{value}</p>
+      <p className={`${isCompact ? "mt-0.5 text-[10px] sm:text-[11px]" : "mt-1 text-xs sm:text-sm"} whitespace-nowrap font-black leading-tight`}>{value}</p>
     </div>
   );
 }
