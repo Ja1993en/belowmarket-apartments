@@ -706,31 +706,6 @@ function CompareDetailsTab({ rows, mode, isCompact, onBeforeFloorPlanNavigation 
 
   return (
     <>
-      <div
-        className={
-          isCompact
-            ? "mt-2 rounded-lg bg-[#fff8e6] px-2.5 py-2 ring-1 ring-[#f2d08a]"
-            : "mt-4 flex flex-col justify-between gap-3 rounded-2xl bg-[#fff8e6] px-4 py-3 ring-1 ring-[#f2d08a] md:flex-row md:items-center"
-        }
-      >
-        <div className="min-w-0">
-          <p className={`${isCompact ? "text-[10px]" : "text-xs"} font-black uppercase text-[#8a5b0a]`}>
-            Side-by-side comparison
-          </p>
-          <p className={`${isCompact ? "mt-1 text-[11px] leading-4" : "mt-1 text-sm leading-6"} font-bold text-[#8a5b0a]`}>
-            {mode === "floorPlans"
-              ? "Exact floor plans line up first so price, size, and specials are easy to scan."
-              : "Add floor plans when you want the comparison to move from property-level ranges to exact layouts."}
-          </p>
-        </div>
-        <Link
-          to="/start"
-          className={`${isCompact ? "mt-2 rounded-lg px-3 py-2 text-[11px]" : "rounded-xl px-4 py-2.5 text-sm"} shrink-0 bg-[#f2b84b] text-center font-black text-[#102426] hover:bg-[#dca33c]`}
-        >
-          Ask a locator to verify
-        </Link>
-      </div>
-
       {isCompact && (
         <div className="mt-2.5 grid gap-1.5">
           {rows.map((row) => (
