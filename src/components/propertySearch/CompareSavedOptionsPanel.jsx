@@ -247,12 +247,12 @@ function CompareDecisionSummary({
     ? [
         {
           label: "After special",
-          value: locatorPickRow.effectiveRent || locatorPickRow.normalRent || "Verify",
+          value: formatCompareRentValue(locatorPickRow.effectiveRent || locatorPickRow.normalRent || "Verify"),
           icon: DollarSign,
         },
         {
           label: "Listed",
-          value: locatorPickRow.normalRent || "Verify",
+          value: formatCompareRentValue(locatorPickRow.normalRent || "Verify"),
           icon: FileText,
         },
         {
@@ -303,7 +303,7 @@ function CompareDecisionSummary({
         lowestRentRow
           ? {
               label: "Lowest after-special rent",
-              text: lowestRentRow.effectiveRent || lowestRentRow.normalRent || "Verify pricing",
+              text: formatCompareRentValue(lowestRentRow.effectiveRent || lowestRentRow.normalRent || "Verify pricing"),
             }
           : null,
       ].filter(Boolean)
@@ -822,8 +822,8 @@ function CompareDetailsTab({ rows, mode, isCompact, onBeforeFloorPlanNavigation 
                   </span>
                 </td>
                 <td className="px-4 py-4 align-top font-bold text-[#102426]">{row.sqft}</td>
-                <td className="px-4 py-4 align-top font-bold text-[#102426]">{row.normalRent}</td>
-                <td className="px-4 py-4 align-top font-black text-[#1f6f63]">{row.effectiveRent}</td>
+                <td className="px-4 py-4 align-top font-bold text-[#102426]">{formatCompareRentValue(row.normalRent)}</td>
+                <td className="px-4 py-4 align-top font-black text-[#1f6f63]">{formatCompareRentValue(row.effectiveRent)}</td>
                 <td className="max-w-[210px] px-4 py-4 align-top text-xs font-bold text-[#8a5b0a]">
                   {row.special}
                 </td>
@@ -855,6 +855,9 @@ function CompareDetailsTab({ rows, mode, isCompact, onBeforeFloorPlanNavigation 
 function CompareTile({ label, value, highlight = false, isCompact = false }) {
   const displayLabel =
     label === "Listed" ? "Listed rent" : label === "Estimated" ? "Estimated rent" : label;
+  const displayValue = shouldFormatCompareRentLabel(displayLabel)
+    ? formatCompareRentValue(value)
+    : value;
 
   return (
     <div
@@ -865,10 +868,41 @@ function CompareTile({ label, value, highlight = false, isCompact = false }) {
       }`}
     >
       <p className={`${isCompact ? "text-[8px]" : "text-[10px]"} whitespace-nowrap font-black uppercase`}>{displayLabel}</p>
-      <p className={`${isCompact ? "mt-0.5 text-[10px] sm:text-[11px]" : "mt-1 text-xs sm:text-sm"} whitespace-nowrap font-black leading-tight`}>{value}</p>
+      <p className={`${isCompact ? "mt-0.5 text-[10px] sm:text-[11px]" : "mt-1 text-xs sm:text-sm"} whitespace-nowrap font-black leading-tight`}>{displayValue}</p>
     </div>
   );
 }
+function shouldFormatCompareRentLabel(label) {
+  const labelText = String(label || "").toLowerCase();
+
+  return (
+    labelText.includes("rent") ||
+    labelText.includes("listed") ||
+    labelText.includes("estimated") ||
+    labelText.includes("effective") ||
+    labelText.includes("after special")
+  );
+}
+
+function formatCompareRentValue(value) {
+  if (value === null || value === undefined || value === "") return "Contact";
+
+  const textValue = String(value).trim();
+  if (!textValue) return "Contact";
+  if (textValue.includes("$")) return textValue;
+  if (/contact|verify|varies|call|ask/i.test(textValue)) return textValue;
+
+  const formattedText = textValue.replace(/\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b|\b\d{3,6}(?:\.\d+)?\b/g, (match) => {
+    const numberValue = Number(match.replace(/,/g, ""));
+
+    if (!Number.isFinite(numberValue) || numberValue <= 0) return match;
+
+    return "$" + Math.round(numberValue).toLocaleString();
+  });
+
+  return formattedText;
+}
+
 function getLocatorScoreRows(rows) {
   const candidates = rows
     .filter(isCompareFloorPlanRow)
