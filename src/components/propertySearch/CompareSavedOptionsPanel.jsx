@@ -141,6 +141,10 @@ export default function CompareSavedOptionsPanel({
                 <span
                   className={`truncate leading-tight ${
                     isCompact ? "text-[10px]" : "text-xs sm:text-sm"
+                  } ${
+                    activeTab === tab.label
+                      ? "text-[#f2b84b]"
+                      : "text-[#173f3f]"
                   }`}
                 >
                   {tab.displayLabel}
