@@ -143,7 +143,7 @@ export default function CompareSavedOptionsPanel({
                     isCompact ? "text-[10px]" : "text-xs sm:text-sm"
                   } ${
                     activeTab === tab.label
-                      ? "text-[#f2b84b]"
+                      ? "text-white"
                       : "text-[#173f3f]"
                   }`}
                 >
