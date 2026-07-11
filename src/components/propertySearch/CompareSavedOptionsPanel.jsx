@@ -7,17 +7,20 @@ import { formatAvailability as formatAvailabilityLabel } from "../../utils/displ
 const COMPARE_TABS = [
   {
     label: "Properties",
-    helper: "Communities saved",
-    emptyText: "Start here",
+    displayLabel: "Properties",
+    helper: "Saved",
+    emptyText: "Start",
   },
   {
     label: "Floor Plans",
-    helper: "Exact picks",
-    emptyText: "Add layouts",
+    displayLabel: "Plans",
+    helper: "Exact",
+    emptyText: "Add",
   },
   {
-    label: "Details",
-    helper: "Decision chart",
+    label: "Compare",
+    displayLabel: "Compare",
+    helper: "Chart",
     emptyText: "Review",
   },
 ];
@@ -60,7 +63,7 @@ export default function CompareSavedOptionsPanel({
           : "mt-6 rounded-3xl border border-[#d7e6df] bg-white p-3 shadow-sm sm:p-5"
       }
     >
-      {!isCompact && (
+      {!isCompact && !isMobileModal && (
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm font-black text-[#1f6f63]">
@@ -92,7 +95,26 @@ export default function CompareSavedOptionsPanel({
         onBeforeFloorPlanNavigation={onBeforeFloorPlanNavigation}
       />
 
-      <div className={`${isCompact ? "grid grid-cols-3 gap-1" : "mt-4 grid grid-cols-3 gap-1.5 sm:gap-2"}`}>
+      {isMobileModal && (
+        <div className="mt-2 flex justify-end">
+          <button
+            type="button"
+            onClick={onClearCompare}
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-2.5 py-1.5 text-[11px] font-black !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
+          >
+            <Trash2 className="h-3.5 w-3.5 shrink-0" />
+            <span>Clear all</span>
+          </button>
+        </div>
+      )}
+
+      <div
+        className={
+          isCompact
+            ? "mt-2 grid grid-cols-3 gap-1 rounded-xl bg-[#e7f3ee] p-1 ring-1 ring-[#a9cfc2]"
+            : "mt-4 grid grid-cols-3 gap-1 rounded-2xl bg-[#e7f3ee] p-1 ring-1 ring-[#a9cfc2]"
+        }
+      >
         {COMPARE_TABS.map((tab) => {
           const count =
             tab.label === "Floor Plans"
@@ -101,48 +123,40 @@ export default function CompareSavedOptionsPanel({
                 ? propertyCompareRows.length
                 : compareDetailRows.length;
 
-          const helperText = count > 0 ? tab.helper : tab.emptyText;
-          const mobileLabel = tab.label === "Floor Plans" ? "Plans" : tab.label;
-
           return (
             <button
               key={tab.label}
               type="button"
               aria-pressed={activeTab === tab.label}
               onClick={() => setActiveTab(tab.label)}
-              className={`min-w-0 overflow-hidden text-center font-black ring-1 transition sm:text-left ${
-                isCompact
-                  ? "rounded-lg px-1 py-1.5"
-                  : "rounded-2xl px-2.5 py-2 sm:px-3 sm:py-2.5"
+              className={`min-w-0 rounded-xl text-center font-black transition ${
+                isCompact ? "px-1.5 py-1.5" : "px-2 py-2 sm:px-3 sm:py-2.5"
               } ${
                 activeTab === tab.label
-                  ? "bg-[#173f3f] text-white"
-                  : "bg-[#f5f8f1] text-[#173f3f] ring-[#d7e6df] hover:bg-[#d7e6df]"
+                  ? "bg-[#173f3f] text-white shadow-sm"
+                  : "text-[#173f3f] hover:bg-white/70"
               }`}
             >
-              <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "grid min-w-0 justify-items-center gap-0.5 sm:justify-items-stretch sm:gap-1"}>
-                <span className={isCompact ? "grid min-w-0 justify-items-center gap-0.5" : "grid min-w-0 justify-items-center gap-0.5 sm:flex sm:items-center sm:justify-between sm:gap-1.5"}>
-                  <span
-                    className={`min-w-0 max-w-full truncate font-black leading-tight ${
-                      isCompact ? "text-[10px]" : "text-[11px] sm:text-sm"
-                    } ${activeTab === tab.label ? "text-white" : "text-[#173f3f]"}`}
-                  >
-                    {mobileLabel}
-                  </span>
-                  <span
-                    className={`inline-flex shrink-0 items-center justify-center rounded-full bg-white/85 font-black text-[#173f3f] ${
-                      isCompact ? "h-4 min-w-4 px-1 text-[8px]" : "h-4 min-w-4 px-1.5 text-[9px] sm:h-5 sm:min-w-5 sm:px-2 sm:text-[10px]"
-                    }`}
-                  >
-                    {count}
-                  </span>
+              <span className="flex min-w-0 items-center justify-center gap-1.5">
+                <span
+                  className={`truncate leading-tight ${
+                    isCompact ? "text-[10px]" : "text-xs sm:text-sm"
+                  }`}
+                >
+                  {tab.displayLabel}
                 </span>
                 <span
-                  className={`block min-w-0 max-w-full truncate font-bold leading-tight ${
-                    isCompact ? "text-[8px]" : "text-[9px] sm:text-[11px]"
-                  } ${activeTab === tab.label ? "text-white/80" : "text-[#526260]"}`}
+                  className={`inline-flex shrink-0 items-center justify-center rounded-full font-black ${
+                    activeTab === tab.label
+                      ? "bg-white/90 text-[#173f3f]"
+                      : "bg-white text-[#526260] ring-1 ring-[#d7e6df]"
+                  } ${
+                    isCompact
+                      ? "h-4 min-w-4 px-1 text-[8px]"
+                      : "h-5 min-w-5 px-1.5 text-[10px]"
+                  }`}
                 >
-                  {helperText}
+                  {count}
                 </span>
               </span>
             </button>
@@ -170,7 +184,7 @@ export default function CompareSavedOptionsPanel({
         />
       )}
 
-      {activeTab === "Details" && (
+      {activeTab === "Compare" && (
         <CompareDetailsTab
           rows={compareDetailRows}
           mode={compareDetailMode}
@@ -217,10 +231,10 @@ function CompareDecisionSummary({
   const locatorPickLink = locatorPickRow?.linkTo || "/properties";
   const locatorPickTitle = hasLocatorPick
     ? getCompareOptionTitle(locatorPickRow)
-    : "Add floor plans to unlock locator pick";
+    : "Add floor plans to unlock BMA's pick";
   const locatorPickDescription = hasLocatorPick
     ? "Best first option based on after-special rent, listed rent, value per square foot, availability, and current special."
-    : "Exact floor plans let BMA compare rent, size, and savings like a locator would.";
+    : "Choose exact layouts so the comparison can rank real rent, size, specials, and availability.";
   const locatorPickChips = hasLocatorPick
     ? [
         {
@@ -228,12 +242,12 @@ function CompareDecisionSummary({
           value: locatorPickRow.effectiveRent || locatorPickRow.normalRent || "Verify",
         },
         {
-          label: "Value",
-          value: "$" + locatorPickRow.rentPerSqft.toFixed(2) + "/sq ft",
+          label: "Listed",
+          value: locatorPickRow.normalRent || "Verify",
         },
         {
-          label: "Layout",
-          value: [locatorPickRow.beds, locatorPickRow.sqft].filter(Boolean).join(" • "),
+          label: "Value",
+          value: "$" + locatorPickRow.rentPerSqft.toFixed(2) + "/sq ft",
         },
         isMeaningfulCompareSpecial(locatorPickRow.special)
           ? {
@@ -254,7 +268,7 @@ function CompareDecisionSummary({
       ];
   const visibleLocatorPickChips = isLocatorPickExpanded
     ? locatorPickChips
-    : locatorPickChips.slice(0, 3);
+    : locatorPickChips.slice(0, isCompact ? 2 : 3);
   const standOutItems = hasLocatorPick
     ? [
         {
@@ -291,6 +305,7 @@ function CompareDecisionSummary({
             }
           : null,
       ].filter(Boolean);
+
   return (
     <section
       className={
@@ -302,74 +317,70 @@ function CompareDecisionSummary({
       <div
         className={
           isCompact
-            ? "flex items-center justify-between gap-2 bg-[#173f3f] px-3 py-2"
-            : "flex flex-col items-stretch gap-3 bg-[#173f3f] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+            ? "grid gap-2 bg-[#102426] px-3 py-2.5"
+            : "grid gap-3 bg-[#102426] px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
         }
       >
-        <div className="flex min-w-0 items-center gap-2">
-          <span className={isCompact ? "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f2b84b]" : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f2b84b]"}>
-            <Sparkles className={isCompact ? "h-3.5 w-3.5 text-[#102426]" : "h-4 w-4 text-[#102426]"} />
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className={isCompact ? "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f2b84b]" : "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f2b84b]"}>
+            <Sparkles className={isCompact ? "h-4 w-4 text-[#102426]" : "h-5 w-5 text-[#102426]"} />
           </span>
           <div className="min-w-0">
             <p className={isCompact ? "text-sm font-black text-white" : "text-lg font-black text-white"}>
-              Locator pick
+              BMA recommendation
             </p>
             <p className={isCompact ? "truncate text-[10px] font-bold text-white/75" : "truncate text-xs font-bold text-white/75"}>
               {selectedCount} selected • {selectedSummary}
             </p>
           </div>
         </div>
-        <div className={isCompact ? "flex shrink-0 items-center gap-1.5" : "grid shrink-0 grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-1.5"}>
-          {!isCompact && (
-            <span className="inline-flex min-h-8 shrink-0 items-center justify-center rounded-lg bg-[#f2b84b] px-3 py-1.5 text-center text-xs font-black text-[#102426] sm:rounded-full">
-              Best first option
-            </span>
+
+        <button
+          type="button"
+          aria-expanded={isLocatorPickExpanded}
+          onClick={() => setIsLocatorPickExpanded((isExpanded) => !isExpanded)}
+          className={isCompact ? "inline-flex w-fit items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-black text-white ring-1 ring-white/20 hover:bg-white/15" : "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 text-center text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/15"}
+        >
+          <span>{isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
+          {isLocatorPickExpanded ? (
+            <ChevronUp className={isCompact ? "h-3 w-3 text-white" : "h-4 w-4 text-white"} />
+          ) : (
+            <ChevronDown className={isCompact ? "h-3 w-3 text-white" : "h-4 w-4 text-white"} />
           )}
-          <button
-            type="button"
-            aria-expanded={isLocatorPickExpanded}
-            onClick={() => setIsLocatorPickExpanded((isExpanded) => !isExpanded)}
-            className={isCompact ? "inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-black text-white ring-1 ring-white/20 hover:bg-white/15" : "inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-center text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/15 sm:rounded-full"}
-          >
-            <span className="text-white">{isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
-            {isLocatorPickExpanded ? (
-              <ChevronUp className={isCompact ? "h-3 w-3 text-white" : "h-4 w-4 text-white"} />
-            ) : (
-              <ChevronDown className={isCompact ? "h-3 w-3 text-white" : "h-4 w-4 text-white"} />
-            )}
-          </button>
-        </div>
+        </button>
       </div>
 
       <div
         className={
           isCompact
             ? "grid gap-3 p-3"
-            : isLocatorPickExpanded
-              ? "grid gap-4 p-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]"
-              : "p-3 sm:p-4"
+            : "grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(190px,auto)] lg:items-start"
         }
       >
         <div className="min-w-0">
-          <h3 className={isCompact ? "text-lg font-black leading-tight text-[#102426]" : "text-xl font-black leading-tight text-[#102426] sm:text-2xl"}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-[#fff8e6] px-2.5 py-1 text-[10px] font-black uppercase text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+              {hasLocatorPick ? "Best first option" : "Needs floor plan"}
+            </span>
+          </div>
+
+          <h3 className={isCompact ? "mt-2 text-lg font-black leading-tight text-[#102426]" : "mt-2 text-xl font-black leading-tight text-[#102426] sm:text-2xl"}>
             {locatorPickTitle}
           </h3>
-          {isLocatorPickExpanded && (
-            <p className={isCompact ? "mt-2 text-xs font-semibold leading-5 text-[#526260]" : "mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]"}>
-              {locatorPickDescription}
-            </p>
-          )}
+          <p className={isCompact ? "mt-1.5 text-xs font-semibold leading-5 text-[#526260]" : "mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]"}>
+            {isLocatorPickExpanded ? locatorPickDescription : hasLocatorPick ? "Start here, then compare details if you want the full breakdown." : "Exact floor plans unlock the strongest recommendation."}
+          </p>
 
-          <div className={isCompact ? "mt-3 flex flex-wrap gap-1.5" : "mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"}>
+          <div className={isCompact ? "mt-3 grid grid-cols-2 gap-1.5" : "mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"}>
             {visibleLocatorPickChips.map((chip) => (
               <div
                 key={chip.label}
-                className={isCompact ? "rounded-lg bg-[#f5f8f1] px-2 py-1.5 ring-1 ring-[#d7e6df]" : "min-w-0 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]"}
+                className={isCompact ? "min-w-0 rounded-lg bg-[#f5f8f1] px-2 py-1.5 ring-1 ring-[#d7e6df]" : "min-w-0 rounded-xl bg-[#f5f8f1] px-3 py-2 ring-1 ring-[#d7e6df]"}
               >
                 <p className={isCompact ? "text-[8px] font-black uppercase text-[#526260]" : "text-[9px] font-black uppercase text-[#526260]"}>
                   {chip.label}
                 </p>
-                <p className={isCompact ? "mt-0.5 max-w-[9rem] truncate text-[11px] font-black text-[#102426]" : "mt-0.5 min-w-0 truncate text-xs font-black text-[#102426] sm:max-w-[14rem] sm:text-sm"}>
+                <p className={isCompact ? "mt-0.5 truncate text-[11px] font-black text-[#102426]" : "mt-0.5 min-w-0 truncate text-xs font-black text-[#102426] sm:max-w-[14rem] sm:text-sm"}>
                   {chip.value}
                 </p>
               </div>
@@ -377,41 +388,12 @@ function CompareDecisionSummary({
           </div>
 
           {isLocatorPickExpanded && (
-            <div className={isCompact ? "mt-3 grid grid-cols-2 gap-1.5" : "mt-4 flex flex-wrap gap-2"}>
-              <Link
-                to={locatorPickLink}
-                onClick={() => {
-                  if (locatorPickLink.includes("floor-plans")) {
-                    rememberFloorPlanSectionTarget();
-                  }
-                  onBeforeFloorPlanNavigation?.();
-                }}
-                className={isCompact ? "inline-flex items-center justify-center gap-1 rounded-lg bg-[#173f3f] px-3 py-2 text-[11px] font-black !text-white hover:bg-[#102426] hover:!text-white" : "inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"}
-              >
-                <span>{hasLocatorPick ? "View floor plan" : "Add floor plan"}</span>
-                <ArrowRight className={isCompact ? "h-3 w-3" : "h-4 w-4"} />
-              </Link>
-              <Link
-                to="/start"
-                className={isCompact ? "inline-flex items-center justify-center rounded-lg bg-[#f2b84b] px-3 py-2 text-[11px] font-black text-[#102426] hover:bg-[#dca33c]" : "inline-flex items-center justify-center rounded-xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black text-[#102426] hover:bg-[#dca33c]"}
-              >
-                Request tour
-              </Link>
-            </div>
-          )}
-        </div>
-
-        {isLocatorPickExpanded && (
-          <div className={isCompact ? "rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]" : "rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]"}>
-            <p className={isCompact ? "text-xs font-black text-[#102426]" : "text-sm font-black text-[#102426]"}>
-              Why this stands out
-            </p>
-            <div className={isCompact ? "mt-2 grid gap-2" : "mt-3 grid gap-3"}>
+            <div className={isCompact ? "mt-3 grid gap-2 rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]" : "mt-4 grid gap-3 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df] sm:grid-cols-3"}>
               {standOutItems.slice(0, 3).map((item) => (
-                <div key={item.label} className="flex gap-2">
+                <div key={item.label} className="flex min-w-0 gap-2">
                   <BadgeCheck className={isCompact ? "mt-0.5 h-4 w-4 shrink-0 text-[#1f6f63]" : "mt-0.5 h-5 w-5 shrink-0 text-[#1f6f63]"} />
                   <div className="min-w-0">
-                    <p className={isCompact ? "text-[11px] font-black text-[#173f3f]" : "text-sm font-black text-[#173f3f]"}>
+                    <p className={isCompact ? "text-[11px] font-black text-[#173f3f]" : "text-xs font-black text-[#173f3f]"}>
                       {item.label}
                     </p>
                     <p className={isCompact ? "mt-0.5 line-clamp-2 text-[10px] font-semibold leading-4 text-[#526260]" : "mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[#526260]"}>
@@ -421,8 +403,30 @@ function CompareDecisionSummary({
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        <div className={isCompact ? "grid grid-cols-2 gap-1.5" : "grid gap-2"}>
+          <Link
+            to={locatorPickLink}
+            onClick={() => {
+              if (locatorPickLink.includes("floor-plans")) {
+                rememberFloorPlanSectionTarget();
+              }
+              onBeforeFloorPlanNavigation?.();
+            }}
+            className={isCompact ? "inline-flex items-center justify-center gap-1 rounded-lg bg-[#173f3f] px-3 py-2 text-[11px] font-black !text-white hover:bg-[#102426] hover:!text-white" : "inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"}
+          >
+            <span>{hasLocatorPick ? "View pick" : "Add floor plan"}</span>
+            <ArrowRight className={isCompact ? "h-3 w-3" : "h-4 w-4"} />
+          </Link>
+          <Link
+            to="/start"
+            className={isCompact ? "inline-flex items-center justify-center rounded-lg bg-[#f2b84b] px-3 py-2 text-[11px] font-black text-[#102426] hover:bg-[#dca33c]" : "inline-flex items-center justify-center rounded-xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#dca33c]"}
+          >
+            Ask locator
+          </Link>
+        </div>
       </div>
     </section>
   );
@@ -571,10 +575,14 @@ function ComparePropertiesTab({
         {rows.map(({ property, priceSummary }) => {
           const floorPlanCount = property.floorPlanCount || 0;
           const hasFloorPlans = floorPlanCount > 0;
+          const hasSpecial = isMeaningfulCompareSpecial(priceSummary.specialLabel);
           const propertyLocation =
             property.area || property.neighborhood || property.city || "Dallas area";
           const actionButtonClass = `${isSmallCard ? "rounded-lg px-2 py-1.5 text-[11px]" : "rounded-xl px-3 py-2 text-xs"} flex min-h-9 items-center justify-center whitespace-nowrap text-center font-black leading-none`;
-          const floorPlanLabel = `${floorPlanCount} floor plan${floorPlanCount === 1 ? "" : "s"} selected`;
+          const selectedPlanLabel =
+            floorPlanCount === 1
+              ? "1 selected floor plan"
+              : floorPlanCount + " selected floor plans";
 
           return (
             <div
@@ -585,31 +593,38 @@ function ComparePropertiesTab({
                   : "min-w-0 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#d7e6df]"
               }
             >
-              <div className={isSmallCard ? "grid grid-cols-[72px_minmax(0,1fr)] gap-2 p-2.5" : "grid grid-cols-[96px_minmax(0,1fr)] gap-3 p-3"}>
+              <div className={isSmallCard ? "grid grid-cols-[70px_minmax(0,1fr)] gap-2 p-2.5" : "grid grid-cols-[92px_minmax(0,1fr)] gap-3 p-3"}>
                 <img
                   alt={property.name}
                   loading="lazy"
                   decoding="async"
-                  className={`${isSmallCard ? "h-[72px] w-[72px] rounded-lg" : "h-24 w-24 rounded-xl"} bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]`}
+                  className={`${isSmallCard ? "h-[70px] w-[70px] rounded-lg" : "h-[92px] w-[92px] rounded-xl"} bg-[#f5f8f1] object-cover ring-1 ring-[#d7e6df]`}
                   src={getPropertyPrimaryImage(property)}
                 />
 
-                <div className="grid min-w-0 grid-rows-[auto_1fr_auto]">
-                  <div className="flex min-w-0 items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className={`${isSmallCard ? "text-xs" : "text-sm"} truncate font-black text-[#102426]`}>
-                        {property.name}
-                      </p>
-                      <p className={`${isSmallCard ? "text-[11px]" : "text-xs"} mt-0.5 truncate font-bold text-[#526260]`}>
-                        {propertyLocation}
-                      </p>
-                    </div>
-
+                <div className="grid min-w-0 content-start gap-1.5">
+                  <div className="min-w-0">
+                    <p className={`${isSmallCard ? "text-xs" : "text-sm"} truncate font-black text-[#102426]`}>
+                      {property.name}
+                    </p>
+                    <p className={`${isSmallCard ? "text-[11px]" : "text-xs"} mt-0.5 truncate font-bold text-[#526260]`}>
+                      {propertyLocation}
+                    </p>
                   </div>
 
-                  <p className={`${isSmallCard ? "mt-1 line-clamp-1 text-[11px]" : "mt-2 line-clamp-2 text-xs"} font-black leading-4 text-[#8a5b0a]`}>
-                    {priceSummary.specialLabel || "No special listed"}
-                  </p>
+                  {hasSpecial && (
+                    <p className={`${isSmallCard ? "line-clamp-1 text-[11px]" : "line-clamp-2 text-xs"} font-black leading-4 text-[#8a5b0a]`}>
+                      {priceSummary.specialLabel}
+                    </p>
+                  )}
+
+                  <div className={`${isSmallCard ? "text-[10px]" : "text-[11px]"} font-bold leading-4 ${
+                    hasFloorPlans ? "text-[#1f6f63]" : "text-[#8a5b0a]"
+                  }`}>
+                    {hasFloorPlans
+                      ? selectedPlanLabel + " • pricing narrowed"
+                      : "Needs floor plan for exact rent"}
+                  </div>
                 </div>
               </div>
 
@@ -627,27 +642,6 @@ function ComparePropertiesTab({
                 />
               </div>
 
-              {hasFloorPlans ? (
-                <div className={`${isSmallCard ? "mx-2.5 mb-2 rounded-lg px-2 py-1.5" : "mx-3 mb-3 rounded-xl px-3 py-2"} bg-[#e7f3ee] ring-1 ring-[#a9cfc2]`}>
-                  <div className="flex items-start gap-2">
-                    <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#1f6f63] text-[9px] font-black !text-white">
-                      ✓
-                    </span>
-                    <span className="min-w-0">
-                      <span className={`${isSmallCard ? "text-[11px]" : "text-xs"} block font-black text-[#1f6f63]`}>
-                        {floorPlanLabel}
-                      </span>
-                      <span className={`${isSmallCard ? "text-[10px]" : "text-[11px]"} mt-0.5 block font-bold leading-4 text-[#526260]`}>
-                        Pricing reflects selected layout{floorPlanCount === 1 ? "" : "s"}.
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <p className={`${isSmallCard ? "mx-2.5 mb-2 rounded-lg px-2 py-1.5 text-[10px] leading-4" : "mx-3 mb-3 rounded-xl px-3 py-2 text-xs leading-5"} bg-[#fff8e6] font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]`}>
-                  Add a floor plan for exact rent, size, and savings.
-                </p>
-              )}
               <div className={`${isSmallCard ? "grid-cols-2 gap-1.5 px-2.5 py-2.5" : "grid-cols-2 gap-2 px-3 py-3"} grid border-t border-[#edf4ef] bg-[#f5f8f1]`}>
                 <Link
                   to={getFloorPlansRoute(property.id)}
@@ -657,14 +651,14 @@ function ComparePropertiesTab({
                   }}
                   className={`${actionButtonClass} border border-[#173f3f] bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white`}
                 >
-                  {hasFloorPlans ? "Add another plan" : "Add floor plan"}
+                  {hasFloorPlans ? "Add another" : "Add floor plan"}
                 </Link>
                 <button
                   type="button"
                   onClick={() => onRemove(property.id)}
                   className={`${actionButtonClass} gap-1.5 border border-[#f4b6aa] bg-[#fff0ea]/80 !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]`}
                 >
-                  <Trash2 className="h-3 w-3 shrink-0" />
+                  <Trash2 className="h-3.5 w-3.5 shrink-0" />
                   <span>Remove</span>
                 </button>
               </div>
@@ -692,12 +686,12 @@ function CompareDetailsTab({ rows, mode, isCompact, onBeforeFloorPlanNavigation 
       >
         <div className="min-w-0">
           <p className={`${isCompact ? "text-[10px]" : "text-xs"} font-black uppercase text-[#8a5b0a]`}>
-            Side-by-side decision chart
+            Side-by-side comparison
           </p>
           <p className={`${isCompact ? "mt-1 text-[11px] leading-4" : "mt-1 text-sm leading-6"} font-bold text-[#8a5b0a]`}>
             {mode === "floorPlans"
-              ? "Exact floor plans are compared first so rent, size, and specials line up cleanly."
-              : "Choose floor plans from each property for the sharpest comparison. Until then, this compares selected properties."}
+              ? "Exact floor plans line up first so price, size, and specials are easy to scan."
+              : "Add floor plans when you want the comparison to move from property-level ranges to exact layouts."}
           </p>
         </div>
         <Link
