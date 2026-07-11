@@ -243,6 +243,12 @@ function CompareDecisionSummary({
   const recommendationSentence = hasLocatorPick
     ? "Tour this one first. It has the strongest mix of price, space, special, and availability."
     : "Choose exact layouts and BMA will rank the strongest option for you.";
+  const compactRecommendationSentence = hasLocatorPick
+    ? "Tour this one first."
+    : "Add floor plans to rank your best option.";
+  const locatorPickReason = hasLocatorPick
+    ? getLocatorPickReason(locatorPickRow, locatorScoreRows, lowestRentRow, bestSpecialRow)
+    : "Exact floor plans needed";
   const locatorPickChips = hasLocatorPick
     ? [
         {
@@ -331,7 +337,7 @@ function CompareDecisionSummary({
       <div
         className={
           isCompact
-            ? "grid gap-2 bg-[#102426] px-3 py-2.5"
+            ? "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 bg-[#102426] px-3 py-2.5"
             : "grid gap-3 bg-[#102426] px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
         }
       >
@@ -353,9 +359,9 @@ function CompareDecisionSummary({
           type="button"
           aria-expanded={isLocatorPickExpanded}
           onClick={() => setIsLocatorPickExpanded((isExpanded) => !isExpanded)}
-          className={isCompact ? "inline-flex w-fit items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-black text-white ring-1 ring-white/20 hover:bg-white/15" : "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 text-center text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/15"}
+          className={isCompact ? "inline-flex min-h-8 shrink-0 items-center justify-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-black text-white ring-1 ring-white/20 hover:bg-white/15" : "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 text-center text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/15"}
         >
-          <span>{isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
+          <span>{isCompact ? (isLocatorPickExpanded ? "Less" : "Why?") : isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
           {isLocatorPickExpanded ? (
             <ChevronUp className={isCompact ? "h-3 w-3 text-white" : "h-4 w-4 text-white"} />
           ) : (
@@ -382,8 +388,12 @@ function CompareDecisionSummary({
             {locatorPickTitle}
           </h3>
           <p className={isCompact ? "mt-1.5 text-xs font-bold leading-5 text-[#173f3f]" : "mt-2 max-w-2xl text-sm font-bold leading-6 text-[#173f3f]"}>
-            {recommendationSentence}
+            {isCompact ? compactRecommendationSentence : recommendationSentence}
           </p>
+          <div className={isCompact ? "mt-2 inline-flex max-w-full items-center gap-1.5 rounded-lg bg-[#e7f3ee] px-2.5 py-1.5 text-[11px] font-black text-[#173f3f] ring-1 ring-[#a9cfc2]" : "mt-3 inline-flex max-w-full items-center gap-2 rounded-xl bg-[#e7f3ee] px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#a9cfc2]"}>
+            <BadgeCheck className={isCompact ? "h-3.5 w-3.5 shrink-0" : "h-4 w-4 shrink-0"} aria-hidden="true" />
+            <span className="truncate">{locatorPickReason}</span>
+          </div>
           {isLocatorPickExpanded && (
             <p className={isCompact ? "mt-1 text-xs font-semibold leading-5 text-[#526260]" : "mt-1 max-w-2xl text-sm font-semibold leading-6 text-[#526260]"}>
               {locatorPickDescription}
@@ -417,7 +427,7 @@ function CompareDecisionSummary({
             })}
           </div>
 
-          {hasLocatorPick && runnerUpRow && (
+          {hasLocatorPick && runnerUpRow && !isCompact && (
             <div className={isCompact ? "mt-2 rounded-lg bg-[#f5f8f1] px-2.5 py-2 ring-1 ring-[#d7e6df]" : "mt-3 rounded-xl bg-[#f5f8f1] px-3 py-2.5 ring-1 ring-[#d7e6df]"}>
               <p className={isCompact ? "text-[9px] font-black uppercase text-[#526260]" : "text-[10px] font-black uppercase text-[#526260]"}>
                 Also worth checking
@@ -872,6 +882,26 @@ function CompareTile({ label, value, highlight = false, isCompact = false }) {
     </div>
   );
 }
+function getLocatorPickReason(locatorPickRow, locatorScoreRows, lowestRentRow, bestSpecialRow) {
+  if (!locatorPickRow) return "Strongest overall match";
+
+  const lowestValueRow = locatorScoreRows
+    .filter((row) => row.rentPerSqft > 0)
+    .sort((firstRow, secondRow) => firstRow.rentPerSqft - secondRow.rentPerSqft)[0];
+  const strongestSpecialRow = locatorScoreRows
+    .filter((row) => row.specialStrength > 0)
+    .sort((firstRow, secondRow) => secondRow.specialStrength - firstRow.specialStrength)[0];
+
+  if (lowestRentRow?.id === locatorPickRow.id) return "Lowest after-special rent";
+  if (lowestValueRow?.id === locatorPickRow.id) return "Best value per sq ft";
+  if (strongestSpecialRow?.id === locatorPickRow.id || bestSpecialRow?.id === locatorPickRow.id) {
+    return "Strongest special";
+  }
+  if (locatorPickRow.availabilityCount > 1) return "Best value with availability";
+
+  return "Strongest overall match";
+}
+
 function shouldFormatCompareRentLabel(label) {
   const labelText = String(label || "").toLowerCase();
 
