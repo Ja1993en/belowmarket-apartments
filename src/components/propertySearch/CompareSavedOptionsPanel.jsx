@@ -239,6 +239,9 @@ function CompareDecisionSummary({
   const locatorPickDescription = hasLocatorPick
     ? "Best first option based on after-special rent, listed rent, value per square foot, availability, and current special."
     : "Choose exact layouts so the comparison can rank real rent, size, specials, and availability.";
+  const recommendationSentence = hasLocatorPick
+    ? "Start with this option first, then use Compare to check the tradeoffs."
+    : "Add exact floor plans and BMA will point you to the strongest choice.";
   const locatorPickChips = hasLocatorPick
     ? [
         {
@@ -377,9 +380,14 @@ function CompareDecisionSummary({
           <h3 className={isCompact ? "mt-2 text-lg font-black leading-tight text-[#102426]" : "mt-2 text-xl font-black leading-tight text-[#102426] sm:text-2xl"}>
             {locatorPickTitle}
           </h3>
-          <p className={isCompact ? "mt-1.5 text-xs font-semibold leading-5 text-[#526260]" : "mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#526260]"}>
-            {isLocatorPickExpanded ? locatorPickDescription : hasLocatorPick ? "Start here, then compare details if you want the full breakdown." : "Exact floor plans unlock the strongest recommendation."}
+          <p className={isCompact ? "mt-1.5 text-xs font-bold leading-5 text-[#173f3f]" : "mt-2 max-w-2xl text-sm font-bold leading-6 text-[#173f3f]"}>
+            {recommendationSentence}
           </p>
+          {isLocatorPickExpanded && (
+            <p className={isCompact ? "mt-1 text-xs font-semibold leading-5 text-[#526260]" : "mt-1 max-w-2xl text-sm font-semibold leading-6 text-[#526260]"}>
+              {locatorPickDescription}
+            </p>
+          )}
 
           <div className={isCompact ? "mt-3 grid grid-cols-2 gap-1.5" : "mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"}>
             {visibleLocatorPickChips.map((chip) => {
@@ -427,7 +435,7 @@ function CompareDecisionSummary({
           )}
         </div>
 
-        <div className={isCompact ? "grid grid-cols-2 gap-1.5" : "grid gap-2"}>
+        <div className={isCompact ? "grid gap-1.5" : "grid gap-2"}>
           <Link
             to={locatorPickLink}
             onClick={() => {
@@ -436,14 +444,14 @@ function CompareDecisionSummary({
               }
               onBeforeFloorPlanNavigation?.();
             }}
-            className={isCompact ? "inline-flex items-center justify-center gap-1 rounded-lg bg-[#173f3f] px-3 py-2 text-[11px] font-black !text-white hover:bg-[#102426] hover:!text-white" : "inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"}
+            className={isCompact ? "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-3 py-2 text-xs font-black !text-white shadow-sm hover:bg-[#102426] hover:!text-white" : "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm hover:bg-[#102426] hover:!text-white"}
           >
             <span>{hasLocatorPick ? "View pick" : "Add floor plan"}</span>
-            <ArrowRight className={isCompact ? "h-3 w-3" : "h-4 w-4"} />
+            <ArrowRight className={isCompact ? "h-3.5 w-3.5" : "h-4 w-4"} />
           </Link>
           <Link
             to="/start"
-            className={isCompact ? "inline-flex items-center justify-center rounded-lg bg-[#f2b84b] px-3 py-2 text-[11px] font-black text-[#102426] hover:bg-[#dca33c]" : "inline-flex items-center justify-center rounded-xl bg-[#f2b84b] px-4 py-3 text-sm font-black text-[#102426] hover:bg-[#dca33c]"}
+            className={isCompact ? "inline-flex min-h-9 items-center justify-center rounded-lg bg-white px-3 py-2 text-[11px] font-black text-[#173f3f] ring-1 ring-[#a9cfc2] hover:bg-[#f5f8f1]" : "inline-flex min-h-10 items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#173f3f] ring-1 ring-[#a9cfc2] hover:bg-[#f5f8f1]"}
           >
             Ask locator
           </Link>
@@ -643,8 +651,8 @@ function ComparePropertiesTab({
                     hasFloorPlans ? "text-[#1f6f63]" : "text-[#8a5b0a]"
                   }`}>
                     {hasFloorPlans
-                      ? selectedPlanLabel + " • pricing narrowed"
-                      : "Needs floor plan for exact rent"}
+                      ? selectedPlanLabel + " • pricing reflects layouts"
+                      : "Add a layout for exact comparison"}
                   </div>
                 </div>
               </div>

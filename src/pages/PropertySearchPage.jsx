@@ -1321,7 +1321,7 @@ export default function PropertySearchPage() {
               <div className="flex shrink-0 items-center gap-1.5">
                 <Link
                   to="/start"
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#f2b84b] px-3 py-2 text-xs font-black text-[#102426] hover:bg-[#f9d783]"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
                 >
                   <Search className="h-3.5 w-3.5" aria-hidden="true" />
                   Ask a Locator
