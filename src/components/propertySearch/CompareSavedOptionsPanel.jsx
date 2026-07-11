@@ -220,6 +220,7 @@ function CompareDecisionSummary({
     .sort((firstRow, secondRow) => firstRow.rentNumber - secondRow.rentNumber)[0];
   const locatorScoreRows = getLocatorScoreRows(rows);
   const locatorScoreRow = locatorScoreRows[0];
+  const runnerUpRow = locatorScoreRows.find((row) => row.id !== locatorScoreRow?.id);
   const bestSpecialRow = rows.find((row) => isMeaningfulCompareSpecial(row.special));
   const selectedCount = floorPlanCount + propertyCount;
   const selectedSummary =
@@ -235,13 +236,13 @@ function CompareDecisionSummary({
   const locatorPickLink = locatorPickRow?.linkTo || "/properties";
   const locatorPickTitle = hasLocatorPick
     ? getCompareOptionTitle(locatorPickRow)
-    : "Add floor plans to unlock BMA's pick";
+    : "Add floor plans to unlock your BMA pick";
   const locatorPickDescription = hasLocatorPick
-    ? "Best first option based on after-special rent, listed rent, value per square foot, availability, and current special."
+    ? "BMA scores selected floor plans by after-special rent, listed rent, value per square foot, availability, and special strength."
     : "Choose exact layouts so the comparison can rank real rent, size, specials, and availability.";
   const recommendationSentence = hasLocatorPick
-    ? "Start with this option first, then use Compare to check the tradeoffs."
-    : "Add exact floor plans and BMA will point you to the strongest choice.";
+    ? "Tour this one first. It has the strongest mix of price, space, special, and availability."
+    : "Choose exact layouts and BMA will rank the strongest option for you.";
   const locatorPickChips = hasLocatorPick
     ? [
         {
@@ -323,8 +324,8 @@ function CompareDecisionSummary({
     <section
       className={
         isCompact
-          ? "mt-2 overflow-hidden rounded-xl bg-white ring-1 ring-[#d7e6df]"
-          : "mt-4 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#d7e6df]"
+          ? `mt-2 overflow-hidden rounded-xl bg-white shadow-sm ${hasLocatorPick ? "ring-2 ring-[#f2b84b]" : "ring-1 ring-[#d7e6df]"}`
+          : `mt-4 overflow-hidden rounded-2xl bg-white shadow-sm ${hasLocatorPick ? "ring-2 ring-[#f2b84b]" : "ring-1 ring-[#d7e6df]"}`
       }
     >
       <div
@@ -340,10 +341,10 @@ function CompareDecisionSummary({
           </span>
           <div className="min-w-0">
             <p className={isCompact ? "text-sm font-black text-white" : "text-lg font-black text-white"}>
-              BMA recommendation
+              {hasLocatorPick ? "BMA Pick" : "BMA recommendation"}
             </p>
             <p className={isCompact ? "truncate text-[10px] font-bold text-white/75" : "truncate text-xs font-bold text-white/75"}>
-              {selectedCount} selected • {selectedSummary}
+              {hasLocatorPick ? "Recommended first tour • " : ""}{selectedCount} selected • {selectedSummary}
             </p>
           </div>
         </div>
@@ -373,7 +374,7 @@ function CompareDecisionSummary({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[#fff8e6] px-2.5 py-1 text-[10px] font-black uppercase text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-              {hasLocatorPick ? "Best first option" : "Needs floor plan"}
+              {hasLocatorPick ? "Recommended first tour" : "Needs floor plan"}
             </span>
           </div>
 
@@ -415,6 +416,17 @@ function CompareDecisionSummary({
               );
             })}
           </div>
+
+          {hasLocatorPick && runnerUpRow && (
+            <div className={isCompact ? "mt-2 rounded-lg bg-[#f5f8f1] px-2.5 py-2 ring-1 ring-[#d7e6df]" : "mt-3 rounded-xl bg-[#f5f8f1] px-3 py-2.5 ring-1 ring-[#d7e6df]"}>
+              <p className={isCompact ? "text-[9px] font-black uppercase text-[#526260]" : "text-[10px] font-black uppercase text-[#526260]"}>
+                Also worth checking
+              </p>
+              <p className={isCompact ? "mt-0.5 truncate text-[11px] font-black text-[#173f3f]" : "mt-0.5 truncate text-xs font-black text-[#173f3f]"}>
+                {getCompareOptionTitle(runnerUpRow)}
+              </p>
+            </div>
+          )}
 
           {isLocatorPickExpanded && (
             <div className={isCompact ? "mt-3 grid gap-2 rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]" : "mt-4 grid gap-3 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df] sm:grid-cols-3"}>
