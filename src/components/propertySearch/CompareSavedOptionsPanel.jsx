@@ -359,13 +359,13 @@ function CompareDecisionSummary({
           type="button"
           aria-expanded={isLocatorPickExpanded}
           onClick={() => setIsLocatorPickExpanded((isExpanded) => !isExpanded)}
-          className={isCompact ? "inline-flex min-h-8 shrink-0 items-center justify-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-black text-white ring-1 ring-white/20 hover:bg-white/15" : "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 text-center text-xs font-black text-white ring-1 ring-white/20 hover:bg-white/15"}
+          className={isCompact ? "inline-flex min-h-8 shrink-0 items-center justify-center gap-1 rounded-lg bg-[#173f3f] px-2.5 py-1.5 text-[10px] font-black !text-white ring-1 ring-white/35 hover:bg-[#1f6f63] hover:!text-white" : "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-3 py-2 text-center text-xs font-black !text-white ring-1 ring-white/35 hover:bg-[#1f6f63] hover:!text-white"}
         >
-          <span>{isCompact ? (isLocatorPickExpanded ? "Less" : "Why?") : isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
+          <span className="!text-white">{isCompact ? (isLocatorPickExpanded ? "Less" : "Why?") : isLocatorPickExpanded ? "Show less" : "Why this pick?"}</span>
           {isLocatorPickExpanded ? (
-            <ChevronUp className={isCompact ? "h-3 w-3 text-white" : "h-4 w-4 text-white"} />
+            <ChevronUp className={isCompact ? "h-3 w-3 !text-white" : "h-4 w-4 !text-white"} />
           ) : (
-            <ChevronDown className={isCompact ? "h-3 w-3 text-white" : "h-4 w-4 text-white"} />
+            <ChevronDown className={isCompact ? "h-3 w-3 !text-white" : "h-4 w-4 !text-white"} />
           )}
         </button>
       </div>
