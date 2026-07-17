@@ -4996,9 +4996,9 @@ function FloorPlanCard({
                         className="rounded-xl bg-white px-3 py-2 text-sm font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]"
                     />
 
-                    <div className={`grid gap-2 ${hasRentSavings ? "grid-cols-3" : "grid-cols-1 sm:max-w-[13rem]"}`}>
+                    <div className={`grid gap-2 ${hasRentSavings ? "grid-cols-2 xl:grid-cols-3" : "grid-cols-1 sm:max-w-[13rem]"}`}>
                         {hasRentSavings && (
-                            <div className="min-w-0 rounded-xl bg-[#e7f3ee] px-2 py-2 ring-2 ring-[#a9cfc2] sm:px-3">
+                            <div className="col-span-2 min-w-0 rounded-xl bg-[#e7f3ee] px-2 py-2 ring-2 ring-[#a9cfc2] sm:px-3 xl:col-span-1">
                                 <p className="whitespace-nowrap text-[9px] font-black uppercase text-[#526260] sm:text-[10px]">
                                     After special
                                 </p>
