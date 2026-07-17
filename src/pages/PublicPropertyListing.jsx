@@ -1456,17 +1456,17 @@ export default function PublicPropertyListing() {
     const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3.5";
     const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-3";
     const intakeGridSpacingClass = shouldShowCompareList
-        ? "mt-1.5 gap-1.5"
+        ? "mt-1.5 gap-2"
         : "mt-2 gap-2";
     const intakeFieldSizeClass = shouldShowCompareList
         ? "md:py-1.5 lg:py-1.5 xl:py-1.5 !text-[13px]"
         : "md:py-2 lg:py-2 xl:py-2 !text-sm";
     const intakeConsentClass = shouldShowCompareList
-        ? "mt-2 p-2 text-[10px] leading-3"
-        : "mt-3 p-2.5 text-[11px] leading-4";
+        ? "mt-2 p-2.5 text-[11px] leading-4"
+        : "mt-3 p-3 text-[11px] leading-4";
     const intakeSubmitClass = shouldShowCompareList
         ? "mt-2 py-2.5 text-sm"
-        : "mt-3 py-3 text-sm";
+        : "mt-2.5 py-3 text-sm";
     const intakeFinePrintClass = shouldShowCompareList
         ? "mt-1.5 text-[10px] leading-3"
         : "mt-2 text-[10px] leading-4";
@@ -1883,7 +1883,7 @@ export default function PublicPropertyListing() {
                         </p>
 
                         <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
-                            Get verified pricing
+                            Want this price verified?
                         </h2>
                     </div>
 
@@ -1899,7 +1899,7 @@ export default function PublicPropertyListing() {
                 </div>
 
                 <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
-                    Confirm specials, fees, and availability before touring.
+                    Confirm specials, fees, and availability before you tour or apply.
                 </p>
 
                 <div className={`mt-2 line-clamp-2 rounded-lg px-2.5 py-1.5 text-[11px] font-black leading-4 ${
@@ -1908,8 +1908,8 @@ export default function PublicPropertyListing() {
                         : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
                 }`}>
                     {hasPropertySpecial
-                        ? `Listed special: ${propertySpecialLabel}`
-                        : "Ask us to confirm current pricing and availability."}
+                        ? `Special: ${propertySpecialLabel}`
+                        : "Pricing: Ask us to confirm current pricing and availability."}
                 </div>
 
                 <div className={intakeSectionSpacingClass}>
@@ -2068,6 +2068,12 @@ export default function PublicPropertyListing() {
                     </p>
                 )}
 
+                <div className="mt-2 grid grid-cols-3 gap-1.5 rounded-xl bg-[#f5f8f1] p-2 text-center text-[9px] font-black uppercase tracking-wide text-[#173f3f] ring-1 ring-[#d7e6df]">
+                    <span>Free help</span>
+                    <span>No obligation</span>
+                    <span>Local locator</span>
+                </div>
+
                 <button
                     type="button"
                     onClick={handleFloorPlanLeadSubmit}
@@ -2081,11 +2087,11 @@ export default function PublicPropertyListing() {
                         ? "Sending..."
                         : leadSubmitted
                             ? "Request Sent"
-                            : "Text me verified details"}
+                            : "Get verified details"}
                 </button>
 
                 <p className={`font-semibold text-[#7b8b88] ${intakeFinePrintClass}`}>
-                    No cost to renters. We only follow up about this property and nearby options.
+                    We only follow up about this property and nearby options.
                 </p>
             </div>
         </div>
@@ -2780,11 +2786,11 @@ export default function PublicPropertyListing() {
                                         </p>
 
                                         <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
-                                            Get verified pricing
+                                            Want this price verified?
                                         </h2>
 
                                         <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
-                                            Confirm specials, fees, and availability before touring.
+                                            Confirm specials, fees, and availability before you tour or apply.
                                         </p>
 
                                         <div className={`mt-2 line-clamp-2 rounded-lg px-2.5 py-1.5 text-[11px] font-black leading-4 ${
@@ -2793,8 +2799,8 @@ export default function PublicPropertyListing() {
                                                     : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
                                             }`}>
                                             {hasPropertySpecial
-                                                ? `Listed special: ${propertySpecialLabel}`
-                                                : "Ask us to confirm current pricing and availability."}
+                                                ? `Special: ${propertySpecialLabel}`
+                                                : "Pricing: Ask us to confirm current pricing and availability."}
                                         </div>
 
                                         <div className={intakeSectionSpacingClass}>
@@ -2953,6 +2959,12 @@ export default function PublicPropertyListing() {
                                             </p>
                                         )}
 
+                                        <div className="mt-2 grid grid-cols-3 gap-1.5 rounded-xl bg-[#f5f8f1] p-2 text-center text-[9px] font-black uppercase tracking-wide text-[#173f3f] ring-1 ring-[#d7e6df]">
+                                            <span>Free help</span>
+                                            <span>No obligation</span>
+                                            <span>Local locator</span>
+                                        </div>
+
                                         <button
                                             type="button"
                                             onClick={handleFloorPlanLeadSubmit}
@@ -2966,11 +2978,11 @@ export default function PublicPropertyListing() {
                                                 ? "Sending..."
                                                 : leadSubmitted
                                                     ? "Request Sent"
-                                                    : "Text me verified details"}
+                                                    : "Get verified details"}
                                         </button>
 
                                         <p className={`font-semibold text-[#7b8b88] ${intakeFinePrintClass}`}>
-                                            No cost to renters. We only follow up about this property and nearby options.
+                                            We only follow up about this property and nearby options.
                                         </p>
                                     </div>
                                 </div>
