@@ -1470,11 +1470,14 @@ export default function PublicPropertyListing() {
     const intakeFinePrintClass = shouldShowCompareList
         ? "mt-1.5 text-[10px] leading-3"
         : "mt-2 text-[10px] leading-4";
+    const intakeStickyViewportClass = shouldShowCompareList
+        ? "md:top-[7rem] md:max-h-[calc(100vh-14rem)]"
+        : "md:top-[7rem] md:max-h-[calc(100vh-7rem)]";
     const intakeCardHeightClass = shouldShowCompareList
-        ? "md:min-h-[calc(100vh-12rem)]"
+        ? "md:min-h-0"
         : "md:min-h-[calc(100vh-8rem)]";
     const intakePanelLayoutClass = shouldShowCompareList
-        ? "md:min-h-[calc(100vh-12.5rem)]"
+        ? "min-h-0"
         : "md:min-h-[calc(100vh-8.5rem)]";
 
     const filteredFloorPlans =
@@ -1868,7 +1871,7 @@ export default function PublicPropertyListing() {
             className={
                 isModal
                     ? "flex max-h-[86vh] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl"
-                    : `order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto ${intakeCardHeightClass}`
+                    : `order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky ${intakeStickyViewportClass} md:overflow-y-auto ${intakeCardHeightClass}`
             }
         >
             <div className="h-1.5 bg-[#f2b84b]" />
@@ -2777,7 +2780,7 @@ export default function PublicPropertyListing() {
                             <div
                                 className="mt-8 hidden flex-col gap-4 md:mt-0 md:flex md:min-h-full md:self-stretch"
                             >
-                                <div id="request-info" className={`order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky md:top-[7rem] md:max-h-[calc(100vh-7rem)] md:overflow-y-auto ${intakeCardHeightClass}`}>
+                                <div id="request-info" className={`order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky ${intakeStickyViewportClass} md:overflow-y-auto ${intakeCardHeightClass}`}>
                                     <div className="h-1.5 bg-[#f2b84b]" />
 
                                     <div className={`${intakePanelPaddingClass} flex flex-1 flex-col ${intakePanelLayoutClass}`}>
