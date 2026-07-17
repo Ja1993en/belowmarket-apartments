@@ -4948,7 +4948,7 @@ function FloorPlanCard({
 
                 <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#e7f3ee] px-2 py-1 ring-1 ring-[#a9cfc2] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
                     <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
-                        Effective
+                        After special
                     </span>
                     <span className={`truncate text-xs font-black lg:text-sm ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
                         {displayEffectiveValue}
