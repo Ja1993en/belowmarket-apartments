@@ -4878,115 +4878,146 @@ function FloorPlanCard({
 
     return (
         <>
-        <div className="relative rounded-2xl border border-[#d7e6df] bg-white p-2.5 shadow-sm transition duration-200 ease-out hover:-translate-y-1.5 hover:border-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.16)] hover:ring-2 hover:ring-[#f2b84b]/45 sm:p-3 lg:p-3">
-            <button
-                type="button"
-                onClick={onCheckAvailability}
-                className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-[#f2b84b] px-2 py-1 text-[9px] font-black !text-[#102426] shadow-sm ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:hidden"
-            >
-                <Search className="h-2.5 w-2.5 shrink-0" />
-                <span>Ask Locator</span>
-            </button>
-
-            <div className="float-left mr-3 mb-1.5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-24 sm:w-24 lg:h-[92px] lg:w-[108px] lg:p-1.5">
-                {shouldShowFloorPlanImage ? (
-                    <button
-                        type="button"
-                        onClick={() => setIsPreviewOpen(true)}
-                        className="group relative h-full w-full overflow-hidden text-left focus:outline-none focus:ring-2 focus:ring-[#f2b84b]"
-                        aria-label={`Preview ${name} floor plan image`}
-                    >
-                        <img
-                            src={image}
-                            alt={imageAlt}
-                            loading="lazy"
-                            decoding="async"
-                            onError={() => setHasImageError(true)}
-                            className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02]"
-                        />
-                        <span className="absolute inset-x-2 top-2 rounded-lg bg-[#102426]/85 px-2 py-1 text-center text-[10px] font-black uppercase leading-none !text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus:opacity-100">
-                            Preview
-                        </span>
-                    </button>
-                ) : (
-                    <span className="px-2 text-center text-[10px] font-black uppercase leading-4 text-[#526260]">
-                        Image pending
-                    </span>
-                )}
-            </div>
-
-            <div className="min-w-0 pr-24 sm:pr-28">
-                <div className="grid gap-1">
-                    <h3 className="line-clamp-2 text-base font-black leading-tight text-[#102426] sm:text-lg lg:truncate">
-                        {name}
-                    </h3>
-
-                    <span
-                        className={`inline-flex w-fit max-w-full rounded-full px-2 py-0.5 text-[10px] font-black ring-1 sm:px-2.5 sm:py-1 sm:text-[11px] ${
-                            hasSpecial
-                                ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
-                                : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
-                        }`}
-                    >
-                        <span className="truncate">{specialLabel}</span>
-                    </span>
+        <div className="rounded-2xl border border-[#d7e6df] bg-white p-3 shadow-sm transition duration-200 ease-out hover:-translate-y-1 hover:border-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.14)] hover:ring-2 hover:ring-[#f2b84b]/35">
+            <div className="grid gap-3 md:grid-cols-[122px_minmax(0,1fr)] md:items-stretch xl:grid-cols-[136px_minmax(0,1fr)]">
+                <div className="hidden md:order-1 md:block">
+                    {shouldShowFloorPlanImage ? (
+                        <button
+                            type="button"
+                            onClick={() => setIsPreviewOpen(true)}
+                            className="group relative flex h-40 w-full items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-[#d7e6df] transition hover:ring-[#f2b84b] focus:outline-none focus:ring-2 focus:ring-[#f2b84b] md:h-full md:min-h-[176px]"
+                            aria-label={`Preview ${name} floor plan image`}
+                        >
+                            <img
+                                src={image}
+                                alt={imageAlt}
+                                loading="lazy"
+                                decoding="async"
+                                onError={() => setHasImageError(true)}
+                                className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02]"
+                            />
+                            <span className="absolute inset-x-2 top-2 rounded-lg bg-[#102426]/85 px-2 py-1 text-center text-[10px] font-black uppercase leading-none !text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus:opacity-100">
+                                Preview
+                            </span>
+                        </button>
+                    ) : (
+                        <div className="flex h-40 w-full items-center justify-center rounded-xl bg-[#f5f8f1] p-3 text-center ring-1 ring-[#d7e6df] md:h-full md:min-h-[176px]">
+                            <span className="text-[10px] font-black uppercase leading-4 text-[#526260]">
+                                Image pending
+                            </span>
+                        </div>
+                    )}
                 </div>
 
-                <FloorPlanBasicStats
-                    beds={beds}
-                    baths={baths}
-                    name={name}
-                    sqft={sqft}
-                    className="mt-1.5 text-sm font-semibold leading-5 text-[#526260]"
-                />
+                <div className="order-1 grid min-w-0 gap-3 md:order-2">
+                    <div className="min-w-0">
+                        <div className="flex min-w-0 items-start justify-between gap-3">
+                            <div className="min-w-0">
+                                <h3 className="line-clamp-2 text-lg font-black leading-tight text-[#102426]">
+                                    {name}
+                                </h3>
+                            </div>
+                        </div>
 
-                <p className={`mt-1 text-xs font-black ${hasAvailableFloorPlanUnits ? "text-[#1f6f63]" : "text-[#e4572e]"}`}>
-                    {availabilityBadgeLabel}
-                </p>
-            </div>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <span
+                                className={`inline-flex w-fit max-w-full rounded-full px-2.5 py-1 text-[10px] font-black ring-1 sm:text-[11px] ${hasSpecial
+                                    ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
+                                    : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
+                                    }`}
+                            >
+                                <span className="truncate">{specialLabel}</span>
+                            </span>
 
-            <div className="clear-both flex flex-wrap gap-1 pt-2 lg:gap-2 lg:pt-3">
-                {hasRentSavings && (
-                    <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#e7f3ee] px-2.5 py-1 ring-2 ring-[#a9cfc2] lg:gap-2 lg:rounded-full lg:px-3 lg:py-1.5">
-                        <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
-                            After special
-                        </span>
-                        <span className="truncate text-sm font-black text-[#1f6f63] lg:text-base">
-                            {displayEffectiveValue}
-                        </span>
+                            <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ring-1 sm:text-[11px] ${hasAvailableFloorPlanUnits
+                                ? "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]"
+                                : "bg-[#fff0ea] text-[#b42318] ring-[#f4b6aa]"
+                                }`}>
+                                {availabilityBadgeLabel}
+                            </span>
+                        </div>
                     </div>
-                )}
 
-                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-white px-2 py-1 ring-1 ring-[#d7e6df] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
-                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
-                        Listed rent
-                    </span>
-                    <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
-                        {displayRentValue}
-                    </span>
+                    <div className="md:hidden">
+                        {shouldShowFloorPlanImage ? (
+                            <button
+                                type="button"
+                                onClick={() => setIsPreviewOpen(true)}
+                                className="group relative flex h-40 w-full items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-[#d7e6df] transition hover:ring-[#f2b84b] focus:outline-none focus:ring-2 focus:ring-[#f2b84b]"
+                                aria-label={`Preview ${name} floor plan image`}
+                            >
+                                <img
+                                    src={image}
+                                    alt={imageAlt}
+                                    loading="lazy"
+                                    decoding="async"
+                                    onError={() => setHasImageError(true)}
+                                    className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02]"
+                                />
+                                <span className="absolute inset-x-2 top-2 rounded-lg bg-[#102426]/85 px-2 py-1 text-center text-[10px] font-black uppercase leading-none !text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus:opacity-100">
+                                    Preview
+                                </span>
+                            </button>
+                        ) : (
+                            <div className="flex h-40 w-full items-center justify-center rounded-xl bg-[#f5f8f1] p-3 text-center ring-1 ring-[#d7e6df]">
+                                <span className="text-[10px] font-black uppercase leading-4 text-[#526260]">
+                                    Image pending
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    <FloorPlanBasicStats
+                        beds={beds}
+                        baths={baths}
+                        name={name}
+                        sqft={sqft}
+                        className="rounded-xl bg-[#f5f8f1] px-3 py-2 text-sm font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]"
+                    />
+
+                    <div className={`grid gap-2 ${hasRentSavings ? "grid-cols-3" : "grid-cols-1 sm:max-w-[14rem]"}`}>
+                        {hasRentSavings && (
+                            <div className="min-w-0 rounded-xl bg-[#e7f3ee] px-2 py-2 ring-2 ring-[#a9cfc2] sm:px-3">
+                                <p className="text-[10px] font-black uppercase text-[#526260]">
+                                    After special
+                                </p>
+                                <p className="mt-1 truncate text-xs font-black leading-tight sm:text-sm xl:text-base text-[#1f6f63]">
+                                    {displayEffectiveValue}
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="min-w-0 rounded-xl bg-white px-2 py-2 ring-1 ring-[#d7e6df] sm:px-3">
+                            <p className="text-[10px] font-black uppercase text-[#526260]">
+                                Listed rent
+                            </p>
+                            <p className="mt-1 truncate text-xs font-black leading-tight sm:text-sm text-[#102426]">
+                                {displayRentValue}
+                            </p>
+                        </div>
+
+                        {hasRentSavings && (
+                            <div className="min-w-0 rounded-xl bg-[#fff8e6] px-2 py-2 ring-1 ring-[#f2d08a] sm:px-3">
+                                <p className="text-[10px] font-black uppercase text-[#8a5b0a]">
+                                    Save
+                                </p>
+                                <p className="mt-1 truncate text-xs font-black leading-tight sm:text-sm xl:text-base text-[#102426]">
+                                    {displayMonthlySavingsValue}
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
-
-                {hasRentSavings && (
-                    <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#fff8e6] px-2.5 py-1 ring-1 ring-[#f2d08a] lg:gap-2 lg:rounded-full lg:px-3 lg:py-1.5">
-                        <span className="text-[9px] font-black uppercase text-[#8a5b0a] lg:text-[10px]">
-                            Save
-                        </span>
-                        <span className="truncate text-sm font-black text-[#102426] lg:text-base">
-                            {displayMonthlySavingsValue}
-                        </span>
-                    </div>
-                )}
             </div>
 
-            <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-2.5 sm:grid-cols-2 lg:mt-3 lg:p-3">
+            <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#f5f8f1] p-2.5 lg:p-3">
                 <button
                     type="button"
                     onClick={onToggleCompare}
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black ${
-                        isCompared
-                            ? "bg-[#f2b84b] text-[#102426]"
-                            : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
-                    }`}
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black ${isCompared
+                        ? "bg-[#f2b84b] text-[#102426]"
+                        : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                        }`}
                 >
                     <Scale className="h-4 w-4 shrink-0" />
                     <span>{isCompared ? "Added" : "Compare"}</span>
@@ -5001,8 +5032,17 @@ function FloorPlanCard({
                     <span>View Unit</span>
                 </button>
 
+                <button
+                    type="button"
+                    onClick={onCheckAvailability}
+                    className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-[#f2b84b] px-4 py-2.5 text-sm font-black !text-[#102426] ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:hidden"
+                >
+                    <Search className="h-4 w-4 shrink-0" />
+                    <span>Ask Locator</span>
+                </button>
+
                 {isCompared && (
-                    <p className="text-xs font-bold leading-4 text-[#526260] sm:col-span-2">
+                    <p className="col-span-2 text-xs font-bold leading-4 text-[#526260]">
                         Tap View comparison below to open the chart.
                     </p>
                 )}
