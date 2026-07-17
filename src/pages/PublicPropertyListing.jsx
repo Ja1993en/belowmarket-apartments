@@ -4795,7 +4795,15 @@ function CompareDetailMetric({ label, value, highlight = false }) {
     );
 }
 
-function FloorPlanBasicStats({ beds, baths, name, sqft, className = "" }) {
+function FloorPlanBasicStats({
+    beds,
+    baths,
+    name,
+    sqft,
+    availabilityLabel,
+    isAvailable,
+    className = "",
+}) {
     return (
         <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className}`}>
             <span className="inline-flex min-w-0 items-center gap-1.5">
@@ -4810,6 +4818,15 @@ function FloorPlanBasicStats({ beds, baths, name, sqft, className = "" }) {
                 <Ruler className="h-4 w-4 shrink-0 text-[#1f6f63]" />
                 <span className="truncate">{formatSquareFeetLabel(sqft)}</span>
             </span>
+
+            {availabilityLabel && (
+                <span className={`ml-auto inline-flex shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black ring-1 sm:text-[10px] ${isAvailable
+                    ? "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]"
+                    : "bg-[#fff0ea] text-[#b42318] ring-[#f4b6aa]"
+                    }`}>
+                    {availabilityLabel}
+                </span>
+            )}
         </div>
     );
 }
@@ -4928,17 +4945,10 @@ function FloorPlanCard({
                                 : "bg-[#f5f8f1] ring-[#d7e6df]"
                                 }`}
                         >
-                            <div className="flex min-w-0 items-center justify-between gap-2">
+                            <div className="flex min-w-0 items-center gap-2">
                                 <p className={`shrink-0 text-[9px] font-black uppercase tracking-wide ${hasSpecial ? "text-[#8a5b0a]" : "text-[#526260]"}`}>
                                     {hasSpecial ? "Current special" : "Pricing note"}
                                 </p>
-
-                                <span className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black ring-1 sm:text-[10px] ${hasAvailableFloorPlanUnits
-                                    ? "bg-white text-[#1f6f63] ring-[#a9cfc2]"
-                                    : "bg-[#fff0ea] text-[#b42318] ring-[#f4b6aa]"
-                                    }`}>
-                                    {availabilityBadgeLabel}
-                                </span>
                             </div>
 
                             <p
@@ -4984,6 +4994,8 @@ function FloorPlanCard({
                         baths={baths}
                         name={name}
                         sqft={sqft}
+                        availabilityLabel={availabilityBadgeLabel}
+                        isAvailable={hasAvailableFloorPlanUnits}
                         className="rounded-xl bg-white px-3 py-2 text-sm font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]"
                     />
 
