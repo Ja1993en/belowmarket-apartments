@@ -4857,7 +4857,15 @@ function FloorPlanCard({
             : hasSpecial
                 ? "Verify"
                 : "None listed");
-    const shouldShowSavingsChip = hasSpecial && parseCurrency(displaySavingsValue) > 0;
+    const savingsAmount = parseCurrency(displaySavingsValue);
+    const hasRentSavings =
+        hasSpecial &&
+        savingsAmount > 0 &&
+        normalRentNumber > effectiveRentNumber;
+    const displayMonthlySavingsValue =
+        hasRentSavings && !/\/mo\b/i.test(displaySavingsValue)
+            ? `${displaySavingsValue}/mo`
+            : displaySavingsValue;
     const hasAvailableFloorPlanUnits =
         availableUnitCount > 0 || isFloorPlanAvailable({ available, availableUnits, status });
     const availabilityBadgeLabel = getFloorPlanAvailabilityBadgeLabel({
@@ -4874,9 +4882,10 @@ function FloorPlanCard({
             <button
                 type="button"
                 onClick={onCheckAvailability}
-                className="absolute right-3 top-3 rounded-full bg-[#f2b84b] px-1.5 py-0.5 text-[8px] font-black !text-[#102426] shadow-sm ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:hidden"
+                className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-[#f2b84b] px-2 py-1 text-[9px] font-black !text-[#102426] shadow-sm ring-1 ring-[#d49a24] hover:bg-[#f9d783] hover:!text-[#102426] sm:hidden"
             >
-                Request Info
+                <Search className="h-2.5 w-2.5 shrink-0" />
+                <span>Ask Locator</span>
             </button>
 
             <div className="float-left mr-3 mb-1.5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-24 sm:w-24 lg:h-[92px] lg:w-[108px] lg:bg-[#f5f8f1] lg:p-0">
@@ -4936,8 +4945,8 @@ function FloorPlanCard({
                 </p>
             </div>
 
-            <div className="clear-both flex flex-wrap gap-1 pt-1.5 lg:gap-2 lg:pt-3">
-                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#f5f8f1] px-2 py-1 ring-1 ring-[#d7e6df] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+            <div className="clear-both flex flex-wrap gap-1 pt-2 lg:gap-2 lg:pt-3">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-white px-2 py-1 ring-1 ring-[#d7e6df] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
                     <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
                         Listed rent
                     </span>
@@ -4946,22 +4955,24 @@ function FloorPlanCard({
                     </span>
                 </div>
 
-                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#e7f3ee] px-2 py-1 ring-1 ring-[#a9cfc2] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
-                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
-                        After special
-                    </span>
-                    <span className={`truncate text-xs font-black lg:text-sm ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
-                        {displayEffectiveValue}
-                    </span>
-                </div>
-
-                {shouldShowSavingsChip && (
-                    <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#fff8e6] px-2 py-1 ring-1 ring-[#f2d08a] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                {hasRentSavings && (
+                    <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#e7f3ee] px-2.5 py-1 ring-2 ring-[#a9cfc2] lg:gap-2 lg:rounded-full lg:px-3 lg:py-1.5">
                         <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
-                            Savings
+                            After special
                         </span>
-                        <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
-                            {displaySavingsValue}
+                        <span className="truncate text-sm font-black text-[#1f6f63] lg:text-base">
+                            {displayEffectiveValue}
+                        </span>
+                    </div>
+                )}
+
+                {hasRentSavings && (
+                    <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#fff8e6] px-2.5 py-1 ring-1 ring-[#f2d08a] lg:gap-2 lg:rounded-full lg:px-3 lg:py-1.5">
+                        <span className="text-[9px] font-black uppercase text-[#8a5b0a] lg:text-[10px]">
+                            Save
+                        </span>
+                        <span className="truncate text-sm font-black text-[#102426] lg:text-base">
+                            {displayMonthlySavingsValue}
                         </span>
                     </div>
                 )}
