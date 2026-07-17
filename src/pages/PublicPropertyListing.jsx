@@ -4835,7 +4835,7 @@ function FloorPlanCard({
     const [hasImageError, setHasImageError] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const hasSpecial = Boolean(special?.label);
-    const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "No special listed";
+    const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "No current special listed";
     const sortedAvailableUnits = [...(availableUnits || [])]
         .filter((unit) => unit?.status !== "leased")
         .sort((a, b) => parseCurrency(a.rent) - parseCurrency(b.rent));
@@ -4919,22 +4919,31 @@ function FloorPlanCard({
                             </div>
                         </div>
 
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <span
-                                className={`inline-flex w-fit max-w-full rounded-full px-2.5 py-1 text-[10px] font-black ring-1 sm:text-[11px] ${hasSpecial
-                                    ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
-                                    : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
-                                    }`}
-                            >
-                                <span className="truncate">{specialLabel}</span>
-                            </span>
+                        <div
+                            className={`mt-2 rounded-xl px-3 py-2 ring-1 ${hasSpecial
+                                ? "bg-[#fff8e6] ring-[#f2d08a]"
+                                : "bg-[#f5f8f1] ring-[#d7e6df]"
+                                }`}
+                        >
+                            <div className="flex min-w-0 items-center justify-between gap-2">
+                                <p className={`shrink-0 text-[9px] font-black uppercase tracking-wide ${hasSpecial ? "text-[#8a5b0a]" : "text-[#526260]"}`}>
+                                    {hasSpecial ? "Current special" : "Pricing note"}
+                                </p>
 
-                            <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ring-1 sm:text-[11px] ${hasAvailableFloorPlanUnits
-                                ? "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]"
-                                : "bg-[#fff0ea] text-[#b42318] ring-[#f4b6aa]"
-                                }`}>
-                                {availabilityBadgeLabel}
-                            </span>
+                                <span className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black ring-1 sm:text-[10px] ${hasAvailableFloorPlanUnits
+                                    ? "bg-white text-[#1f6f63] ring-[#a9cfc2]"
+                                    : "bg-[#fff0ea] text-[#b42318] ring-[#f4b6aa]"
+                                    }`}>
+                                    {availabilityBadgeLabel}
+                                </span>
+                            </div>
+
+                            <p
+                                title={specialLabel}
+                                className={`mt-1 line-clamp-2 text-sm font-black leading-5 ${hasSpecial ? "text-[#102426]" : "text-[#526260]"}`}
+                            >
+                                {specialLabel}
+                            </p>
                         </div>
                     </div>
 
@@ -4972,13 +4981,13 @@ function FloorPlanCard({
                         baths={baths}
                         name={name}
                         sqft={sqft}
-                        className="rounded-xl bg-[#f5f8f1] px-3 py-2 text-sm font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]"
+                        className="rounded-xl bg-white px-3 py-2 text-sm font-bold leading-5 text-[#526260] ring-1 ring-[#d7e6df]"
                     />
 
-                    <div className={`grid gap-2 ${hasRentSavings ? "grid-cols-3" : "grid-cols-1 sm:max-w-[14rem]"}`}>
+                    <div className={`grid gap-2 ${hasRentSavings ? "grid-cols-3" : "grid-cols-1 sm:max-w-[13rem]"}`}>
                         {hasRentSavings && (
                             <div className="min-w-0 rounded-xl bg-[#e7f3ee] px-2 py-2 ring-2 ring-[#a9cfc2] sm:px-3">
-                                <p className="text-[10px] font-black uppercase text-[#526260]">
+                                <p className="whitespace-nowrap text-[9px] font-black uppercase text-[#526260] sm:text-[10px]">
                                     After special
                                 </p>
                                 <p className="mt-1 truncate text-xs font-black leading-tight sm:text-sm xl:text-base text-[#1f6f63]">
@@ -4988,7 +4997,7 @@ function FloorPlanCard({
                         )}
 
                         <div className="min-w-0 rounded-xl bg-white px-2 py-2 ring-1 ring-[#d7e6df] sm:px-3">
-                            <p className="text-[10px] font-black uppercase text-[#526260]">
+                            <p className="whitespace-nowrap text-[9px] font-black uppercase text-[#526260] sm:text-[10px]">
                                 Listed rent
                             </p>
                             <p className="mt-1 truncate text-xs font-black leading-tight sm:text-sm text-[#102426]">
@@ -5010,11 +5019,11 @@ function FloorPlanCard({
                 </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#f5f8f1] p-2.5 lg:p-3">
+            <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#f5f8f1] p-2.5 ring-1 ring-[#d7e6df] lg:p-3">
                 <button
                     type="button"
                     onClick={onToggleCompare}
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black ${isCompared
+                    className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-black ${isCompared
                         ? "bg-[#f2b84b] text-[#102426]"
                         : "bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
                         }`}
@@ -5026,7 +5035,7 @@ function FloorPlanCard({
                 <button
                     type="button"
                     onClick={onViewDetails}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-3 py-2.5 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
                 >
                     <Building2 className="h-4 w-4 shrink-0" />
                     <span>View Unit</span>
