@@ -4939,7 +4939,7 @@ function FloorPlanCard({
             <div className="clear-both flex flex-wrap gap-1 pt-1.5 lg:gap-2 lg:pt-3">
                 <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#f5f8f1] px-2 py-1 ring-1 ring-[#d7e6df] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
                     <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
-                        Listed
+                        Listed rent
                     </span>
                     <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
                         {displayRentValue}
