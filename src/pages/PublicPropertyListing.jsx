@@ -4888,7 +4888,7 @@ function FloorPlanCard({
                 <span>Ask Locator</span>
             </button>
 
-            <div className="float-left mr-3 mb-1.5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-24 sm:w-24 lg:h-[92px] lg:w-[108px] lg:bg-[#f5f8f1] lg:p-0">
+            <div className="float-left mr-3 mb-1.5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-[#d7e6df] sm:h-24 sm:w-24 lg:h-[92px] lg:w-[108px] lg:p-1.5">
                 {shouldShowFloorPlanImage ? (
                     <button
                         type="button"
@@ -4902,7 +4902,7 @@ function FloorPlanCard({
                             loading="lazy"
                             decoding="async"
                             onError={() => setHasImageError(true)}
-                            className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02] lg:object-cover lg:group-hover:scale-105"
+                            className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02]"
                         />
                         <span className="absolute inset-x-2 top-2 rounded-lg bg-[#102426]/85 px-2 py-1 text-center text-[10px] font-black uppercase leading-none !text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus:opacity-100">
                             Preview
@@ -4946,15 +4946,6 @@ function FloorPlanCard({
             </div>
 
             <div className="clear-both flex flex-wrap gap-1 pt-2 lg:gap-2 lg:pt-3">
-                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-white px-2 py-1 ring-1 ring-[#d7e6df] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
-                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
-                        Listed rent
-                    </span>
-                    <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
-                        {displayRentValue}
-                    </span>
-                </div>
-
                 {hasRentSavings && (
                     <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#e7f3ee] px-2.5 py-1 ring-2 ring-[#a9cfc2] lg:gap-2 lg:rounded-full lg:px-3 lg:py-1.5">
                         <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
@@ -4965,6 +4956,15 @@ function FloorPlanCard({
                         </span>
                     </div>
                 )}
+
+                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-white px-2 py-1 ring-1 ring-[#d7e6df] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
+                        Listed rent
+                    </span>
+                    <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
+                        {displayRentValue}
+                    </span>
+                </div>
 
                 {hasRentSavings && (
                     <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#fff8e6] px-2.5 py-1 ring-1 ring-[#f2d08a] lg:gap-2 lg:rounded-full lg:px-3 lg:py-1.5">
