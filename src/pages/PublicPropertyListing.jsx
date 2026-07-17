@@ -4857,9 +4857,7 @@ function FloorPlanCard({
             : hasSpecial
                 ? "Verify"
                 : "None listed");
-    const hasRentSavings = hasSpecial && parseCurrency(displaySavingsValue) > 0;
-    const dealPrimaryLabel = hasRentSavings ? "After special" : "Listed rent";
-    const dealPrimaryValue = hasRentSavings ? displayEffectiveValue : displayRentValue;
+    const shouldShowSavingsChip = hasSpecial && parseCurrency(displaySavingsValue) > 0;
     const hasAvailableFloorPlanUnits =
         availableUnitCount > 0 || isFloorPlanAvailable({ available, availableUnits, status });
     const availabilityBadgeLabel = getFloorPlanAvailabilityBadgeLabel({
@@ -4938,47 +4936,35 @@ function FloorPlanCard({
                 </p>
             </div>
 
-            <div className="clear-both pt-2 lg:pt-3">
-                <div className={`rounded-2xl p-3 ring-1 ${hasRentSavings
-                    ? "bg-[#f8fbf7] ring-[#a9cfc2]"
-                    : "bg-[#f5f8f1] ring-[#d7e6df]"
-                    }`}>
-                    <div className="flex min-w-0 items-start justify-between gap-3">
-                        <div className="min-w-0">
-                            <p className="text-[10px] font-black uppercase tracking-wide text-[#526260]">
-                                {dealPrimaryLabel}
-                            </p>
-                            <p className={`mt-1 break-words font-black leading-tight ${hasRentSavings
-                                ? "text-2xl text-[#1f6f63] lg:text-xl xl:text-2xl"
-                                : "text-xl text-[#102426] lg:text-lg xl:text-xl"
-                                }`}>
-                                {dealPrimaryValue}
-                            </p>
-                        </div>
-
-                        {hasRentSavings && (
-                            <div className="shrink-0 rounded-xl bg-[#fff8e6] px-3 py-2 text-right ring-1 ring-[#f2d08a]">
-                                <p className="text-[9px] font-black uppercase text-[#8a5b0a]">
-                                    You save
-                                </p>
-                                <p className="mt-0.5 whitespace-nowrap text-sm font-black text-[#102426]">
-                                    {displaySavingsValue}
-                                </p>
-                            </div>
-                        )}
-                    </div>
-
-                    {hasRentSavings && (
-                        <div className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-[#d7e6df] pt-2">
-                            <span className="text-[10px] font-black uppercase tracking-wide text-[#526260]">
-                                Listed rent
-                            </span>
-                            <span className="min-w-0 break-words text-right text-sm font-black text-[#102426]">
-                                {displayRentValue}
-                            </span>
-                        </div>
-                    )}
+            <div className="clear-both flex flex-wrap gap-1 pt-1.5 lg:gap-2 lg:pt-3">
+                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#f5f8f1] px-2 py-1 ring-1 ring-[#d7e6df] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
+                        Listed
+                    </span>
+                    <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
+                        {displayRentValue}
+                    </span>
                 </div>
+
+                <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#e7f3ee] px-2 py-1 ring-1 ring-[#a9cfc2] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                    <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
+                        Effective
+                    </span>
+                    <span className={`truncate text-xs font-black lg:text-sm ${hasSpecial ? "text-[#1f6f63]" : "text-[#102426]"}`}>
+                        {displayEffectiveValue}
+                    </span>
+                </div>
+
+                {shouldShowSavingsChip && (
+                    <div className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-lg bg-[#fff8e6] px-2 py-1 ring-1 ring-[#f2d08a] lg:gap-2 lg:rounded-full lg:px-2.5 lg:py-1.5">
+                        <span className="text-[9px] font-black uppercase text-[#526260] lg:text-[10px]">
+                            Savings
+                        </span>
+                        <span className="truncate text-xs font-black text-[#102426] lg:text-sm">
+                            {displaySavingsValue}
+                        </span>
+                    </div>
+                )}
             </div>
 
             <div className="mt-2 grid gap-2 rounded-2xl bg-[#f5f8f1] p-2.5 sm:grid-cols-2 lg:mt-3 lg:p-3">
