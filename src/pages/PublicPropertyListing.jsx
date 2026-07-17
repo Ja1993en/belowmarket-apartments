@@ -1471,7 +1471,7 @@ export default function PublicPropertyListing() {
         ? "mt-1.5 text-[10px] leading-3"
         : "mt-2 text-[10px] leading-4";
     const intakeStickyViewportClass = shouldShowCompareList
-        ? "md:top-[7rem] md:max-h-[calc(100vh-14rem)]"
+        ? "md:top-[6rem] md:max-h-[calc(100vh-11.5rem)]"
         : "md:top-[7rem] md:max-h-[calc(100vh-7rem)]";
     const intakeCardHeightClass = shouldShowCompareList
         ? "md:min-h-0"
@@ -3403,8 +3403,8 @@ function PropertyCompareDock({
     onViewCompare,
 }) {
     return (
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#d7e6df] bg-white/95 px-3 py-3 shadow-[0_-10px_30px_rgba(16,36,38,0.12)] backdrop-blur">
-            <div className="mx-auto flex w-[min(1180px,calc(100vw-24px))] flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#d7e6df] bg-white/95 px-3 py-3 shadow-[0_-10px_30px_rgba(16,36,38,0.12)] backdrop-blur md:py-2">
+            <div className="mx-auto flex w-[min(1180px,calc(100vw-24px))] flex-col gap-2 sm:flex-row sm:items-center sm:justify-between md:gap-3">
                 <div className="min-w-0">
                     <p className="text-sm font-black text-[#102426]">
                         Compare list ready
@@ -3419,7 +3419,7 @@ function PropertyCompareDock({
                     <button
                         type="button"
                         onClick={onViewCompare}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm transition hover:bg-[#102426] hover:!text-white"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#173f3f] px-4 py-3 text-sm font-black !text-white shadow-sm transition hover:bg-[#102426] hover:!text-white md:py-2.5"
                     >
                         <Scale className="h-4 w-4 shrink-0" />
                         <span>View comparison ({compareItemCount})</span>
@@ -3427,7 +3427,7 @@ function PropertyCompareDock({
                     <button
                         type="button"
                         onClick={onClearCompare}
-                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-4 py-3 text-sm font-black !text-[#b42318] transition hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#f4b6aa] bg-[#fff0ea]/80 px-4 py-3 text-sm font-black !text-[#b42318] transition hover:bg-[#fde1d9] hover:!text-[#8f1d15] md:py-2.5"
                     >
                         <Trash2 className="h-4 w-4 shrink-0" />
                         <span>Clear</span>
