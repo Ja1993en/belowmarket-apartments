@@ -4835,7 +4835,7 @@ function FloorPlanCard({
     const [hasImageError, setHasImageError] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const hasSpecial = Boolean(special?.label);
-    const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "No current special listed";
+    const specialLabel = hasSpecial ? cleanUnitSpecialLabel(special.label) : "Standard pricing";
     const sortedAvailableUnits = [...(availableUnits || [])]
         .filter((unit) => unit?.status !== "leased")
         .sort((a, b) => parseCurrency(a.rent) - parseCurrency(b.rent));
@@ -4878,7 +4878,10 @@ function FloorPlanCard({
 
     return (
         <>
-        <div className="rounded-2xl border border-[#d7e6df] bg-white p-3 shadow-sm transition duration-200 ease-out hover:-translate-y-1 hover:border-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.14)] hover:ring-2 hover:ring-[#f2b84b]/35">
+        <div className={`rounded-2xl border bg-white p-3 shadow-sm transition duration-200 ease-out ${isCompared
+            ? "border-[#f2b84b] shadow-[0_18px_42px_rgba(16,36,38,0.14)] ring-2 ring-[#f2b84b]/45"
+            : "border-[#d7e6df] hover:-translate-y-1 hover:border-[#f2b84b] hover:shadow-[0_18px_42px_rgba(16,36,38,0.14)] hover:ring-2 hover:ring-[#f2b84b]/35"
+            }`}>
             <div className="grid gap-3 md:grid-cols-[122px_minmax(0,1fr)] md:items-stretch xl:grid-cols-[136px_minmax(0,1fr)]">
                 <div className="hidden md:order-1 md:block">
                     {shouldShowFloorPlanImage ? (
@@ -4990,7 +4993,7 @@ function FloorPlanCard({
                                 <p className="whitespace-nowrap text-[9px] font-black uppercase text-[#526260] sm:text-[10px]">
                                     After special
                                 </p>
-                                <p className="mt-1 truncate text-xs font-black leading-tight sm:text-sm xl:text-base text-[#1f6f63]">
+                                <p className="mt-1 truncate text-sm font-black leading-tight text-[#1f6f63] sm:text-base xl:text-lg">
                                     {displayEffectiveValue}
                                 </p>
                             </div>
@@ -5052,7 +5055,7 @@ function FloorPlanCard({
 
                 {isCompared && (
                     <p className="col-span-2 text-xs font-bold leading-4 text-[#526260]">
-                        Tap View comparison below to open the chart.
+                        Added. Tap View comparison below to open the chart.
                     </p>
                 )}
             </div>
