@@ -1215,7 +1215,6 @@ export default function PublicPropertyListing() {
     const [compareMessage, setCompareMessage] = useState("");
     const [isCompareBoardOpen, setIsCompareBoardOpen] = useState(false);
     const [activeCompareTab, setActiveCompareTab] = useState("Floor Plans");
-    const compareListRef = useRef(null);
     {/* Usestate end*/ }
 
     const changeFloorPlanPage = (nextPage) => {
@@ -1390,15 +1389,6 @@ export default function PublicPropertyListing() {
         return () => window.clearTimeout(resetSelectedPhoto);
     }, [propertyGalleryImages]);
 
-    const scrollToCompareBoard = () => {
-        window.setTimeout(() => {
-            compareListRef.current?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-            });
-        }, 50);
-    };
-
     const handleViewCompareDock = () => {
         setIsCompareBoardOpen(true);
         setActiveCompareTab("Floor Plans");
@@ -1409,7 +1399,8 @@ export default function PublicPropertyListing() {
             setCompareMessage(
                 `You can compare up to ${MAX_COMPARE_FLOOR_PLANS} floor plans. Remove one before adding another.`
             );
-            scrollToCompareBoard();
+            setIsCompareBoardOpen(true);
+            setActiveCompareTab("Floor Plans");
             return;
         }
 
@@ -1440,7 +1431,8 @@ export default function PublicPropertyListing() {
             setCompareMessage(
                 `You can compare up to ${MAX_COMPARE_PROPERTIES} properties. Remove one before adding another.`
             );
-            scrollToCompareBoard();
+            setIsCompareBoardOpen(true);
+            setActiveCompareTab("Properties");
             return;
         }
 
@@ -1450,7 +1442,6 @@ export default function PublicPropertyListing() {
                 ? "Property removed from compare."
                 : "Property added to compare."
         );
-        scrollToCompareBoard();
     };
 
     const handleClearCompareBoard = () => {
@@ -1459,7 +1450,7 @@ export default function PublicPropertyListing() {
         setComparePropertyIds(clearedSelections.propertyIds);
         setCompareFloorPlanItems(clearedSelections.floorPlanItems);
         setIsCompareBoardOpen(false);
-        setCompareMessage("Compare board cleared.");
+        setCompareMessage("Compare list cleared.");
     };
 
     const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3.5";
@@ -2462,67 +2453,6 @@ export default function PublicPropertyListing() {
 
                 <div className="mt-4 grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_370px] md:items-stretch xl:grid-cols-[minmax(0,1fr)_400px]">
                     <div className="min-w-0">
-
-                                {shouldShowCompareList && (
-                                    <div
-                                        ref={compareListRef}
-                                        className="mt-4 rounded-3xl border border-[#d7e6df] bg-white p-4 shadow-sm"
-                                    >
-                                        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                                            <div className="min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <p className="text-xs font-black uppercase text-[#1f6f63]">
-                                                        Compare board
-                                                    </p>
-                                                    <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-black text-[#173f3f]">
-                                                        {compareItemCount} propert{compareItemCount === 1 ? "y" : "ies"}
-                                                    </span>
-                                                </div>
-                                                <h3 className="mt-2 text-xl font-black text-[#102426]">
-                                                    Review your saved options side by side.
-                                                </h3>
-                                                <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                                    Open the chart when you are ready to compare rent, specials, size, and availability.
-                                                </p>
-                                            </div>
-
-                                            <div className="flex flex-wrap gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setIsCompareBoardOpen(true);
-                                                        setActiveCompareTab("Floor Plans");
-                                                    }}
-                                                    className="inline-flex w-fit items-center justify-center gap-2 rounded-2xl bg-[#173f3f] px-4 py-2 text-sm font-bold !text-white hover:bg-[#102426] hover:!text-white"
-                                                >
-                                                    <Scale className="h-4 w-4 shrink-0" />
-                                                    <span>View Comparison Chart</span>
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={handleClearCompareBoard}
-                                                    className="inline-flex w-fit items-center justify-center gap-1.5 rounded-2xl border border-[#f4b6aa] bg-[#fff0ea]/80 px-4 py-2 text-sm font-bold !text-[#b42318] hover:bg-[#fde1d9] hover:!text-[#8f1d15]"
-                                                >
-                                                    <Trash2 className="h-4 w-4 shrink-0" />
-                                                    <span>Clear all</span>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {compareMessage && (
-                                            <p className="mt-4 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                                                {compareMessage}
-                                            </p>
-                                        )}
-
-                                        {propertyOnlyCompareProperties.length === 1 && isPropertyCompared && compareFloorPlanItems.length === 0 && (
-                                            <p className="mt-3 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-semibold text-[#8a5b0a]">
-                                                Add more properties from search, or choose a floor plan below to compare exact layouts.
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
 
                                 {/*Floor Plans*/}
                                 <div
