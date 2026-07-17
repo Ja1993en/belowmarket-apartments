@@ -4940,21 +4940,18 @@ function FloorPlanCard({
                         </div>
 
                         <div
-                            className={`mt-2 rounded-xl px-3 py-2 ring-1 ${hasSpecial
+                            className={`mt-2 rounded-lg px-3 py-2 ring-1 ${hasSpecial
                                 ? "bg-[#fff8e6] ring-[#f2d08a]"
                                 : "bg-[#f5f8f1] ring-[#d7e6df]"
                                 }`}
                         >
-                            <div className="flex min-w-0 items-center gap-2">
-                                <p className={`shrink-0 text-[9px] font-black uppercase tracking-wide ${hasSpecial ? "text-[#8a5b0a]" : "text-[#526260]"}`}>
-                                    {hasSpecial ? "Current special" : "Pricing note"}
-                                </p>
-                            </div>
-
                             <p
                                 title={specialLabel}
-                                className={`mt-1 line-clamp-2 text-sm font-black leading-5 ${hasSpecial ? "text-[#102426]" : "text-[#526260]"}`}
+                                className={`line-clamp-2 text-sm font-black leading-5 ${hasSpecial ? "text-[#102426]" : "text-[#526260]"}`}
                             >
+                                <span className={`mr-1 whitespace-nowrap text-[10px] font-black uppercase tracking-wide ${hasSpecial ? "text-[#8a5b0a]" : "text-[#526260]"}`}>
+                                    {hasSpecial ? "Special:" : "Pricing:"}
+                                </span>
                                 {specialLabel}
                             </p>
                         </div>
