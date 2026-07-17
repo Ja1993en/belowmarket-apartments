@@ -1,6 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { Bath, BedDouble, Building2, Ruler, Scale, Search, Trash2 } from "lucide-react";
+import {
+    BadgeCheck,
+    Bath,
+    BedDouble,
+    Building2,
+    CalendarDays,
+    DollarSign,
+    Mail,
+    Phone,
+    Ruler,
+    Scale,
+    Search,
+    Send,
+    ShieldCheck,
+    Sparkles,
+    Trash2,
+    User,
+    X,
+} from "lucide-react";
 import {
     DEFAULT_PROPERTY_IMAGE,
     getPhotoImageUrl,
@@ -1453,32 +1471,13 @@ export default function PublicPropertyListing() {
         setCompareMessage("Compare list cleared.");
     };
 
-    const intakePanelPaddingClass = shouldShowCompareList ? "p-3" : "p-3.5";
-    const intakeSectionSpacingClass = shouldShowCompareList ? "mt-2" : "mt-3";
-    const intakeGridSpacingClass = shouldShowCompareList
-        ? "mt-1.5 gap-2"
-        : "mt-2 gap-2";
-    const intakeFieldSizeClass = shouldShowCompareList
-        ? "md:py-1.5 lg:py-1.5 xl:py-1.5 !text-[13px]"
-        : "md:py-2 lg:py-2 xl:py-2 !text-sm";
-    const intakeConsentClass = shouldShowCompareList
-        ? "mt-2 p-2.5 text-[11px] leading-4"
-        : "mt-3 p-3 text-[11px] leading-4";
-    const intakeSubmitClass = shouldShowCompareList
-        ? "mt-2 py-2.5 text-sm"
-        : "mt-2.5 py-3 text-sm";
-    const intakeFinePrintClass = shouldShowCompareList
-        ? "mt-1.5 text-[10px] leading-3"
-        : "mt-2 text-[10px] leading-4";
     const intakeStickyViewportClass = shouldShowCompareList
-        ? "md:top-[6rem] md:max-h-[calc(100vh-11.5rem)]"
-        : "md:top-[7rem] md:max-h-[calc(100vh-7rem)]";
-    const intakeCardHeightClass = shouldShowCompareList
-        ? "md:min-h-0"
-        : "md:min-h-[calc(100vh-8rem)]";
-    const intakePanelLayoutClass = shouldShowCompareList
-        ? "min-h-0"
-        : "md:min-h-[calc(100vh-8.5rem)]";
+        ? "md:top-[5.5rem] md:max-h-[calc(100vh-10.75rem)]"
+        : "md:top-[6.5rem] md:max-h-[calc(100vh-7rem)]";
+    const intakeFieldClass =
+        "h-9 w-full rounded-xl border border-[#d7e6df] bg-white px-3 text-[13px] font-semibold text-[#102426] outline-none placeholder:text-[#78908a] transition focus:border-[#2d7dd2] focus:bg-white";
+    const intakeSectionLabelClass =
+        "text-[10px] font-black uppercase tracking-[0.12em] text-[#526260]";
 
     const filteredFloorPlans =
         activeFloorPlanFilter === "All"
@@ -1865,240 +1864,282 @@ export default function PublicPropertyListing() {
         };
     }, [showMobileIntakeModal]);
 
-    const renderLocatorIntakeCard = ({ id = undefined, isModal = false } = {}) => (
-        <div
-            id={id}
-            className={
-                isModal
-                    ? "flex max-h-[86vh] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-2xl"
-                    : `order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky ${intakeStickyViewportClass} md:overflow-y-auto ${intakeCardHeightClass}`
-            }
-        >
-            <div className="h-1.5 bg-[#f2b84b]" />
+    const renderLocatorIntakeCard = ({ id = undefined, isModal = false } = {}) => {
+        const cardShellClass = isModal
+            ? "flex max-h-[88vh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-2xl"
+            : `order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-3xl border border-[#d7e6df] bg-white shadow-[0_18px_45px_rgba(16,36,38,0.12)] md:sticky ${intakeStickyViewportClass}`;
 
-            <div
-                className={`${intakePanelPaddingClass} flex flex-1 flex-col overflow-y-auto ${intakePanelLayoutClass}`}
-            >
-                <div className="flex items-start justify-between gap-3">
-                    <div>
-                        <p className="text-[11px] font-black uppercase tracking-wide text-[#1f6f63]">
-                            Free locator help
-                        </p>
+        return (
+            <div id={id} className={cardShellClass}>
+                <div className="shrink-0 bg-[#173f3f] px-3.5 py-3 text-white">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 gap-3">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#f2b84b] text-[#102426] shadow-sm">
+                                <BadgeCheck className="h-5 w-5" aria-hidden="true" />
+                            </span>
 
-                        <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
-                            Want this price verified?
-                        </h2>
+                            <div className="min-w-0">
+                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/65">
+                                    Free apartment locator
+                                </p>
+                                <h2 className="mt-0.5 text-lg font-black leading-tight text-white">
+                                    Want this price verified?
+                                </h2>
+                                <p className="mt-1 text-xs font-semibold leading-4 text-white/75">
+                                    Confirm rent, specials, fees, and availability before you tour.
+                                </p>
+                            </div>
+                        </div>
+
+                        {isModal && (
+                            <button
+                                type="button"
+                                onClick={() => setShowMobileIntakeModal(false)}
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/15"
+                                aria-label="Close locator form"
+                            >
+                                <X className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                        )}
                     </div>
 
-                    {isModal && (
-                        <button
-                            type="button"
-                            onClick={() => setShowMobileIntakeModal(false)}
-                            className="rounded-lg bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]"
-                        >
-                            Close
-                        </button>
+                    <div className="mt-3 grid grid-cols-3 gap-1.5">
+                        <div className="rounded-xl bg-white/10 px-2 py-1.5 text-center ring-1 ring-white/15">
+                            <ShieldCheck className="mx-auto h-3.5 w-3.5 text-[#f2b84b]" aria-hidden="true" />
+                            <p className="mt-1 text-[9px] font-black uppercase leading-none text-white/85">
+                                Free help
+                            </p>
+                        </div>
+                        <div className="rounded-xl bg-white/10 px-2 py-1.5 text-center ring-1 ring-white/15">
+                            <CalendarDays className="mx-auto h-3.5 w-3.5 text-[#f2b84b]" aria-hidden="true" />
+                            <p className="mt-1 text-[9px] font-black uppercase leading-none text-white/85">
+                                Tour ready
+                            </p>
+                        </div>
+                        <div className="rounded-xl bg-white/10 px-2 py-1.5 text-center ring-1 ring-white/15">
+                            <DollarSign className="mx-auto h-3.5 w-3.5 text-[#f2b84b]" aria-hidden="true" />
+                            <p className="mt-1 text-[9px] font-black uppercase leading-none text-white/85">
+                                Deal check
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-3.5 py-3">
+                    <div className={`rounded-2xl px-3 py-2.5 ring-1 ${
+                        hasPropertySpecial
+                            ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
+                            : "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]"
+                    }`}>
+                        <div className="flex min-w-0 items-start gap-2">
+                            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[#f2b84b]" aria-hidden="true" />
+                            <div className="min-w-0">
+                                <p className="text-[10px] font-black uppercase tracking-wide">
+                                    {hasPropertySpecial ? "Current special" : "Pricing check"}
+                                </p>
+                                <p className="mt-0.5 line-clamp-2 text-xs font-black leading-4 text-[#102426]">
+                                    {hasPropertySpecial
+                                        ? propertySpecialLabel
+                                        : "Ask us to confirm current pricing and availability."}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-3">
+                        <div className="flex items-center justify-between gap-2">
+                            <p className={intakeSectionLabelClass}>Contact</p>
+                            <span className="rounded-full bg-[#e7f3ee] px-2 py-0.5 text-[9px] font-black uppercase text-[#173f3f]">
+                                Required
+                            </span>
+                        </div>
+
+                        <div className="mt-2 grid gap-2 lg:grid-cols-2">
+                            <label className="relative">
+                                <User className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#1f6f63]" aria-hidden="true" />
+                                <input
+                                    type="text"
+                                    placeholder="Your name *"
+                                    value={leadForm.name}
+                                    onChange={(e) =>
+                                        setLeadForm({
+                                            ...leadForm,
+                                            name: e.target.value,
+                                        })
+                                    }
+                                    className={`${intakeFieldClass} pl-9`}
+                                />
+                            </label>
+
+                            <label className="relative">
+                                <Phone className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#1f6f63]" aria-hidden="true" />
+                                <input
+                                    type="tel"
+                                    placeholder="Phone number *"
+                                    value={leadForm.phone}
+                                    onChange={(e) =>
+                                        setLeadForm({
+                                            ...leadForm,
+                                            phone: e.target.value,
+                                        })
+                                    }
+                                    className={`${intakeFieldClass} pl-9`}
+                                />
+                            </label>
+
+                            <label className="relative lg:col-span-2">
+                                <Mail className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#1f6f63]" aria-hidden="true" />
+                                <input
+                                    type="email"
+                                    placeholder="Email address *"
+                                    value={leadForm.email}
+                                    onChange={(e) =>
+                                        setLeadForm({
+                                            ...leadForm,
+                                            email: e.target.value,
+                                        })
+                                    }
+                                    className={`${intakeFieldClass} pl-9`}
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="mt-3">
+                        <p className={intakeSectionLabelClass}>Search details</p>
+
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                            <select
+                                value={leadForm.moveInDate}
+                                onChange={(e) =>
+                                    setLeadForm({
+                                        ...leadForm,
+                                        moveInDate: e.target.value,
+                                    })
+                                }
+                                className={intakeFieldClass}
+                            >
+                                <option value="">Move-in *</option>
+                                <option value="Immediately">Immediately</option>
+                                <option value="Within 30 Days">Within 30 Days</option>
+                                <option value="Within 60 Days">Within 60 Days</option>
+                                <option value="Within 90 Days">Within 90 Days</option>
+                                <option value="Just Browsing">Just Browsing</option>
+                            </select>
+
+                            <select
+                                value={leadForm.bedroomsNeeded}
+                                onChange={(e) =>
+                                    setLeadForm({
+                                        ...leadForm,
+                                        bedroomsNeeded: e.target.value,
+                                    })
+                                }
+                                className={intakeFieldClass}
+                            >
+                                <option value="">Beds *</option>
+                                <option value="Studio">Studio</option>
+                                <option value="1 Bed">1 Bed</option>
+                                <option value="2 Bed">2 Bed</option>
+                                <option value="3 Bed">3 Bed</option>
+                            </select>
+
+                            <input
+                                type="text"
+                                placeholder="Budget *"
+                                value={leadForm.budget}
+                                onChange={(e) =>
+                                    setLeadForm({
+                                        ...leadForm,
+                                        budget: e.target.value,
+                                    })
+                                }
+                                className={intakeFieldClass}
+                            />
+
+                            <select
+                                value={leadForm.contactMethod}
+                                onChange={(e) =>
+                                    setLeadForm({
+                                        ...leadForm,
+                                        contactMethod: e.target.value,
+                                    })
+                                }
+                                className={intakeFieldClass}
+                            >
+                                <option value="">Contact</option>
+                                <option value="Text">Text me</option>
+                                <option value="Call">Call me</option>
+                                <option value="Email">Email me</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label className="mt-3 flex gap-2 rounded-2xl bg-[#f5f8f1] p-2.5 text-[10px] font-semibold leading-4 text-[#526260] ring-1 ring-[#d7e6df]">
+                        <input
+                            type="checkbox"
+                            checked={leadForm.smsConsent}
+                            onChange={(e) =>
+                                setLeadForm({
+                                    ...leadForm,
+                                    smsConsent: e.target.checked,
+                                })
+                            }
+                            className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
+                        />
+                        <span>
+                            Optional: I agree to receive texts about this property. Msg frequency varies. Msg/data rates may apply. Reply HELP or STOP. Consent is not required to request apartment help. View our{" "}
+                            <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
+                                Privacy Policy
+                            </Link>{" "}
+                            and{" "}
+                            <Link className="font-black text-[#173f3f] underline" to="/terms-and-conditions">
+                                Terms and Conditions
+                            </Link>
+                            .
+                        </span>
+                    </label>
+
+                    {shouldShowSmsConsentNotice && (
+                        <p className="mt-2 rounded-xl bg-[#fff8e6] px-3 py-2 text-xs font-bold leading-5 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
+                            To receive text updates, check the optional SMS consent box. You can still submit without it and we will follow up by email or call.
+                        </p>
+                    )}
+
+                    {showSidebarError && (
+                        <p className="mt-2 rounded-xl bg-[#fff0ea] px-3 py-2 text-xs font-bold text-[#b42318] ring-1 ring-[#f4b6aa]">
+                            {leadFormError || "Add the required info so we can send the answer."}
+                        </p>
                     )}
                 </div>
 
-                <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
-                    Confirm specials, fees, and availability before you tour or apply.
-                </p>
+                <div className="shrink-0 border-t border-[#d7e6df] bg-white px-3.5 py-3">
+                    <button
+                        type="button"
+                        onClick={handleFloorPlanLeadSubmit}
+                        disabled={isSubmittingLead || leadSubmitted}
+                        className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black transition ${leadSubmitted
+                            ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
+                            : "bg-[#f2b84b] !text-[#102426] hover:bg-[#dca33c] hover:!text-[#102426]"
+                        }`}
+                    >
+                        <Send className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <span>
+                            {isSubmittingLead
+                                ? "Sending..."
+                                : leadSubmitted
+                                    ? "Request sent"
+                                    : "Get verified details"}
+                        </span>
+                    </button>
 
-                <div className={`mt-2 line-clamp-2 rounded-lg px-2.5 py-1.5 text-[11px] font-black leading-4 ${
-                    hasPropertySpecial
-                        ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
-                        : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
-                }`}>
-                    {hasPropertySpecial
-                        ? `Special: ${propertySpecialLabel}`
-                        : "Pricing: Ask us to confirm current pricing and availability."}
-                </div>
-
-                <div className={intakeSectionSpacingClass}>
-                    <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
-                        Contact
+                    <p className="mt-1.5 text-center text-[10px] font-semibold leading-3 text-[#7b8b88]">
+                        No cost to renters. We only follow up about this property and nearby options.
                     </p>
-
-                    <div className={`grid md:grid-cols-2 ${intakeGridSpacingClass}`}>
-                        <input
-                            type="text"
-                            placeholder="Your name *"
-                            value={leadForm.name}
-                            onChange={(e) =>
-                                setLeadForm({
-                                    ...leadForm,
-                                    name: e.target.value,
-                                })
-                            }
-                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                        />
-
-                        <input
-                            type="tel"
-                            placeholder="Phone number *"
-                            value={leadForm.phone}
-                            onChange={(e) =>
-                                setLeadForm({
-                                    ...leadForm,
-                                    phone: e.target.value,
-                                })
-                            }
-                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                        />
-
-                        <input
-                            type="email"
-                            placeholder="Email address *"
-                            value={leadForm.email}
-                            onChange={(e) =>
-                                setLeadForm({
-                                    ...leadForm,
-                                    email: e.target.value,
-                                })
-                            }
-                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:col-span-2 ${intakeFieldSizeClass}`}
-                        />
-                    </div>
                 </div>
-
-                <div className={intakeSectionSpacingClass}>
-                    <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
-                        Search details
-                    </p>
-
-                    <div className={`grid grid-cols-2 ${intakeGridSpacingClass}`}>
-                        <select
-                            value={leadForm.moveInDate}
-                            onChange={(e) =>
-                                setLeadForm({
-                                    ...leadForm,
-                                    moveInDate: e.target.value,
-                                })
-                            }
-                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                        >
-                            <option value="">Move-in *</option>
-                            <option value="Immediately">Immediately</option>
-                            <option value="Within 30 Days">Within 30 Days</option>
-                            <option value="Within 60 Days">Within 60 Days</option>
-                            <option value="Within 90 Days">Within 90 Days</option>
-                            <option value="Just Browsing">Just Browsing</option>
-                        </select>
-
-                        <select
-                            value={leadForm.bedroomsNeeded}
-                            onChange={(e) =>
-                                setLeadForm({
-                                    ...leadForm,
-                                    bedroomsNeeded: e.target.value,
-                                })
-                            }
-                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                        >
-                            <option value="">Beds *</option>
-                            <option value="Studio">Studio</option>
-                            <option value="1 Bed">1 Bed</option>
-                            <option value="2 Bed">2 Bed</option>
-                            <option value="3 Bed">3 Bed</option>
-                        </select>
-
-                        <input
-                            type="text"
-                            placeholder="Budget *"
-                            value={leadForm.budget}
-                            onChange={(e) =>
-                                setLeadForm({
-                                    ...leadForm,
-                                    budget: e.target.value,
-                                })
-                            }
-                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                        />
-
-                        <select
-                            value={leadForm.contactMethod}
-                            onChange={(e) =>
-                                setLeadForm({
-                                    ...leadForm,
-                                    contactMethod: e.target.value,
-                                })
-                            }
-                            className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                        >
-                            <option value="">Contact</option>
-                            <option value="Text">Text me</option>
-                            <option value="Call">Call me</option>
-                            <option value="Email">Email me</option>
-                        </select>
-                    </div>
-                </div>
-
-                <label className={`flex gap-2 rounded-xl bg-[#f5f8f1] font-semibold text-[#526260] ring-1 ring-[#d7e6df] ${intakeConsentClass}`}>
-                    <input
-                        type="checkbox"
-                        checked={leadForm.smsConsent}
-                        onChange={(e) =>
-                            setLeadForm({
-                                ...leadForm,
-                                smsConsent: e.target.checked,
-                            })
-                        }
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
-                    />
-                    <span>
-                        Optional: I agree to receive texts about this property. Msg frequency varies. Msg/data rates may apply. Reply HELP or STOP. Consent is not required to request apartment help. View our{" "}
-                        <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
-                            Privacy Policy
-                        </Link>{" "}
-                        and{" "}
-                        <Link className="font-black text-[#173f3f] underline" to="/terms-and-conditions">
-                            Terms and Conditions
-                        </Link>
-                        .
-                    </span>
-                </label>
-
-                {shouldShowSmsConsentNotice && (
-                    <p className="mt-2 rounded-xl bg-[#fff8e6] px-3 py-2 text-xs font-bold leading-5 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                        To receive text updates, check the optional SMS consent box. You can still submit without it and we will follow up by email or call.
-                    </p>
-                )}
-
-                {showSidebarError && (
-                    <p className="mt-2 text-xs font-semibold text-[#e4572e]">
-                        {leadFormError || "Add the required info so we can send the answer."}
-                    </p>
-                )}
-
-                <div className="mt-2 grid grid-cols-3 gap-1.5 rounded-xl bg-[#f5f8f1] p-2 text-center text-[9px] font-black uppercase tracking-wide text-[#173f3f] ring-1 ring-[#d7e6df]">
-                    <span>Free help</span>
-                    <span>No obligation</span>
-                    <span>Local locator</span>
-                </div>
-
-                <button
-                    type="button"
-                    onClick={handleFloorPlanLeadSubmit}
-                    disabled={isSubmittingLead || leadSubmitted}
-                    className={`w-full rounded-xl px-4 font-black ${intakeSubmitClass} ${leadSubmitted
-                        ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
-                        : "bg-[#f2b84b] !text-[#102426] hover:bg-[#dca33c] hover:!text-[#102426]"
-                    }`}
-                >
-                    {isSubmittingLead
-                        ? "Sending..."
-                        : leadSubmitted
-                            ? "Request Sent"
-                            : "Get verified details"}
-                </button>
-
-                <p className={`font-semibold text-[#7b8b88] ${intakeFinePrintClass}`}>
-                    We only follow up about this property and nearby options.
-                </p>
             </div>
-        </div>
-    );
+        );
+    };
 
     if (!property || property.status !== "Live") {
         return (
@@ -2780,215 +2821,7 @@ export default function PublicPropertyListing() {
                             <div
                                 className="mt-8 hidden flex-col gap-4 md:mt-0 md:flex md:min-h-full md:self-stretch"
                             >
-                                <div id="request-info" className={`order-1 flex scroll-mt-[7rem] flex-col overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm md:sticky ${intakeStickyViewportClass} md:overflow-y-auto ${intakeCardHeightClass}`}>
-                                    <div className="h-1.5 bg-[#f2b84b]" />
-
-                                    <div className={`${intakePanelPaddingClass} flex flex-1 flex-col ${intakePanelLayoutClass}`}>
-                                        <p className="text-[11px] font-black uppercase tracking-wide text-[#1f6f63]">
-                                            Free locator help
-                                        </p>
-
-                                        <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] xl:text-xl">
-                                            Want this price verified?
-                                        </h2>
-
-                                        <p className="mt-1.5 text-xs font-semibold leading-5 text-[#526260] xl:text-sm">
-                                            Confirm specials, fees, and availability before you tour or apply.
-                                        </p>
-
-                                        <div className={`mt-2 line-clamp-2 rounded-lg px-2.5 py-1.5 text-[11px] font-black leading-4 ${
-                                                hasPropertySpecial
-                                                    ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
-                                                    : "bg-[#f5f8f1] text-[#526260] ring-1 ring-[#d7e6df]"
-                                            }`}>
-                                            {hasPropertySpecial
-                                                ? `Special: ${propertySpecialLabel}`
-                                                : "Pricing: Ask us to confirm current pricing and availability."}
-                                        </div>
-
-                                        <div className={intakeSectionSpacingClass}>
-                                            <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
-                                                Contact
-                                            </p>
-
-                                            <div className={`grid md:grid-cols-2 ${intakeGridSpacingClass}`}>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Your name *"
-                                                    value={leadForm.name}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            name: e.target.value,
-                                                        })
-                                                    }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                                                />
-
-                                                <input
-                                                    type="tel"
-                                                    placeholder="Phone number *"
-                                                    value={leadForm.phone}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            phone: e.target.value,
-                                                        })
-                                                    }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                                                />
-
-                                                <input
-                                                    type="email"
-                                                    placeholder="Email address *"
-                                                    value={leadForm.email}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            email: e.target.value,
-                                                        })
-                                                    }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] md:col-span-2 ${intakeFieldSizeClass}`}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className={intakeSectionSpacingClass}>
-                                            <p className="text-xs font-black uppercase tracking-wide text-[#102426]">
-                                                Search details
-                                            </p>
-
-                                            <div className={`grid grid-cols-2 ${intakeGridSpacingClass}`}>
-                                                <select
-                                                    value={leadForm.moveInDate}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            moveInDate: e.target.value,
-                                                        })
-                                                    }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                                                >
-                                                    <option value="">Move-in *</option>
-                                                    <option value="Immediately">Immediately</option>
-                                                    <option value="Within 30 Days">Within 30 Days</option>
-                                                    <option value="Within 60 Days">Within 60 Days</option>
-                                                    <option value="Within 90 Days">Within 90 Days</option>
-                                                    <option value="Just Browsing">Just Browsing</option>
-                                                </select>
-
-                                                <select
-                                                    value={leadForm.bedroomsNeeded}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            bedroomsNeeded: e.target.value,
-                                                        })
-                                                    }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                                                >
-                                                    <option value="">Beds *</option>
-                                                    <option value="Studio">Studio</option>
-                                                    <option value="1 Bed">1 Bed</option>
-                                                    <option value="2 Bed">2 Bed</option>
-                                                    <option value="3 Bed">3 Bed</option>
-                                                </select>
-
-                                                <input
-                                                    type="text"
-                                                    placeholder="Budget *"
-                                                    value={leadForm.budget}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            budget: e.target.value,
-                                                        })
-                                                    }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold outline-none placeholder:text-[#78908a] focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                                                />
-
-                                                <select
-                                                    value={leadForm.contactMethod}
-                                                    onChange={(e) =>
-                                                        setLeadForm({
-                                                            ...leadForm,
-                                                            contactMethod: e.target.value,
-                                                        })
-                                                    }
-                                                    className={`w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2 text-sm font-semibold text-[#102426] outline-none focus:border-[#2d7dd2] ${intakeFieldSizeClass}`}
-                                                >
-                                                    <option value="">Contact</option>
-                                                    <option value="Text">Text me</option>
-                                                    <option value="Call">Call me</option>
-                                                    <option value="Email">Email me</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <label className={`flex gap-2 rounded-xl bg-[#f5f8f1] font-semibold text-[#526260] ring-1 ring-[#d7e6df] ${intakeConsentClass}`}>
-                                            <input
-                                                type="checkbox"
-                                                checked={leadForm.smsConsent}
-                                                onChange={(e) =>
-                                                    setLeadForm({
-                                                        ...leadForm,
-                                                        smsConsent: e.target.checked,
-                                                    })
-                                                }
-                                                className="mt-0.5 h-4 w-4 shrink-0 accent-[#173f3f]"
-                                            />
-                                            <span>
-                                                Optional: I agree to receive texts about this property. Msg frequency varies. Msg/data rates may apply. Reply HELP or STOP. Consent is not required to request apartment help. View our{" "}
-                                                <Link className="font-black text-[#173f3f] underline" to="/privacy-policy">
-                                                    Privacy Policy
-                                                </Link>{" "}
-                                                and{" "}
-                                                <Link className="font-black text-[#173f3f] underline" to="/terms-and-conditions">
-                                                    Terms and Conditions
-                                                </Link>
-                                                .
-                                            </span>
-                                        </label>
-
-                                        {shouldShowSmsConsentNotice && (
-                                            <p className="mt-2 rounded-xl bg-[#fff8e6] px-3 py-2 text-xs font-bold leading-5 text-[#8a5b0a] ring-1 ring-[#f2d08a]">
-                                                To receive text updates, check the optional SMS consent box. You can still submit without it and we will follow up by email or call.
-                                            </p>
-                                        )}
-
-                                        {showSidebarError && (
-                                            <p className="mt-2 text-xs font-semibold text-[#e4572e]">
-                                                {leadFormError || "Add the required info so we can send the answer."}
-                                            </p>
-                                        )}
-
-                                        <div className="mt-2 grid grid-cols-3 gap-1.5 rounded-xl bg-[#f5f8f1] p-2 text-center text-[9px] font-black uppercase tracking-wide text-[#173f3f] ring-1 ring-[#d7e6df]">
-                                            <span>Free help</span>
-                                            <span>No obligation</span>
-                                            <span>Local locator</span>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={handleFloorPlanLeadSubmit}
-                                            disabled={isSubmittingLead || leadSubmitted}
-                                            className={`w-full rounded-xl px-4 font-black ${intakeSubmitClass} ${leadSubmitted
-                                                ? "cursor-not-allowed bg-[#d7e6df] text-[#526260]"
-                                                : "bg-[#f2b84b] !text-[#102426] hover:bg-[#dca33c] hover:!text-[#102426]"
-                                                }`}
-                                        >
-                                            {isSubmittingLead
-                                                ? "Sending..."
-                                                : leadSubmitted
-                                                    ? "Request Sent"
-                                                    : "Get verified details"}
-                                        </button>
-
-                                        <p className={`font-semibold text-[#7b8b88] ${intakeFinePrintClass}`}>
-                                            We only follow up about this property and nearby options.
-                                        </p>
-                                    </div>
-                                </div>
+                                {renderLocatorIntakeCard({ id: "request-info" })}
                             </div>
                         </div>
             </div>
