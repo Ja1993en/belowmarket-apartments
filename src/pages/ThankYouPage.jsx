@@ -2,75 +2,9 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Home } from "lucide-react";
 
-const GOOGLE_ADS_ID = "AW-18240067010";
-const GOOGLE_ADS_CONVERSION_ID = "AW-18240067010/ZJoaCLTRpsYcEMKrxflD";
-
-const loadGoogleAdsTag = () =>
-  new Promise((resolve, reject) => {
-    if (typeof window === "undefined") {
-      resolve(null);
-      return;
-    }
-
-    if (typeof window.gtag === "function") {
-      resolve(window.gtag);
-      return;
-    }
-
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function gtag() {
-      window.dataLayer.push(arguments);
-    };
-
-    const existingScript = document.querySelector("script[data-bma-google-ads='true']");
-    if (existingScript) {
-      existingScript.addEventListener("load", () => resolve(window.gtag), { once: true });
-      existingScript.addEventListener("error", reject, { once: true });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.async = true;
-    script.dataset.bmaGoogleAds = "true";
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`;
-    script.addEventListener("load", () => resolve(window.gtag), { once: true });
-    script.addEventListener("error", reject, { once: true });
-    document.head.appendChild(script);
-  });
-
-const trackLeadFormConversion = () => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  if (window.sessionStorage.getItem("bmaLeadConversionTracked") === "true") {
-    return;
-  }
-
-  window.sessionStorage.setItem("bmaLeadConversionTracked", "true");
-
-  loadGoogleAdsTag()
-    .then((gtag) => {
-      if (typeof gtag !== "function") return;
-
-      gtag("js", new Date());
-      gtag("config", GOOGLE_ADS_ID);
-      gtag("event", "conversion", {
-        send_to: GOOGLE_ADS_CONVERSION_ID,
-        value: 1.0,
-        currency: "USD",
-      });
-    })
-    .catch(() => {
-      window.sessionStorage.removeItem("bmaLeadConversionTracked");
-    });
-};
-
 export default function ThankYouPage() {
   useEffect(() => {
     document.title = "Request Received | Below Market Apartments";
-    trackLeadFormConversion();
-
     let robotsMeta = document.querySelector('meta[name="robots"]');
     const previousRobotsContent = robotsMeta?.getAttribute("content");
     const createdRobotsMeta = !robotsMeta;

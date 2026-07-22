@@ -30,6 +30,7 @@ import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { formatAvailability as formatAvailabilityLabel } from "../utils/displayFormatters";
+import { trackGoogleAdsLeadConversion } from "../utils/googleAdsTracking";
 import CompareSavedOptionsPanel from "../components/propertySearch/CompareSavedOptionsPanel";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -1796,6 +1797,7 @@ export default function PublicPropertyListing() {
         try {
             setIsSubmittingLead(true);
             const savedLead = await saveSupabaseLead(adminLeadPayload);
+            trackGoogleAdsLeadConversion(savedLead.id);
 
             saveLeadEventInBackground({
                 leadId: savedLead.id,

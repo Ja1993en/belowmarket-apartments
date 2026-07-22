@@ -8,6 +8,7 @@ import { saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { isNonRentOnlySpecialText } from "../utils/rentSpecials";
+import { trackGoogleAdsLeadConversion } from "../utils/googleAdsTracking";
 import {
   getBudgetQualificationMessage,
 } from "../utils/leadQualification";
@@ -2234,6 +2235,7 @@ function RequestInfoModal({ property, searchParams, onClose, onSubmitted }) {
     try {
       setIsSubmitting(true);
       const savedLead = await saveSupabaseLead(leadPayload);
+      trackGoogleAdsLeadConversion(savedLead.id);
 
       saveLeadEventInBackground({
         leadId: savedLead.id,

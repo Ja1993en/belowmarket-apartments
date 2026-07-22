@@ -6,6 +6,7 @@ import { saveSupabaseLead } from "../data/supabaseLeadStorage";
 import { saveLeadEventInBackground } from "../data/supabaseLeadEvents";
 import { isLocalFallbackEnabled } from "../data/supabaseClient";
 import { getAnyPropertyById } from "../data/propertyStorage";
+import { trackGoogleAdsLeadConversion } from "../utils/googleAdsTracking";
 import {
   getBudgetQualificationMessage,
 } from "../utils/leadQualification";
@@ -182,6 +183,7 @@ export default function StartPage() {
       setIsSubmitting(true);
 
       const savedLead = await saveSupabaseLead(leadPayload);
+      trackGoogleAdsLeadConversion(savedLead.id);
 
       saveLeadEventInBackground({
         leadId: savedLead.id,
