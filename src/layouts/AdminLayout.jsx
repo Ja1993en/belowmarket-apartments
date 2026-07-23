@@ -74,7 +74,7 @@ export default function AdminLayout() {
           <AdminNavigation />
         </aside>
 
-        <main className="min-h-screen flex-1">
+        <main className="min-h-screen min-w-0 flex-1">
           <header className="bma-topbar sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
             <div className="flex items-center gap-3">
               <button

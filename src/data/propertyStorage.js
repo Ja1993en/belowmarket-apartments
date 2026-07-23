@@ -375,6 +375,7 @@ function mapSupabaseProperty(row) {
     state: data.state || row.state || "",
     zipcode: data.zipcode || row.zipcode || "",
     managementCompanyId: data.managementCompanyId || row.management_company_id || "",
+    updatedAt: data.updatedAt || row.updated_at || "",
   };
 }
 
