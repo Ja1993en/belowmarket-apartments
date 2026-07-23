@@ -70,7 +70,7 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-[#f5f8f1] text-[#102426]">
       <div className="flex">
-        <aside className="bma-brand-panel hidden min-h-screen w-72 p-6 text-white md:block">
+        <aside className="bma-brand-panel hidden min-h-screen w-64 shrink-0 p-6 text-white lg:block xl:w-72">
           <AdminNavigation />
         </aside>
 
@@ -80,7 +80,7 @@ export default function AdminLayout() {
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e7f3ee] text-[#173f3f] ring-1 ring-[#d7e6df] md:hidden"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e7f3ee] text-[#173f3f] ring-1 ring-[#d7e6df] lg:hidden"
                 aria-label="Open admin navigation"
                 aria-expanded={isMobileMenuOpen}
               >
@@ -113,7 +113,7 @@ export default function AdminLayout() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden">
           <button
             type="button"
             className="absolute inset-0 bg-[#102426]/55 backdrop-blur-sm"

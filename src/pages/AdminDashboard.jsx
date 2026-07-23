@@ -297,7 +297,7 @@ export default function AdminDashboard() {
 
       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {stats.map((stat) => (
-          <MetricCard key={stat.label} {...stat} />
+          <MetricCard key={stat.label} {...stat} isLoading={isLoading} />
         ))}
       </section>
 
@@ -310,7 +310,7 @@ export default function AdminDashboard() {
         >
           <div className="grid gap-2.5">
             {attentionItems.map((item) => (
-              <AttentionItem key={item.title} item={item} />
+              <AttentionItem key={item.title} item={item} isLoading={isLoading} />
             ))}
           </div>
         </Panel>
@@ -321,7 +321,9 @@ export default function AdminDashboard() {
           actionLabel="View all"
           actionTo="/admin/leads"
         >
-          {recentLeads.length ? (
+          {isLoading ? (
+            <LeadListSkeleton />
+          ) : recentLeads.length ? (
             <div className="overflow-hidden rounded-xl ring-1 ring-[#d7e6df]">
               <div className="hidden grid-cols-[minmax(140px,1fr)_minmax(160px,1.35fr)_100px_90px_28px] gap-3 bg-[#f5f8f1] px-4 py-2.5 text-[10px] font-black uppercase text-[#526260] md:grid">
                 <span>Renter</span>
@@ -403,7 +405,7 @@ export default function AdminDashboard() {
           className="xl:col-span-7"
         >
           {propertyInterest.length ? (
-            <div className="grid gap-2.5 sm:grid-cols-2">
+            <div className="grid gap-2.5">
               {propertyInterest.map((property, index) => (
                 <PropertyInterestRow
                   key={property.id}
@@ -445,7 +447,7 @@ export default function AdminDashboard() {
   );
 }
 
-function MetricCard({ icon: Icon, label, value, detail, tone, to }) {
+function MetricCard({ icon: Icon, label, value, detail, tone, to, isLoading }) {
   const tones = {
     gold: "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]",
     green: "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]",
@@ -470,10 +472,10 @@ function MetricCard({ icon: Icon, label, value, detail, tone, to }) {
         {label}
       </p>
       <p className="mt-1 text-2xl font-black text-[#102426] sm:text-3xl">
-        {value}
+        {isLoading ? "—" : value}
       </p>
       <p className="mt-1 line-clamp-2 text-[10px] font-bold leading-4 text-[#78908a] sm:text-xs">
-        {detail}
+        {isLoading ? "Loading current data" : detail}
       </p>
     </Link>
   );
@@ -523,7 +525,7 @@ function Panel({
   );
 }
 
-function AttentionItem({ item }) {
+function AttentionItem({ item, isLoading }) {
   const Icon = item.icon;
   return (
     <Link
@@ -548,11 +550,11 @@ function AttentionItem({ item }) {
           {item.title}
         </span>
         <span className="mt-0.5 block text-xs font-semibold leading-4 text-[#526260]">
-          {item.description}
+          {isLoading ? "Loading current work queue." : item.description}
         </span>
       </span>
       <span className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-white px-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
-        {item.count}
+        {isLoading ? "—" : item.count}
       </span>
     </Link>
   );
@@ -562,9 +564,9 @@ function RecentLeadRow({ lead }) {
   return (
     <Link
       to={`/admin/leads/${lead.id}`}
-      className="grid gap-2 px-4 py-3 hover:bg-[#f5f8f1] md:grid-cols-[minmax(140px,1fr)_minmax(160px,1.35fr)_100px_90px_28px] md:items-center md:gap-3"
+      className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-4 py-3 hover:bg-[#f5f8f1] md:grid-cols-[minmax(140px,1fr)_minmax(160px,1.35fr)_100px_90px_28px] md:items-center md:gap-3"
     >
-      <span className="min-w-0">
+      <span className="col-span-2 min-w-0 md:col-span-1">
         <span className="block truncate text-sm font-black text-[#102426]">
           {lead.name || "Unnamed renter"}
         </span>
@@ -572,11 +574,11 @@ function RecentLeadRow({ lead }) {
           {formatLeadSource(lead)}
         </span>
       </span>
-      <span className="line-clamp-2 text-xs font-semibold leading-4 text-[#526260]">
+      <span className="col-span-2 line-clamp-2 text-xs font-semibold leading-4 text-[#526260] md:col-span-1">
         {lead.preference || getLeadSearchSummary(lead)}
       </span>
       <StatusBadge status={lead.status} />
-      <span className="text-xs font-bold text-[#78908a]">
+      <span className="text-right text-xs font-bold text-[#78908a] md:text-left">
         {formatRelativeTime(lead.createdAt)}
       </span>
       <ChevronRight className="hidden h-4 w-4 text-[#78908a] md:block" />
@@ -638,10 +640,12 @@ function SourceRow({ source }) {
           {source.share}% of active leads
         </p>
       </div>
-      <SourceMetric label="Leads" value={source.leadCount} />
-      <SourceMetric label="Qualified" value={source.qualifiedCount} />
-      <SourceMetric label="Converted" value={source.convertedCount} />
-      <SourceMetric label="Tours" value={source.tourRequestCount} />
+      <div className="grid grid-cols-2 gap-1.5 sm:contents">
+        <SourceMetric label="Leads" value={source.leadCount} />
+        <SourceMetric label="Qualified" value={source.qualifiedCount} />
+        <SourceMetric label="Converted" value={source.convertedCount} />
+        <SourceMetric label="Tours" value={source.tourRequestCount} />
+      </div>
     </div>
   );
 }
@@ -733,6 +737,28 @@ function EmptyState({ message }) {
   return (
     <div className="rounded-xl border border-dashed border-[#a9cfc2] bg-[#f5f8f1] p-4 text-sm font-bold text-[#526260]">
       {message}
+    </div>
+  );
+}
+
+function LeadListSkeleton() {
+  return (
+    <div
+      className="grid gap-2 rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]"
+      aria-label="Loading recent leads"
+    >
+      {[0, 1, 2].map((item) => (
+        <div
+          key={item}
+          className="grid grid-cols-[minmax(0,1fr)_5rem] gap-3 rounded-lg bg-white p-3"
+        >
+          <div className="grid gap-2">
+            <span className="h-3 w-28 animate-pulse rounded-full bg-[#d7e6df]" />
+            <span className="h-2.5 w-full animate-pulse rounded-full bg-[#edf3ef]" />
+          </div>
+          <span className="h-7 animate-pulse rounded-full bg-[#e7f3ee]" />
+        </div>
+      ))}
     </div>
   );
 }
