@@ -24,6 +24,9 @@ function mapSupabaseLead(lead) {
     recommendedFloorPlanItems: lead.recommended_floor_plan_items || [],
     token: lead.token,
     contactMethod: lead.contact_method,
+    smsConsent: Boolean(lead.sms_consent),
+    smsConsentAt: lead.sms_consent_at || null,
+    nextFollowUpAt: lead.next_follow_up_at || null,
     createdAt: lead.created_at,
     utmSource: lead.utm_source || "",
     utmMedium: lead.utm_medium || "",
@@ -62,6 +65,17 @@ function isMissingRecommendedFloorPlanColumnError(error) {
   );
 }
 
+function isMissingLeadWorkflowColumnError(error) {
+  const message = `${error?.message || ""} ${error?.details || ""}`;
+
+  return (
+    error?.code === "PGRST204" ||
+    message.includes("sms_consent") ||
+    message.includes("sms_consent_at") ||
+    message.includes("next_follow_up_at")
+  );
+}
+
 export async function saveSupabaseLead(lead) {
   const baseLeadPayload = {
     name: lead.name,
@@ -96,16 +110,30 @@ export async function saveSupabaseLead(lead) {
     referrer: lead.referrer || null,
   };
 
-  const { data, error } = await supabase
+  const workflowPayload = {
+    sms_consent: Boolean(lead.smsConsent),
+    sms_consent_at: lead.smsConsentAt || null,
+    next_follow_up_at: lead.nextFollowUpAt || null,
+  };
+
+  let { data, error } = await supabase
     .from("leads")
-    .insert({
-      ...baseLeadPayload,
-      ...trackingPayload,
-    })
+    .insert({ ...baseLeadPayload, ...trackingPayload, ...workflowPayload })
     .select("*")
     .single();
    
   if (error) {
+    if (isMissingLeadWorkflowColumnError(error)) {
+      const workflowFallback = await supabase
+        .from("leads")
+        .insert({ ...baseLeadPayload, ...trackingPayload })
+        .select("*")
+        .single();
+
+      data = workflowFallback.data;
+      error = workflowFallback.error;
+    }
+
     if (isMissingTrackingColumnError(error)) {
       const fallbackResult = await supabase
         .from("leads")
@@ -128,13 +156,21 @@ export async function saveSupabaseLead(lead) {
         gclid: lead.gclid || "",
         landingPage: lead.landingPage || "",
         referrer: lead.referrer || "",
+        smsConsent: Boolean(lead.smsConsent),
+        smsConsentAt: lead.smsConsentAt || null,
+        nextFollowUpAt: lead.nextFollowUpAt || null,
       };
     }
 
-    throw error;
+    if (error) throw error;
   }
 
-  return mapSupabaseLead(data);
+  return {
+    ...mapSupabaseLead(data),
+    smsConsent: data.sms_consent ?? Boolean(lead.smsConsent),
+    smsConsentAt: data.sms_consent_at || lead.smsConsentAt || null,
+    nextFollowUpAt: data.next_follow_up_at || lead.nextFollowUpAt || null,
+  };
 }
 
 export async function getSupabaseLeads() {
@@ -257,12 +293,31 @@ export async function getSupabaseLeads() {
     if (updates.assignedTo !== undefined) updatePayload.assigned_to = updates.assignedTo;
     if (updates.lastTouch !== undefined) updatePayload.last_touch = updates.lastTouch;
     if (updates.notes !== undefined) updatePayload.notes = updates.notes;
+    if (updates.smsConsent !== undefined) updatePayload.sms_consent = updates.smsConsent;
+    if (updates.smsConsentAt !== undefined) updatePayload.sms_consent_at = updates.smsConsentAt;
+    if (updates.nextFollowUpAt !== undefined) {
+      updatePayload.next_follow_up_at = updates.nextFollowUpAt;
+    }
 
     const { error } = await supabase
       .from("leads")
       .update(updatePayload)
       .eq("id", leadId);
   
+    if (error && isMissingLeadWorkflowColumnError(error)) {
+      delete updatePayload.sms_consent;
+      delete updatePayload.sms_consent_at;
+      delete updatePayload.next_follow_up_at;
+
+      const fallbackResult = await supabase
+        .from("leads")
+        .update(updatePayload)
+        .eq("id", leadId);
+
+      if (fallbackResult.error) throw fallbackResult.error;
+      return;
+    }
+
     if (error) {
       throw error;
     }

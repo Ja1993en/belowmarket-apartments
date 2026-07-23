@@ -1,6 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { BadgeCheck, Clock3, Mail, Phone, Search, Send, Trophy, Users, XCircle } from "lucide-react";
+import {
+  BadgeCheck,
+  CalendarClock,
+  ChevronRight,
+  Clock3,
+  Mail,
+  MessageSquare,
+  Phone,
+  RefreshCw,
+  Search,
+  Send,
+  ShieldCheck,
+  Trophy,
+  Users,
+  XCircle,
+} from "lucide-react";
 import {
   archiveSupabaseTestLeads,
   getSupabaseLeads,
@@ -42,6 +57,8 @@ export default function LeadsTab() {
   const [tourFilter, setTourFilter] = useState(initialTourFilter);
   const [activityFilter, setActivityFilter] = useState("All Activity");
   const [dataTypeFilter, setDataTypeFilter] = useState("All Data");
+  const [queueFilter, setQueueFilter] = useState("All");
+  const [showFilters, setShowFilters] = useState(false);
   const loadLeads = async ({ prepareLoad = true } = {}) => {
     if (prepareLoad) {
       setIsLoadingLeads(true);
@@ -207,6 +224,11 @@ export default function LeadsTab() {
       (lead.recommendedPropertyIds?.length || 0) === 0 ||
       hasTourFollowUpNeeded ||
       lead.status === "New Lead";
+    const queueType = getLeadQueueType(lead, getLeadTourRequests(lead));
+    const matchesQueue =
+      queueFilter === "All" ||
+      queueType === queueFilter ||
+      (queueFilter === "Needs Action" && queueType !== "Up to date");
 
     const matchesStatus =
       statusFilter === "All" ||
@@ -257,7 +279,8 @@ export default function LeadsTab() {
       matchesPriority &&
       matchesRecommendations &&
       matchesTours &&
-      matchesActivity
+      matchesActivity &&
+      matchesQueue
     );
   });
 
@@ -334,6 +357,35 @@ export default function LeadsTab() {
     );
   }).length;
 
+  const queueCounts = activeLeads.reduce(
+    (counts, lead) => {
+      const queueType = getLeadQueueType(lead, getLeadTourRequests(lead));
+      counts[queueType] = (counts[queueType] || 0) + 1;
+      return counts;
+    },
+    {
+      "Tour follow-up": 0,
+      Overdue: 0,
+      "Needs recommendation": 0,
+      New: 0,
+      "Up to date": 0,
+    }
+  );
+
+  const selectQueue = (nextQueue) => {
+    setQueueFilter(queueFilter === nextQueue ? "All" : nextQueue);
+    setSearchTerm("");
+    setStatusFilter("All");
+    setSourceFilter("All");
+    setPriorityFilter("All");
+    setQualityFilter("All");
+    setRecommendationFilter("All");
+    setTourFilter("All");
+    setActivityFilter("All Activity");
+    setDataTypeFilter("All Data");
+    setSearchParams({}, { replace: true });
+  };
+
   const hasActiveFilters =
     searchTerm !== "" ||
     statusFilter !== "All" ||
@@ -344,15 +396,19 @@ export default function LeadsTab() {
     recommendationFilter !== "All" ||
     tourFilter !== "All" ||
     activityFilter !== "All Activity" ||
-    dataTypeFilter !== "All Data";
+    dataTypeFilter !== "All Data" ||
+    queueFilter !== "All";
 
   return (
     <div className="text-left">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div>
-          <h1 className="text-4xl font-black text-[#102426]">Leads</h1>
-          <p className="mt-2 font-semibold text-[#526260]">
-            Manage renter leads, messages, and property recommendations.
+          <p className="text-xs font-black uppercase tracking-wide text-[#1f6f63]">
+            Renter pipeline
+          </p>
+          <h1 className="mt-1 text-3xl font-black text-[#102426]">Leads</h1>
+          <p className="mt-1 text-sm font-semibold text-[#526260]">
+            Work the next renter action without losing the full history.
           </p>
           {searchParams.get("tourFilter") && (
             <p className="mt-3 inline-flex rounded-full bg-[#d8efe6] px-4 py-2 text-sm font-bold text-[#1f6f63]">
@@ -390,12 +446,13 @@ export default function LeadsTab() {
           )}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={loadLeads}
             disabled={isLoadingLeads}
-            className="rounded-2xl bg-[#e7f3ee] px-5 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#e7f3ee] px-4 py-2.5 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df] disabled:cursor-not-allowed disabled:text-[#78908a]"
           >
+            <RefreshCw className={`h-4 w-4 ${isLoadingLeads ? "animate-spin" : ""}`} />
             {isLoadingLeads ? "Refreshing..." : "Refresh"}
           </button>
 
@@ -403,7 +460,7 @@ export default function LeadsTab() {
             type="button"
             onClick={createTestLead}
             disabled={isCreatingTestLead}
-            className="rounded-2xl bg-[#d8efe6] px-5 py-3 text-center text-sm font-bold text-[#1f6f63] hover:bg-[#c5e5d8] disabled:cursor-not-allowed disabled:bg-[#e7f3ee] disabled:text-[#78908a]"
+            className="rounded-xl bg-[#d8efe6] px-4 py-2.5 text-center text-sm font-bold text-[#1f6f63] hover:bg-[#c5e5d8] disabled:cursor-not-allowed disabled:text-[#78908a]"
           >
             {isCreatingTestLead ? "Creating..." : "Create Test Lead"}
           </button>
@@ -413,7 +470,7 @@ export default function LeadsTab() {
               type="button"
               onClick={archiveTestLeads}
               disabled={isArchivingTestLeads}
-              className="rounded-2xl bg-[#fff8e6] px-5 py-3 text-center text-sm font-bold text-[#8a5b0a] hover:bg-[#f9edc8] disabled:cursor-not-allowed disabled:bg-[#e7f3ee] disabled:text-[#78908a]"
+              className="rounded-xl bg-[#fff8e6] px-4 py-2.5 text-center text-sm font-bold text-[#8a5b0a] hover:bg-[#f9edc8] disabled:cursor-not-allowed disabled:text-[#78908a]"
             >
               {isArchivingTestLeads ? "Archiving..." : "Archive Test Leads"}
             </button>
@@ -421,14 +478,76 @@ export default function LeadsTab() {
 
           <Link
             to="/start"
-            className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-center text-sm font-black text-[#102426] hover:bg-[#f9d783]"
+            className="rounded-xl bg-[#f2b84b] px-4 py-2.5 text-center text-sm font-black text-[#102426] hover:bg-[#f9d783]"
           >
             + Add Lead
           </Link>
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-6 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-2 border-b border-[#d7e6df] px-4 py-3 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="font-black text-[#102426]">Follow-up queue</h2>
+            <p className="mt-0.5 text-xs font-semibold text-[#526260]">
+              Start with tours and overdue renters, then build missing recommendations.
+            </p>
+          </div>
+          <span className="w-fit rounded-full bg-[#102426] px-3 py-1 text-xs font-black text-white">
+            {needsActionCount} need action
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-px bg-[#d7e6df] sm:grid-cols-3 xl:grid-cols-6">
+          <QueueButton
+            icon={Users}
+            label="All active"
+            value={activeLeads.length}
+            isActive={queueFilter === "All"}
+            onClick={() => selectQueue("All")}
+          />
+          <QueueButton
+            icon={CalendarClock}
+            label="Tour follow-up"
+            value={queueCounts["Tour follow-up"]}
+            isActive={queueFilter === "Tour follow-up"}
+            onClick={() => selectQueue("Tour follow-up")}
+            tone="urgent"
+          />
+          <QueueButton
+            icon={Clock3}
+            label="Overdue"
+            value={queueCounts.Overdue}
+            isActive={queueFilter === "Overdue"}
+            onClick={() => selectQueue("Overdue")}
+            tone="urgent"
+          />
+          <QueueButton
+            icon={Send}
+            label="Needs match"
+            value={queueCounts["Needs recommendation"]}
+            isActive={queueFilter === "Needs recommendation"}
+            onClick={() => selectQueue("Needs recommendation")}
+            tone="warning"
+          />
+          <QueueButton
+            icon={BadgeCheck}
+            label="New"
+            value={queueCounts.New}
+            isActive={queueFilter === "New"}
+            onClick={() => selectQueue("New")}
+          />
+          <QueueButton
+            icon={ShieldCheck}
+            label="Up to date"
+            value={queueCounts["Up to date"]}
+            isActive={queueFilter === "Up to date"}
+            onClick={() => selectQueue("Up to date")}
+            tone="success"
+          />
+        </div>
+      </section>
+
+      <div className="hidden">
         <LeadStatCard
           icon={Users}
           title="Total Leads"
@@ -712,7 +831,7 @@ export default function LeadsTab() {
 
       </div>
 
-      <div className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-2xl border border-[#d7e6df] bg-white p-3 shadow-sm sm:p-5">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h2 className="text-2xl font-black text-[#102426]">
@@ -753,7 +872,7 @@ export default function LeadsTab() {
           </button>
         </div>
 
-        <div className="mt-6 grid gap-3 md:grid-cols-4">
+        <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
           {["New Lead", "Contacted", "Tour Needed", "Recommendation Sent"].map((status) => {
             const count = leads.filter((lead) => lead.status === status).length;
 
@@ -773,7 +892,7 @@ export default function LeadsTab() {
                   setActivityFilter("All Activity");
                   setSearchParams({}, { replace: true });
                 }}
-                className={`rounded-2xl px-4 py-3 text-left ${statusFilter === status
+                className={`rounded-xl px-3 py-2.5 text-left ${statusFilter === status
                   ? "bg-[#102426] text-white"
                   : "bg-[#f5f8f1] text-[#173f3f] hover:bg-[#e7f3ee]"
                   }`}
@@ -785,19 +904,28 @@ export default function LeadsTab() {
           })}
         </div>
 
-        <div className="mt-6 grid gap-3">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#78908a]" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search leads..."
-              className="w-full rounded-2xl border border-[#d7e6df] bg-white py-3 pl-12 pr-4 font-semibold text-[#102426] placeholder:text-[#78908a] outline-none focus:border-[#1f6f63]"
-            />
+        <div className="mt-5 grid gap-3">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 md:block">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#78908a]" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search leads..."
+                className="w-full rounded-xl border border-[#d7e6df] bg-white py-3 pl-12 pr-4 font-semibold text-[#102426] placeholder:text-[#78908a] outline-none focus:border-[#1f6f63]"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowFilters((current) => !current)}
+              className="rounded-xl bg-[#e7f3ee] px-3 text-xs font-black text-[#173f3f] md:hidden"
+            >
+              {showFilters ? "Hide filters" : "Filters"}
+            </button>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
+          <div className={`${showFilters ? "grid" : "hidden"} gap-2 sm:grid-cols-2 md:grid lg:grid-cols-3 xl:grid-cols-7`}>
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
@@ -896,6 +1024,7 @@ export default function LeadsTab() {
                   setTourFilter("All");
                   setActivityFilter("All Activity");
                   setDataTypeFilter("All Data");
+                  setQueueFilter("All");
                   setSearchParams({}, { replace: true });
                 }}
                 className="rounded-2xl bg-[#e7f3ee] px-4 py-3 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
@@ -908,6 +1037,12 @@ export default function LeadsTab() {
 
         {hasActiveFilters && (
           <div className="mt-4 flex flex-wrap gap-2">
+            {queueFilter !== "All" && (
+              <FilterChip
+                label={`Queue: ${queueFilter}`}
+                onRemove={() => setQueueFilter("All")}
+              />
+            )}
             {searchTerm && (
               <FilterChip
                 label={`Search: ${searchTerm}`}
@@ -1042,6 +1177,33 @@ function FilterChip({ label, onRemove }) {
   );
 }
 
+function QueueButton({ icon: Icon, label, value, isActive, onClick, tone = "default" }) {
+  const toneClasses = {
+    default: "text-[#173f3f]",
+    urgent: "text-[#b42318]",
+    warning: "text-[#8a5b0a]",
+    success: "text-[#1f6f63]",
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`min-w-0 bg-white px-3 py-3 text-left transition hover:bg-[#f5f8f1] sm:px-4 ${
+        isActive ? "relative z-10 ring-2 ring-inset ring-[#173f3f]" : ""
+      }`}
+    >
+      <span className="flex items-center justify-between gap-2">
+        <Icon className={`h-4 w-4 shrink-0 ${toneClasses[tone]}`} />
+        <span className="text-xl font-black text-[#102426]">{value}</span>
+      </span>
+      <span className="mt-1 block truncate text-[11px] font-black text-[#526260] sm:text-xs">
+        {label}
+      </span>
+    </button>
+  );
+}
+
 function LeadStatCard({
   icon: Icon,
   title,
@@ -1094,16 +1256,7 @@ function LeadStatCard({
 
 function LeadRow({ lead, tourRequests }) {
   const recommendationCount = lead.recommendedPropertyIds?.length || 0;
-  const tourRequestCount = tourRequests.length;
-
   const savedActivityEvents = getLeadActivitiesForLead(lead.id);
-  const savedActivityCount = savedActivityEvents.length;
-  const activityCount =
-    savedActivityCount +
-    1 +
-    recommendationCount +
-    tourRequestCount;
-
   const leadActivityEvents = [
     {
       title: "Lead created",
@@ -1127,183 +1280,179 @@ function LeadRow({ lead, tourRequests }) {
   );
 
   const latestActivity = leadActivityEvents[0];
-
-  const latestTourRequest = tourRequests[0];
-
   const hasTourFollowUpNeeded = tourRequests.some(
     (request) => (request.status || "New") !== "Followed Up"
   );
-
   const leadHealth = getLeadHealth({
     lead,
     recommendationCount,
     hasTourFollowUpNeeded,
   });
-
   const nextAction = getNextActionText(leadHealth.label);
+  const queueType = getLeadQueueType(lead, tourRequests);
+  const followUpLabel = formatFollowUpLabel(lead.nextFollowUpAt);
+  const phoneHref = `tel:${String(lead.phone || "").replace(/[^\d+]/g, "")}`;
+  const emailHref = `mailto:${lead.email || ""}`;
+  const smsAllowed = Boolean(lead.smsConsent);
 
   return (
-    <div className="rounded-2xl border border-[#d7e6df] bg-[#f5f8f1] p-5">
-      <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
+    <article className="overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
+      <div className="grid min-w-0 lg:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="min-w-0 p-4 sm:p-5">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <span className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase ${getQueueClasses(queueType)}`}>
+                  {queueType}
+                </span>
+                <span className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase ${getPriorityClasses(lead.priority)}`}>
+                  {lead.priority || "Normal"} priority
+                </span>
+                <span className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase ${getQualityClasses(lead.quality || "New")}`}>
+                  {lead.quality || "New"}
+                </span>
+              </div>
+              <div className="mt-2 flex min-w-0 items-center gap-2">
+                <Link
+                  to={`/admin/leads/${lead.id}`}
+                  className="truncate text-lg font-black text-[#102426] hover:text-[#1f6f63]"
+                >
+                  {lead.name || "Unnamed renter"}
+                </Link>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${getStatusClasses(lead.status)}`}>
+                  {lead.status}
+                </span>
+              </div>
+              <p className="mt-1 line-clamp-2 text-sm font-semibold leading-5 text-[#526260]">
+                {lead.preference || `${lead.bedrooms || "Apartment"} · ${lead.budget || "Budget not provided"}`}
+              </p>
+            </div>
+
             <Link
-              to={`/admin/leads/${lead.id}`}
-              className="text-xl font-black text-[#102426] hover:text-[#1f6f63]"
+              to={leadHealth.to}
+              className="inline-flex shrink-0 items-center gap-1 text-xs font-black text-[#173f3f] hover:text-[#1f6f63]"
             >
-              {lead.name}
+              {nextAction}
+              <ChevronRight className="h-4 w-4" />
             </Link>
-            <span className={`rounded-full px-3 py-1 text-xs font-bold ${getStatusClasses(lead.status)}`}>
-              {lead.status}
-            </span>
+          </div>
 
-            <span className={`rounded-full px-3 py-1 text-xs font-bold ${getPriorityClasses(lead.priority)}`}>
-              {lead.priority} Priority
-            </span>
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <LeadFact
+              label="Preferred contact"
+              value={smsAllowed ? (lead.contactMethod || "Text allowed") : "Call or email"}
+              detail={
+                smsAllowed
+                  ? "SMS consent saved"
+                  : lead.contactMethod === "Text"
+                    ? "Text requested, no consent"
+                    : "No SMS consent"
+              }
+              icon={smsAllowed ? ShieldCheck : Mail}
+              tone={smsAllowed ? "success" : "default"}
+            />
+            <LeadFact
+              label="Recommendations"
+              value={`${recommendationCount} ${recommendationCount === 1 ? "property" : "properties"}`}
+              detail={recommendationCount > 0 ? "Renter list ready" : "Match needed"}
+              icon={Send}
+              tone={recommendationCount > 0 ? "success" : "warning"}
+            />
+            <LeadFact
+              label="Follow-up"
+              value={followUpLabel || (hasTourFollowUpNeeded ? "Tour waiting" : "Not scheduled")}
+              detail={latestActivity ? `${latestActivity.title} · ${formatLeadActivityDate(latestActivity.createdAt)}` : "No recent activity"}
+              icon={CalendarClock}
+              tone={queueType === "Overdue" || hasTourFollowUpNeeded ? "urgent" : "default"}
+            />
+          </div>
 
-            <span className={`rounded-full px-3 py-1 text-xs font-bold ${getQualityClasses(lead.quality || "New")}`}>
-              {(lead.quality || "New")} Quality
-            </span>
-
-            <span className="rounded-full bg-[#e7f3ee] px-3 py-1 text-xs font-bold text-[#173f3f]">
-              {lead.source}
-            </span>
-
-            <span className={`rounded-full px-3 py-1 text-xs font-bold ${leadHealth.classes}`}>
-              {leadHealth.label}
-            </span>
-
+          <div className="mt-4 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#edf3ef] pt-3 text-xs font-semibold text-[#526260]">
+            <a href={phoneHref} className="inline-flex items-center gap-1.5 hover:text-[#173f3f]">
+              <Phone className="h-3.5 w-3.5" />
+              {lead.phone || "No phone"}
+            </a>
+            <a href={emailHref} className="inline-flex min-w-0 items-center gap-1.5 hover:text-[#173f3f]">
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{lead.email || "No email"}</span>
+            </a>
+            <span>{lead.source || "Unknown source"}</span>
             {lead.sourcePropertyName && (
-              <p className="mt-2 text-sm font-bold text-emerald-700">
+              <span className="truncate font-bold text-[#1f6f63]">
                 Interested in {lead.sourcePropertyName}
-              </p>
+              </span>
             )}
-
           </div>
 
-          <p className="mt-2 text-sm font-semibold text-[#526260]">
-            {lead.preference}
-          </p>
-
-          <Link
-            to={leadHealth.to}
-            className="mt-2 block w-fit text-sm font-bold text-[#173f3f] hover:text-[#1f6f63]"
-          >
-            Next action: {nextAction}
-          </Link>
-
-          <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold text-[#526260]">
-            <span className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
-              {lead.phone}
-            </span>
-
-            <span className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              {lead.email}
-            </span>
-          </div>
-
-          <div className="mt-3 space-y-1">
-            <p className="text-sm font-bold text-[#526260]">
-              {recommendationCount} recommended{" "}
-              {recommendationCount === 1 ? "property" : "properties"}
+          {lead.notes && lead.notes !== "No notes added yet." && (
+            <p className="mt-3 line-clamp-2 rounded-xl bg-[#f5f8f1] px-3 py-2 text-xs font-semibold leading-5 text-[#526260]">
+              {lead.notes}
             </p>
-
-            <Link
-              to={`/admin/leads/${lead.id}#activity-timeline`}
-              className="block w-fit text-sm font-bold text-[#526260] hover:text-[#173f3f] hover:underline"
-            >
-              View {activityCount} {activityCount === 1 ? "activity" : "activities"}
-            </Link>
-
-            {latestActivity && (
-              <Link
-                to={`/admin/leads/${lead.id}#activity-timeline`}
-                className="flex w-fit items-center gap-2 text-sm font-semibold text-[#526260] hover:text-[#173f3f] hover:underline"
-              >
-                <Clock3 className="h-4 w-4" />
-                Last activity: {latestActivity.title} · {formatLeadActivityDate(latestActivity.createdAt)}
-              </Link>
-            )}
-
-
-            {tourRequestCount > 0 && (
-              <p
-                className={`text-sm font-bold ${hasTourFollowUpNeeded ? "text-emerald-700" : "text-slate-500"
-                  }`}
-              >
-                {tourRequestCount} tour {tourRequestCount === 1 ? "request" : "requests"}
-
-                {hasTourFollowUpNeeded ? (
-                  <span className="text-[#526260]"> need follow-up</span>
-                ) : (
-                  <span className="text-[#526260]"> followed up</span>
-                )}
-
-                {latestTourRequest?.preferredDate && hasTourFollowUpNeeded && (
-                  <span className="text-[#526260]">
-                    {" "}
-                    · Latest: {latestTourRequest.preferredDate}
-                    {latestTourRequest.preferredTime
-                      ? ` at ${latestTourRequest.preferredTime}`
-                      : ""}
-                  </span>
-                )}
-              </p>
-            )}
-
-
-          </div>
-
-          <p className="mt-3 text-sm font-semibold text-[#526260]">
-            Assigned to {lead.assignedTo} • Last touch {lead.lastTouch}
-          </p>
+          )}
         </div>
 
-        <div className="flex flex-wrap gap-2 sm:justify-end lg:min-w-[320px]">          <Link
-          to={`/admin/leads/${lead.id}`}
-          className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
-        >
-          Details
-        </Link>
-
+        <div className="grid grid-cols-2 gap-2 border-t border-[#d7e6df] bg-[#f5f8f1] p-3 lg:grid-cols-1 lg:border-l lg:border-t-0">
+          <a
+            href={phoneHref}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-3 py-2.5 text-xs font-black text-white hover:bg-[#102426]"
+          >
+            <Phone className="h-4 w-4" />
+            Call
+          </a>
+          <a
+            href={emailHref}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+          >
+            <Mail className="h-4 w-4" />
+            Email
+          </a>
+          <Link
+            to={`/admin/leads/${lead.id}/message`}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+          >
+            <MessageSquare className="h-4 w-4" />
+            Message
+          </Link>
           <Link
             to={`/admin/leads/${lead.id}/send-properties`}
-            className={`rounded-xl px-4 py-2 text-sm font-bold ${recommendationCount === 0
-              ? "bg-[#102426] text-white hover:bg-[#173f3f]"
-              : "bg-[#e7f3ee] text-[#173f3f] hover:bg-[#d7e6df]"
-              }`}
+            className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-black ${
+              recommendationCount === 0
+                ? "bg-[#f2b84b] text-[#102426] hover:bg-[#dca33c]"
+                : "bg-[#e7f3ee] text-[#173f3f] hover:bg-[#d7e6df]"
+            }`}
           >
-            Recommend
+            <Send className="h-4 w-4" />
+            {recommendationCount === 0 ? "Build matches" : "Edit matches"}
           </Link>
-
-          {!hasTourFollowUpNeeded && (
             <Link
-              to={`/admin/leads/${lead.id}/message`}
-              className="rounded-xl bg-[#e7f3ee] px-4 py-2 text-sm font-bold text-[#173f3f] hover:bg-[#d7e6df]"
+              to={`/admin/leads/${lead.id}`}
+              className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee] lg:col-span-1"
             >
-              Message Lead
+              Open lead
+              <ChevronRight className="h-4 w-4" />
             </Link>
-          )}
-
-          {hasTourFollowUpNeeded && (
-            <Link
-              to={`/admin/leads/${lead.id}/message`}
-              className="rounded-xl bg-[#1f6f63] px-4 py-2 text-sm font-bold text-white hover:bg-[#173f3f]"
-            >
-              Follow Up
-            </Link>
-          )}
         </div>
       </div>
+    </article>
+  );
+}
 
-      {lead.notes && lead.notes !== "No notes added yet." && (
-        <div className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
-          <p className="text-sm font-bold text-[#526260]">Lead Notes</p>
-          <p className="mt-1 text-sm font-semibold text-[#173f3f]">{lead.notes}</p>
-        </div>
-      )}
+function LeadFact({ label, value, detail, icon: Icon, tone = "default" }) {
+  const toneClasses = {
+    default: "bg-[#f5f8f1] text-[#173f3f]",
+    success: "bg-[#e7f3ee] text-[#1f6f63]",
+    warning: "bg-[#fff8e6] text-[#8a5b0a]",
+    urgent: "bg-[#fff0ea] text-[#b42318]",
+  };
+
+  return (
+    <div className={`min-w-0 rounded-xl px-3 py-2.5 ${toneClasses[tone]}`}>
+      <div className="flex items-center gap-1.5">
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        <p className="truncate text-[9px] font-black uppercase">{label}</p>
+      </div>
+      <p className="mt-1 truncate text-sm font-black text-[#102426]">{value}</p>
+      <p className="mt-0.5 truncate text-[10px] font-semibold text-[#526260]">{detail}</p>
     </div>
   );
 }
@@ -1335,19 +1484,19 @@ function getQualityClasses(quality) {
 
 
 function getLeadHealth({ lead, recommendationCount, hasTourFollowUpNeeded }) {
-  if (recommendationCount === 0) {
-    return {
-      label: "Needs Recommendations",
-      classes: "bg-[#fff8e6] text-[#8a5b0a]",
-      to: `/admin/leads/${lead.id}/send-properties`,
-    };
-  }
-
   if (hasTourFollowUpNeeded) {
     return {
       label: "Tour Follow-up",
       classes: "bg-[#d8efe6] text-[#1f6f63]",
       to: `/admin/leads/${lead.id}/message`,
+    };
+  }
+
+  if (recommendationCount === 0) {
+    return {
+      label: "Needs Recommendations",
+      classes: "bg-[#fff8e6] text-[#8a5b0a]",
+      to: `/admin/leads/${lead.id}/send-properties`,
     };
   }
 
@@ -1364,6 +1513,55 @@ function getLeadHealth({ lead, recommendationCount, hasTourFollowUpNeeded }) {
     classes: "bg-[#e7f3ee] text-[#526260]",
     to: `/admin/leads/${lead.id}`,
   };
+}
+
+function getLeadQueueType(lead, tourRequests = []) {
+  const hasTourFollowUpNeeded = tourRequests.some(
+    (request) => (request.status || "New") !== "Followed Up"
+  );
+
+  if (hasTourFollowUpNeeded) return "Tour follow-up";
+  if (isLeadOverdue(lead)) return "Overdue";
+  if ((lead.recommendedPropertyIds?.length || 0) === 0) {
+    return "Needs recommendation";
+  }
+  if (lead.status === "New Lead") return "New";
+  return "Up to date";
+}
+
+function isLeadOverdue(lead) {
+  if (lead.nextFollowUpAt) {
+    const followUpTime = new Date(lead.nextFollowUpAt).getTime();
+    return Number.isFinite(followUpTime) && followUpTime < Date.now();
+  }
+
+  if (lead.status !== "New Lead") return false;
+  const createdTime = new Date(lead.createdAt || lead.submittedAt || "").getTime();
+  return Number.isFinite(createdTime) && Date.now() - createdTime > 2 * 60 * 60 * 1000;
+}
+
+function getQueueClasses(queueType) {
+  if (queueType === "Tour follow-up" || queueType === "Overdue") {
+    return "bg-[#fff0ea] text-[#b42318]";
+  }
+  if (queueType === "Needs recommendation") {
+    return "bg-[#fff8e6] text-[#8a5b0a]";
+  }
+  if (queueType === "Up to date") {
+    return "bg-[#e7f3ee] text-[#1f6f63]";
+  }
+  return "bg-[#eef5ff] text-[#174a7c]";
+}
+
+function formatFollowUpLabel(dateValue) {
+  if (!dateValue) return "";
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const isToday = date.toDateString() === new Date().toDateString();
+  return isToday
+    ? `Today ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
+    : date.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
 

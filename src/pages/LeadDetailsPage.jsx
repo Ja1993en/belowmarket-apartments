@@ -50,6 +50,9 @@ export default function LeadDetailsPage() {
     const [assignedToDraft, setAssignedToDraft] = useState(
         initialLead?.assignedTo || ""
     );
+    const [nextFollowUpDraft, setNextFollowUpDraft] = useState(
+        toDateTimeLocalValue(initialLead?.nextFollowUpAt)
+    );
     const [activityFilter, setActivityFilter] = useState("All");
     const [tourRequests, setTourRequests] = useState(
         initialLead ? getTourRequestsForLead(initialLead.id) : []
@@ -63,6 +66,7 @@ export default function LeadDetailsPage() {
     const [statusSaved, setStatusSaved] = useState(false);
     const [qualitySaved, setQualitySaved] = useState(false);
     const [prioritySaved, setPrioritySaved] = useState(false);
+    const [followUpSaved, setFollowUpSaved] = useState(false);
 
     const refreshLead = useCallback(async () => {
         if (isLocalLead) {
@@ -74,6 +78,7 @@ export default function LeadDetailsPage() {
             setLead(freshLead ? { ...freshLead } : null);
             setNotesDraft(freshLead?.notes || "");
             setAssignedToDraft(freshLead?.assignedTo || "");
+            setNextFollowUpDraft(toDateTimeLocalValue(freshLead?.nextFollowUpAt));
             setTourRequests(freshTourRequests);
             setLeadEvents([]);
             return;
@@ -90,6 +95,7 @@ export default function LeadDetailsPage() {
             setLead(supabaseLead);
             setNotesDraft(supabaseLead?.notes || "");
             setAssignedToDraft(supabaseLead?.assignedTo || "");
+            setNextFollowUpDraft(toDateTimeLocalValue(supabaseLead?.nextFollowUpAt));
             setTourRequests(supabaseTourRequests);
             setLeadEvents(supabaseLeadEvents);
         } catch (error) {
@@ -129,6 +135,7 @@ export default function LeadDetailsPage() {
             setIsLocalLead(false);
             setNotesDraft(supabaseLead?.notes || "");
             setAssignedToDraft(supabaseLead?.assignedTo || "");
+            setNextFollowUpDraft(toDateTimeLocalValue(supabaseLead?.nextFollowUpAt));
             setTourRequests(supabaseTourRequests);
             setLeadEvents(supabaseLeadEvents);
         } catch (error) {
@@ -345,6 +352,39 @@ export default function LeadDetailsPage() {
         } catch (error) {
             console.error(error);
             alert("Could not save assignment. Please try again.");
+        }
+    };
+
+    const saveFollowUp = async () => {
+        if (!lead) return;
+
+        const nextFollowUpAt = nextFollowUpDraft
+            ? new Date(nextFollowUpDraft).toISOString()
+            : null;
+        const updates = { nextFollowUpAt, lastTouch: "Just now" };
+
+        try {
+            if (isLocalLead) {
+                updateLocalLead(lead.id, updates);
+            } else {
+                await updateSupabaseLead(lead.id, updates);
+            }
+
+            saveLeadActivity({
+                leadId: lead.id,
+                title: nextFollowUpAt ? "Follow-up scheduled" : "Follow-up cleared",
+                description: nextFollowUpAt
+                    ? `Next follow-up scheduled for ${new Date(nextFollowUpAt).toLocaleString()}.`
+                    : "The scheduled follow-up was removed.",
+                category: "Admin",
+            });
+
+            setLead({ ...lead, ...updates });
+            setFollowUpSaved(true);
+            window.setTimeout(() => setFollowUpSaved(false), 2000);
+        } catch (error) {
+            console.error(error);
+            alert("Could not save the follow-up. Run supabase/lead-workflow.sql first.");
         }
     };
 
@@ -942,6 +982,17 @@ export default function LeadDetailsPage() {
                         <div className="mt-5 space-y-3">
                             <ContactRow icon={Phone} label="Phone" value={lead.phone} />
                             <ContactRow icon={Mail} label="Email" value={lead.email} />
+                            <div
+                                className={`rounded-2xl px-4 py-3 text-sm font-bold ${
+                                    lead.smsConsent
+                                        ? "bg-[#e7f3ee] text-[#1f6f63]"
+                                        : "bg-[#fff8e6] text-[#8a5b0a]"
+                                }`}
+                            >
+                                {lead.smsConsent
+                                    ? "SMS consent recorded"
+                                    : "No SMS consent: use call or email"}
+                            </div>
                         </div>
 
                         <div className="mt-5 grid grid-cols-3 gap-2">
@@ -952,12 +1003,21 @@ export default function LeadDetailsPage() {
                                 Call
                             </a>
 
-                            <a
-                                href={`sms:${lead.phone}`}
-                                className="inline-flex items-center justify-center rounded-2xl bg-[#f2b84b] px-3 py-3 text-sm font-bold text-[#102426] hover:bg-[#f9d783]"
-                            >
-                                Text
-                            </a>
+                            {lead.smsConsent ? (
+                                <a
+                                    href={`sms:${lead.phone}`}
+                                    className="inline-flex items-center justify-center rounded-2xl bg-[#f2b84b] px-3 py-3 text-sm font-bold text-[#102426] hover:bg-[#f9d783]"
+                                >
+                                    Text
+                                </a>
+                            ) : (
+                                <span
+                                    title="This renter did not opt in to SMS."
+                                    className="inline-flex cursor-not-allowed items-center justify-center rounded-2xl bg-[#e7ece9] px-3 py-3 text-sm font-bold text-[#78908a]"
+                                >
+                                    No SMS
+                                </span>
+                            )}
 
                             <a
                                 href={`mailto:${lead.email}`}
@@ -965,6 +1025,44 @@ export default function LeadDetailsPage() {
                             >
                                 Email
                             </a>
+                        </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <CalendarDays className="h-5 w-5 text-[#1f6f63]" />
+                            <div>
+                                <h2 className="text-xl font-black text-[#102426]">
+                                    Next Follow-up
+                                </h2>
+                                <p className="mt-0.5 text-xs font-semibold text-[#526260]">
+                                    Overdue follow-ups rise to the top of the lead queue.
+                                </p>
+                            </div>
+                        </div>
+
+                        <input
+                            type="datetime-local"
+                            value={nextFollowUpDraft}
+                            onChange={(event) => setNextFollowUpDraft(event.target.value)}
+                            className="mt-4 w-full rounded-xl border border-[#d7e6df] bg-[#fbfdfb] px-3 py-2.5 text-sm font-semibold text-[#102426] outline-none focus:border-[#1f6f63]"
+                        />
+
+                        <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
+                            <button
+                                type="button"
+                                onClick={saveFollowUp}
+                                className="rounded-xl bg-[#173f3f] px-4 py-2.5 text-sm font-black text-white hover:bg-[#102426]"
+                            >
+                                {followUpSaved ? "Saved" : "Save follow-up"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setNextFollowUpDraft("")}
+                                className="rounded-xl bg-[#e7f3ee] px-3 py-2.5 text-sm font-black text-[#173f3f] hover:bg-[#d7e6df]"
+                            >
+                                Clear
+                            </button>
                         </div>
                     </div>
 
@@ -1265,4 +1363,13 @@ function formatActivityDate(dateValue) {
     }
 
     return date.toLocaleString();
+}
+
+function toDateTimeLocalValue(dateValue) {
+    if (!dateValue) return "";
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return "";
+
+    const offset = date.getTimezoneOffset() * 60_000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
