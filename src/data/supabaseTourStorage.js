@@ -29,7 +29,24 @@ export async function getSupabaseTourRequestsForLead(leadId) {
     throw error;
   }
 
-  return data.map((request) => ({
+  return data.map(mapSupabaseTourRequest);
+}
+
+export async function getSupabaseTourRequests() {
+  const { data, error } = await supabase
+    .from("tour_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data.map(mapSupabaseTourRequest);
+}
+
+function mapSupabaseTourRequest(request) {
+  return {
     id: request.id,
     leadId: request.lead_id,
     leadName: request.lead_name,
@@ -42,7 +59,7 @@ export async function getSupabaseTourRequestsForLead(leadId) {
     eventType: request.event_type,
     createdAt: request.created_at,
     followedUpAt: request.followed_up_at,
-  }));
+  };
 }
 
 export async function updateSupabaseTourRequestStatus(requestId, status) {

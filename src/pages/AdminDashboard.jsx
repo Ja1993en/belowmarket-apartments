@@ -1,1080 +1,826 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { dataHistory, leads } from "../data/mockData";
+import {
+  ArrowRight,
+  BadgeCheck,
+  CalendarClock,
+  ChevronRight,
+  CircleAlert,
+  Clock3,
+  History,
+  Megaphone,
+  Plus,
+  RefreshCw,
+  Send,
+  Sparkles,
+  Trophy,
+  UserRoundCheck,
+  Users,
+} from "lucide-react";
 import { getAllProperties } from "../data/propertyStorage";
 import { getAllLeads, getStoredTourRequests } from "../data/leadStorage";
 import { getSupabaseLeads } from "../data/supabaseLeadStorage";
 import { getSupabaseLeadEvents } from "../data/supabaseLeadEvents";
-import { getSupabaseTourRequestsForLead } from "../data/supabaseTourStorage";
+import { getSupabaseTourRequests } from "../data/supabaseTourStorage";
 import {
-    isLocalFallbackEnabled,
-    localFallbackMessage,
+  isLocalFallbackEnabled,
+  localFallbackMessage,
 } from "../data/supabaseClient";
-import {
-    Building2,
-    Users,
-    Send,
-    Clock3,
-    Plus,
-    History,
-    BadgeCheck,
-    Megaphone,
-    Trophy,
-} from "lucide-react";
-
-
 
 const quickActions = [
-    {
-        icon: Plus,
-        title: "Add Property",
-        description: "Create a new property listing.",
-        to: "/admin/properties/new",
-    },
-    {
-        icon: Users,
-        title: "Add Lead",
-        description: "Create a new renter lead.",
-        to: "/admin/leads",
-    },
-    {
-        icon: History,
-        title: "View Data History",
-        description: "Review recent database changes.",
-        to: "/admin/data-history",
-    },
-];
-
-
-
-const systemStatus = [
-    {
-        label: "Database",
-        value: "Not Connected",
-    },
-    {
-        label: "Cloudflare",
-        value: "Ready",
-    },
-    {
-        label: "Environment",
-        value: "Development",
-    },
-    {
-        label: "Version",
-        value: "0.1.0",
-    },
+  {
+    icon: Plus,
+    title: "Add property",
+    description: "Publish a new apartment listing.",
+    to: "/admin/properties/new",
+  },
+  {
+    icon: Users,
+    title: "Manage leads",
+    description: "Open the renter work queue.",
+    to: "/admin/leads",
+  },
+  {
+    icon: History,
+    title: "Data history",
+    description: "Review recent listing changes.",
+    to: "/admin/data-history",
+  },
 ];
 
 export default function AdminDashboard() {
-    const [properties, setProperties] = useState([]);
-    const [dashboardLeads, setDashboardLeads] = useState(
-        isLocalFallbackEnabled ? leads : []
-    );
-    const [dashboardTourRequests, setDashboardTourRequests] = useState(
-        isLocalFallbackEnabled ? getStoredTourRequests() : []
-    );
-    const [dashboardLeadEvents, setDashboardLeadEvents] = useState([]);
-    const [dashboardLoadedAt, setDashboardLoadedAt] = useState(null);
-    const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
-    const [dashboardError, setDashboardError] = useState("");
-    const [isUsingFallbackDashboardData, setIsUsingFallbackDashboardData] =
-        useState(false);
-    const loadDashboardData = async ({ prepareLoad = true } = {}) => {
-        if (prepareLoad) {
-            setIsLoadingDashboard(true);
-            setDashboardError("");
-        }
+  const [properties, setProperties] = useState([]);
+  const [dashboardLeads, setDashboardLeads] = useState([]);
+  const [tourRequests, setTourRequests] = useState([]);
+  const [leadEvents, setLeadEvents] = useState([]);
+  const [loadedAt, setLoadedAt] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
 
-        try {
-            const [supabaseLeads, supabaseProperties, supabaseLeadEvents] = await Promise.all([
-                getSupabaseLeads(),
-                getAllProperties(),
-                getSupabaseLeadEvents({ limit: 50 }),
-            ]);
+  const loadDashboardData = async ({ showLoading = true } = {}) => {
+    if (showLoading) setIsLoading(true);
+    setErrorMessage("");
 
-            const tourRequestGroups = await Promise.all(
-                supabaseLeads.map((lead) => getSupabaseTourRequestsForLead(lead.id))
-            );
+    try {
+      const [leads, propertyRecords, requests, events] = await Promise.all([
+        getSupabaseLeads(),
+        getAllProperties(),
+        getSupabaseTourRequests(),
+        getSupabaseLeadEvents({ limit: 50 }),
+      ]);
 
-            setProperties(supabaseProperties);
-            setDashboardLeads(supabaseLeads);
-            setDashboardTourRequests(tourRequestGroups.flat());
-            setDashboardLeadEvents(supabaseLeadEvents);
-            setIsUsingFallbackDashboardData(false);
-            setDashboardLoadedAt(new Date());
-        } catch (error) {
-            console.error(error);
+      setDashboardLeads(leads);
+      setProperties(propertyRecords);
+      setTourRequests(requests);
+      setLeadEvents(events);
+      setIsUsingFallback(false);
+    } catch (error) {
+      console.error(error);
 
-            if (isLocalFallbackEnabled) {
-                setProperties([]);
-                setDashboardLeads(getAllLeads());
-                setDashboardTourRequests(getStoredTourRequests());
-                setDashboardLeadEvents([]);
-                setIsUsingFallbackDashboardData(true);
-                setDashboardError(localFallbackMessage);
-            } else {
-                setProperties([]);
-                setDashboardLeads([]);
-                setDashboardTourRequests([]);
-                setDashboardLeadEvents([]);
-                setIsUsingFallbackDashboardData(false);
-                setDashboardError("Supabase could not be reached. Check the production connection.");
-            }
+      if (isLocalFallbackEnabled) {
+        setDashboardLeads(getAllLeads());
+        setProperties(await getAllProperties().catch(() => []));
+        setTourRequests(getStoredTourRequests());
+        setLeadEvents([]);
+        setIsUsingFallback(true);
+        setErrorMessage(localFallbackMessage);
+      } else {
+        setDashboardLeads([]);
+        setProperties([]);
+        setTourRequests([]);
+        setLeadEvents([]);
+        setIsUsingFallback(false);
+        setErrorMessage("Dashboard data could not be loaded from Supabase.");
+      }
+    } finally {
+      setLoadedAt(new Date());
+      setIsLoading(false);
+    }
+  };
 
-            setDashboardLoadedAt(new Date());
-        } finally {
-            setIsLoadingDashboard(false);
-        }
-    };
-    useEffect(() => {
-        const loadTimer = window.setTimeout(() => {
-            loadDashboardData({ prepareLoad: false });
-        }, 0);
-
-        return () => window.clearTimeout(loadTimer);
-    }, []);
-
-    const activeDashboardLeads = dashboardLeads.filter(
-        (lead) => lead.status !== "Archived"
-    );
-    const recommendationCount = activeDashboardLeads.filter(
-        (lead) => (lead.recommendedPropertyIds?.length || 0) > 0
-    ).length;
-    const googleAdsLeadCount = activeDashboardLeads.filter(
-        (lead) => lead.source === "Google Ads"
-    ).length;
-    const qualifiedLeadCount = activeDashboardLeads.filter(
-        (lead) => lead.quality === "Qualified"
-    ).length;
-    const convertedLeadCount = activeDashboardLeads.filter(
-        (lead) => lead.quality === "Converted"
-    ).length;
-    const conversionRate = googleAdsLeadCount
-        ? Math.round((convertedLeadCount / googleAdsLeadCount) * 100)
-        : 0;
-    const livePropertyCount = properties.filter(
-        (property) => property.status === "Live"
-    ).length;
-    const leadSubmittedEventCount = dashboardLeadEvents.filter(
-        (event) => event.eventType === "lead_submitted"
-    ).length;
-    const renterLinkOpenedEventCount = dashboardLeadEvents.filter(
-        (event) => isRecommendationViewEvent(event.eventType)
-    ).length;
-    const recommendationSentEventCount = dashboardLeadEvents.filter(
-        (event) => event.eventType === "recommendation_sent"
-    ).length;
-    const tourRequestedEventCount = dashboardLeadEvents.filter(
-        (event) => event.eventType === "tour_requested"
-    ).length;
-    const conversionStats = [
-        {
-            icon: Users,
-            title: "Leads Submitted",
-            value: leadSubmittedEventCount,
-            subtitle: "Start form conversions",
-        },
-        {
-            icon: Megaphone,
-            title: "Renter Links Opened",
-            value: renterLinkOpenedEventCount,
-            subtitle: "Recommendation page visits",
-        },
-        {
-            icon: Send,
-            title: "Recommendations Sent",
-            value: recommendationSentEventCount,
-            subtitle: "Saved recommendation events",
-        },
-        {
-            icon: Clock3,
-            title: "Tours Requested",
-            value: tourRequestedEventCount,
-            subtitle: "Renter tour actions",
-        },
-    ];
-
-    const dashboardStats = [
-        {
-            icon: Building2,
-            title: "Properties",
-            value: properties.length,
-            subtitle: `${livePropertyCount} live listings`,
-        },
-        {
-            icon: Users,
-            title: "Leads",
-            value: activeDashboardLeads.length,
-            subtitle: "Active renter leads",
-        },
-        {
-            icon: Send,
-            title: "Recommendations",
-            value: recommendationCount,
-            subtitle: "Renter lists prepared",
-        },
-        {
-            icon: Clock3,
-            title: "Updates",
-            value: dataHistory.length,
-            subtitle: "Recent data events",
-        },
-        {
-            icon: Megaphone,
-            title: "Google Ads Leads",
-            value: googleAdsLeadCount,
-            subtitle: "Paid search requests",
-        },
-        {
-            icon: BadgeCheck,
-            title: "Qualified Leads",
-            value: qualifiedLeadCount,
-            subtitle: "Marked good fit",
-        },
-        {
-            icon: Trophy,
-            title: "Conversion Rate",
-            value: `${conversionRate}%`,
-            subtitle: "Converted / Google Ads",
-        },
-    ];
-
-    const topProperties = properties.map((property) => ({
-        name: property.name,
-        area: property.area,
-        leads: `${dashboardLeads.filter((lead) =>
-            lead.recommendedPropertyIds?.includes(property.id)
-        ).length} leads`,
-        special: property.special,
-    }));
-
-    const tourFollowUpCount = dashboardTourRequests.filter(
-        (request) => (request.status || "New") !== "Followed Up"
-    ).length;
-
-    const tourRequestCount = dashboardTourRequests.length;
-    const tourRequestsByLeadId = dashboardTourRequests.reduce((counts, request) => {
-        const leadId = String(request.leadId || "");
-        if (!leadId) return counts;
-
-        return {
-            ...counts,
-            [leadId]: (counts[leadId] || 0) + 1,
-        };
-    }, {});
-    const sourcePerformanceRows = getLeadSourcePerformanceRows(
-        activeDashboardLeads,
-        tourRequestsByLeadId
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => loadDashboardData({ showLoading: false }),
+      0
     );
 
-    const recentTourActivities = [...dashboardTourRequests]
-        .sort((a, b) =>
-            String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
-        )
-        .slice(0, 3)
-        .map((request) => ({
-            title: "Tour requested",
-            description: `${request.leadName} requested ${request.propertyName}`,
-            time: request.createdAt
-                ? new Date(request.createdAt).toLocaleString()
-                : "Just now",
-        }));
+    return () => window.clearTimeout(timer);
+  }, []);
 
-    const recentActivities = [
-        ...recentTourActivities,
-        ...dataHistory.slice(0, 3).map((event) => ({
-            title: event.type,
-            description: event.description,
-            time: event.time,
-        })),
-    ].slice(0, 5);
-    const recentConversionActivities = dashboardLeadEvents.slice(0, 5);
+  const activeLeads = useMemo(
+    () =>
+      dashboardLeads
+        .filter((lead) => lead.status !== "Archived")
+        .sort(sortNewestFirst),
+    [dashboardLeads]
+  );
+  const newLeads = activeLeads.filter((lead) =>
+    ["New", "New Lead", "", null, undefined].includes(lead.status)
+  );
+  const contactedLeads = activeLeads.filter((lead) =>
+    ["Contacted", "Tour Needed", "Recommendation Sent"].includes(lead.status)
+  );
+  const convertedLeads = activeLeads.filter(
+    (lead) => lead.quality === "Converted"
+  );
+  const unfollowedTours = tourRequests.filter(
+    (request) => (request.status || "New") !== "Followed Up"
+  );
+  const leadsNeedingRecommendations = activeLeads.filter(
+    (lead) =>
+      lead.status !== "Recommendation Sent" &&
+      (lead.recommendedPropertyIds?.length || 0) === 0
+  );
+  const olderNewLeads = newLeads.filter(
+    (lead) => getHoursSince(lead.createdAt) >= 24
+  );
+  const liveProperties = properties.filter(
+    (property) => property.status === "Live"
+  );
+  const recentLeads = activeLeads.slice(0, 6);
+  const tourCountByLeadId = tourRequests.reduce((counts, request) => {
+    const leadId = String(request.leadId || "");
+    if (leadId) counts[leadId] = (counts[leadId] || 0) + 1;
+    return counts;
+  }, {});
+  const sourceRows = getLeadSourcePerformanceRows(
+    activeLeads,
+    tourCountByLeadId
+  );
+  const propertyInterest = properties
+    .map((property) => ({
+      id: property.id,
+      name: property.name,
+      area: property.area,
+      count: activeLeads.filter((lead) =>
+        lead.recommendedPropertyIds?.includes(property.id)
+      ).length,
+    }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    .slice(0, 5);
+  const recentEvents = [...leadEvents]
+    .sort((a, b) =>
+      String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
+    )
+    .slice(0, 5);
 
-    const performanceSteps = [
-        {
-            label: "Recommendations Sent",
-            value: activeDashboardLeads.filter(
-                (lead) => lead.status === "Recommendation Sent"
-            ).length,
-        },
-        {
-            label: "Properties Viewed",
-            value: "0",
-        },
-        {
-            label: "Tours Requested",
-            value: tourRequestCount,
-        },
-        {
-            label: "Move-ins",
-            value: "0",
-        },
-    ];
+  const stats = [
+    {
+      icon: Sparkles,
+      label: "New leads",
+      value: newLeads.length,
+      detail: olderNewLeads.length
+        ? `${olderNewLeads.length} waiting 24+ hours`
+        : "No overdue new leads",
+      tone: "gold",
+      to: "/admin/leads",
+    },
+    {
+      icon: UserRoundCheck,
+      label: "In progress",
+      value: contactedLeads.length,
+      detail: "Contacted or actively helping",
+      tone: "green",
+      to: "/admin/leads",
+    },
+    {
+      icon: CalendarClock,
+      label: "Tour requests",
+      value: tourRequests.length,
+      detail: `${unfollowedTours.length} need follow-up`,
+      tone: unfollowedTours.length ? "red" : "blue",
+      to: "/admin/leads?tourFilter=Not%20Followed%20Up",
+    },
+    {
+      icon: Trophy,
+      label: "Converted",
+      value: convertedLeads.length,
+      detail: activeLeads.length
+        ? `${Math.round((convertedLeads.length / activeLeads.length) * 100)}% of active leads`
+        : "No active leads yet",
+      tone: "blue",
+      to: "/admin/leads",
+    },
+  ];
 
+  const attentionItems = [
+    {
+      icon: Sparkles,
+      title: "New leads to contact",
+      count: newLeads.length,
+      description: olderNewLeads.length
+        ? `${olderNewLeads.length} have been waiting longer than 24 hours.`
+        : "Fresh renter requests ready for a first response.",
+      to: "/admin/leads",
+      urgent: olderNewLeads.length > 0,
+    },
+    {
+      icon: CalendarClock,
+      title: "Tour follow-ups",
+      count: unfollowedTours.length,
+      description: "Confirm dates and next steps with these renters.",
+      to: "/admin/leads?tourFilter=Not%20Followed%20Up",
+      urgent: unfollowedTours.length > 0,
+    },
+    {
+      icon: Send,
+      title: "Recommendations needed",
+      count: leadsNeedingRecommendations.length,
+      description: "Leads without a saved property recommendation.",
+      to: "/admin/leads",
+      urgent: false,
+    },
+  ];
 
-    const dashboardStatsWithTours = [
-        ...dashboardStats,
-        {
-            icon: Clock3,
-            title: "Tour Follow-ups",
-            value: tourFollowUpCount,
-            subtitle: "Click to review",
-            to: "/admin/leads?tourFilter=Not%20Followed%20Up",
-        },
-    ];
+  return (
+    <div className="mx-auto w-full max-w-7xl space-y-5 text-left">
+      <section className="rounded-xl border border-[#d7e6df] bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-black uppercase text-[#1f6f63]">
+                Operations dashboard
+              </p>
+              <span className="rounded-full bg-[#e7f3ee] px-2.5 py-1 text-[10px] font-black text-[#173f3f]">
+                {liveProperties.length} live listings
+              </span>
+              {isUsingFallback && (
+                <span className="rounded-full bg-[#fff8e6] px-2.5 py-1 text-[10px] font-black text-[#8a5b0a]">
+                  Local data
+                </span>
+              )}
+            </div>
+            <h1 className="mt-1 text-2xl font-black leading-tight text-[#102426] sm:text-3xl">
+              What needs your attention today
+            </h1>
+            <p className="mt-1 text-sm font-semibold text-[#526260]">
+              Contact renters, send recommendations, and keep tours moving.
+            </p>
+          </div>
 
-    const recentLeads = activeDashboardLeads.slice(0, 5).map((lead) => ({
-        name: lead.name,
-        preference: lead.preference,
-        status: lead.status,
-    }));
-    const hasNoSupabaseLeads =
-        !isLoadingDashboard &&
-        !dashboardError &&
-        !isUsingFallbackDashboardData &&
-        dashboardLeads.length === 0;
-    const priorityItems = [
-        {
-            label: "Tour follow-ups",
-            value: tourFollowUpCount,
-            detail: tourFollowUpCount
-                ? "Review renters waiting on tour follow-up."
-                : "No tour follow-ups waiting right now.",
-            to: "/admin/leads?tourFilter=Not%20Followed%20Up",
-        },
-        {
-            label: "Active leads",
-            value: activeDashboardLeads.length,
-            detail: "Open renter conversations to manage.",
-            to: "/admin/leads",
-        },
-        {
-            label: "Live listings",
-            value: livePropertyCount,
-            detail: "Properties visible to renters.",
-            to: "/admin/properties",
-        },
-    ];
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => loadDashboardData()}
+              disabled={isLoading}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#f5f8f1] px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee] disabled:cursor-wait disabled:opacity-60"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+              {isLoading ? "Refreshing" : "Refresh"}
+            </button>
+            <Link
+              to="/admin/properties/new"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#f2b84b] px-4 py-2 text-xs font-black text-[#102426] hover:bg-[#dca33c]"
+            >
+              <Plus className="h-4 w-4" />
+              Add property
+            </Link>
+          </div>
+        </div>
 
+        {loadedAt && (
+          <p className="mt-3 text-[10px] font-bold text-[#78908a]">
+            Updated {loadedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+          </p>
+        )}
+      </section>
 
-    return (
-        <div className="mx-auto w-full max-w-7xl space-y-5 text-left">
-            <section className="bma-brand-panel overflow-hidden rounded-lg text-white shadow-sm">
-                <div className="grid gap-5 p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-                    <div className="min-w-0">
-                        <p className="text-sm font-black text-[#f2b84b]">
-                            Admin Dashboard
-                        </p>
-                        <h1 className="mt-2 max-w-3xl text-3xl font-black leading-tight text-[#fff7df] md:text-4xl">
-                            Today's operating snapshot
-                        </h1>
-                        <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#d7ece6]">
-                            Track renter activity, property readiness, tours, and recommendation flow from one focused workspace.
-                        </p>
+      {errorMessage && (
+        <div className="flex items-start gap-3 rounded-xl border border-[#f2d08a] bg-[#fff8e6] p-4 text-sm font-bold text-[#8a5b0a]">
+          <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>{errorMessage}</p>
+        </div>
+      )}
 
-                        <div className="mt-4 flex flex-wrap gap-2">
-                            {dashboardLoadedAt && (
-                                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#d7ece6]">
-                                    Refreshed {dashboardLoadedAt.toLocaleTimeString()}
-                                </span>
-                            )}
-                            {isUsingFallbackDashboardData && (
-                                <span className="rounded-full bg-[#fff8e6] px-3 py-1 text-xs font-bold text-[#8a5b0a]">
-                                    Local fallback data
-                                </span>
-                            )}
-                            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#d7ece6]">
-                                {livePropertyCount} live listings
-                            </span>
-                        </div>
-                    </div>
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {stats.map((stat) => (
+          <MetricCard key={stat.label} {...stat} />
+        ))}
+      </section>
 
-                    <div className="grid gap-3 sm:grid-cols-2 lg:w-48 lg:grid-cols-1">
-                        <button
-                            type="button"
-                            onClick={loadDashboardData}
-                            disabled={isLoadingDashboard}
-                            className="bma-btn-gold min-h-12 disabled:cursor-not-allowed disabled:bg-[#d7e6df] disabled:text-[#78908a]"
-                        >
-                            {isLoadingDashboard ? "Refreshing..." : "Refresh Dashboard"}
-                        </button>
-                        <Link
-                            to="/admin/properties/new"
-                            className="flex min-h-12 items-center justify-center rounded-lg bg-white/10 px-5 py-3 text-center text-sm font-bold text-white hover:bg-white/15"
-                        >
-                            Add Property
-                        </Link>
-                    </div>
-                </div>
+      <section className="grid gap-5 xl:grid-cols-[minmax(300px,0.78fr)_minmax(0,1.55fr)]">
+        <Panel
+          eyebrow="Work queue"
+          title="Needs attention"
+          actionLabel="Open all leads"
+          actionTo="/admin/leads"
+        >
+          <div className="grid gap-2.5">
+            {attentionItems.map((item) => (
+              <AttentionItem key={item.title} item={item} />
+            ))}
+          </div>
+        </Panel>
 
-                {dashboardError && (
-                    <p className="mx-5 mb-5 rounded-lg bg-[#fff8e6] px-4 py-3 text-sm font-bold text-[#8a5b0a] md:mx-6 md:mb-6">
-                        {dashboardError}
-                    </p>
-                )}
-            </section>
-
-            {hasNoSupabaseLeads && (
-                <section className="bma-card border-dashed border-[#a9cfc2] p-5">
-                    <p className="text-sm font-black text-[#102426]">
-                        No Supabase leads yet.
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-[#526260]">
-                        Create a test lead from the Leads page or submit the public start form to verify the production data loop.
-                    </p>
-                </section>
-            )}
-
-            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {dashboardStatsWithTours.map((stat) => (
-                    <DashboardCard
-                        key={stat.title}
-                        icon={stat.icon}
-                        title={stat.title}
-                        value={stat.value}
-                        subtitle={stat.subtitle}
-                        to={stat.to}
-                    />
+        <Panel
+          eyebrow="Newest renters"
+          title="Recent leads"
+          actionLabel="View all"
+          actionTo="/admin/leads"
+        >
+          {recentLeads.length ? (
+            <div className="overflow-hidden rounded-xl ring-1 ring-[#d7e6df]">
+              <div className="hidden grid-cols-[minmax(140px,1fr)_minmax(160px,1.35fr)_100px_90px_28px] gap-3 bg-[#f5f8f1] px-4 py-2.5 text-[10px] font-black uppercase text-[#526260] md:grid">
+                <span>Renter</span>
+                <span>Search</span>
+                <span>Status</span>
+                <span>Received</span>
+                <span />
+              </div>
+              <div className="divide-y divide-[#d7e6df] bg-white">
+                {recentLeads.map((lead) => (
+                  <RecentLeadRow key={lead.id} lead={lead} />
                 ))}
-            </section>
+              </div>
+            </div>
+          ) : (
+            <EmptyState message="No active leads yet." />
+          )}
+        </Panel>
+      </section>
 
-            <DashboardPanel
-                eyebrow="Conversions"
-                title="Lead event tracking"
-                description="See what renters do after they find you from ads, search, or shared recommendation links."
-            >
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.75fr)]">
-                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        {conversionStats.map((stat) => (
-                            <ConversionStatCard
-                                key={stat.title}
-                                icon={stat.icon}
-                                title={stat.title}
-                                value={stat.value}
-                                subtitle={stat.subtitle}
-                            />
-                        ))}
-                    </div>
+      <section className="grid gap-5 xl:grid-cols-12">
+        <Panel
+          eyebrow="Pipeline"
+          title="Lead progress"
+          description="A clean view of how renters are moving toward a tour."
+          className="xl:col-span-5"
+        >
+          <Pipeline
+            items={[
+              { label: "Active leads", value: activeLeads.length },
+              {
+                label: "Recommendations sent",
+                value: activeLeads.filter(
+                  (lead) =>
+                    lead.status === "Recommendation Sent" ||
+                    (lead.recommendedPropertyIds?.length || 0) > 0
+                ).length,
+              },
+              { label: "Tours requested", value: tourRequests.length },
+              { label: "Converted", value: convertedLeads.length },
+            ]}
+          />
+        </Panel>
 
-                    <div className="rounded-lg bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-                        <p className="text-sm font-black text-[#102426]">
-                            Recent conversion activity
-                        </p>
+        <Panel
+          eyebrow="Channels"
+          title="Lead source performance"
+          description="See which sources are producing action, not just traffic."
+          className="xl:col-span-7"
+        >
+          {sourceRows.length ? (
+            <div className="overflow-hidden rounded-xl ring-1 ring-[#d7e6df]">
+              <div className="hidden grid-cols-[minmax(0,1fr)_repeat(4,78px)] gap-2 bg-[#102426] px-4 py-2.5 text-[10px] font-black uppercase text-[#fff7df] sm:grid">
+                <span>Source</span>
+                <span className="text-right">Leads</span>
+                <span className="text-right">Qualified</span>
+                <span className="text-right">Converted</span>
+                <span className="text-right">Tours</span>
+              </div>
+              <div className="divide-y divide-[#d7e6df]">
+                {sourceRows.map((source) => (
+                  <SourceRow key={source.label} source={source} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyState message="Lead source data will appear here." />
+          )}
+        </Panel>
+      </section>
 
-                        <div className="mt-3 grid gap-3">
-                            {recentConversionActivities.length > 0 ? (
-                                recentConversionActivities.map((event) => (
-                                    <ConversionEventItem
-                                        key={event.id}
-                                        event={event}
-                                    />
-                                ))
-                            ) : (
-                                <p className="rounded-2xl border border-dashed border-[#a9cfc2] bg-white p-4 text-sm font-bold text-[#526260]">
-                                    No tracked conversion events yet.
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </DashboardPanel>
+      <section className="grid gap-5 xl:grid-cols-12">
+        <Panel
+          eyebrow="Properties"
+          title="Most recommended"
+          description="Ranked by current renter recommendation activity."
+          actionLabel="Manage listings"
+          actionTo="/admin/properties"
+          className="xl:col-span-7"
+        >
+          {propertyInterest.length ? (
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              {propertyInterest.map((property, index) => (
+                <PropertyInterestRow
+                  key={property.id}
+                  property={property}
+                  rank={index + 1}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="Property interest will appear after recommendations are saved." />
+          )}
+        </Panel>
 
-            <DashboardPanel
-                eyebrow="Lead Sources"
-                title="Source performance"
-                description="Compare where active leads are coming from and which channels are producing qualified renters."
-                actionLabel="Open Leads"
-                actionTo="/admin/leads"
-                actionStyle="dark"
-            >
-                {sourcePerformanceRows.length > 0 ? (
-                    <div className="overflow-hidden rounded-2xl ring-1 ring-[#d7e6df]">
-                        <div className="hidden grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(90px,1fr))] gap-3 bg-[#102426] px-4 py-3 text-xs font-black uppercase tracking-wide text-[#fff7df] md:grid">
-                            <span>Source</span>
-                            <span className="text-right">Leads</span>
-                            <span className="text-right">Qualified</span>
-                            <span className="text-right">Converted</span>
-                            <span className="text-right">Tours</span>
-                        </div>
+        <Panel
+          eyebrow="Recent activity"
+          title="Latest renter events"
+          className="xl:col-span-5"
+        >
+          {recentEvents.length ? (
+            <div className="grid gap-2.5">
+              {recentEvents.map((event) => (
+                <EventRow key={event.id} event={event} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No tracked renter events yet." />
+          )}
+        </Panel>
+      </section>
 
-                        <div className="divide-y divide-[#d7e6df] bg-white">
-                            {sourcePerformanceRows.map((source) => (
-                                <SourcePerformanceRow
-                                    key={source.label}
-                                    source={source}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <EmptyPanel message="No active lead sources to show yet." />
-                )}
-            </DashboardPanel>
-
-            <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-                <DashboardPanel
-                    eyebrow="Work Queue"
-                    title="Today's priorities"
-                    actionLabel="Open Leads"
-                    actionTo="/admin/leads"
-                    className="xl:col-span-5"
-                >
-                    <div className="grid gap-3">
-                        {priorityItems.map((item) => (
-                            <PriorityItem key={item.label} item={item} />
-                        ))}
-                    </div>
-                </DashboardPanel>
-
-                <DashboardPanel
-                    eyebrow="Activity"
-                    title="Latest updates"
-                    actionLabel="Data History"
-                    actionTo="/admin/data-history"
-                    className="xl:col-span-7"
-                >
-                    <div className="grid gap-3">
-                        {recentActivities.map((activity, index) => (
-                            <ActivityItem
-                                key={`${activity.title}-${activity.time}-${index}`}
-                                title={activity.title}
-                                description={activity.description}
-                                time={activity.time}
-                            />
-                        ))}
-                    </div>
-                </DashboardPanel>
-            </section>
-
-            <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-                <DashboardPanel
-                    eyebrow="Renters"
-                    title="Recent active leads"
-                    actionLabel="View All Leads"
-                    actionTo="/admin/leads"
-                    actionStyle="dark"
-                    className="xl:col-span-5"
-                >
-                    <div className="grid gap-3">
-                        {recentLeads.length > 0 ? (
-                            recentLeads.map((lead) => (
-                                <RecentLead
-                                    key={`${lead.name}-${lead.preference}`}
-                                    name={lead.name}
-                                    preference={lead.preference}
-                                    status={lead.status}
-                                />
-                            ))
-                        ) : (
-                            <EmptyPanel message="No active leads to show right now." />
-                        )}
-                    </div>
-                </DashboardPanel>
-
-                <DashboardPanel
-                    eyebrow="Properties"
-                    title="Lead interest by property"
-                    actionLabel="View Properties"
-                    actionTo="/admin/properties"
-                    actionStyle="dark"
-                    className="xl:col-span-7"
-                >
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        {topProperties.slice(0, 4).map((property) => (
-                            <TopProperty
-                                key={property.name}
-                                name={property.name}
-                                area={property.area}
-                                leads={property.leads}
-                                special={property.special}
-                            />
-                        ))}
-                    </div>
-                </DashboardPanel>
-            </section>
-
-            <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-                <DashboardPanel
-                    title="Performance pipeline"
-                    description="Track movement from recommendations to tours and move-ins."
-                    className="xl:col-span-7"
-                >
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        {performanceSteps.map((step) => (
-                            <PerformanceStep
-                                key={step.label}
-                                label={step.label}
-                                value={step.value}
-                            />
-                        ))}
-                    </div>
-                </DashboardPanel>
-
-                <DashboardPanel
-                    title="Quick actions"
-                    description="Common admin tasks."
-                    className="xl:col-span-5"
-                >
-                    <div className="grid gap-3">
-                        {quickActions.map((action) => (
-                            <QuickAction
-                                key={action.title}
-                                icon={action.icon}
-                                title={action.title}
-                                description={action.description}
-                                to={action.to}
-                            />
-                        ))}
-                    </div>
-                </DashboardPanel>
-            </section>
-
-            <DashboardPanel
-                title="System overview"
-                description="Platform connection and deployment status."
-                actionLabel="Review Listings"
-                actionTo="/admin/properties"
-                actionStyle="gold"
-            >
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    {systemStatus.map((item) => (
-                        <SystemStatusCard
-                            key={item.label}
-                            label={item.label}
-                            value={item.value}
-                        />
-                    ))}
-                </div>
-            </DashboardPanel>
+      <Panel eyebrow="Shortcuts" title="Quick actions">
+        <div className="grid gap-3 md:grid-cols-3">
+          {quickActions.map((action) => (
+            <QuickAction key={action.title} {...action} />
+          ))}
         </div>
-    );
+      </Panel>
+    </div>
+  );
 }
 
-function ConversionStatCard({ icon: Icon, title, value, subtitle }) {
-    return (
-        <div className="min-h-[150px] min-w-0 rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e7f3ee]">
-                <Icon className="h-5 w-5 text-[#1f6f63]" />
-            </div>
+function MetricCard({ icon: Icon, label, value, detail, tone, to }) {
+  const tones = {
+    gold: "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]",
+    green: "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]",
+    red: "bg-[#fff0ea] text-[#b42318] ring-[#f4b6aa]",
+    blue: "bg-[#eef5ff] text-[#174a7c] ring-[#b8d9f0]",
+  };
 
-            <p className="mt-4 text-sm font-bold leading-5 text-[#526260]">
-                {title}
-            </p>
-            <p className="mt-2 text-3xl font-black text-[#102426]">
-                {value}
-            </p>
-            <p className="mt-1 text-xs font-bold leading-5 text-[#78908a]">
-                {subtitle}
-            </p>
-        </div>
-    );
+  return (
+    <Link
+      to={to}
+      className="group min-w-0 rounded-xl border border-[#d7e6df] bg-white p-3 shadow-sm hover:border-[#a9cfc2] hover:shadow-md sm:p-4"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ring-1 sm:h-9 sm:w-9 ${tones[tone]}`}
+        >
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+        </span>
+        <ArrowRight className="h-4 w-4 text-[#a4b3af] transition group-hover:translate-x-0.5 group-hover:text-[#173f3f]" />
+      </div>
+      <p className="mt-3 text-[10px] font-black uppercase text-[#526260] sm:text-xs">
+        {label}
+      </p>
+      <p className="mt-1 text-2xl font-black text-[#102426] sm:text-3xl">
+        {value}
+      </p>
+      <p className="mt-1 line-clamp-2 text-[10px] font-bold leading-4 text-[#78908a] sm:text-xs">
+        {detail}
+      </p>
+    </Link>
+  );
 }
 
-function SourcePerformanceRow({ source }) {
-    return (
-        <div className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(90px,1fr))] md:items-center">
-            <div className="min-w-0">
-                <p className="font-black text-[#102426]">
-                    {source.label}
-                </p>
-                <p className="mt-1 text-xs font-bold text-[#78908a]">
-                    {source.share}% of active leads
-                </p>
-            </div>
-
-            <SourceMetric label="Leads" value={source.leadCount} />
-            <SourceMetric label="Qualified" value={source.qualifiedCount} />
-            <SourceMetric label="Converted" value={source.convertedCount} />
-            <SourceMetric label="Tours" value={source.tourRequestCount} />
+function Panel({
+  eyebrow,
+  title,
+  description,
+  actionLabel,
+  actionTo,
+  className = "",
+  children,
+}) {
+  return (
+    <section
+      className={`min-w-0 rounded-xl border border-[#d7e6df] bg-white p-4 shadow-sm sm:p-5 ${className}`}
+    >
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          {eyebrow && (
+            <p className="text-[10px] font-black uppercase text-[#1f6f63]">
+              {eyebrow}
+            </p>
+          )}
+          <h2 className="mt-1 text-lg font-black leading-tight text-[#102426] sm:text-xl">
+            {title}
+          </h2>
+          {description && (
+            <p className="mt-1 text-xs font-semibold leading-5 text-[#526260] sm:text-sm">
+              {description}
+            </p>
+          )}
         </div>
-    );
+        {actionLabel && actionTo && (
+          <Link
+            to={actionTo}
+            className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#e7f3ee] px-2.5 py-2 text-[10px] font-black text-[#173f3f] hover:bg-[#d7e6df] sm:px-3 sm:text-xs"
+          >
+            {actionLabel}
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function AttentionItem({ item }) {
+  const Icon = item.icon;
+  return (
+    <Link
+      to={item.to}
+      className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl p-3 ring-1 transition hover:shadow-sm ${
+        item.urgent
+          ? "bg-[#fff8e6] ring-[#f2d08a]"
+          : "bg-[#f5f8f1] ring-[#d7e6df] hover:bg-[#e7f3ee]"
+      }`}
+    >
+      <span
+        className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+          item.urgent
+            ? "bg-[#f2b84b] text-[#102426]"
+            : "bg-white text-[#1f6f63]"
+        }`}
+      >
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-black text-[#102426]">
+          {item.title}
+        </span>
+        <span className="mt-0.5 block text-xs font-semibold leading-4 text-[#526260]">
+          {item.description}
+        </span>
+      </span>
+      <span className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-white px-2 text-sm font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+        {item.count}
+      </span>
+    </Link>
+  );
+}
+
+function RecentLeadRow({ lead }) {
+  return (
+    <Link
+      to={`/admin/leads/${lead.id}`}
+      className="grid gap-2 px-4 py-3 hover:bg-[#f5f8f1] md:grid-cols-[minmax(140px,1fr)_minmax(160px,1.35fr)_100px_90px_28px] md:items-center md:gap-3"
+    >
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-black text-[#102426]">
+          {lead.name || "Unnamed renter"}
+        </span>
+        <span className="mt-0.5 block truncate text-[10px] font-bold text-[#78908a] md:hidden">
+          {formatLeadSource(lead)}
+        </span>
+      </span>
+      <span className="line-clamp-2 text-xs font-semibold leading-4 text-[#526260]">
+        {lead.preference || getLeadSearchSummary(lead)}
+      </span>
+      <StatusBadge status={lead.status} />
+      <span className="text-xs font-bold text-[#78908a]">
+        {formatRelativeTime(lead.createdAt)}
+      </span>
+      <ChevronRight className="hidden h-4 w-4 text-[#78908a] md:block" />
+    </Link>
+  );
+}
+
+function StatusBadge({ status }) {
+  const normalized = status || "New Lead";
+  const isNew = ["New", "New Lead"].includes(normalized);
+  return (
+    <span
+      className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-black ${
+        isNew
+          ? "bg-[#fff8e6] text-[#8a5b0a] ring-1 ring-[#f2d08a]"
+          : "bg-[#e7f3ee] text-[#1f6f63]"
+      }`}
+    >
+      {normalized}
+    </span>
+  );
+}
+
+function Pipeline({ items }) {
+  const maxValue = Math.max(...items.map((item) => Number(item.value) || 0), 1);
+  return (
+    <div className="grid gap-4">
+      {items.map((item) => (
+        <div key={item.label}>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-bold text-[#526260]">{item.label}</p>
+            <p className="text-sm font-black text-[#102426]">{item.value}</p>
+          </div>
+          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#edf3ef]">
+            <div
+              className="h-full rounded-full bg-[#1f6f63]"
+              style={{
+                width: `${Math.max(
+                  item.value ? 7 : 0,
+                  Math.round(((Number(item.value) || 0) / maxValue) * 100)
+                )}%`,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SourceRow({ source }) {
+  return (
+    <div className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_repeat(4,78px)] sm:items-center">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-black text-[#102426]">
+          {source.label}
+        </p>
+        <p className="text-[10px] font-bold text-[#78908a]">
+          {source.share}% of active leads
+        </p>
+      </div>
+      <SourceMetric label="Leads" value={source.leadCount} />
+      <SourceMetric label="Qualified" value={source.qualifiedCount} />
+      <SourceMetric label="Converted" value={source.convertedCount} />
+      <SourceMetric label="Tours" value={source.tourRequestCount} />
+    </div>
+  );
 }
 
 function SourceMetric({ label, value }) {
-    return (
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl bg-[#f5f8f1] px-3 py-2 md:block md:bg-transparent md:p-0 md:text-right">
-            <span className="text-xs font-bold text-[#78908a] md:hidden">
-                {label}
-            </span>
-            <span className="text-sm font-black text-[#102426]">
-                {value}
-            </span>
-        </div>
-    );
+  return (
+    <div className="flex items-center justify-between rounded-lg bg-[#f5f8f1] px-2.5 py-1.5 sm:block sm:bg-transparent sm:p-0 sm:text-right">
+      <span className="text-[10px] font-bold text-[#78908a] sm:hidden">
+        {label}
+      </span>
+      <span className="text-xs font-black text-[#102426]">{value}</span>
+    </div>
+  );
 }
 
-function ConversionEventItem({ event }) {
-    const content = (
-        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-            <div className="min-w-0">
-                <p className="text-sm font-black text-[#102426]">
-                    {getLeadEventLabel(event.eventType)}
-                </p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
-                    {getLeadEventDescription(event)}
-                </p>
-            </div>
-
-            <div className="grid gap-1 sm:text-right">
-                <span className="text-xs font-bold text-[#78908a]">
-                    {formatLeadEventTime(event.createdAt)}
-                </span>
-                {event.leadId && (
-                    <span className="text-xs font-black text-[#1f6f63]">
-                        Open lead
-                    </span>
-                )}
-            </div>
-        </div>
-    );
-
-    if (event.leadId) {
-        return (
-            <Link
-                to={`/admin/leads/${event.leadId}`}
-                className="block rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] hover:ring-[#f2b84b]"
-            >
-                {content}
-            </Link>
-        );
-    }
-
-    return (
-        <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d7e6df]">
-            {content}
-        </div>
-    );
+function PropertyInterestRow({ property, rank }) {
+  return (
+    <div className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-xs font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
+        {rank}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-black text-[#102426]">
+          {property.name}
+        </span>
+        <span className="mt-0.5 block truncate text-[10px] font-bold text-[#78908a]">
+          {property.area || "Dallas area"}
+        </span>
+      </span>
+      <span className="rounded-full bg-[#e7f3ee] px-2.5 py-1 text-[10px] font-black text-[#1f6f63]">
+        {property.count} {property.count === 1 ? "lead" : "leads"}
+      </span>
+    </div>
+  );
 }
 
-function getLeadEventLabel(eventType) {
-    const eventLabels = {
-        lead_submitted: "Lead submitted",
-        recommendation_sent: "Recommendation saved",
-        renter_link_opened: "Recommendation page viewed",
-        recommendation_page_viewed: "Recommendation page viewed",
-        tour_requested: "Tour requested",
-    };
+function EventRow({ event }) {
+  const content = (
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e7f3ee] text-[#1f6f63]">
+        {getEventIcon(event.eventType)}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-xs font-black text-[#102426]">
+          {getEventLabel(event.eventType)}
+        </span>
+        <span className="mt-0.5 block truncate text-[10px] font-semibold text-[#526260]">
+          {event.propertyName || formatRelativeTime(event.createdAt)}
+        </span>
+      </span>
+    </div>
+  );
 
-    return eventLabels[eventType] || "Lead activity";
-}
-
-function getLeadEventDescription(event) {
-    if (event.eventType === "tour_requested") {
-        return event.propertyName
-            ? `Tour requested for ${event.propertyName}.`
-            : "A renter requested a tour.";
-    }
-
-    if (event.eventType === "recommendation_sent") {
-        const propertyCount = event.metadata?.propertyCount || 0;
-        const floorPlanCount = event.metadata?.floorPlanCount || 0;
-
-        return `${propertyCount} properties and ${floorPlanCount} floor plans saved.`;
-    }
-
-    if (isRecommendationViewEvent(event.eventType)) {
-        const propertyCount = event.metadata?.recommendedPropertyCount || 0;
-
-        return `${propertyCount} recommended properties viewed.`;
-    }
-
-    if (event.eventType === "lead_submitted") {
-        return event.metadata?.utmCampaign
-            ? `Lead came from ${event.metadata.utmCampaign}.`
-            : "A renter submitted the start form.";
-    }
-
-    return event.propertyName || "A lead event was tracked.";
-}
-
-function isRecommendationViewEvent(eventType) {
-    return ["renter_link_opened", "recommendation_page_viewed"].includes(eventType);
-}
-
-function formatLeadEventTime(createdAt) {
-    if (!createdAt) return "Just now";
-
-    return new Date(createdAt).toLocaleString();
-}
-
-function getLeadSourcePerformanceRows(leads, tourRequestsByLeadId) {
-    const sourceMap = leads.reduce((rows, lead) => {
-        const source = normalizeLeadSource(lead);
-
-        if (!rows[source]) {
-            rows[source] = {
-                label: source,
-                leadCount: 0,
-                qualifiedCount: 0,
-                convertedCount: 0,
-                tourRequestCount: 0,
-            };
-        }
-
-        rows[source].leadCount += 1;
-
-        if (lead.quality === "Qualified") {
-            rows[source].qualifiedCount += 1;
-        }
-
-        if (lead.quality === "Converted") {
-            rows[source].convertedCount += 1;
-        }
-
-        rows[source].tourRequestCount += tourRequestsByLeadId[String(lead.id)] || 0;
-
-        return rows;
-    }, {});
-
-    const preferredOrder = [
-        "Google Ads",
-        "Start page",
-        "Public listing",
-        "Locator referral",
-        "Unknown",
-    ];
-
-    return Object.values(sourceMap)
-        .map((source) => ({
-            ...source,
-            share: leads.length
-                ? Math.round((source.leadCount / leads.length) * 100)
-                : 0,
-        }))
-        .sort((a, b) => {
-            const aIndex = preferredOrder.indexOf(a.label);
-            const bIndex = preferredOrder.indexOf(b.label);
-
-            if (aIndex !== -1 || bIndex !== -1) {
-                return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
-            }
-
-            return b.leadCount - a.leadCount || a.label.localeCompare(b.label);
-        });
-}
-
-function normalizeLeadSource(lead) {
-    if (lead.source === "Google Ads" || lead.utmSource === "google") {
-        return "Google Ads";
-    }
-
-    return lead.source || "Unknown";
-}
-
-function DashboardCard({ icon: Icon, title, value, subtitle, to }) {
-    const cardContent = (
-        <>
-            <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#e7f3ee]">
-                    <Icon className="h-6 w-6 text-[#1f6f63]" />
-                </div>
-
-                <span className="rounded-full bg-[#f5f8f1] px-3 py-1 text-xs font-bold text-[#526260] ring-1 ring-[#d7e6df]">
-                    {to ? "Open" : "Active"}
-                </span>
-            </div>
-
-            <p className="mt-5 text-sm font-bold text-[#526260]">{title}</p>
-            <h2 className="mt-2 text-3xl font-black leading-none text-[#102426] md:text-4xl">{value}</h2>
-            <p className="mt-2 text-sm font-semibold leading-5 text-[#526260]">{subtitle}</p>
-        </>
-    );
-
-    if (to) {
-        return (
-            <Link
-                to={to}
-                className="bma-card block min-h-[180px] min-w-0 p-5 hover:border-[#f2b84b] hover:shadow-md"
-            >
-                {cardContent}
-            </Link>
-        );
-    }
-
-    return (
-        <div className="bma-card min-h-[180px] min-w-0 p-5">
-            {cardContent}
-        </div>
-    );
-}
-
-function DashboardPanel({
-    eyebrow,
-    title,
-    description,
-    actionLabel,
-    actionTo,
-    actionStyle = "soft",
-    className = "",
-    children,
-}) {
-    const actionClasses = {
-        soft: "bg-[#e7f3ee] text-[#173f3f] hover:bg-[#d7e6df]",
-        dark: "bg-[#173f3f] text-white hover:bg-[#102426]",
-        gold: "bg-[#f2b84b] text-[#102426] hover:bg-[#f9d783]",
-    };
-
-    return (
-        <section className={`bma-panel min-w-0 p-5 md:p-6 ${className}`}>
-            <div className="mb-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-                <div className="min-w-0">
-                    {eyebrow && (
-                        <p className="text-sm font-black text-[#1f6f63]">
-                            {eyebrow}
-                        </p>
-                    )}
-                    <h2 className="mt-1 text-2xl font-black leading-tight text-[#102426]">
-                        {title}
-                    </h2>
-                    {description && (
-                        <p className="mt-1 text-sm font-semibold leading-6 text-[#526260]">
-                            {description}
-                        </p>
-                    )}
-                </div>
-
-                {actionLabel && actionTo && (
-                    <Link
-                        to={actionTo}
-                        className={`flex min-h-11 w-fit items-center justify-center rounded-lg px-4 py-3 text-sm font-bold ${actionClasses[actionStyle]}`}
-                    >
-                        {actionLabel}
-                    </Link>
-                )}
-            </div>
-
-            {children}
-        </section>
-    );
-}
-
-function PriorityItem({ item }) {
-    return (
-        <Link
-            to={item.to}
-            className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-2xl bg-[#f5f8f1] p-4 text-left ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
-        >
-            <div className="min-w-0">
-                <p className="text-sm font-black text-[#102426]">
-                    {item.label}
-                </p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">
-                    {item.detail}
-                </p>
-            </div>
-            <span className="shrink-0 rounded-2xl bg-white px-4 py-2 text-xl font-black text-[#173f3f] ring-1 ring-[#d7e6df]">
-                {item.value}
-            </span>
-        </Link>
-    );
-}
-
-function EmptyPanel({ message }) {
-    return (
-        <div className="rounded-2xl border border-dashed border-[#a9cfc2] bg-[#f5f8f1] p-5 text-sm font-bold text-[#526260]">
-            {message}
-        </div>
-    );
-}
-
-function ActivityItem({ title, description, time }) {
-    return (
-        <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
-                <div className="min-w-0">
-                    <p className="font-bold text-[#102426]">{title}</p>
-                    <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">{description}</p>
-                </div>
-
-                <span className="text-xs font-bold text-[#78908a] md:text-right">{time}</span>
-            </div>
-        </div>
-    );
+  return event.leadId ? (
+    <Link
+      to={`/admin/leads/${event.leadId}`}
+      className="rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+    >
+      {content}
+    </Link>
+  ) : (
+    <div className="rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
+      {content}
+    </div>
+  );
 }
 
 function QuickAction({ icon: Icon, title, description, to }) {
-    return (
-        <Link
-            to={to}
-            className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-2xl bg-[#f5f8f1] p-4 text-left ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
-        >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white">
-                <Icon className="h-5 w-5 text-[#1f6f63]" />
-            </div>
-
-            <div className="min-w-0">
-                <p className="font-bold text-[#102426]">{title}</p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">{description}</p>
-            </div>
-        </Link>
-    );
+  return (
+    <Link
+      to={to}
+      className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df] hover:bg-[#e7f3ee]"
+    >
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#1f6f63]">
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-black text-[#102426]">{title}</span>
+        <span className="mt-0.5 block text-xs font-semibold text-[#526260]">
+          {description}
+        </span>
+      </span>
+      <ChevronRight className="h-4 w-4 text-[#78908a] group-hover:text-[#173f3f]" />
+    </Link>
+  );
 }
 
-function PerformanceStep({ label, value }) {
-    return (
-        <div className="min-h-[130px] rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
-            <p className="min-h-[40px] text-sm font-semibold leading-5 text-[#526260]">
-                {label}
-            </p>
-
-            <p className="mt-3 text-3xl font-black text-[#102426]">
-                {value}
-            </p>
-        </div>
-    );
+function EmptyState({ message }) {
+  return (
+    <div className="rounded-xl border border-dashed border-[#a9cfc2] bg-[#f5f8f1] p-4 text-sm font-bold text-[#526260]">
+      {message}
+    </div>
+  );
 }
 
-function RecentLead({ name, preference, status }) {
-    return (
-        <div className="grid min-w-0 gap-3 rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df] md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-            <div className="min-w-0">
-                <p className="font-bold text-[#102426]">{name}</p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-[#526260]">{preference}</p>
-            </div>
+function getLeadSourcePerformanceRows(leads, tourRequestsByLeadId) {
+  const rows = leads.reduce((result, lead) => {
+    const source = formatLeadSource(lead);
+    if (!result[source]) {
+      result[source] = {
+        label: source,
+        leadCount: 0,
+        qualifiedCount: 0,
+        convertedCount: 0,
+        tourRequestCount: 0,
+      };
+    }
+    result[source].leadCount += 1;
+    if (lead.quality === "Qualified") result[source].qualifiedCount += 1;
+    if (lead.quality === "Converted") result[source].convertedCount += 1;
+    result[source].tourRequestCount +=
+      tourRequestsByLeadId[String(lead.id)] || 0;
+    return result;
+  }, {});
 
-            <span className="w-fit rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#174a7c]">
-                {status}
-            </span>
-        </div>
-    );
+  return Object.values(rows)
+    .map((source) => ({
+      ...source,
+      share: leads.length
+        ? Math.round((source.leadCount / leads.length) * 100)
+        : 0,
+    }))
+    .sort((a, b) => b.leadCount - a.leadCount || a.label.localeCompare(b.label));
 }
 
-function TopProperty({ name, area, leads, special }) {
-    return (
-        <div className="min-h-[170px] min-w-0 rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
-            <p className="truncate text-lg font-black leading-tight text-[#102426]">
-                {name}
-            </p>
-
-            <p className="mt-1 truncate text-sm font-semibold text-[#526260]">
-                {area}
-            </p>
-
-            <div className="mt-5 flex flex-col gap-2">
-                <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-bold text-[#173f3f] ring-1 ring-[#d7e6df]">
-                    {leads}
-                </span>
-
-                <span className="max-w-full rounded-full bg-[#d8efe6] px-3 py-1 text-xs font-bold leading-5 text-[#1f6f63]">
-                    {special}
-                </span>
-            </div>
-        </div>
-    );
+function formatLeadSource(lead) {
+  if (lead.source === "Google Ads" || lead.utmSource === "google") {
+    return "Google Ads";
+  }
+  return lead.source || "Unknown";
 }
 
+function getLeadSearchSummary(lead) {
+  return [lead.bedrooms, lead.budget, lead.moveIn].filter(Boolean).join(" · ") ||
+    "Search details not added";
+}
 
-function SystemStatusCard({ label, value }) {
-    return (
-        <div className="min-h-[110px] rounded-2xl bg-[#f5f8f1] p-5 ring-1 ring-[#d7e6df]">
-            <p className="text-sm font-semibold text-[#526260]">
-                {label}
-            </p>
+function sortNewestFirst(a, b) {
+  return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+}
 
-            <p className="mt-3 text-lg font-black text-[#102426]">
-                {value}
-            </p>
-        </div>
-    );
+function getHoursSince(value) {
+  if (!value) return 0;
+  return Math.max(0, (Date.now() - new Date(value).getTime()) / 3600000);
+}
+
+function formatRelativeTime(value) {
+  if (!value) return "Recently";
+  const elapsed = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(0, Math.floor(elapsed / 60000));
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(value).toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function getEventLabel(eventType) {
+  return {
+    lead_submitted: "Lead submitted",
+    recommendation_sent: "Recommendation sent",
+    renter_link_opened: "Recommendation viewed",
+    recommendation_page_viewed: "Recommendation viewed",
+    tour_requested: "Tour requested",
+  }[eventType] || "Lead activity";
+}
+
+function getEventIcon(eventType) {
+  const iconClass = "h-4 w-4";
+  if (eventType === "tour_requested") return <CalendarClock className={iconClass} />;
+  if (eventType === "recommendation_sent") return <Send className={iconClass} />;
+  if (["renter_link_opened", "recommendation_page_viewed"].includes(eventType)) {
+    return <BadgeCheck className={iconClass} />;
+  }
+  if (eventType === "lead_submitted") return <Megaphone className={iconClass} />;
+  return <Clock3 className={iconClass} />;
 }
