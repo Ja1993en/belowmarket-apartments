@@ -1281,7 +1281,12 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
                             <PropertyTableHeading>Current special</PropertyTableHeading>
                             <PropertyTableHeading>Verified</PropertyTableHeading>
                             <PropertyTableHeading>Attention</PropertyTableHeading>
-                            <PropertyTableHeading align="right">Actions</PropertyTableHeading>
+                            <PropertyTableHeading
+                                align="right"
+                                className="sticky right-0 z-30 bg-[#f5f8f1] shadow-[-1px_0_0_#d7e6df]"
+                            >
+                                Actions
+                            </PropertyTableHeading>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[#edf4ef] bg-white">
@@ -1376,7 +1381,7 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
                     <span className="truncate" title={health.issues.join(", ") || "Listing data looks ready"}>{getPrimaryIssue(health)}</span>
                 </div>
             </td>
-            <td className="px-3 py-2">
+            <td className="sticky right-0 z-10 bg-white px-3 py-2 shadow-[-1px_0_0_#edf4ef] group-hover:bg-[#fbfdfb]">
                 <div className="flex items-center justify-end gap-1.5">
                     <Link
                         to={`/admin/properties/${property.id}/edit`}
