@@ -1244,7 +1244,7 @@ function getReadinessClasses(severity) {
 function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
     return (
         <>
-            <div className="divide-y divide-[#edf4ef] lg:hidden">
+            <div className="divide-y divide-[#edf4ef] xl:hidden">
                 {records.map(({ property, health }) => (
                     <CompactPropertyRow
                         key={property.id}
@@ -1256,8 +1256,8 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
                 ))}
             </div>
 
-            <div className="hidden overflow-x-auto lg:block">
-                <table className="w-full min-w-[1240px] table-fixed border-collapse">
+            <div className="hidden overflow-x-auto xl:block">
+                <table className="w-full min-w-[1080px] table-fixed border-collapse min-[1500px]:min-w-[1240px]">
                     <colgroup>
                         <col className="w-[260px]" />
                         <col className="w-[130px]" />
@@ -1265,7 +1265,7 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
                         <col className="w-[125px]" />
                         <col className="w-[72px]" />
                         <col className="w-[72px]" />
-                        <col className="w-[180px]" />
+                        <col className="hidden w-[180px] min-[1500px]:table-column" />
                         <col className="w-[110px]" />
                         <col className="w-[170px]" />
                         <col className="w-[116px]" />
@@ -1278,7 +1278,7 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
                             <PropertyTableHeading>Listed rent</PropertyTableHeading>
                             <PropertyTableHeading align="center">Plans</PropertyTableHeading>
                             <PropertyTableHeading align="center">Units</PropertyTableHeading>
-                            <PropertyTableHeading>Current special</PropertyTableHeading>
+                            <PropertyTableHeading className="hidden min-[1500px]:table-cell">Current special</PropertyTableHeading>
                             <PropertyTableHeading>Verified</PropertyTableHeading>
                             <PropertyTableHeading>Attention</PropertyTableHeading>
                             <PropertyTableHeading align="right">Actions</PropertyTableHeading>
@@ -1301,9 +1301,9 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
     );
 }
 
-function PropertyTableHeading({ children, align = "left" }) {
+function PropertyTableHeading({ children, align = "left", className = "" }) {
     return (
-        <th className={`h-10 px-3 font-black ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"}`}>
+        <th className={`h-10 px-3 font-black ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"} ${className}`}>
             {children}
         </th>
     );
@@ -1358,7 +1358,7 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
                     {health.availableUnits}
                 </span>
             </td>
-            <td className="px-3 py-2">
+            <td className="hidden px-3 py-2 min-[1500px]:table-cell">
                 <p className={`line-clamp-2 text-[11px] font-bold leading-4 ${
                     hasVisibleSpecial(property.special) ? "text-[#8a5b0a]" : "text-[#78908a]"
                 }`} title={specialLabel}>
@@ -1426,9 +1426,11 @@ function CompactPropertyRow({ property, health, onMakeLive, onDelete }) {
                 <div className="flex items-center gap-1.5">
                     <Link
                         to={`/admin/properties/${property.id}/edit`}
-                        className="inline-flex h-8 items-center justify-center rounded-lg bg-[#173f3f] px-2.5 text-[10px] font-black !text-white"
+                        className="inline-flex h-8 w-8 items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-2 text-[10px] font-black !text-white sm:w-auto sm:px-2.5"
+                        aria-label={`Manage ${property.name || "property"}`}
                     >
-                        Manage
+                        <Pencil className="h-3 w-3 shrink-0" />
+                        <span className="hidden sm:inline">Manage</span>
                     </Link>
                     <PropertyActions
                         id={property.id}
