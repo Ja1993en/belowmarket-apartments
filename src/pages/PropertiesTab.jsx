@@ -11,7 +11,9 @@ import {
     ChevronRight,
     Eye,
     FileUp,
+    LayoutGrid,
     Layers3,
+    List,
     MapPin,
     MoreHorizontal,
     Pencil,
@@ -48,9 +50,11 @@ export default function PropertiesTab() {
     const [isImportingProperties, setIsImportingProperties] = useState(false);
     const [isImportOpen, setIsImportOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [cityFilter, setCityFilter] = useState("All");
     const [statusFilter, setStatusFilter] = useState("All");
     const [qualityFilter, setQualityFilter] = useState("All");
     const [sortBy, setSortBy] = useState("attention");
+    const [viewMode, setViewMode] = useState("table");
     const [currentPage, setCurrentPage] = useState(1);
     const refreshProperties = useCallback(async () => {
         try {
@@ -239,6 +243,14 @@ export default function PropertiesTab() {
             filter: "Available",
         },
     ];
+    const cityOptions = useMemo(
+        () => [...new Set(
+            properties
+                .map((property) => String(property.city || "").trim())
+                .filter(Boolean)
+        )].sort((first, second) => first.localeCompare(second)),
+        [properties]
+    );
     const filteredProperties = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase();
         const filtered = propertyRecords.filter(({ property, health }) => {
@@ -257,14 +269,17 @@ export default function PropertiesTab() {
                 property.yearBuilt,
             ].filter(Boolean).join(" ").toLowerCase();
             const matchesSearch = !normalizedSearch || text.includes(normalizedSearch);
+            const matchesCity = cityFilter === "All" || property.city === cityFilter;
             const matchesStatus = statusFilter === "All" || property.status === statusFilter;
             const matchesQuality =
                 qualityFilter === "All" ||
                 (qualityFilter === "Needs review" && health.severity !== "ready") ||
                 (qualityFilter === "Missing data" && health.missingDataCount > 0) ||
-                (qualityFilter === "Available" && health.availableUnits > 0);
+                (qualityFilter === "Available" && health.availableUnits > 0) ||
+                (qualityFilter === "No availability" && health.availableUnits === 0) ||
+                (qualityFilter === "Stale verification" && isPropertyVerificationStale(property));
 
-            return matchesSearch && matchesStatus && matchesQuality;
+            return matchesSearch && matchesCity && matchesStatus && matchesQuality;
         });
 
         return filtered.sort((first, second) => {
@@ -280,11 +295,21 @@ export default function PropertiesTab() {
                 return second.health.availableUnits - first.health.availableUnits;
             }
 
+            if (sortBy === "oldest") {
+                return getUpdatedTimestamp(first.property) - getUpdatedTimestamp(second.property);
+            }
+
+            if (sortBy === "city") {
+                return String(first.property.city || first.property.area || "").localeCompare(
+                    String(second.property.city || second.property.area || "")
+                ) || String(first.property.name || "").localeCompare(String(second.property.name || ""));
+            }
+
             return second.health.priority - first.health.priority ||
                 String(first.property.name || "").localeCompare(String(second.property.name || ""));
         });
-    }, [propertyRecords, qualityFilter, searchTerm, sortBy, statusFilter]);
-    const pageSize = 12;
+    }, [cityFilter, propertyRecords, qualityFilter, searchTerm, sortBy, statusFilter]);
+    const pageSize = viewMode === "table" ? 50 : 12;
     const pageCount = Math.max(1, Math.ceil(filteredProperties.length / pageSize));
     const safeCurrentPage = Math.min(currentPage, pageCount);
     const paginatedProperties = filteredProperties.slice(
@@ -293,6 +318,7 @@ export default function PropertiesTab() {
     );
     const activeFilterCount = [
         searchTerm.trim(),
+        cityFilter !== "All",
         statusFilter !== "All",
         qualityFilter !== "All",
     ].filter(Boolean).length;
@@ -375,8 +401,8 @@ export default function PropertiesTab() {
 
             <div className="mt-5 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
                 <div className="border-b border-[#d7e6df] p-3 sm:p-4">
-                    <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 min-[1400px]:grid-cols-[minmax(260px,1fr)_150px_170px_160px_auto]">
-                        <label className="relative col-span-2 min-w-0 lg:col-span-4 min-[1400px]:col-span-1">
+                    <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 min-[1500px]:grid-cols-[minmax(260px,1fr)_140px_150px_170px_160px_auto]">
+                        <label className="relative col-span-2 min-w-0 lg:col-span-3 min-[1500px]:col-span-1">
                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#1f6f63]" />
                             <input
                                 type="search"
@@ -389,6 +415,20 @@ export default function PropertiesTab() {
                                 className="h-10 w-full rounded-lg border border-[#b8d9d0] bg-[#fbfdfb] pl-9 pr-3 text-sm font-semibold text-[#102426] outline-none focus:border-[#f2b84b] focus:ring-2 focus:ring-[#f2b84b]/20"
                             />
                         </label>
+                        <select
+                            value={cityFilter}
+                            onChange={(event) => {
+                                setCityFilter(event.target.value);
+                                setCurrentPage(1);
+                            }}
+                            className="h-10 rounded-lg border border-[#d7e6df] bg-white px-3 text-sm font-bold text-[#173f3f] outline-none focus:border-[#f2b84b]"
+                            aria-label="Filter by city"
+                        >
+                            <option value="All">All cities</option>
+                            {cityOptions.map((city) => (
+                                <option key={city} value={city}>{city}</option>
+                            ))}
+                        </select>
                         <select
                             value={statusFilter}
                             onChange={(event) => {
@@ -416,6 +456,8 @@ export default function PropertiesTab() {
                             <option value="Needs review">Needs review</option>
                             <option value="Missing data">Missing data</option>
                             <option value="Available">Has availability</option>
+                            <option value="No availability">No availability</option>
+                            <option value="Stale verification">Not verified in 30 days</option>
                         </select>
                         <select
                             value={sortBy}
@@ -428,7 +470,9 @@ export default function PropertiesTab() {
                         >
                             <option value="attention">Attention first</option>
                             <option value="recent">Recently updated</option>
+                            <option value="oldest">Oldest verification</option>
                             <option value="availability">Most availability</option>
+                            <option value="city">City, then property</option>
                             <option value="name">Property name</option>
                         </select>
                         <div className="flex gap-2">
@@ -437,6 +481,7 @@ export default function PropertiesTab() {
                                     type="button"
                                     onClick={() => {
                                         setSearchTerm("");
+                                        setCityFilter("All");
                                         setStatusFilter("All");
                                         setQualityFilter("All");
                                         setCurrentPage(1);
@@ -525,56 +570,93 @@ export default function PropertiesTab() {
                             {sortBy === "attention" ? "Listings needing attention appear first." : "Sorted by your selected view."}
                         </p>
                     </div>
-                    {!isLoadingProperties && filteredProperties.length > 0 && (
-                        <p className="text-xs font-bold text-[#526260]">
-                            Showing {(safeCurrentPage - 1) * pageSize + 1}-{Math.min(safeCurrentPage * pageSize, filteredProperties.length)}
-                        </p>
-                    )}
+                    <div className="flex items-center justify-between gap-3 sm:justify-end">
+                        {!isLoadingProperties && filteredProperties.length > 0 && (
+                            <p className="text-xs font-bold text-[#526260]">
+                                Showing {(safeCurrentPage - 1) * pageSize + 1}-{Math.min(safeCurrentPage * pageSize, filteredProperties.length)}
+                            </p>
+                        )}
+                        <div className="inline-flex rounded-lg bg-white p-1 ring-1 ring-[#d7e6df]" aria-label="Property display mode">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setViewMode("table");
+                                    setCurrentPage(1);
+                                }}
+                                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-black ${
+                                    viewMode === "table"
+                                        ? "bg-[#173f3f] !text-white"
+                                        : "text-[#526260] hover:bg-[#f5f8f1]"
+                                }`}
+                                aria-pressed={viewMode === "table"}
+                            >
+                                <List className="h-3.5 w-3.5" />
+                                Table
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setViewMode("cards");
+                                    setCurrentPage(1);
+                                }}
+                                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-black ${
+                                    viewMode === "cards"
+                                        ? "bg-[#173f3f] !text-white"
+                                        : "text-[#526260] hover:bg-[#f5f8f1]"
+                                }`}
+                                aria-pressed={viewMode === "cards"}
+                            >
+                                <LayoutGrid className="h-3.5 w-3.5" />
+                                Cards
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="min-h-[360px]">
-                    <div className="grid gap-3 p-3 md:p-4 xl:grid-cols-2 min-[1800px]:grid-cols-3">
-                        <AnimatePresence mode="popLayout">
-                            {paginatedProperties.length > 0 ? (
-                                paginatedProperties.map(({ property, health }) => (
-                                    <motion.div
-                                        key={property.id}
-                                        layout
-                                        initial={{ opacity: 0, y: 8 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -8 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <PropertyRow
-                                            property={property}
-                                            health={health}
-                                            onMakeLive={() => makePropertyLive(property)}
-                                            onDelete={() => deleteProperty(property)}
-                                        />
-                                    </motion.div>
-                                ))
-                            ) : (
-                                <motion.div
-                                    key="no-results"
-                                    initial={{ opacity: 0, y: 8 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -8 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="flex min-h-[360px] items-center justify-center p-8 text-center"
-                                >
-                                    <div>
-                                        <Search className="mx-auto h-8 w-8 text-[#a9cfc2]" />
-                                        <h3 className="mt-3 text-lg font-black text-[#102426]">
-                                            No properties found
-                                        </h3>
-                                        <p className="mt-1 text-sm font-semibold text-[#526260]">
-                                            Clear a filter or try another property name.
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
+                    {paginatedProperties.length > 0 ? (
+                        viewMode === "table" ? (
+                            <PropertyInventoryTable
+                                records={paginatedProperties}
+                                onMakeLive={makePropertyLive}
+                                onDelete={deleteProperty}
+                            />
+                        ) : (
+                            <div className="grid gap-3 p-3 md:p-4 xl:grid-cols-2 min-[1800px]:grid-cols-3">
+                                <AnimatePresence mode="popLayout">
+                                    {paginatedProperties.map(({ property, health }) => (
+                                        <motion.div
+                                            key={property.id}
+                                            layout
+                                            initial={{ opacity: 0, y: 8 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -8 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <PropertyRow
+                                                property={property}
+                                                health={health}
+                                                onMakeLive={() => makePropertyLive(property)}
+                                                onDelete={() => deleteProperty(property)}
+                                            />
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        )
+                    ) : (
+                        <div className="flex min-h-[360px] items-center justify-center p-8 text-center">
+                            <div>
+                                <Search className="mx-auto h-8 w-8 text-[#a9cfc2]" />
+                                <h3 className="mt-3 text-lg font-black text-[#102426]">
+                                    No properties found
+                                </h3>
+                                <p className="mt-1 text-sm font-semibold text-[#526260]">
+                                    Clear a filter or try another property name.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {pageCount > 1 && (
@@ -1108,6 +1190,12 @@ function getUpdatedTimestamp(property) {
     return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
+function isPropertyVerificationStale(property) {
+    const timestamp = getUpdatedTimestamp(property);
+
+    return !timestamp || Date.now() - timestamp > 30 * 86400000;
+}
+
 function getUpdatedLabel(property) {
     const timestamp = getUpdatedTimestamp(property);
 
@@ -1144,6 +1232,236 @@ function getPrimaryIssue(health) {
     if (health.issues.length === 1) return health.issues[0];
 
     return `${health.issues[0]} +${health.issues.length - 1} more`;
+}
+
+function getReadinessClasses(severity) {
+    if (severity === "ready") return "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]";
+    if (severity === "danger") return "bg-[#fff0ea] text-[#b42318] ring-[#f4b6aa]";
+
+    return "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]";
+}
+
+function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
+    return (
+        <>
+            <div className="divide-y divide-[#edf4ef] lg:hidden">
+                {records.map(({ property, health }) => (
+                    <CompactPropertyRow
+                        key={property.id}
+                        property={property}
+                        health={health}
+                        onMakeLive={() => onMakeLive(property)}
+                        onDelete={() => onDelete(property)}
+                    />
+                ))}
+            </div>
+
+            <div className="hidden overflow-x-auto lg:block">
+                <table className="w-full min-w-[1240px] table-fixed border-collapse">
+                    <colgroup>
+                        <col className="w-[260px]" />
+                        <col className="w-[130px]" />
+                        <col className="w-[105px]" />
+                        <col className="w-[125px]" />
+                        <col className="w-[72px]" />
+                        <col className="w-[72px]" />
+                        <col className="w-[180px]" />
+                        <col className="w-[110px]" />
+                        <col className="w-[170px]" />
+                        <col className="w-[116px]" />
+                    </colgroup>
+                    <thead className="sticky top-14 z-20 bg-[#f5f8f1] shadow-[0_1px_0_#d7e6df]">
+                        <tr className="text-left text-[10px] font-black uppercase text-[#526260]">
+                            <PropertyTableHeading>Property</PropertyTableHeading>
+                            <PropertyTableHeading>City / Area</PropertyTableHeading>
+                            <PropertyTableHeading>Status</PropertyTableHeading>
+                            <PropertyTableHeading>Listed rent</PropertyTableHeading>
+                            <PropertyTableHeading align="center">Plans</PropertyTableHeading>
+                            <PropertyTableHeading align="center">Units</PropertyTableHeading>
+                            <PropertyTableHeading>Current special</PropertyTableHeading>
+                            <PropertyTableHeading>Verified</PropertyTableHeading>
+                            <PropertyTableHeading>Attention</PropertyTableHeading>
+                            <PropertyTableHeading align="right">Actions</PropertyTableHeading>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#edf4ef] bg-white">
+                        {records.map(({ property, health }) => (
+                            <DesktopPropertyRow
+                                key={property.id}
+                                property={property}
+                                health={health}
+                                onMakeLive={() => onMakeLive(property)}
+                                onDelete={() => onDelete(property)}
+                            />
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </>
+    );
+}
+
+function PropertyTableHeading({ children, align = "left" }) {
+    return (
+        <th className={`h-10 px-3 font-black ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"}`}>
+            {children}
+        </th>
+    );
+}
+
+function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
+    const photoUrl = getPropertyPreviewPhoto(property);
+    const managerName = property.managementCompany || property.manager || "Management missing";
+    const cityLabel = property.city || property.area || "City missing";
+    const areaLabel = property.area && property.area !== property.city ? property.area : property.state || "";
+    const specialLabel = hasVisibleSpecial(property.special) ? property.special : "No special listed";
+    const updatedLabel = getUpdatedLabel(property);
+
+    return (
+        <tr className="group h-16 transition hover:bg-[#fbfdfb]">
+            <td className="px-3 py-2">
+                <div className="flex min-w-0 items-center gap-2.5">
+                    <PropertyThumbnail property={property} photoUrl={photoUrl} className="h-11 w-14" />
+                    <div className="min-w-0">
+                        <Link
+                            to={`/admin/properties/${property.id}`}
+                            className="block truncate text-xs font-black text-[#102426] hover:text-[#1f6f63]"
+                            title={property.name}
+                        >
+                            {property.name || "Unnamed property"}
+                        </Link>
+                        <p className={`mt-1 truncate text-[10px] font-semibold ${
+                            managerName === "Management missing" ? "text-[#b42318]" : "text-[#78908a]"
+                        }`} title={managerName}>
+                            {managerName}
+                        </p>
+                    </div>
+                </div>
+            </td>
+            <td className="px-3 py-2">
+                <p className="truncate text-xs font-bold text-[#102426]" title={cityLabel}>{cityLabel}</p>
+                <p className="mt-1 truncate text-[10px] font-semibold text-[#78908a]" title={areaLabel}>{areaLabel || "Area not set"}</p>
+            </td>
+            <td className="px-3 py-2">
+                <span className={`inline-flex rounded-md px-2 py-1 text-[9px] font-black uppercase ${getStatusClasses(property.status)}`}>
+                    {property.status || "Draft"}
+                </span>
+            </td>
+            <td className="px-3 py-2 text-xs font-black text-[#102426]">
+                <span className="block truncate" title={formatAdminRent(property.rent)}>{formatAdminRent(property.rent)}</span>
+            </td>
+            <td className="px-3 py-2 text-center text-xs font-black text-[#102426]">{health.floorPlanCount}</td>
+            <td className="px-3 py-2 text-center">
+                <span className={`inline-flex min-w-7 justify-center rounded-md px-2 py-1 text-xs font-black ${
+                    health.availableUnits > 0 ? "bg-[#e7f3ee] text-[#1f6f63]" : "bg-[#fff0ea] text-[#b42318]"
+                }`}>
+                    {health.availableUnits}
+                </span>
+            </td>
+            <td className="px-3 py-2">
+                <p className={`line-clamp-2 text-[11px] font-bold leading-4 ${
+                    hasVisibleSpecial(property.special) ? "text-[#8a5b0a]" : "text-[#78908a]"
+                }`} title={specialLabel}>
+                    {specialLabel}
+                </p>
+            </td>
+            <td className="px-3 py-2">
+                <p className={`text-[11px] font-bold ${isPropertyVerificationStale(property) ? "text-[#b42318]" : "text-[#526260]"}`}>
+                    {updatedLabel}
+                </p>
+            </td>
+            <td className="px-3 py-2">
+                <div className={`inline-flex max-w-full items-center gap-1.5 rounded-md px-2 py-1 text-[9px] font-black ring-1 ${getReadinessClasses(health.severity)}`}>
+                    <ReadinessStatusIcon severity={health.severity} className="h-3 w-3 shrink-0" />
+                    <span className="truncate" title={health.issues.join(", ") || "Listing data looks ready"}>{getPrimaryIssue(health)}</span>
+                </div>
+            </td>
+            <td className="px-3 py-2">
+                <div className="flex items-center justify-end gap-1.5">
+                    <Link
+                        to={`/admin/properties/${property.id}/edit`}
+                        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-2.5 text-[10px] font-black !text-white hover:bg-[#102426] hover:!text-white"
+                    >
+                        <Pencil className="h-3 w-3" />
+                        Manage
+                    </Link>
+                    <PropertyActions
+                        id={property.id}
+                        name={property.name}
+                        status={property.status}
+                        onMakeLive={onMakeLive}
+                        onDelete={onDelete}
+                        compact
+                    />
+                </div>
+            </td>
+        </tr>
+    );
+}
+
+function CompactPropertyRow({ property, health, onMakeLive, onDelete }) {
+    const photoUrl = getPropertyPreviewPhoto(property);
+    const cityLabel = property.city || property.area || "City missing";
+
+    return (
+        <article className="bg-white px-3 py-2.5">
+            <div className="grid grid-cols-[3.25rem_minmax(0,1fr)_auto] items-center gap-2.5">
+                <PropertyThumbnail property={property} photoUrl={photoUrl} className="h-12 w-[3.25rem]" />
+                <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-1.5">
+                        <Link to={`/admin/properties/${property.id}`} className="truncate text-xs font-black text-[#102426]">
+                            {property.name || "Unnamed property"}
+                        </Link>
+                        <span className={`shrink-0 rounded px-1.5 py-0.5 text-[8px] font-black uppercase ${getStatusClasses(property.status)}`}>
+                            {property.status || "Draft"}
+                        </span>
+                    </div>
+                    <p className="mt-1 truncate text-[10px] font-semibold text-[#526260]">{cityLabel}</p>
+                    <div className="mt-1.5 flex min-w-0 items-center gap-2 text-[10px] font-bold text-[#526260]">
+                        <span className="truncate font-black text-[#102426]">{formatAdminRent(property.rent)}</span>
+                        <span>{health.floorPlanCount} plans</span>
+                        <span className={health.availableUnits > 0 ? "text-[#1f6f63]" : "text-[#b42318]"}>{health.availableUnits} units</span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <Link
+                        to={`/admin/properties/${property.id}/edit`}
+                        className="inline-flex h-8 items-center justify-center rounded-lg bg-[#173f3f] px-2.5 text-[10px] font-black !text-white"
+                    >
+                        Manage
+                    </Link>
+                    <PropertyActions
+                        id={property.id}
+                        name={property.name}
+                        status={property.status}
+                        onMakeLive={onMakeLive}
+                        onDelete={onDelete}
+                        compact
+                    />
+                </div>
+            </div>
+        </article>
+    );
+}
+
+function PropertyThumbnail({ property, photoUrl, className }) {
+    const initials = String(property.name || "Property")
+        .split(" ")
+        .map((word) => word[0])
+        .join("")
+        .slice(0, 2);
+
+    return (
+        <div className={`shrink-0 overflow-hidden rounded-lg bg-[#173f3f] ring-1 ring-[#d7e6df] ${className}`}>
+            {photoUrl ? (
+                <img src={photoUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+            ) : (
+                <span className="flex h-full w-full items-center justify-center text-[10px] font-black text-[#f2b84b]">
+                    {initials}
+                </span>
+            )}
+        </div>
+    );
 }
 
 function PropertyRow({ property, health, onMakeLive, onDelete }) {
@@ -1320,7 +1638,7 @@ function PropertyCardMetric({ label, value, helper, tone }) {
     );
 }
 
-function PropertyActions({ id, name, status, onMakeLive, onDelete }) {
+function PropertyActions({ id, name, status, onMakeLive, onDelete, compact = false }) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -1328,7 +1646,9 @@ function PropertyActions({ id, name, status, onMakeLive, onDelete }) {
             <button
                 type="button"
                 onClick={() => setIsOpen((current) => !current)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
+                className={`flex items-center justify-center rounded-lg bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] ${
+                    compact ? "h-8 w-8" : "h-9 w-9"
+                }`}
                 aria-label={`More actions for ${name}`}
                 aria-expanded={isOpen}
             >
