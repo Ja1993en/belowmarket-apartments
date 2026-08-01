@@ -1257,18 +1257,18 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
             </div>
 
             <div className="hidden overflow-x-auto min-[1600px]:block">
-                <table className="w-full min-w-[1240px] table-fixed border-collapse">
+                <table className="w-full min-w-[1120px] table-fixed border-collapse">
                     <colgroup>
-                        <col className="w-[260px]" />
-                        <col className="w-[130px]" />
+                        <col className="w-[220px]" />
                         <col className="w-[105px]" />
-                        <col className="w-[125px]" />
-                        <col className="w-[72px]" />
-                        <col className="w-[72px]" />
-                        <col className="w-[180px]" />
-                        <col className="w-[110px]" />
-                        <col className="w-[170px]" />
-                        <col className="w-[116px]" />
+                        <col className="w-[85px]" />
+                        <col className="w-[105px]" />
+                        <col className="w-[55px]" />
+                        <col className="w-[55px]" />
+                        <col className="w-[145px]" />
+                        <col className="w-[85px]" />
+                        <col className="w-[145px]" />
+                        <col className="w-[120px]" />
                     </colgroup>
                     <thead className="sticky top-14 z-20 bg-[#f5f8f1] shadow-[0_1px_0_#d7e6df]">
                         <tr className="text-left text-[10px] font-black uppercase text-[#526260]">
@@ -1375,13 +1375,13 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
                     {updatedLabel}
                 </p>
             </td>
-            <td className="px-3 py-2">
+            <td className="overflow-hidden px-3 py-2">
                 <div className={`inline-flex max-w-full items-center gap-1.5 rounded-md px-2 py-1 text-[9px] font-black ring-1 ${getReadinessClasses(health.severity)}`}>
                     <ReadinessStatusIcon severity={health.severity} className="h-3 w-3 shrink-0" />
                     <span className="truncate" title={health.issues.join(", ") || "Listing data looks ready"}>{getPrimaryIssue(health)}</span>
                 </div>
             </td>
-            <td className="sticky right-0 z-10 bg-white px-3 py-2 shadow-[-1px_0_0_#edf4ef] group-hover:bg-[#fbfdfb]">
+            <td className="sticky right-0 z-10 border-l border-[#edf4ef] bg-white px-3 py-2 group-hover:bg-[#fbfdfb]">
                 <div className="flex items-center justify-end gap-1.5">
                     <Link
                         to={`/admin/properties/${property.id}/edit`}
