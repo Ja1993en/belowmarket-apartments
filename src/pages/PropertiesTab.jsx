@@ -1213,18 +1213,68 @@ function getUpdatedLabel(property) {
     }).format(new Date(timestamp));
 }
 
-function formatAdminRent(value) {
-    const rawValue = String(value || "").trim();
+function getAdminPropertyRentSummary(property) {
+    const floorPlans = getPropertyFloorPlans(property);
+    const availableFloorPlans = floorPlans.filter((floorPlan) => getFloorPlanAvailableUnitCount(floorPlan) > 0);
+    const pricedFloorPlans = availableFloorPlans.length ? availableFloorPlans : floorPlans;
+    const floorPlanAmounts = pricedFloorPlans.flatMap((floorPlan) => {
+        const availableUnitAmounts = Array.isArray(floorPlan?.availableUnits)
+            ? floorPlan.availableUnits
+                .filter((unit) => {
+                    const status = String(unit?.status || "").toLowerCase();
+                    return !status || status === "available";
+                })
+                .flatMap((unit) => getRentAmounts(
+                    unit?.rent || unit?.startingRent || unit?.totalMonthlyRent
+                ))
+            : [];
 
-    if (!rawValue) return "Not listed";
-    if (rawValue.includes("$")) return rawValue;
+        if (availableUnitAmounts.length) return availableUnitAmounts;
 
-    const amounts = getRentAmounts(rawValue);
-    if (!amounts.length) return rawValue;
+        return getRentAmounts(
+            floorPlan?.startingRent || floorPlan?.rent || floorPlan?.totalMonthlyRent
+        );
+    });
+    const fallbackAmounts = getRentAmounts(property?.rent || property?.startingRent);
+    const amounts = floorPlanAmounts.length ? floorPlanAmounts : fallbackAmounts;
 
-    return amounts
-        .map((amount) => `$${Math.round(amount).toLocaleString()}`)
-        .join(amounts.length > 1 ? " - " : "");
+    if (!amounts.length) {
+        return {
+            helper: "Add current floor-plan pricing",
+            label: "Listed rent",
+            value: "Not listed",
+        };
+    }
+
+    const minimumRent = Math.min(...amounts);
+    const maximumRent = Math.max(...amounts);
+    const hasRange = minimumRent !== maximumRent;
+    const value = hasRange
+        ? `$${Math.round(minimumRent).toLocaleString()} - $${Math.round(maximumRent).toLocaleString()}`
+        : `$${Math.round(minimumRent).toLocaleString()}`;
+
+    if (availableFloorPlans.length) {
+        const planCount = availableFloorPlans.length;
+        return {
+            helper: `${planCount} available ${planCount === 1 ? "floor plan" : "floor plans"}`,
+            label: hasRange ? "Available rent range" : "Starting listed rent",
+            value,
+        };
+    }
+
+    if (floorPlans.length) {
+        return {
+            helper: "No units currently marked available",
+            label: hasRange ? "Floor-plan rent range" : "Floor-plan listed rent",
+            value,
+        };
+    }
+
+    return {
+        helper: "Floor-plan pricing not added",
+        label: hasRange ? "Property rent range" : "Property listed rent",
+        value,
+    };
 }
 
 function getPrimaryIssue(health) {
@@ -1275,7 +1325,7 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
                             <PropertyTableHeading>Property</PropertyTableHeading>
                             <PropertyTableHeading>City / Area</PropertyTableHeading>
                             <PropertyTableHeading>Status</PropertyTableHeading>
-                            <PropertyTableHeading>Listed rent</PropertyTableHeading>
+                            <PropertyTableHeading>Available rent</PropertyTableHeading>
                             <PropertyTableHeading align="center">Plans</PropertyTableHeading>
                             <PropertyTableHeading align="center">Units</PropertyTableHeading>
                             <PropertyTableHeading>Current special</PropertyTableHeading>
@@ -1321,6 +1371,7 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
     const areaLabel = property.area && property.area !== property.city ? property.area : property.state || "";
     const specialLabel = hasVisibleSpecial(property.special) ? property.special : "No special listed";
     const updatedLabel = getUpdatedLabel(property);
+    const rentSummary = getAdminPropertyRentSummary(property);
 
     return (
         <tr className="group h-16 transition hover:bg-[#fbfdfb]">
@@ -1353,7 +1404,10 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
                 </span>
             </td>
             <td className="px-3 py-2 text-xs font-black text-[#102426]">
-                <span className="block truncate" title={formatAdminRent(property.rent)}>{formatAdminRent(property.rent)}</span>
+                <span className="block truncate" title={`${rentSummary.label}: ${rentSummary.value}`}>{rentSummary.value}</span>
+                <span className="mt-1 block truncate text-[9px] font-semibold text-[#78908a]" title={rentSummary.helper}>
+                    {rentSummary.helper}
+                </span>
             </td>
             <td className="px-3 py-2 text-center text-xs font-black text-[#102426]">{health.floorPlanCount}</td>
             <td className="px-3 py-2 text-center">
@@ -1407,6 +1461,7 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
 function CompactPropertyRow({ property, health, onMakeLive, onDelete }) {
     const photoUrl = getPropertyPreviewPhoto(property);
     const cityLabel = property.city || property.area || "City missing";
+    const rentSummary = getAdminPropertyRentSummary(property);
 
     return (
         <article className="min-w-0 bg-white px-3 py-2.5">
@@ -1423,7 +1478,9 @@ function CompactPropertyRow({ property, health, onMakeLive, onDelete }) {
                     </div>
                     <p className="mt-1 truncate text-[10px] font-semibold text-[#526260]">{cityLabel}</p>
                     <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-bold text-[#526260]">
-                        <span className="max-w-full truncate font-black text-[#102426]">{formatAdminRent(property.rent)}</span>
+                        <span className="max-w-full truncate font-black text-[#102426]" title={rentSummary.label}>
+                            {rentSummary.value}
+                        </span>
                         <span>{health.floorPlanCount} plans</span>
                         <span className={health.availableUnits > 0 ? "text-[#1f6f63]" : "text-[#b42318]"}>{health.availableUnits} units</span>
                     </div>
@@ -1481,7 +1538,6 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
         zip,
         manager,
         managementCompany,
-        rent,
         status,
         special,
     } = property;
@@ -1494,6 +1550,7 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
     const photoUrl = getPropertyPreviewPhoto(property);
     const managerName = managementCompany || manager;
     const updatedLabel = getUpdatedLabel(property);
+    const rentSummary = getAdminPropertyRentSummary(property);
     const readinessClasses = {
         ready: "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]",
         warning: "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]",
@@ -1549,8 +1606,9 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
 
             <div className="mt-2.5 grid grid-cols-3 gap-1.5">
                 <PropertyCardMetric
-                    label="Listed rent"
-                    value={formatAdminRent(rent)}
+                    label={rentSummary.label}
+                    value={rentSummary.value}
+                    helper={rentSummary.helper}
                     tone="neutral"
                 />
                 <PropertyCardMetric
