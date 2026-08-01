@@ -1177,10 +1177,10 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
     };
 
     return (
-        <article className="grid min-h-[278px] grid-rows-[auto_auto_1fr_auto] overflow-hidden rounded-xl border border-[#d7e6df] bg-white p-3 text-left shadow-sm transition hover:border-[#a9cfc2] hover:shadow-md sm:p-4">
+        <article className="grid min-h-[232px] grid-rows-[auto_auto_1fr_auto] overflow-hidden rounded-xl border border-[#d7e6df] bg-white p-3 text-left shadow-sm transition hover:border-[#a9cfc2] hover:shadow-md">
             <div className="flex min-w-0 items-start justify-between gap-3">
                 <div className="flex min-w-0 gap-3">
-                    <div className="relative h-[72px] w-24 shrink-0 overflow-hidden rounded-lg bg-[#173f3f] ring-1 ring-[#d7e6df]">
+                    <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-[#173f3f] ring-1 ring-[#d7e6df]">
                         {photoUrl ? (
                             <img
                                 src={photoUrl}
@@ -1223,7 +1223,7 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
                 </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="mt-2.5 grid grid-cols-3 gap-1.5">
                 <PropertyCardMetric
                     label="Listed rent"
                     value={formatAdminRent(rent)}
@@ -1243,7 +1243,7 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
                 />
             </div>
 
-            <div className="mt-3 grid content-start gap-2">
+            <div className="mt-2.5 grid content-start gap-1.5 sm:grid-cols-2">
                 <div className={`min-w-0 rounded-lg px-3 py-2 ${
                     hasVisibleSpecial(special)
                         ? "bg-[#fff8e6] ring-1 ring-[#f2d08a]"
@@ -1268,7 +1268,7 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
                 </div>
             </div>
 
-            <div className="mt-3 grid min-w-0 gap-2 border-t border-[#edf4ef] pt-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <div className="mt-2.5 grid min-w-0 gap-2 border-t border-[#edf4ef] pt-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
                 <div className="min-w-0">
                     <p className="text-[9px] font-black uppercase text-[#78908a]">Last verified</p>
                     <p className="mt-1 truncate text-xs font-bold text-[#526260]" title={getUpdatedRawValue(property)}>
@@ -1312,7 +1312,7 @@ function PropertyCardMetric({ label, value, helper, tone }) {
     };
 
     return (
-        <div className={`min-w-0 rounded-lg px-2.5 py-2 ring-1 ${toneClasses[tone] || toneClasses.plain}`}>
+        <div className={`min-w-0 rounded-lg px-2.5 py-1.5 ring-1 ${toneClasses[tone] || toneClasses.plain}`}>
             <p className="truncate text-[9px] font-black uppercase text-[#78908a]">{label}</p>
             <p className="mt-1 min-w-0 break-words text-xs font-black leading-4 sm:text-sm">{value || "Not listed"}</p>
             {helper && <p className="mt-0.5 truncate text-[9px] font-semibold text-[#78908a]">{helper}</p>}
