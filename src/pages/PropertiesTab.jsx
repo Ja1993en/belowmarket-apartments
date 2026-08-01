@@ -401,8 +401,8 @@ export default function PropertiesTab() {
 
             <div className="mt-5 overflow-hidden rounded-2xl border border-[#d7e6df] bg-white shadow-sm">
                 <div className="border-b border-[#d7e6df] p-3 sm:p-4">
-                    <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 min-[1500px]:grid-cols-[minmax(260px,1fr)_140px_150px_170px_160px_auto]">
-                        <label className="relative col-span-2 min-w-0 lg:col-span-3 min-[1500px]:col-span-1">
+                    <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 min-[1600px]:grid-cols-[minmax(260px,1fr)_140px_150px_170px_160px_auto]">
+                        <label className="relative col-span-2 min-w-0 lg:col-span-3 min-[1600px]:col-span-1">
                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#1f6f63]" />
                             <input
                                 type="search"
@@ -1244,7 +1244,7 @@ function getReadinessClasses(severity) {
 function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
     return (
         <>
-            <div className="divide-y divide-[#edf4ef] xl:hidden">
+            <div className="divide-y divide-[#edf4ef] min-[1600px]:hidden">
                 {records.map(({ property, health }) => (
                     <CompactPropertyRow
                         key={property.id}
@@ -1256,8 +1256,8 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
                 ))}
             </div>
 
-            <div className="hidden overflow-x-auto xl:block">
-                <table className="w-full min-w-[1080px] table-fixed border-collapse min-[1500px]:min-w-[1240px]">
+            <div className="hidden overflow-x-auto min-[1600px]:block">
+                <table className="w-full min-w-[1240px] table-fixed border-collapse">
                     <colgroup>
                         <col className="w-[260px]" />
                         <col className="w-[130px]" />
@@ -1265,7 +1265,7 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
                         <col className="w-[125px]" />
                         <col className="w-[72px]" />
                         <col className="w-[72px]" />
-                        <col className="hidden w-[180px] min-[1500px]:table-column" />
+                        <col className="w-[180px]" />
                         <col className="w-[110px]" />
                         <col className="w-[170px]" />
                         <col className="w-[116px]" />
@@ -1278,7 +1278,7 @@ function PropertyInventoryTable({ records, onMakeLive, onDelete }) {
                             <PropertyTableHeading>Listed rent</PropertyTableHeading>
                             <PropertyTableHeading align="center">Plans</PropertyTableHeading>
                             <PropertyTableHeading align="center">Units</PropertyTableHeading>
-                            <PropertyTableHeading className="hidden min-[1500px]:table-cell">Current special</PropertyTableHeading>
+                            <PropertyTableHeading>Current special</PropertyTableHeading>
                             <PropertyTableHeading>Verified</PropertyTableHeading>
                             <PropertyTableHeading>Attention</PropertyTableHeading>
                             <PropertyTableHeading align="right">Actions</PropertyTableHeading>
@@ -1358,7 +1358,7 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
                     {health.availableUnits}
                 </span>
             </td>
-            <td className="hidden px-3 py-2 min-[1500px]:table-cell">
+            <td className="px-3 py-2">
                 <p className={`line-clamp-2 text-[11px] font-bold leading-4 ${
                     hasVisibleSpecial(property.special) ? "text-[#8a5b0a]" : "text-[#78908a]"
                 }`} title={specialLabel}>
@@ -1404,9 +1404,9 @@ function CompactPropertyRow({ property, health, onMakeLive, onDelete }) {
     const cityLabel = property.city || property.area || "City missing";
 
     return (
-        <article className="bg-white px-3 py-2.5">
-            <div className="grid grid-cols-[3.25rem_minmax(0,1fr)_auto] items-center gap-2.5">
-                <PropertyThumbnail property={property} photoUrl={photoUrl} className="h-12 w-[3.25rem]" />
+        <article className="min-w-0 bg-white px-3 py-2.5">
+            <div className="grid min-w-0 grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-2 sm:grid-cols-[3.25rem_minmax(0,1fr)_auto] sm:gap-2.5">
+                <PropertyThumbnail property={property} photoUrl={photoUrl} className="h-11 w-11 sm:h-12 sm:w-[3.25rem]" />
                 <div className="min-w-0">
                     <div className="flex min-w-0 items-center gap-1.5">
                         <Link to={`/admin/properties/${property.id}`} className="truncate text-xs font-black text-[#102426]">
@@ -1417,8 +1417,8 @@ function CompactPropertyRow({ property, health, onMakeLive, onDelete }) {
                         </span>
                     </div>
                     <p className="mt-1 truncate text-[10px] font-semibold text-[#526260]">{cityLabel}</p>
-                    <div className="mt-1.5 flex min-w-0 items-center gap-2 text-[10px] font-bold text-[#526260]">
-                        <span className="truncate font-black text-[#102426]">{formatAdminRent(property.rent)}</span>
+                    <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-bold text-[#526260]">
+                        <span className="max-w-full truncate font-black text-[#102426]">{formatAdminRent(property.rent)}</span>
                         <span>{health.floorPlanCount} plans</span>
                         <span className={health.availableUnits > 0 ? "text-[#1f6f63]" : "text-[#b42318]"}>{health.availableUnits} units</span>
                     </div>
@@ -1497,7 +1497,7 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
     };
 
     return (
-        <article className="grid min-h-[232px] grid-rows-[auto_auto_1fr_auto] overflow-hidden rounded-xl border border-[#d7e6df] bg-white p-3 text-left shadow-sm transition hover:border-[#a9cfc2] hover:shadow-md">
+        <article className="grid min-h-[232px] min-w-0 grid-rows-[auto_auto_1fr_auto] overflow-hidden rounded-xl border border-[#d7e6df] bg-white p-3 text-left shadow-sm transition hover:border-[#a9cfc2] hover:shadow-md">
             <div className="flex min-w-0 items-start justify-between gap-3">
                 <div className="flex min-w-0 gap-3">
                     <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-[#173f3f] ring-1 ring-[#d7e6df]">
