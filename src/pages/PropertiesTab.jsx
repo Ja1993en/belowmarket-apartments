@@ -1439,10 +1439,12 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
                     {updatedLabel}
                 </p>
             </td>
-            <td className="overflow-hidden px-3 py-2">
+            <td className="px-3 py-2">
                 <div className={`inline-flex max-w-full items-center gap-1.5 rounded-md px-2 py-1 text-[9px] font-black ring-1 ${getReadinessClasses(health.severity)}`}>
                     <ReadinessStatusIcon severity={health.severity} className="h-3 w-3 shrink-0" />
-                    <span className="truncate" title={health.issues.join(", ") || "Listing data looks ready"}>{getPrimaryIssue(health)}</span>
+                    <InstantTooltip text={health.issues.join(", ") || "Listing data looks ready"}>
+                        <span className="block truncate">{getPrimaryIssue(health)}</span>
+                    </InstantTooltip>
                 </div>
             </td>
             <td className="sticky right-0 z-10 border-l border-[#edf4ef] bg-white px-3 py-2 group-hover:bg-[#fbfdfb]">
@@ -1605,13 +1607,12 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
                     </div>
                 </div>
 
-                <div
-                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] font-black ring-1 ${readinessClasses[health.severity]}`}
-                    title={health.issues.join(", ") || "Listing data looks ready"}
-                >
-                    <ReadinessStatusIcon severity={health.severity} className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{health.label}</span>
-                </div>
+                <InstantTooltip text={health.issues.join(", ") || "Listing data looks ready"} className="shrink-0">
+                    <span className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] font-black ring-1 ${readinessClasses[health.severity]}`}>
+                        <ReadinessStatusIcon severity={health.severity} className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">{health.label}</span>
+                    </span>
+                </InstantTooltip>
             </div>
 
             <div className="mt-2.5 grid grid-cols-4 gap-1.5">
@@ -1648,9 +1649,9 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
                     <ReadinessStatusIcon severity={health.severity} className="h-4 w-4 shrink-0" />
                     <div className="min-w-0">
                         <p className="text-[9px] font-black uppercase">Listing attention</p>
-                        <p className="mt-0.5 truncate text-[11px] font-bold" title={health.issues.join(", ")}>
-                            {getPrimaryIssue(health)}
-                        </p>
+                        <InstantTooltip text={health.issues.join(", ") || "Listing data looks ready"} className="mt-0.5">
+                            <span className="block truncate text-[11px] font-bold">{getPrimaryIssue(health)}</span>
+                        </InstantTooltip>
                     </div>
                 </div>
             </div>
@@ -1690,6 +1691,23 @@ function ReadinessStatusIcon({ severity, className }) {
     }
 
     return <AlertTriangle className={className} />;
+}
+
+function InstantTooltip({ children, text, className = "" }) {
+    return (
+        <span
+            className={`group/tooltip relative block min-w-0 max-w-full outline-none ${className}`}
+            tabIndex={0}
+        >
+            {children}
+            <span
+                role="tooltip"
+                className="pointer-events-none invisible absolute right-0 top-full z-50 mt-1.5 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg bg-[#102426] px-3 py-2 text-left text-[11px] font-bold leading-4 !text-white opacity-0 shadow-xl transition-opacity duration-75 group-hover/tooltip:visible group-hover/tooltip:opacity-100 group-focus/tooltip:visible group-focus/tooltip:opacity-100"
+            >
+                {text}
+            </span>
+        </span>
+    );
 }
 
 function PropertyCardMetric({ label, value, helper, tone }) {
