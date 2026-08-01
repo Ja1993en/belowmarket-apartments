@@ -1380,10 +1380,11 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
                 <div className="flex items-center justify-end gap-1.5">
                     <Link
                         to={`/admin/properties/${property.id}/edit`}
-                        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-2.5 text-[10px] font-black !text-white hover:bg-[#102426] hover:!text-white"
+                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white"
+                        aria-label={`Manage ${property.name || "property"}`}
+                        title="Manage property"
                     >
-                        <Pencil className="h-3 w-3" />
-                        Manage
+                        <Pencil className="h-4 w-4" />
                     </Link>
                     <PropertyActions
                         id={property.id}
@@ -1391,7 +1392,6 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
                         status={property.status}
                         onMakeLive={onMakeLive}
                         onDelete={onDelete}
-                        compact
                     />
                 </div>
             </td>
@@ -1426,11 +1426,11 @@ function CompactPropertyRow({ property, health, onMakeLive, onDelete }) {
                 <div className="flex items-center gap-1.5">
                     <Link
                         to={`/admin/properties/${property.id}/edit`}
-                        className="inline-flex h-8 w-8 items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-2 text-[10px] font-black !text-white sm:w-auto sm:px-2.5"
+                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white"
                         aria-label={`Manage ${property.name || "property"}`}
+                        title="Manage property"
                     >
-                        <Pencil className="h-3 w-3 shrink-0" />
-                        <span className="hidden sm:inline">Manage</span>
+                        <Pencil className="h-4 w-4" />
                     </Link>
                     <PropertyActions
                         id={property.id}
@@ -1438,7 +1438,6 @@ function CompactPropertyRow({ property, health, onMakeLive, onDelete }) {
                         status={property.status}
                         onMakeLive={onMakeLive}
                         onDelete={onDelete}
-                        compact
                     />
                 </div>
             </div>
@@ -1598,10 +1597,11 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
                 <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:shrink-0">
                     <Link
                         to={`/admin/properties/${id}/edit`}
-                        className="inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-3 text-xs font-black !text-white hover:bg-[#102426] hover:!text-white sm:min-w-[94px]"
+                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#173f3f] !text-white hover:bg-[#102426] hover:!text-white"
+                        aria-label={`Manage ${name || "property"}`}
+                        title="Manage property"
                     >
-                        <Pencil className="h-3.5 w-3.5" />
-                        Manage
+                        <Pencil className="h-4 w-4" />
                     </Link>
                     <PropertyActions
                         id={id}
@@ -1640,7 +1640,7 @@ function PropertyCardMetric({ label, value, helper, tone }) {
     );
 }
 
-function PropertyActions({ id, name, status, onMakeLive, onDelete, compact = false }) {
+function PropertyActions({ id, name, status, onMakeLive, onDelete }) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -1648,9 +1648,7 @@ function PropertyActions({ id, name, status, onMakeLive, onDelete, compact = fal
             <button
                 type="button"
                 onClick={() => setIsOpen((current) => !current)}
-                className={`flex items-center justify-center rounded-lg bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1] ${
-                    compact ? "h-8 w-8" : "h-9 w-9"
-                }`}
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#173f3f] ring-1 ring-[#d7e6df] hover:bg-[#f5f8f1]"
                 aria-label={`More actions for ${name}`}
                 aria-expanded={isOpen}
             >
