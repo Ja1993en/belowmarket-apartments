@@ -11,7 +11,6 @@ import {
     ChevronRight,
     Eye,
     FileUp,
-    Image,
     Layers3,
     MapPin,
     MoreHorizontal,
@@ -534,7 +533,7 @@ export default function PropertiesTab() {
                 </div>
 
                 <div className="min-h-[360px]">
-                    <div className="divide-y divide-[#edf4ef]">
+                    <div className="grid gap-3 p-3 md:p-4 xl:grid-cols-2 min-[1800px]:grid-cols-3">
                         <AnimatePresence mode="popLayout">
                             {paginatedProperties.length > 0 ? (
                                 paginatedProperties.map(({ property, health }) => (
@@ -1140,6 +1139,13 @@ function formatAdminRent(value) {
         .join(amounts.length > 1 ? " - " : "");
 }
 
+function getPrimaryIssue(health) {
+    if (!health.issues.length) return "Listing data looks ready";
+    if (health.issues.length === 1) return health.issues[0];
+
+    return `${health.issues[0]} +${health.issues.length - 1} more`;
+}
+
 function PropertyRow({ property, health, onMakeLive, onDelete }) {
     const {
         id,
@@ -1171,110 +1177,145 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
     };
 
     return (
-        <div className="grid gap-3 bg-white p-3 text-left transition hover:bg-[#fbfdfb] sm:p-4 xl:grid-cols-[minmax(210px,1.35fr)_95px_90px_100px_minmax(115px,0.85fr)_80px_100px] xl:items-center xl:gap-3">
-            <div className="flex min-w-0 gap-3">
-                <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-[#173f3f] ring-1 ring-[#d7e6df]">
-                    {photoUrl ? (
-                        <img
-                            src={photoUrl}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <span className="flex h-full w-full items-center justify-center text-sm font-black text-[#f2b84b]">
-                            {initials}
-                        </span>
-                    )}
+        <article className="grid min-h-[278px] grid-rows-[auto_auto_1fr_auto] overflow-hidden rounded-xl border border-[#d7e6df] bg-white p-3 text-left shadow-sm transition hover:border-[#a9cfc2] hover:shadow-md sm:p-4">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="flex min-w-0 gap-3">
+                    <div className="relative h-[72px] w-24 shrink-0 overflow-hidden rounded-lg bg-[#173f3f] ring-1 ring-[#d7e6df]">
+                        {photoUrl ? (
+                            <img
+                                src={photoUrl}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <span className="flex h-full w-full items-center justify-center text-sm font-black text-[#f2b84b]">
+                                {initials}
+                            </span>
+                        )}
+                    </div>
+                    <div className="min-w-0 py-0.5">
+                        <div className="flex min-w-0 items-center gap-2">
+                            <h2 className="truncate text-sm font-black text-[#102426] sm:text-base" title={name}>
+                                {name || "Unnamed property"}
+                            </h2>
+                            <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[8px] font-black uppercase ${getStatusClasses(status)}`}>
+                                {status || "Draft"}
+                            </span>
+                        </div>
+                        <p className="mt-1 flex min-w-0 items-center gap-1 text-xs font-semibold text-[#526260]">
+                            <MapPin className="h-3.5 w-3.5 shrink-0 text-[#1f6f63]" />
+                            <span className="truncate">{location}</span>
+                        </p>
+                        <p className={`mt-1 truncate text-[11px] font-semibold ${managerName ? "text-[#78908a]" : "text-[#b42318]"}`}>
+                            {managerName ? `Managed by ${managerName}` : "Management company missing"}
+                        </p>
+                    </div>
                 </div>
-                <div className="min-w-0 py-0.5">
-                    <p className="truncate text-sm font-black text-[#102426] sm:text-base" title={name}>{name}</p>
-                    <p className="mt-1 flex min-w-0 items-center gap-1 text-xs font-semibold text-[#526260]">
-                        <MapPin className="h-3.5 w-3.5 shrink-0 text-[#1f6f63]" />
-                        <span className="truncate">{location}</span>
-                        <span className={`ml-1 shrink-0 rounded-md px-1.5 py-0.5 text-[8px] font-black uppercase ${getStatusClasses(status)}`}>
-                            {status || "Draft"}
-                        </span>
-                    </p>
-                    <p className={`mt-1 truncate text-[11px] font-semibold ${managerName ? "text-[#78908a]" : "text-[#b42318]"}`}>
-                        {managerName ? `Managed by ${managerName}` : "Management company missing"}
-                    </p>
+
+                <div
+                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] font-black ring-1 ${readinessClasses[health.severity]}`}
+                    title={health.issues.join(", ") || "Listing data looks ready"}
+                >
+                    <ReadinessStatusIcon severity={health.severity} className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">{health.label}</span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:contents">
-                <PropertyRowMetric
-                    label="Readiness"
-                    value={health.label}
-                    className={readinessClasses[health.severity]}
-                    title={health.issues.join(", ") || "Listing data looks ready"}
-                />
-                <PropertyRowMetric
+            <div className="mt-3 grid grid-cols-3 gap-2">
+                <PropertyCardMetric
                     label="Listed rent"
                     value={formatAdminRent(rent)}
-                    className="bg-[#f5f8f1] text-[#102426] ring-[#d7e6df]"
+                    tone="neutral"
                 />
-                <PropertyRowMetric
+                <PropertyCardMetric
                     label="Floor plans"
-                    value={`${health.floorPlanCount} plan${health.floorPlanCount === 1 ? "" : "s"}`}
-                    helper={`${health.availableUnits} unit${health.availableUnits === 1 ? "" : "s"} available`}
-                    className="bg-white text-[#102426] ring-[#d7e6df]"
+                    value={health.floorPlanCount.toLocaleString()}
+                    helper={`${health.photoCount} photos`}
+                    tone="plain"
                 />
-                <PropertyRowMetric
-                    label="Special"
-                    value={hasVisibleSpecial(special) ? special : "None listed"}
-                    className={hasVisibleSpecial(special)
-                        ? "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]"
-                        : "bg-white text-[#526260] ring-[#d7e6df]"}
+                <PropertyCardMetric
+                    label="Available"
+                    value={health.availableUnits.toLocaleString()}
+                    helper={health.availableUnits === 1 ? "unit" : "units"}
+                    tone="success"
                 />
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-t border-[#edf4ef] pt-3 xl:block xl:border-0 xl:pt-0">
-                <div>
+            <div className="mt-3 grid content-start gap-2">
+                <div className={`min-w-0 rounded-lg px-3 py-2 ${
+                    hasVisibleSpecial(special)
+                        ? "bg-[#fff8e6] ring-1 ring-[#f2d08a]"
+                        : "bg-[#f5f8f1] ring-1 ring-[#d7e6df]"
+                }`}>
+                    <p className="text-[9px] font-black uppercase text-[#78908a]">Current special</p>
+                    <p className={`mt-1 line-clamp-2 text-xs font-black leading-4 ${
+                        hasVisibleSpecial(special) ? "text-[#8a5b0a]" : "text-[#526260]"
+                    }`}>
+                        {hasVisibleSpecial(special) ? special : "No special listed"}
+                    </p>
+                </div>
+
+                <div className={`flex min-w-0 items-center gap-2 rounded-lg px-3 py-2 ring-1 ${readinessClasses[health.severity]}`}>
+                    <ReadinessStatusIcon severity={health.severity} className="h-4 w-4 shrink-0" />
+                    <div className="min-w-0">
+                        <p className="text-[9px] font-black uppercase">Listing attention</p>
+                        <p className="mt-0.5 truncate text-[11px] font-bold" title={health.issues.join(", ")}>
+                            {getPrimaryIssue(health)}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mt-3 grid min-w-0 gap-2 border-t border-[#edf4ef] pt-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                <div className="min-w-0">
                     <p className="text-[9px] font-black uppercase text-[#78908a]">Last verified</p>
-                    <p className="mt-1 text-xs font-bold text-[#526260]" title={getUpdatedRawValue(property)}>
+                    <p className="mt-1 truncate text-xs font-bold text-[#526260]" title={getUpdatedRawValue(property)}>
                         {updatedLabel}
                     </p>
                 </div>
-                <div className="flex items-center gap-1.5 xl:mt-2">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#78908a]">
-                        <Image className="h-3 w-3" />
-                        {health.photoCount}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#78908a]">
-                        <Layers3 className="h-3 w-3" />
-                        {health.floorPlanCount}
-                    </span>
+                <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:shrink-0">
+                    <Link
+                        to={`/admin/properties/${id}/edit`}
+                        className="inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-3 text-xs font-black !text-white hover:bg-[#102426] hover:!text-white sm:min-w-[94px]"
+                    >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Manage
+                    </Link>
+                    <PropertyActions
+                        id={id}
+                        name={name}
+                        status={status}
+                        onMakeLive={onMakeLive}
+                        onDelete={onDelete}
+                    />
                 </div>
             </div>
-
-            <div className="flex items-center gap-2 xl:justify-end">
-                <Link
-                    to={`/admin/properties/${id}/edit`}
-                    className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#173f3f] px-3 text-xs font-black text-white hover:bg-[#102426] xl:flex-none"
-                >
-                    <Pencil className="h-3.5 w-3.5" />
-                    Manage
-                </Link>
-                <PropertyActions
-                    id={id}
-                    name={name}
-                    status={status}
-                    onMakeLive={onMakeLive}
-                    onDelete={onDelete}
-                />
-            </div>
-        </div>
+        </article>
     );
 }
 
-function PropertyRowMetric({ label, value, helper, className, title }) {
+function ReadinessStatusIcon({ severity, className }) {
+    if (severity === "ready") {
+        return <CheckCircle2 className={className} />;
+    }
+
+    return <AlertTriangle className={className} />;
+}
+
+function PropertyCardMetric({ label, value, helper, tone }) {
+    const toneClasses = {
+        neutral: "bg-[#f5f8f1] text-[#102426] ring-[#d7e6df]",
+        plain: "bg-white text-[#102426] ring-[#d7e6df]",
+        success: "bg-[#e7f3ee] text-[#1f6f63] ring-[#a9cfc2]",
+    };
+
     return (
-        <div className={`min-w-0 rounded-lg px-2.5 py-2 ring-1 xl:bg-transparent xl:px-0 xl:py-0 xl:ring-0 ${className}`} title={title}>
-            <p className="text-[9px] font-black uppercase text-[#78908a]">{label}</p>
-            <p className="mt-1 line-clamp-2 text-xs font-black leading-4">{value || "Not listed"}</p>
-            {helper && <p className="mt-0.5 truncate text-[10px] font-semibold text-[#78908a]">{helper}</p>}
+        <div className={`min-w-0 rounded-lg px-2.5 py-2 ring-1 ${toneClasses[tone] || toneClasses.plain}`}>
+            <p className="truncate text-[9px] font-black uppercase text-[#78908a]">{label}</p>
+            <p className="mt-1 min-w-0 break-words text-xs font-black leading-4 sm:text-sm">{value || "Not listed"}</p>
+            {helper && <p className="mt-0.5 truncate text-[9px] font-semibold text-[#78908a]">{helper}</p>}
         </div>
     );
 }

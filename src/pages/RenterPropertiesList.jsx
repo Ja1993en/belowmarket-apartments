@@ -25,6 +25,7 @@ import {
 } from "../data/propertySearchData";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+const LOCATOR_PHONE_NUMBER = "9452693768";
 const DALLAS_CENTER = [-96.797, 32.7767];
 const EMPTY_ARRAY = [];
 const NEARBY_PLACE_RADIUS_MILES = 12;
@@ -789,7 +790,7 @@ export default function RenterPropertiesList() {
             </div>
 
             <a
-              href={`tel:${lead.phone}`}
+              href={`tel:${LOCATOR_PHONE_NUMBER}`}
               className="rounded-2xl bg-[#173f3f] px-5 py-3 text-center text-sm font-bold text-white hover:bg-[#102426]"
             >
               Call Locator
