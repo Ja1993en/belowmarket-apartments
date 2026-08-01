@@ -1702,7 +1702,7 @@ function InstantTooltip({ children, text, className = "" }) {
             {children}
             <span
                 role="tooltip"
-                className="pointer-events-none invisible absolute right-0 top-full z-50 mt-1.5 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg bg-[#102426] px-3 py-2 text-left text-[11px] font-bold leading-4 !text-white opacity-0 shadow-xl transition-opacity duration-75 group-hover/tooltip:visible group-hover/tooltip:opacity-100 group-focus/tooltip:visible group-focus/tooltip:opacity-100"
+                className="pointer-events-none invisible absolute right-0 top-full z-50 mt-1 w-max max-w-[min(16rem,calc(100vw-2rem))] rounded bg-[#303030] px-2 py-1 text-left text-[10px] font-medium leading-4 !text-white opacity-0 shadow-md group-hover/tooltip:visible group-hover/tooltip:opacity-100 group-focus/tooltip:visible group-focus/tooltip:opacity-100"
             >
                 {text}
             </span>
