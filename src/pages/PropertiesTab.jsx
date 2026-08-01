@@ -1440,11 +1440,13 @@ function DesktopPropertyRow({ property, health, onMakeLive, onDelete }) {
                 </p>
             </td>
             <td className="px-3 py-2">
-                <div className={`inline-flex max-w-full items-center gap-1.5 rounded-md px-2 py-1 text-[9px] font-black ring-1 ${getReadinessClasses(health.severity)}`}>
+                <div
+                    className={`group/tooltip relative inline-flex max-w-full items-center gap-1.5 rounded-md px-2 py-1 text-[9px] font-black ring-1 outline-none ${getReadinessClasses(health.severity)}`}
+                    tabIndex={0}
+                >
                     <ReadinessStatusIcon severity={health.severity} className="h-3 w-3 shrink-0" />
-                    <InstantTooltip text={health.issues.join(", ") || "Listing data looks ready"}>
-                        <span className="block truncate">{getPrimaryIssue(health)}</span>
-                    </InstantTooltip>
+                    <span className="truncate">{getPrimaryIssue(health)}</span>
+                    <InstantTooltip text={health.issues.join(", ") || "Listing data looks ready"} />
                 </div>
             </td>
             <td className="sticky right-0 z-10 border-l border-[#edf4ef] bg-white px-3 py-2 group-hover:bg-[#fbfdfb]">
@@ -1607,12 +1609,14 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
                     </div>
                 </div>
 
-                <InstantTooltip text={health.issues.join(", ") || "Listing data looks ready"} className="shrink-0">
-                    <span className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] font-black ring-1 ${readinessClasses[health.severity]}`}>
-                        <ReadinessStatusIcon severity={health.severity} className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">{health.label}</span>
-                    </span>
-                </InstantTooltip>
+                <div
+                    className={`group/tooltip relative inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] font-black ring-1 outline-none ${readinessClasses[health.severity]}`}
+                    tabIndex={0}
+                >
+                    <ReadinessStatusIcon severity={health.severity} className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">{health.label}</span>
+                    <InstantTooltip text={health.issues.join(", ") || "Listing data looks ready"} />
+                </div>
             </div>
 
             <div className="mt-2.5 grid grid-cols-4 gap-1.5">
@@ -1647,11 +1651,10 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
 
                 <div className={`flex min-w-0 items-center gap-2 rounded-lg px-3 py-2 ring-1 ${readinessClasses[health.severity]}`}>
                     <ReadinessStatusIcon severity={health.severity} className="h-4 w-4 shrink-0" />
-                    <div className="min-w-0">
+                    <div className="group/tooltip relative min-w-0 outline-none" tabIndex={0}>
                         <p className="text-[9px] font-black uppercase">Listing attention</p>
-                        <InstantTooltip text={health.issues.join(", ") || "Listing data looks ready"} className="mt-0.5">
-                            <span className="block truncate text-[11px] font-bold">{getPrimaryIssue(health)}</span>
-                        </InstantTooltip>
+                        <p className="mt-0.5 truncate text-[11px] font-bold">{getPrimaryIssue(health)}</p>
+                        <InstantTooltip text={health.issues.join(", ") || "Listing data looks ready"} />
                     </div>
                 </div>
             </div>
@@ -1693,19 +1696,13 @@ function ReadinessStatusIcon({ severity, className }) {
     return <AlertTriangle className={className} />;
 }
 
-function InstantTooltip({ children, text, className = "" }) {
+function InstantTooltip({ text }) {
     return (
         <span
-            className={`group/tooltip relative block min-w-0 max-w-full outline-none ${className}`}
-            tabIndex={0}
+            role="tooltip"
+            className="pointer-events-none invisible absolute right-0 top-full z-50 mt-1 w-max max-w-[min(16rem,calc(100vw-2rem))] rounded bg-[#303030] px-2 py-1 text-left text-[10px] font-medium leading-4 !text-white opacity-0 shadow-md group-hover/tooltip:visible group-hover/tooltip:opacity-100 group-focus/tooltip:visible group-focus/tooltip:opacity-100"
         >
-            {children}
-            <span
-                role="tooltip"
-                className="pointer-events-none invisible absolute right-0 top-full z-50 mt-1 w-max max-w-[min(16rem,calc(100vw-2rem))] rounded bg-[#303030] px-2 py-1 text-left text-[10px] font-medium leading-4 !text-white opacity-0 shadow-md group-hover/tooltip:visible group-hover/tooltip:opacity-100 group-focus/tooltip:visible group-focus/tooltip:opacity-100"
-            >
-                {text}
-            </span>
+            {text}
         </span>
     );
 }
