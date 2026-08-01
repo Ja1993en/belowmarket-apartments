@@ -1241,7 +1241,9 @@ function getAdminPropertyRentSummary(property) {
     if (!amounts.length) {
         return {
             helper: "Add current floor-plan pricing",
+            high: "Not listed",
             label: "Listed rent",
+            low: "Not listed",
             value: "Not listed",
         };
     }
@@ -1252,12 +1254,16 @@ function getAdminPropertyRentSummary(property) {
     const value = hasRange
         ? `$${Math.round(minimumRent).toLocaleString()} - $${Math.round(maximumRent).toLocaleString()}`
         : `$${Math.round(minimumRent).toLocaleString()}`;
+    const low = `$${Math.round(minimumRent).toLocaleString()}`;
+    const high = `$${Math.round(maximumRent).toLocaleString()}`;
 
     if (availableFloorPlans.length) {
         const planCount = availableFloorPlans.length;
         return {
             helper: `${planCount} available ${planCount === 1 ? "floor plan" : "floor plans"}`,
+            high,
             label: hasRange ? "Available rent range" : "Starting listed rent",
+            low,
             value,
         };
     }
@@ -1265,14 +1271,18 @@ function getAdminPropertyRentSummary(property) {
     if (floorPlans.length) {
         return {
             helper: "No units currently marked available",
+            high,
             label: hasRange ? "Floor-plan rent range" : "Floor-plan listed rent",
+            low,
             value,
         };
     }
 
     return {
         helper: "Floor-plan pricing not added",
+        high,
         label: hasRange ? "Property rent range" : "Property listed rent",
+        low,
         value,
     };
 }
@@ -1604,13 +1614,8 @@ function PropertyRow({ property, health, onMakeLive, onDelete }) {
                 </div>
             </div>
 
-            <div className="mt-2.5 grid grid-cols-3 gap-1.5">
-                <PropertyCardMetric
-                    label={rentSummary.label}
-                    value={rentSummary.value}
-                    helper={rentSummary.helper}
-                    tone="neutral"
-                />
+            <div className="mt-2.5 grid grid-cols-4 gap-1.5">
+                <PropertyRentMetric summary={rentSummary} />
                 <PropertyCardMetric
                     label="Floor plans"
                     value={health.floorPlanCount.toLocaleString()}
@@ -1699,6 +1704,27 @@ function PropertyCardMetric({ label, value, helper, tone }) {
             <p className="truncate text-[9px] font-black uppercase text-[#78908a]">{label}</p>
             <p className="mt-1 min-w-0 break-words text-xs font-black leading-4 sm:text-sm">{value || "Not listed"}</p>
             {helper && <p className="mt-0.5 truncate text-[9px] font-semibold text-[#78908a]">{helper}</p>}
+        </div>
+    );
+}
+
+function PropertyRentMetric({ summary }) {
+    return (
+        <div className="col-span-2 min-w-0 rounded-lg bg-[#f5f8f1] px-2.5 py-1.5 text-[#102426] ring-1 ring-[#d7e6df]">
+            <p className="truncate text-[9px] font-black uppercase text-[#78908a]">Available rent</p>
+            <div className="mt-1 grid grid-cols-2 gap-2">
+                <div className="min-w-0">
+                    <p className="text-[8px] font-black uppercase text-[#78908a]">Low</p>
+                    <p className="truncate text-xs font-black leading-4" title={summary.low}>{summary.low}</p>
+                </div>
+                <div className="min-w-0 border-l border-[#d7e6df] pl-2">
+                    <p className="text-[8px] font-black uppercase text-[#78908a]">High</p>
+                    <p className="truncate text-xs font-black leading-4" title={summary.high}>{summary.high}</p>
+                </div>
+            </div>
+            <p className="mt-0.5 truncate text-[9px] font-semibold text-[#78908a]" title={summary.helper}>
+                {summary.helper}
+            </p>
         </div>
     );
 }
