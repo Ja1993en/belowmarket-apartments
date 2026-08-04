@@ -649,7 +649,7 @@ export default function RenterPropertiesList() {
                 </div>
               </div>
 
-              <aside className="order-1 md:sticky md:top-24 md:order-2">
+              <aside className="order-1 md:sticky md:top-4 md:order-2 md:self-start">
                 <RecommendationMapPanel
                   properties={mappableRecommendedProperties}
                   hoveredPropertyId={hoveredPropertyId}
@@ -1167,8 +1167,8 @@ function RecommendationMapPanel({
   }, [hoveredPropertyId]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3">
+    <div className="overflow-hidden rounded-xl border border-[#d7e6df] bg-white shadow-sm md:flex md:h-[calc(100vh-2rem)] md:max-h-[680px] md:flex-col">
+      <div className="flex items-center justify-between gap-3 border-b border-[#d7e6df] px-4 py-3 md:shrink-0">
         <div>
           <p className="text-sm font-black text-[#102426]">Map view</p>
           <p className="text-xs font-bold text-[#526260]">
@@ -1181,20 +1181,20 @@ function RecommendationMapPanel({
         </span>
       </div>
 
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden md:min-h-0 md:flex-1">
         {mapError ? (
-          <div className="flex h-[420px] items-center justify-center bg-[#f5f8f1] p-6 text-center text-sm font-bold text-[#526260] md:h-[480px] lg:h-[min(520px,calc(100vh-220px))] lg:min-h-[380px]">
+          <div className="flex h-[420px] items-center justify-center bg-[#f5f8f1] p-6 text-center text-sm font-bold text-[#526260] md:h-full">
             {mapError}
           </div>
         ) : (
           <div
             ref={mapContainerRef}
-            className="h-[420px] w-full bg-[#dcebe4] md:h-[480px] lg:h-[min(520px,calc(100vh-220px))] lg:min-h-[380px]"
+            className="h-[420px] w-full bg-[#dcebe4] md:h-full"
           />
         )}
       </div>
 
-      <div className="grid max-h-32 grid-cols-1 gap-2 overflow-x-hidden overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid max-h-32 grid-cols-1 gap-2 overflow-x-hidden overflow-y-auto overscroll-contain border-t border-[#d7e6df] bg-white p-3 sm:grid-cols-2 md:max-h-28 md:shrink-0 xl:grid-cols-3">
         <MapLegendItem
           color="bg-[#f2b84b]"
           label="Apartments"
