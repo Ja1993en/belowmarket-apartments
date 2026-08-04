@@ -552,24 +552,24 @@ export default function RenterPropertiesList() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f8f1] p-6 text-[#102426]">
+    <main className="min-h-screen bg-[#f5f8f1] p-3 text-[#102426] sm:p-6">
       <div className="mx-auto max-w-6xl">
-        <section className="overflow-hidden rounded-3xl bg-[#173f3f] text-white shadow-sm">
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
-            <div className="p-6 md:p-8">
-              <p className="text-sm font-bold text-[#f2b84b]">
+        <section className="overflow-hidden rounded-2xl bg-[#173f3f] text-white shadow-sm sm:rounded-3xl">
+          <div className="grid lg:grid-cols-[1.1fr_.9fr]">
+            <div className="p-5 sm:p-6 md:p-8">
+              <p className="text-xs font-bold text-[#f2b84b] sm:text-sm">
                 Below Market Apartments
               </p>
 
-              <h1 className="mt-3 text-4xl font-black md:text-5xl">
+              <h1 className="mt-2 text-[2rem] font-black leading-[1.08] sm:mt-3 sm:text-4xl md:text-5xl">
                 {lead.name}, your apartment matches are ready.
               </h1>
 
-              <p className="mt-4 max-w-2xl text-[#d7e6df]">
-                These properties were selected around your search for {lead.preference}.
+              <p className="mt-3 max-w-2xl text-sm leading-5 text-[#d7e6df] sm:mt-4 sm:text-base sm:leading-6">
+                Selected for your preferred area, bedroom needs, budget, and move-in timing.
               </p>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="mt-4 grid grid-cols-3 gap-2 sm:mt-6 sm:gap-3">
                 <HeroMetric
                   icon={BedDouble}
                   label="Bedrooms"
@@ -578,12 +578,12 @@ export default function RenterPropertiesList() {
                 <HeroMetric
                   icon={PiggyBank}
                   label="Budget"
-                  value={lead.budget}
+                  value={formatRenterBudget(lead.budget)}
                 />
                 <HeroMetric
                   icon={CalendarDays}
                   label="Move-in"
-                  value={lead.moveIn}
+                  value={formatRenterMoveIn(lead.moveIn)}
                 />
               </div>
             </div>
@@ -591,49 +591,38 @@ export default function RenterPropertiesList() {
             <img
               src={recommendedProperties[0]?.image}
               alt={recommendedProperties[0]?.name}
-              className="h-72 w-full object-cover lg:h-full"
+              className="h-48 w-full object-cover sm:h-64 lg:h-full"
             />
           </div>
         </section>
 
-        <section className="mt-8">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <section className="mt-6 sm:mt-8">
+          <div className="flex items-end justify-between gap-3">
             <div>
-              <h2 className="text-3xl font-black text-[#102426]">
+              <h2 className="text-2xl font-black leading-tight text-[#102426] sm:text-3xl">
                 Recommended Apartments
               </h2>
 
-              <p className="mt-2 text-[#526260]">
+              <p className="mt-1.5 text-sm leading-5 text-[#526260] sm:mt-2 sm:text-base">
                 Showing {recommendedProperties.length} deal-focused options selected by your locator.
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white px-5 py-3 text-sm font-bold text-[#173f3f] shadow-sm ring-1 ring-[#d7e6df]">
-              Token: {token}
-            </div>
+            {mappableRecommendedProperties.length > 0 && (
+              <a
+                href="#recommendation-map"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#e7f3ee] px-3 py-2 text-xs font-black text-[#173f3f] ring-1 ring-[#a9cfc2] md:hidden"
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                View map
+              </a>
+            )}
           </div>
 
           {recommendedProperties.length > 0 ? (
             <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(300px,36vw)] md:items-start lg:grid-cols-[minmax(0,1fr)_minmax(340px,36vw)] xl:grid-cols-[minmax(0,1fr)_minmax(420px,38vw)]">
-              <div className="order-2 min-w-0 md:order-1">
-                <div className="rounded-xl border border-[#d7e6df] bg-white p-4 shadow-sm">
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <p className="text-sm font-black text-[#102426]">
-                        Showing {recommendedProperties.length} recommended {recommendedProperties.length === 1 ? "listing" : "listings"}
-                      </p>
-                      <p className="mt-1 text-xs font-bold text-[#526260]">
-                        Selected by your apartment locator for this renter link.
-                      </p>
-                    </div>
-
-                    <span className="w-fit rounded-full bg-[#f5f8f1] px-3 py-1.5 text-xs font-black text-[#526260] ring-1 ring-[#d7e6df]">
-                      {mappableRecommendedProperties.length} map {mappableRecommendedProperties.length === 1 ? "pin" : "pins"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-4">
+              <div className="order-1 min-w-0">
+                <div className="grid gap-3 sm:gap-4">
                   {recommendedProperties.map((property) => (
                     <RecommendedPropertyCard
                       key={property.id}
@@ -649,7 +638,7 @@ export default function RenterPropertiesList() {
                 </div>
               </div>
 
-              <aside className="order-1 md:sticky md:top-4 md:order-2 md:self-start">
+              <aside id="recommendation-map" className="order-2 scroll-mt-4 md:sticky md:top-4 md:self-start">
                 <RecommendationMapPanel
                   properties={mappableRecommendedProperties}
                   hoveredPropertyId={hoveredPropertyId}
@@ -777,7 +766,7 @@ export default function RenterPropertiesList() {
           </div>
         )}
 
-        <section className="mt-8 rounded-3xl border border-[#d7e6df] bg-white p-6 shadow-sm">
+        <section className="mt-6 rounded-2xl border border-[#d7e6df] bg-white p-5 shadow-sm sm:mt-8 sm:rounded-3xl sm:p-6">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
               <h2 className="text-2xl font-black text-[#102426]">
@@ -804,14 +793,39 @@ export default function RenterPropertiesList() {
 
 function HeroMetric({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/10">
-      <Icon className="h-5 w-5 text-[#f2b84b]" />
-      <p className="mt-3 text-xs font-bold uppercase text-[#d7e6df]">
+    <div className="min-w-0 rounded-xl bg-white/10 p-2.5 ring-1 ring-white/10 sm:rounded-2xl sm:p-4">
+      <Icon className="h-4 w-4 text-[#f2b84b] sm:h-5 sm:w-5" />
+      <p className="mt-2 truncate text-[9px] font-bold uppercase text-[#d7e6df] sm:mt-3 sm:text-xs">
         {label}
       </p>
-      <p className="mt-1 font-black text-white">{value}</p>
+      <p className="mt-1 text-[11px] font-black leading-4 text-white sm:text-base" title={value}>{value}</p>
     </div>
   );
+}
+
+function formatRenterBudget(value) {
+  const numericValue = Number(String(value || "").replace(/[^\d.]/g, ""));
+
+  if (!Number.isFinite(numericValue) || numericValue <= 0) return value || "Not set";
+
+  return `$${Math.round(numericValue).toLocaleString()}`;
+}
+
+function formatRenterMoveIn(value) {
+  const rawValue = String(value || "").trim();
+  if (!rawValue) return "Not set";
+
+  const dateValue = /^\d{4}-\d{2}-\d{2}$/.test(rawValue)
+    ? new Date(`${rawValue}T12:00:00`)
+    : new Date(rawValue);
+
+  if (Number.isNaN(dateValue.getTime())) return rawValue;
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(dateValue);
 }
 
 function formatBedroomLabel(value, fallbackName = "") {
@@ -869,18 +883,18 @@ function RecommendedPropertyCard({
       onMouseLeave={() => onHover?.("")}
       onFocus={() => onHover?.(property.id)}
       onBlur={() => onHover?.("")}
-      className={`overflow-hidden rounded-3xl border bg-white shadow-sm transition ${
+      className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition sm:rounded-3xl ${
         isHighlighted
           ? "border-[#f2b84b] ring-2 ring-[#f2b84b]"
           : "border-[#d7e6df]"
       }`}
     >
       <div className="grid min-h-[260px] md:grid-cols-[minmax(220px,34%)_minmax(0,1fr)]">
-        <div className="relative min-h-[220px] overflow-hidden md:min-h-full">
+        <div className="relative h-44 overflow-hidden sm:h-56 md:h-auto md:min-h-full">
           <img
             src={primaryImage}
             alt={property.name}
-            loading="lazy"
+            loading="eager"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -895,19 +909,19 @@ function RecommendedPropertyCard({
         <div className="flex min-w-0 flex-col p-4 sm:p-5">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
-              <h3 className="truncate text-2xl font-black text-[#102426]">
+              <h3 className="text-xl font-black leading-tight text-[#102426] sm:text-2xl md:truncate">
                 {property.name}
               </h3>
 
-              <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#526260]">
+              <p className="mt-1.5 flex items-start gap-2 text-xs font-semibold leading-5 text-[#526260] sm:mt-2 sm:text-sm">
                 <MapPin className="h-4 w-4 shrink-0 text-[#2d7dd2]" />
-                <span className="truncate">
+                <span className="line-clamp-2 md:truncate">
                   {addressLabel || property.area || "Dallas area"}
                 </span>
               </p>
             </div>
 
-            <div className="shrink-0 rounded-xl bg-[#fff8e6] px-3 py-2 text-left ring-1 ring-[#f2d08a] lg:max-w-[220px]">
+            <div className="shrink-0 rounded-lg bg-[#fff8e6] px-3 py-2 text-left ring-1 ring-[#f2d08a] sm:rounded-xl lg:max-w-[220px]">
               <p className="text-[10px] font-black uppercase text-[#8a5b0a]">
                 Current special
               </p>
@@ -917,9 +931,9 @@ function RecommendedPropertyCard({
             </div>
           </div>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-3">
-            <DealStat label="Effective" value={property.effectiveRent || "Contact"} />
-            <DealStat label="Listed" value={property.rent || property.startingRent || "Contact"} />
+          <div className="mt-3 grid grid-cols-3 gap-1.5 sm:mt-4 sm:gap-2">
+            <DealStat label="After special" value={property.effectiveRent || "Contact"} />
+            <DealStat label="Listed rent" value={property.rent || property.startingRent || "Contact"} />
             <DealStat label="Savings" value={property.savings || "Verify"} />
           </div>
 
@@ -973,10 +987,10 @@ function RecommendedPropertyCard({
             </div>
           )}
 
-          <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row">
+          <div className="mt-auto grid grid-cols-2 gap-2 pt-3 sm:flex sm:pt-4">
             <Link
               to={`/properties/${property.id}`}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#173f3f] px-4 py-3 text-sm font-black !text-white hover:bg-[#102426] hover:!text-white"
+              className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#173f3f] px-3 py-2.5 text-xs font-black !text-white hover:bg-[#102426] hover:!text-white sm:gap-2 sm:px-4 sm:py-3 sm:text-sm"
             >
               <Building2 className="h-4 w-4" />
               View Property
@@ -985,7 +999,7 @@ function RecommendedPropertyCard({
             <button
               onClick={() => onRequestTour(property)}
               disabled={isTourRequested}
-              className={`flex-1 rounded-xl px-4 py-3 text-sm font-black ${
+              className={`min-w-0 flex-1 rounded-xl px-3 py-2.5 text-xs font-black sm:px-4 sm:py-3 sm:text-sm ${
                 isTourRequested
                   ? "bg-[#d8efe6] text-[#1f6f63]"
                   : isTourSelected
@@ -1183,13 +1197,13 @@ function RecommendationMapPanel({
 
       <div className="relative overflow-hidden md:min-h-0 md:flex-1">
         {mapError ? (
-          <div className="flex h-[420px] items-center justify-center bg-[#f5f8f1] p-6 text-center text-sm font-bold text-[#526260] md:h-full">
+          <div className="flex h-[340px] items-center justify-center bg-[#f5f8f1] p-6 text-center text-sm font-bold text-[#526260] sm:h-[420px] md:h-full">
             {mapError}
           </div>
         ) : (
           <div
             ref={mapContainerRef}
-            className="h-[420px] w-full bg-[#dcebe4] md:h-full"
+            className="h-[340px] w-full bg-[#dcebe4] sm:h-[420px] md:h-full"
           />
         )}
       </div>
@@ -1219,9 +1233,9 @@ function RecommendationMapPanel({
 
 function DealStat({ label, value }) {
   return (
-    <div className="rounded-2xl bg-[#f5f8f1] p-4 ring-1 ring-[#d7e6df]">
-      <p className="text-xs font-bold uppercase text-[#526260]">{label}</p>
-      <p className="mt-2 text-lg font-black text-[#102426]">{value}</p>
+    <div className="min-w-0 rounded-xl bg-[#f5f8f1] p-2.5 ring-1 ring-[#d7e6df] sm:rounded-2xl sm:p-4">
+      <p className="truncate text-[9px] font-bold uppercase text-[#526260] sm:text-xs" title={label}>{label}</p>
+      <p className="mt-1 whitespace-nowrap text-[clamp(10px,2.8vw,15px)] font-black leading-4 text-[#102426] sm:mt-2 sm:text-base" title={value}>{value}</p>
     </div>
   );
 }
