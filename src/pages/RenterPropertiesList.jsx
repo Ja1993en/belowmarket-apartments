@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { BedDouble, Building2, CalendarDays, MapPin, PiggyBank } from "lucide-react";
+import {
+  BadgeCheck,
+  BedDouble,
+  Building2,
+  CalendarDays,
+  MapPin,
+  PiggyBank,
+} from "lucide-react";
 import { getSupabaseLeadByToken } from "../data/supabaseLeadStorage";
 import {
   getSupabaseTourRequestsForLead,
@@ -566,7 +573,7 @@ export default function RenterPropertiesList() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-5 text-[#d7e6df] sm:mt-4 sm:text-base sm:leading-6">
-                Selected for your preferred area, bedroom needs, budget, and move-in timing.
+                Chosen by your locator, with clear fit notes to help you decide what to tour first.
               </p>
 
               <div className="mt-4 grid grid-cols-3 gap-2 sm:mt-6 sm:gap-3">
@@ -589,7 +596,7 @@ export default function RenterPropertiesList() {
             </div>
 
             <img
-              src={recommendedProperties[0]?.image}
+              src={getPropertyPrimaryImage(recommendedProperties[0])}
               alt={recommendedProperties[0]?.name}
               className="h-48 w-full object-cover sm:h-64 lg:h-full"
             />
@@ -628,6 +635,7 @@ export default function RenterPropertiesList() {
                       key={property.id}
                       property={property}
                       recommendedFloorPlans={recommendedFloorPlansByPropertyId[property.id] || []}
+                      lead={lead}
                       requestedPropertyIds={requestedPropertyIds}
                       selectedTourPropertyId={selectedTourProperty?.id}
                       isHighlighted={hoveredPropertyId === property.id}
@@ -862,9 +870,169 @@ function formatFloorPlanMeta(floorPlanItem) {
     .join(" • ");
 }
 
+function parseFirstCurrencyAmount(value) {
+  const amount = parseCurrencyAmounts(value)[0] || 0;
+
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+function parseCurrencyAmounts(value) {
+  return (String(value || "").replace(/,/g, "").match(/\d+(?:\.\d+)?/g) || [])
+    .map(Number)
+    .filter((amount) => Number.isFinite(amount) && amount > 0);
+}
+
+function formatCurrencyAmount(value) {
+  if (!Number.isFinite(value) || value <= 0) return "";
+  return `$${Math.round(value).toLocaleString()}`;
+}
+
+function formatSelectedPriceRange(items, fields) {
+  const amounts = items
+    .flatMap((item) => {
+      const rawValue = fields.map((field) => item?.[field]).find(Boolean);
+      return parseCurrencyAmounts(rawValue);
+    })
+    .filter((amount) => amount > 0);
+
+  if (amounts.length === 0) return "";
+
+  const minimum = Math.min(...amounts);
+  const maximum = Math.max(...amounts);
+
+  return minimum === maximum
+    ? formatCurrencyAmount(minimum)
+    : `${formatCurrencyAmount(minimum)} - ${formatCurrencyAmount(maximum)}`;
+}
+
+function getRecommendationPricing(property, recommendedFloorPlans) {
+  if (recommendedFloorPlans.length === 0) {
+    const effectiveAmount = parseFirstCurrencyAmount(property.effectiveRent);
+    const listedAmount = parseFirstCurrencyAmount(property.rent || property.startingRent);
+    const hasRentDiscount = Boolean(
+      effectiveAmount && listedAmount && effectiveAmount < listedAmount
+    );
+
+    return {
+      effective: property.effectiveRent || "Contact",
+      listed: property.rent || property.startingRent || "Contact",
+      savings: property.savings || "Confirm special",
+      hasRentDiscount,
+    };
+  }
+
+  const effective = formatSelectedPriceRange(recommendedFloorPlans, [
+    "effectiveRent",
+    "rent",
+  ]);
+  const listed = formatSelectedPriceRange(recommendedFloorPlans, ["rent"]);
+  const savingsAmounts = recommendedFloorPlans
+    .map((item) => {
+      const effectiveAmount = parseFirstCurrencyAmount(item.effectiveRent || item.rent);
+      const listedAmount = parseFirstCurrencyAmount(item.rent);
+      return listedAmount > effectiveAmount ? listedAmount - effectiveAmount : 0;
+    })
+    .filter((amount) => amount > 0);
+  const minimumSavings = savingsAmounts.length > 0 ? Math.min(...savingsAmounts) : 0;
+  const maximumSavings = savingsAmounts.length > 0 ? Math.max(...savingsAmounts) : 0;
+  const savings = minimumSavings === maximumSavings
+    ? `${formatCurrencyAmount(minimumSavings)}/mo`
+    : `${formatCurrencyAmount(minimumSavings)} - ${formatCurrencyAmount(maximumSavings)}/mo`;
+
+  return {
+    effective: effective || "Contact",
+    listed: listed || "Contact",
+    savings: savingsAmounts.length > 0 ? savings : "No rent discount",
+    hasRentDiscount: savingsAmounts.length > 0,
+  };
+}
+
+function getLeadPreferredArea(lead) {
+  const preferenceParts = String(lead?.preference || "")
+    .split(" - ")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return preferenceParts.length >= 3 ? preferenceParts[1] : "";
+}
+
+function getBedroomNumber(value) {
+  const match = String(value || "").match(/\d+/);
+  return match ? Number(match[0]) : null;
+}
+
+function buildRecommendationFit(property, recommendedFloorPlans, lead) {
+  const targetArea = getLeadPreferredArea(lead);
+  const targetBeds = getBedroomNumber(lead?.bedrooms);
+  const budget = parseFirstCurrencyAmount(lead?.budget);
+  const propertyLocation = [property.area, property.city, getPropertyAddressLabel(property)]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const normalizedTargetArea = targetArea.toLowerCase();
+  const exactAreaMatch = Boolean(
+    normalizedTargetArea && propertyLocation.includes(normalizedTargetArea)
+  );
+  const isDallasAlternative = Boolean(
+    normalizedTargetArea.includes("dallas") && propertyLocation.includes("dallas")
+  );
+  const matchingPlans = recommendedFloorPlans.filter(
+    (item) => targetBeds === null || getBedroomNumber(item.beds) === targetBeds
+  );
+  const plansForPrice = matchingPlans.length > 0 ? matchingPlans : recommendedFloorPlans;
+  const selectedPrice = parseFirstCurrencyAmount(
+    formatSelectedPriceRange(plansForPrice, ["effectiveRent", "rent"])
+  );
+  const propertyStartingPrice = parseFirstCurrencyAmount(
+    property.effectiveRent || property.rent || property.startingRent
+  );
+  const comparisonPrice = selectedPrice || propertyStartingPrice;
+  const hasExactBedroomPlan = targetBeds !== null && matchingPlans.length > 0;
+  const isWithinBudget = Boolean(budget && comparisonPrice && comparisonPrice <= budget);
+
+  if (hasExactBedroomPlan && isWithinBudget && exactAreaMatch) {
+    return {
+      label: "Strong match",
+      detail: `${formatBedroomLabel(lead.bedrooms)} layout selected, within ${formatRenterBudget(lead.budget)}, in ${targetArea}.`,
+      tone: "strong",
+    };
+  }
+
+  if (hasExactBedroomPlan && isWithinBudget) {
+    return {
+      label: isDallasAlternative ? "Dallas alternative" : "Alternative area",
+      detail: `${formatBedroomLabel(lead.bedrooms)} layout selected within ${formatRenterBudget(lead.budget)}; location differs from ${targetArea || "your preferred area"}.`,
+      tone: "alternative",
+    };
+  }
+
+  if (recommendedFloorPlans.length > 0 && !hasExactBedroomPlan) {
+    return {
+      label: "Bedroom fit to confirm",
+      detail: `Selected layouts do not confirm a ${formatBedroomLabel(lead.bedrooms)} option yet.`,
+      tone: "confirm",
+    };
+  }
+
+  if (comparisonPrice && budget && comparisonPrice > budget) {
+    return {
+      label: "Above starting budget",
+      detail: `Pricing starts above ${formatRenterBudget(lead.budget)}; keep this only as a stretch option.`,
+      tone: "confirm",
+    };
+  }
+
+  return {
+    label: exactAreaMatch ? "Preferred-area option" : "Fit to confirm",
+    detail: `${formatBedroomLabel(lead.bedrooms)} pricing and availability still need confirmation.`,
+    tone: exactAreaMatch ? "strong" : "confirm",
+  };
+}
+
 function RecommendedPropertyCard({
   property,
   recommendedFloorPlans = [],
+  lead,
   requestedPropertyIds,
   selectedTourPropertyId,
   isHighlighted = false,
@@ -875,6 +1043,13 @@ function RecommendedPropertyCard({
   const isTourSelected = selectedTourPropertyId === property.id;
   const primaryImage = getPropertyPrimaryImage(property);
   const addressLabel = getPropertyAddressLabel(property);
+  const pricing = getRecommendationPricing(property, recommendedFloorPlans);
+  const fit = buildRecommendationFit(property, recommendedFloorPlans, lead);
+  const fitStyles = {
+    strong: "bg-[#e7f3ee] text-[#173f3f] ring-[#a9cfc2]",
+    alternative: "bg-[#fff8e6] text-[#8a5b0a] ring-[#f2d08a]",
+    confirm: "bg-[#f5f8f1] text-[#526260] ring-[#d7e6df]",
+  };
 
   return (
     <article
@@ -919,6 +1094,18 @@ function RecommendedPropertyCard({
                   {addressLabel || property.area || "Dallas area"}
                 </span>
               </p>
+
+              <div className={`mt-2.5 flex items-start gap-2 rounded-xl px-3 py-2 ring-1 ${fitStyles[fit.tone]}`}>
+                <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-wide">
+                    {fit.label}
+                  </p>
+                  <p className="mt-0.5 text-[11px] font-bold leading-4 sm:text-xs">
+                    {fit.detail}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="shrink-0 rounded-lg bg-[#fff8e6] px-3 py-2 text-left ring-1 ring-[#f2d08a] sm:rounded-xl lg:max-w-[220px]">
@@ -931,11 +1118,17 @@ function RecommendedPropertyCard({
             </div>
           </div>
 
-          <div className="mt-3 grid grid-cols-3 gap-1.5 sm:mt-4 sm:gap-2">
-            <DealStat label="After special" value={property.effectiveRent || "Contact"} />
-            <DealStat label="Listed rent" value={property.rent || property.startingRent || "Contact"} />
-            <DealStat label="Savings" value={property.savings || "Verify"} />
-          </div>
+          {pricing.hasRentDiscount ? (
+            <div className="mt-3 grid grid-cols-3 gap-1.5 sm:mt-4 sm:gap-2">
+              <DealStat label="After special" value={pricing.effective} />
+              <DealStat label="Listed rent" value={pricing.listed} />
+              <DealStat label="Savings" value={pricing.savings} />
+            </div>
+          ) : (
+            <div className="mt-3 sm:mt-4">
+              <DealStat label="Listed rent" value={pricing.listed} />
+            </div>
+          )}
 
           {recommendedFloorPlans.length > 0 && (
             <div className="mt-4 rounded-2xl bg-[#f5f8f1] p-3 ring-1 ring-[#d7e6df]">
